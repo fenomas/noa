@@ -35,16 +35,14 @@ function Engine(opts) {
 
   // ad-hoc worldgen, meshing, rendering
   var s = 16
-  for (var i=0; i<2; ++i) {
-    for (var j=0; j<2; ++j) {
-      var chunk = this.world.createChunk(s)
+  for (var i=0; i<1; ++i) {
+    for (var j=0; j<1; ++j) {
+      var chunk = this.world.createChunk(s, buttons)
       var meshData = this.mesher.meshChunk(chunk)
-      this.rendering.addMeshFromData( meshData, i*16, j*16 )
-      
-
+      this.rendering.addMeshFromData( meshData, i*s, j*s )
     }
   }
-  
+
 
   // temp hacks for development
   var c = this.rendering._camera
@@ -59,8 +57,8 @@ function Engine(opts) {
       debug = !debug
       if (debug) scene.debugLayer.show(); else scene.debugLayer.hide();
     }
-//    if(e.keyCode==89) { runChunkTest() } // y
-//    if(e.keyCode==66) { runBitTest() } // b
+    if(e.keyCode==89) { runChunkTest() } // y
+    //    if(e.keyCode==66) { runBitTest() } // b
   })
   scene.activeCamera.keysUp.push(87) // w
   scene.activeCamera.keysLeft.push(65) // a
@@ -89,6 +87,8 @@ Engine.prototype.render = function(dt) {
 
 function buttons(x,y,z) {
   var lo=2, hi=9
+  if ( y==7 && z==5 && from(x,lo,hi ) ) return 0
+  if ( x==5 && z==8 && from(y,lo,hi ) ) return 0
   if ( from(x,lo,hi) && from(y,lo,hi) && from(z,lo,hi) ) return 1
   if ( y==3 && z==4 && from(x,lo-1,hi+1 ) ) return 1
   if ( y==4 && z==7 && from(x,lo-1,hi+1 ) ) return 1
@@ -108,19 +108,40 @@ function ecks(x,y,z) {
 }
 
 function ball(x,y,z) {
-  if (x==6 && z==5 && y<4) return 1
-  if (x==4 && z==8 && y<4) return 1
-  if (x==4 && z==10 && y<4) return 1
-  //  if (x==6 && z==3) return 0
-  //  if (x==2 && z==8) return 0
-  var rad = Math.pow(x-9,2) + Math.pow(y-12,2) + Math.pow(z-8,2)
-  if (rad<133 ) return 0
-  return (3*Math.random()*Math.random() >> 0 ) + 1
+  var rad = Math.pow(x-9,2) + Math.pow(y-8,2) + Math.pow(z-8,2)
+  return (rad<77 ) ? 1 : 0
+  //  return (3*Math.random()*Math.random() >> 0 ) + 1
 }
+function hole(x,y,z) {
+  var rad = Math.pow(x-9,2) + Math.pow(y-8,2) + Math.pow(z-8,2)
+  return (rad<77 ) ? 0 : 1
+  //  return (3*Math.random()*Math.random() >> 0 ) + 1
+}
+
+function randWorld(x,y,z) {
+  var lo=3, hi=10
+  if ( from(x,lo,hi) && from(y,lo,hi) && from(z,lo,hi) ) {
+    return (Math.random() < 0.8) ? 1 : 0
+  }
+  return 0
+}
+
 
 function from(val,lo,hi) {
   return val>lo-1 && val<hi+1
 }
 
 
+
+function runChunkTest() {
+  var n=4,
+      s=128,
+      gen= randWorld
+  var chunk = noa.world.createChunk(s, gen)
+  var d = new Date()
+  for (var i=0; i<n; ++i) {
+    var meshData = noa.mesher.meshChunk(chunk)
+    }
+  console.log('Chunks size='+s+' meshed in '+(Math.round((new Date()-d)/n))+'ms average.')
+}
 
