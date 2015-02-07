@@ -16,6 +16,9 @@ function Engine(opts) {
   // abstraction layer for rendering
   this.rendering = createRendering(this, opts, this.container.canvas)
 
+  // now that rendering is set up, register for GL events and so on
+  this.container.initEvents()
+
   // world data / chunk / worldgen manager
   var worldgen = ball
 
@@ -23,9 +26,6 @@ function Engine(opts) {
 
   // mesh chunk of world data and hand off to renderer
   this.mesher = createMesher( this, opts )
-
-
-
 
   // ad-hoc stuff from here on:
 
