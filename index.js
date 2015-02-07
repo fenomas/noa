@@ -27,14 +27,24 @@ function Engine(opts) {
 
 
 
+  // ad-hoc stuff from here on:
+
+
+
 
 
   // ad-hoc worldgen, meshing, rendering
-  var chunk = this.world.createChunk()
-  var meshData = this.mesher.meshChunk(chunk)
-  this.rendering.addMeshFromData( meshData )
+  var s = 16
+  for (var i=0; i<2; ++i) {
+    for (var j=0; j<2; ++j) {
+      var chunk = this.world.createChunk(s)
+      var meshData = this.mesher.meshChunk(chunk)
+      this.rendering.addMeshFromData( meshData, i*16, j*16 )
+      
 
-
+    }
+  }
+  
 
   // temp hacks for development
   var c = this.rendering._camera
@@ -42,7 +52,6 @@ function Engine(opts) {
   //  c.setTarget( new BABYLON.Vector3(0,0,0) )
   c.attachControl(document, false)
   window.noa = this
-  window.chunk = chunk
   window.ndarray = require('ndarray')
   var debug = false
   window.addEventListener('keydown', function(e){
@@ -50,8 +59,8 @@ function Engine(opts) {
       debug = !debug
       if (debug) scene.debugLayer.show(); else scene.debugLayer.hide();
     }
-    if(e.keyCode==89) { runChunkTest() } // y
-    if(e.keyCode==66) { runBitTest() } // b
+//    if(e.keyCode==89) { runChunkTest() } // y
+//    if(e.keyCode==66) { runBitTest() } // b
   })
   scene.activeCamera.keysUp.push(87) // w
   scene.activeCamera.keysLeft.push(65) // a
@@ -60,21 +69,6 @@ function Engine(opts) {
 }
 
 
-function runChunkTest() {
-  var c = noa.world.createChunk(128)
-  var n=3, t=0, t2=0, d, d2
-  d = new Date()
-  for (var i=0; i<n; i++) {
-    noa.mesher.meshChunk(c,true)
-    d2 = new Date()
-    t += d2-d
-    noa.mesher.meshChunk(c)
-    d = new Date()
-    t2 += d-d2
-  }
-  console.log('Old mesher averaged '+Math.round(t/n)+'ms.')
-  console.log('New mesher averaged '+Math.round(t2/n)+'ms.')
-}
 
 
 /*
@@ -114,17 +108,19 @@ function ecks(x,y,z) {
 }
 
 function ball(x,y,z) {
-  if (x==6 && z==5 && y<2) return 1
-  if (x==4 && z==8 && y<2) return 1
-  if (x==4 && z==10 && y<2) return 1
-//  if (x==6 && z==3) return 0
-//  if (x==2 && z==8) return 0
-  var rad = Math.pow(x-9,2) + Math.pow(y-8,2) + Math.pow(z-8,2)
-  return (rad<55) ? 0 : 1
+  if (x==6 && z==5 && y<4) return 1
+  if (x==4 && z==8 && y<4) return 1
+  if (x==4 && z==10 && y<4) return 1
+  //  if (x==6 && z==3) return 0
+  //  if (x==2 && z==8) return 0
+  var rad = Math.pow(x-9,2) + Math.pow(y-12,2) + Math.pow(z-8,2)
+  if (rad<133 ) return 0
+  return (3*Math.random()*Math.random() >> 0 ) + 1
 }
 
 function from(val,lo,hi) {
   return val>lo-1 && val<hi+1
 }
+
 
 
