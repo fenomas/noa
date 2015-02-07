@@ -34,11 +34,17 @@ function Engine(opts) {
 
 
   // ad-hoc worldgen, meshing, rendering
-  var s = 16
-  for (var i=0; i<1; ++i) {
-    for (var j=0; j<1; ++j) {
-      var chunk = this.world.createChunk(s, buttons)
-      var meshData = this.mesher.meshChunk(chunk)
+  var s = 32
+  var cols = [0,
+              [ 0.4, 0.9, 0.4 ],
+              [ 0.8, 0.3, 0.4 ],
+              [ 0.4, 0.3, 0.7 ],
+             ]
+  var aovals = [ 0.7, 0.6, 0.5 ]
+  for (var i=0; i<2; ++i) {
+    for (var j=0; j<2; ++j) {
+      var chunk = this.world.createChunk(s, randWorld)
+      var meshData = this.mesher.meshChunk( chunk, cols, aovals )
       this.rendering.addMeshFromData( meshData, i*s, j*s )
     }
   }
@@ -119,6 +125,8 @@ function hole(x,y,z) {
 }
 
 function randWorld(x,y,z) {
+  if (Math.random() > 0.95) return 0
+  return Math.floor(3*Math.random()*Math.random()*Math.random())+1
   var lo=3, hi=10
   if ( from(x,lo,hi) && from(y,lo,hi) && from(z,lo,hi) ) {
     return (Math.random() < 0.8) ? 1 : 0
@@ -126,22 +134,30 @@ function randWorld(x,y,z) {
   return 0
 }
 
+function randSolid(x,y,z) {
+  var lo=1, hi=30
+  if ( from(x,lo,hi) && from(y,lo,hi) && from(z,lo,hi) ) {
+    return (Math.random() > 0.7) ?  2 : 3
+  }
+  return (Math.random() > 0.7) ?  1 : 0
+}
+
 
 function from(val,lo,hi) {
-  return val>lo-1 && val<hi+1
+  return val>=lo && val<=hi
 }
 
 
 
 function runChunkTest() {
   var n=4,
-      s=128,
+      s=16,
       gen= randWorld
   var chunk = noa.world.createChunk(s, gen)
   var d = new Date()
   for (var i=0; i<n; ++i) {
-    var meshData = noa.mesher.meshChunk(chunk)
-    }
+    noa.mesher.meshChunk(chunk, [0,[],[],[],[],[]], [] )
+  }
   console.log('Chunks size='+s+' meshed in '+(Math.round((new Date()-d)/n))+'ms average.')
 }
 
