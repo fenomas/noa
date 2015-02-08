@@ -4,6 +4,7 @@ var createContainer = require('./lib/container')
 var createRendering = require('./lib/rendering')
 var createWorld = require('./lib/world')
 var createMesher = require('./lib/mesher')
+var createInputs = require('./lib/inputs')
 
 module.exports = Engine
 
@@ -15,6 +16,9 @@ function Engine(opts) {
 
   // rendering manager - abstracts all draws to 3D context
   this.rendering = createRendering(this, opts, this.container.canvas)
+  
+  // inputs manager - abstracts key/mouse input
+  this.inputs = createInputs(this, opts)
   
   // register for domReady event to sent up GL events, etc.
   this.container._shell.on('init', this.onDomReady.bind(this))
@@ -82,6 +86,8 @@ function Engine(opts) {
 Engine.prototype.onDomReady = function() {
   // registers noa for tick/render/resize events
   this.container.initEvents()
+  // sets up key events
+  this.inputs.initEvents(document)
 }
   
 
