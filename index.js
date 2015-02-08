@@ -13,12 +13,12 @@ function Engine(opts) {
   // container (html/div) manager
   this.container = createContainer(this, opts)
 
-  // abstraction layer for rendering
+  // rendering manager - abstracts all draws to 3D context
   this.rendering = createRendering(this, opts, this.container.canvas)
-
-  // now that rendering is set up, register for GL events and so on
-  this.container.initEvents()
-
+  
+  // register for domReady event to sent up GL events, etc.
+  this.container._shell.on('init', this.onDomReady.bind(this))
+  
   // world data / chunk / worldgen manager
   var worldgen = ball
 
@@ -78,6 +78,13 @@ function Engine(opts) {
 /*
  *   Engine API
 */ 
+
+Engine.prototype.onDomReady = function() {
+  // registers noa for tick/render/resize events
+  this.container.initEvents()
+}
+  
+
 
 Engine.prototype.tick = function(dt) {
 
