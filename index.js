@@ -30,28 +30,10 @@ function Engine(opts) {
 
   // mesh chunk of world data and hand off to renderer
   this.mesher = createMesher( this, opts )
+  
+  
 
   // ad-hoc stuff from here on:
-
-
-
-
-
-  // ad-hoc worldgen, meshing, rendering
-  var s = 32
-  var cols = [0,
-              [ 0.4, 0.9, 0.4 ],
-              [ 0.8, 0.3, 0.4 ],
-              [ 0.4, 0.3, 0.7 ],
-             ]
-  var aovals = [ 0.7, 0.6, 0.5 ]
-  for (var i=0; i<2; ++i) {
-    for (var j=0; j<2; ++j) {
-      var chunk = this.world.createChunk(s, randWorld)
-      var meshData = this.mesher.meshChunk( chunk, cols, aovals )
-      this.rendering.addMeshFromData( meshData, i*s, j*s )
-    }
-  }
 
 
   // temp hacks for development
@@ -98,7 +80,7 @@ Engine.prototype.onDomReady = function() {
 
 
 Engine.prototype.tick = function(dt) {
-
+  this.world.tick()
 }
 
 Engine.prototype.render = function(dt) {
@@ -106,6 +88,23 @@ Engine.prototype.render = function(dt) {
 
 }
 
+
+
+// ad-hoc - TODO: this should be an event listener
+Engine.prototype.onChunkAdded = function(chunk, i, j, k) {
+  // colors - these should eventually come from registry
+  var cols = [0,
+              [ 0.4, 0.9, 0.4 ],
+              [ 0.8, 0.3, 0.4 ],
+              [ 0.4, 0.3, 0.7 ],
+             ]
+  var aovals = [ 0.7, 0.6, 0.5 ]
+  var meshData = this.mesher.meshChunk( chunk, cols, aovals )
+  if (meshData) { // could be false if chunk is empty
+    var cs = this.world.chunkSize
+    this.rendering.addMeshFromData( meshData, i*cs, j*cs, k*cs )
+  }
+}
 
 
 
