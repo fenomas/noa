@@ -1,10 +1,14 @@
 
 var ndarray = require('ndarray')
+var aabb = require('aabb-3d')
+var vec3 = require('gl-vec3')
 var createContainer = require('./lib/container')
 var createRendering = require('./lib/rendering')
 var createWorld = require('./lib/world')
 var createMesher = require('./lib/mesher')
 var createInputs = require('./lib/inputs')
+var createPhysics = require('./lib/physics')
+var createControls = require('./lib/controls')
 
 module.exports = Engine
 
@@ -16,31 +20,63 @@ function Engine(opts) {
 
   // rendering manager - abstracts all draws to 3D context
   this.rendering = createRendering(this, opts, this.container.canvas)
-  
+
   // inputs manager - abstracts key/mouse input
   this.inputs = createInputs(this, opts, this.container._element)
-  
+
   // register for domReady event to sent up GL events, etc.
   this.container._shell.on('init', this.onDomReady.bind(this))
   
-  // world data / chunk / worldgen manager
-  var worldgen = ball
-
-  this.world = createWorld( this, opts, worldgen )
+  // create world manager
+  this.world = createWorld( this, opts )
 
   // mesh chunk of world data and hand off to renderer
   this.mesher = createMesher( this, opts )
+
+  // physics engine - solves collisions, properties, etc.
+  this.physics = createPhysics( this, opts )
+
+  // controls - hooks up input events to physics of player, etc.
+  this.controls = createControls( this, opts )
   
+  
+  
+  
+  
+  
+  // ad-hoc stuff from here on:
   
 
-  // ad-hoc stuff from here on:
+  var pbox = new aabb( [0,10,0], [2/3, 3/2, 2/3] )
+  this.playerBody = this.physics.addBody( {}, pbox )
+  
+  var cameraOffset = [ 1/3, 3/2, 1/3 ]
+  this.getCameraPosition = function() {
+    var pos = vec3.create()
+    vec3.add( pos, this.playerBody.aabb.base, cameraOffset )
+    return pos
+  }
+  
+  var c = this.rendering._camera
+  this.controls.setTarget( this.playerBody )
+  var accessor = {
+    getRotationXY: function() {
+      return [ c.rotation.x, c.rotation.y ]
+    },
+    setRotationXY: function(x,y) {
+      c.rotation.x = x
+      c.rotation.y = y
+    }
+  }
+  this.controls.setCameraAccessor( accessor )
+  
 
 
   // temp hacks for development
-  var c = this.rendering._camera
+  
   //  c.position = new BABYLON.Vector3(8,5,8)
   //  c.setTarget( new BABYLON.Vector3(0,0,0) )
-  c.attachControl(document, false)
+//  c.attachControl(document, false)
   window.noa = this
   window.ndarray = require('ndarray')
   var debug = false
@@ -49,18 +85,19 @@ function Engine(opts) {
       debug = !debug
       if (debug) scene.debugLayer.show(); else scene.debugLayer.hide();
     }
-    if(e.keyCode==89) { runChunkTest() } // y
+//    if(e.keyCode==89) { runChunkTest() } // y
     //    if(e.keyCode==66) { runBitTest() } // b
   })
-  scene.activeCamera.keysUp.push(87) // w
-  scene.activeCamera.keysLeft.push(65) // a
-  scene.activeCamera.keysDown.push(83) // s
-  scene.activeCamera.keysRight.push(68) // d
-  
-//  this.inputs.down.on('move-right', function() {
-//    console.log(scene.activeCamera.position.x)
-//  })
-  
+  //  scene.activeCamera.keysUp.push(87) // w
+  //  scene.activeCamera.keysLeft.push(65) // a
+  //  scene.activeCamera.keysDown.push(83) // s
+  //  scene.activeCamera.keysRight.push(68) // d
+
+  this.inputs.down.on('move-right', function() {
+    scene.activeCamera.position.x += 5
+    console.log(scene.activeCamera.position.x)
+  })
+
 }
 
 
@@ -70,32 +107,44 @@ function Engine(opts) {
  *   Engine API
 */ 
 
+// TODO: this should really be made a listener
 Engine.prototype.onDomReady = function() {
   // registers noa for tick/render/resize events
   this.container.initEvents()
   // sets up key events
   this.inputs.initEvents(document)
 }
-  
 
 
-Engine.prototype.tick = function(dt) {
-  this.world.tick()
+// TODO: revisit this timing handling - e.g. option for fixed timesteps
+var lastTick = 0
+function getTickTime() {
+  var d = new Date()
+  var dt = d-lastTick
+  if (dt>100) dt=100
+  lastTick = d
+  return dt
+}
+
+Engine.prototype.tick = function() {
+  var dt = getTickTime()
+  this.world.tick(dt)     // currently just does chunking
+  this.controls.tick(dt)  // key state -> movement forces
+  this.physics.tick(dt)   // iterates physics
+  this.inputs.tick(dt)    // clears cumulative frame values
 }
 
 Engine.prototype.render = function(dt) {
   this.rendering.render()
-
 }
-
 
 
 // ad-hoc - TODO: this should be an event listener
 Engine.prototype.onChunkAdded = function(chunk, i, j, k) {
   // colors - these should eventually come from registry
   var cols = [0,
-              [ 0.4, 0.9, 0.4 ],
-              [ 0.8, 0.3, 0.4 ],
+              [ 0.4, 0.3, 0.0 ],
+              [ 0.3, 0.8, 0.3 ],
               [ 0.4, 0.3, 0.7 ],
              ]
   var aovals = [ 0.7, 0.6, 0.5 ]
