@@ -18,7 +18,7 @@ function Engine(opts) {
   this.rendering = createRendering(this, opts, this.container.canvas)
   
   // inputs manager - abstracts key/mouse input
-  this.inputs = createInputs(this, opts)
+  this.inputs = createInputs(this, opts, this.container._element)
   
   // register for domReady event to sent up GL events, etc.
   this.container._shell.on('init', this.onDomReady.bind(this))
@@ -74,6 +74,11 @@ function Engine(opts) {
   scene.activeCamera.keysLeft.push(65) // a
   scene.activeCamera.keysDown.push(83) // s
   scene.activeCamera.keysRight.push(68) // d
+  
+//  this.inputs.down.on('move-right', function() {
+//    console.log(scene.activeCamera.position.x)
+//  })
+  
 }
 
 
