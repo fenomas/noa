@@ -128,6 +128,7 @@ function getTickTime() {
 
 Engine.prototype.tick = function() {
   var dt = getTickTime()
+  checkForPointerlock(this)
   this.world.tick(dt)     // currently just does chunking
   this.controls.tick(dt)  // key state -> movement forces
   this.physics.tick(dt)   // iterates physics
@@ -152,6 +153,18 @@ Engine.prototype.onChunkAdded = function(chunk, i, j, k) {
   if (meshData) { // could be false if chunk is empty
     var cs = this.world.chunkSize
     this.rendering.addMeshFromData( meshData, i*cs, j*cs, k*cs )
+  }
+}
+
+
+
+// this is a hack for now. TODO: find a more elegant approach
+function checkForPointerlock(noa) {
+  // prevent the camera from turning unless pointerlock or mouse is down
+  var turn = noa.container._shell.pointerLock ||
+      noa.inputs.state.fire
+  if (!turn) {
+    noa.inputs.state.dx = noa.inputs.state.dy = 0
   }
 }
 
