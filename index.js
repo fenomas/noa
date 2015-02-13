@@ -152,7 +152,7 @@ Engine.prototype.render = function(dt) {
 // ad-hoc - TODO: this should be an event listener
 Engine.prototype.onChunkAdded = function(chunk, i, j, k) {
   // TODO: pass in material/colors/chunk metadata somehow
-  var aovals = [ 0.7, 0.6, 0.5 ]
+  var aovals = [ 1, 0.8, 0.6 ]
   var matData = this.materialData
   var meshDataArr = this.mesher.meshChunk( chunk, matData, aovals )
   if (meshDataArr.length) { // empty if the chunk is empty
