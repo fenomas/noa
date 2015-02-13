@@ -97,7 +97,15 @@ function Engine(opts) {
     scene.activeCamera.position.x += 5
     console.log(scene.activeCamera.position.x)
   })
-
+  
+  // this should eventually come from a registry of some kind
+  this.materialData = [
+    null,
+    { color: [ 0.4, 0.8, 0.4 ] },
+    { texture: window.texturePath('')+"diamond.png" },
+    { color: [ 0.4, 0.3, 0.7 ] }
+  ]
+  
 }
 
 
@@ -142,17 +150,13 @@ Engine.prototype.render = function(dt) {
 
 // ad-hoc - TODO: this should be an event listener
 Engine.prototype.onChunkAdded = function(chunk, i, j, k) {
-  // colors - these should eventually come from registry
-  var cols = [0,
-              [ 0.4, 0.3, 0.0 ],
-              [ 0.3, 0.8, 0.3 ],
-              [ 0.4, 0.3, 0.7 ],
-             ]
+  // TODO: pass in material/colors/chunk metadata somehow
   var aovals = [ 0.7, 0.6, 0.5 ]
-  var meshData = this.mesher.meshChunk( chunk, cols, aovals )
-  if (meshData) { // could be false if chunk is empty
+  var matData = this.materialData
+  var meshDataArr = this.mesher.meshChunk( chunk, matData, aovals )
+  if (meshDataArr.length) { // empty if the chunk is empty
     var cs = this.world.chunkSize
-    this.rendering.addMeshFromData( meshData, i*cs, j*cs, k*cs )
+    this.rendering.addMeshDataArray( meshDataArr, i*cs, j*cs, k*cs )
   }
 }
 
