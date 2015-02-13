@@ -102,7 +102,7 @@ function Engine(opts) {
   this.materialData = [
     null,
     { color: [ 0.4, 0.8, 0.4 ] },
-    { texture: window.texturePath('')+"diamond.png" },
+    { texture: opts.texturePath+"diamond.png" },
     { color: [ 0.4, 0.3, 0.7 ] }
   ]
   
