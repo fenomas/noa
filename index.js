@@ -47,7 +47,7 @@ function Engine(opts) {
   // ad-hoc stuff from here on:
   
 
-  var pbox = new aabb( [0,10,0], [2/3, 3/2, 2/3] )
+  var pbox = new aabb( [0,30,0], [2/3, 3/2, 2/3] )
   this.playerBody = this.physics.addBody( {}, pbox )
   
   var cameraOffset = [ 1/3, 3/2, 1/3 ]
@@ -101,9 +101,10 @@ function Engine(opts) {
   // this should eventually come from a registry of some kind
   this.materialData = [
     null,
-    { color: [ 0.4, 0.8, 0.4 ] },
-    { texture: opts.texturePath+"diamond.png" },
-    { color: [ 0.4, 0.3, 0.7 ] }
+    { texture: opts.texturePath+"dirt.png" },
+    { texture: opts.texturePath+"cobblestone.png" },
+    { texture: opts.texturePath+"grass.png" },
+    { color: [ 0.9, 0.9, 0.95 ] }
   ]
   
 }
