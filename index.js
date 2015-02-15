@@ -26,7 +26,7 @@ function Engine(opts) {
 
   // register for domReady event to sent up GL events, etc.
   this.container._shell.on('init', this.onDomReady.bind(this))
-  
+
   // create world manager
   this.world = createWorld( this, opts )
 
@@ -38,25 +38,26 @@ function Engine(opts) {
 
   // controls - hooks up input events to physics of player, etc.
   this.controls = createControls( this, opts )
-  
-  
-  
-  
-  
-  
-  // ad-hoc stuff from here on:
-  
+
+
+
+
+
+
+  // ad-hoc stuff to set up player and camera
+  //  ..this should be modularized somewhere
+
 
   var pbox = new aabb( [0,30,0], [2/3, 3/2, 2/3] )
   this.playerBody = this.physics.addBody( {}, pbox )
-  
+
   var cameraOffset = [ 1/3, 3/2, 1/3 ]
   this.getCameraPosition = function() {
     var pos = vec3.create()
     vec3.add( pos, this.playerBody.aabb.base, cameraOffset )
     return pos
   }
-  
+
   var c = this.rendering._camera
   this.controls.setTarget( this.playerBody )
   var accessor = {
@@ -69,14 +70,58 @@ function Engine(opts) {
     }
   }
   this.controls.setCameraAccessor( accessor )
+
+
+
+
+  // ad-hoc stuff for managing blockIDs and materials
+  // this should be modularized into a registry of some kind
   
+  
+  // accessor for mapping block IDs to material ID of a given face
+  // dir is a value 0..5: [ +x, -x, +y, -y, +z, -z ]
+  this.blockToMaterial = function(id, dir) {
+    var m = this.blockMaterialMap[id]
+    return (m.length) ? m[dir] : m
+  }
+  
+  // data structure for mapping block IDs to material ID
+  // array means values for each face: [ +x, -x, +y, -y, +z, -z ]
+  this.blockMaterialMap = [
+    null,             // 0: air
+    1,                // 1: dirt
+    [3,3,2,1,3,3],    // 2: grass block
+    4,                // 3: cobblestone block
+    5                 // 4: gray color
+  ]
+
+  // maps material IDs to base colors (i.e. vertex colors)
+  this.materialColors = [
+    null,               // 0: air
+    [ 1,1,1 ],          // 1: dirt
+    [ 1,1,1 ],          // 2: grass
+    [ 1,1,1 ],          // 3: grass_dirt
+    [ 1,1,1 ],          // 4: cobblestone
+    [ 0.9, 0.9, 0.95 ]  // 5: solid white color
+  ]
+  
+  // maps material IDs to texture paths
+  this.materialTextures = [
+    null,                                    // 0: air
+    opts.texturePath + "dirt.png",           // 1: dirt
+    opts.texturePath + "grass.png",          // 2: grass
+    opts.texturePath + "grass_dirt.png",     // 3: grass_dirt
+    opts.texturePath + "cobblestone.png",    // 4: cobblestone
+    null                                     // 5: solid white color
+  ]
+  
+  
+
+
 
 
   // temp hacks for development
-  
-  //  c.position = new BABYLON.Vector3(8,5,8)
-  //  c.setTarget( new BABYLON.Vector3(0,0,0) )
-//  c.attachControl(document, false)
+
   window.noa = this
   window.ndarray = require('ndarray')
   var debug = false
@@ -85,28 +130,10 @@ function Engine(opts) {
       debug = !debug
       if (debug) scene.debugLayer.show(); else scene.debugLayer.hide();
     }
-//    if(e.keyCode==89) { runChunkTest() } // y
-    //    if(e.keyCode==66) { runBitTest() } // b
   })
-  //  scene.activeCamera.keysUp.push(87) // w
-  //  scene.activeCamera.keysLeft.push(65) // a
-  //  scene.activeCamera.keysDown.push(83) // s
-  //  scene.activeCamera.keysRight.push(68) // d
 
-  this.inputs.down.on('move-right', function() {
-    scene.activeCamera.position.x += 5
-    console.log(scene.activeCamera.position.x)
-  })
-  
-  // this should eventually come from a registry of some kind
-  this.materialData = [
-    null,
-    { texture: opts.texturePath+"dirt.png" },
-    { texture: opts.texturePath+"cobblestone.png" },
-    { texture: opts.texturePath+"grass.png" },
-    { color: [ 0.9, 0.9, 0.95 ] }
-  ]
-  
+
+
 }
 
 
@@ -153,8 +180,8 @@ Engine.prototype.render = function(dt) {
 Engine.prototype.onChunkAdded = function(chunk, i, j, k) {
   // TODO: pass in material/colors/chunk metadata somehow
   var aovals = [ 1, 0.8, 0.6 ]
-  var matData = this.materialData
-  var meshDataArr = this.mesher.meshChunk( chunk, matData, aovals )
+  var getMaterial = this.blockToMaterial.bind(this)
+  var meshDataArr = this.mesher.meshChunk( chunk, getMaterial, this.materialColors, aovals )
   if (meshDataArr.length) { // empty if the chunk is empty
     var cs = this.world.chunkSize
     this.rendering.addMeshDataArray( meshDataArr, i*cs, j*cs, k*cs )
