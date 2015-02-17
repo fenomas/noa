@@ -40,7 +40,7 @@ function Engine(opts) {
   this.controls = createControls( this, opts )
 
 
-
+  
 
 
 
@@ -123,7 +123,8 @@ function Engine(opts) {
   // temp hacks for development
 
   window.noa = this
-  window.ndarray = require('ndarray')
+  window.ndarray = ndarray
+  window.vec3 = vec3
   var debug = false
   window.addEventListener('keydown', function(e){
     if(e.keyCode==90) { // z
@@ -177,15 +178,25 @@ Engine.prototype.render = function(dt) {
 
 
 // ad-hoc - TODO: this should be an event listener
-Engine.prototype.onChunkAdded = function(chunk, i, j, k) {
+Engine.prototype.onChunkAdded = function(chunk, id, i, j, k) {
   // TODO: pass in material/colors/chunk metadata somehow
   var aovals = [ 1, 0.8, 0.6 ]
   var getMaterial = this.blockToMaterial.bind(this)
   var meshDataArr = this.mesher.meshChunk( chunk, getMaterial, this.materialColors, aovals )
   if (meshDataArr.length) { // empty if the chunk is empty
     var cs = this.world.chunkSize
-    this.rendering.addMeshDataArray( meshDataArr, i*cs, j*cs, k*cs )
+    this.rendering.addMeshDataArray( meshDataArr, id, i*cs, j*cs, k*cs )
   }
+}
+
+// ad-hoc - TODO: this should be an event listener
+Engine.prototype.onChunkChanged = function(chunk, id, i, j, k) {
+  // TODO: pass in material/colors/chunk metadata somehow
+  var aovals = [ 1, 0.8, 0.6 ]
+  var getMaterial = this.blockToMaterial.bind(this)
+  var meshDataArr = this.mesher.meshChunk( chunk, getMaterial, this.materialColors, aovals )
+  var cs = this.world.chunkSize
+  this.rendering.updateMeshDataArr( meshDataArr, id, i*cs, j*cs, k*cs )
 }
 
 
