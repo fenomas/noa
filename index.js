@@ -9,6 +9,7 @@ var createMesher = require('./lib/mesher')
 var createInputs = require('./lib/inputs')
 var createPhysics = require('./lib/physics')
 var createControls = require('./lib/controls')
+var raycast = require('voxel-raycast')
 
 module.exports = Engine
 
@@ -85,39 +86,107 @@ function Engine(opts) {
     return (m.length) ? m[dir] : m
   }
   
-  // data structure for mapping block IDs to material ID
-  // array means values for each face: [ +x, -x, +y, -y, +z, -z ]
-  this.blockMaterialMap = [
-    null,             // 0: air
-    1,                // 1: dirt
-    [3,3,2,1,3,3],    // 2: grass block
-    4,                // 3: cobblestone block
-    5                 // 4: gray color
-  ]
-
-  // maps material IDs to base colors (i.e. vertex colors)
-  this.materialColors = [
-    null,               // 0: air
-    [ 1,1,1 ],          // 1: dirt
-    [ 1,1,1 ],          // 2: grass
-    [ 1,1,1 ],          // 3: grass_dirt
-    [ 1,1,1 ],          // 4: cobblestone
-    [ 0.9, 0.9, 0.95 ]  // 5: solid white color
-  ]
+  // data structures mapping block IDs to materials/colors
+  // array maps block ID to material by face: [ +x, -x, +y, -y, +z, -z ]
+  this.blockMaterialMap = [ null ]  // 0: air
+  this.materialColors =   [ null ]  // 0: air
+  this.materialTextures = [ null ]  // 0: air
   
-  // maps material IDs to texture paths
-  this.materialTextures = [
-    null,                                    // 0: air
-    opts.texturePath + "dirt.png",           // 1: dirt
-    opts.texturePath + "grass.png",          // 2: grass
-    opts.texturePath + "grass_dirt.png",     // 3: grass_dirt
-    opts.texturePath + "cobblestone.png",    // 4: cobblestone
-    null                                     // 5: solid white color
-  ]
+  // makeshift registry
+  this.defineBlock = function( id, matID ) {
+    this.blockMaterialMap[id] = matID
+  }
+  this.defineMaterial = function( id, col, tex ) {
+    this.materialColors[id] = col
+    this.materialTextures[id] = tex ? opts.texturePath+tex+'.png' : null
+  }
+  
+  this.defineBlock( 1, 1 )    // dirt
+  this.defineBlock( 2, [3,3,2,1,3,3] ) // grass
+  this.defineBlock( 3, 4 )    // stone
+  this.defineBlock( 4, 5 )
+  this.defineBlock( 5, 6 )
+  this.defineBlock( 6, 7 )    // colors
+  this.defineBlock( 7, 8 )
+  this.defineBlock( 8, 9 )
+  this.defineBlock( 9,10 )
+  this.defineBlock(10,11 )
   
   
+  
+  this.defineMaterial( 1, [1,1,1], "dirt" )
+  this.defineMaterial( 2, [1,1,1], "grass" )
+  this.defineMaterial( 3, [1,1,1], "grass_dirt" )
+  this.defineMaterial( 4, [1,1,1], "cobblestone" )
+  this.defineMaterial( 5, [ 0.9, 0.9, 0.95 ], null )
+  this.defineMaterial( 6, [ 0.3, 0.9, 0.4 ], null )
+  this.defineMaterial( 7, [ 0.9, 0.5, 0.4 ], null )
+  this.defineMaterial( 8, [ 0.3, 0.4, 0.9 ], null )
+  this.defineMaterial( 9, [ 0.7, 0.9, 0.4 ], null )
+  this.defineMaterial(10, [ 0.3, 0.7, 0.9 ], null )
+  this.defineMaterial(11, [ 0.8, 0.2, 0.7 ], null )
+  
+  
+  
+  
+  // ad-hoc raycasting/highlighting stuff
+  var traceRay = raycast.bind({}, this.world)
+  this.pick = function(distance) {
+    var cpos = this.getCameraPosition()
+    var crot = this.rendering._camera.rotation
+    var cvec = vec3.fromValues( 0,0,10 ) // +z is forward direction
+    vec3.rotateX( cvec, cvec, [0,0,0], crot.x )
+    vec3.rotateY( cvec, cvec, [0,0,0], crot.y )
+    var hit_normal = []
+    var hit_position = []
+    var hit_block = traceRay(cpos, cvec, distance, hit_position, hit_normal)
+    currTargetBlock = hit_block
+    if (currTargetBlock) currTargetLoc = hit_position.map(Math.floor)
+    if (currTargetBlock) currTargetNorm = hit_normal
+    return !!hit_block
+  }
+  
+  var currTargetBlock = 0
+  var currTargetLoc = []
+  var currTargetNorm = []
 
-
+  this.highlightPickedBlock = function() {
+    var hit = this.pick(10)
+    var loc = currTargetLoc
+    this.rendering.highlightBlock( hit, loc[0], loc[1], loc[2] )
+  }
+  
+  this.pickTest = function() {
+    var cpos = this.getCameraPosition()
+    var crot = this.rendering._camera.rotation
+    var cvec = vec3.fromValues( 0,0,10 ) // +z is forward direction
+    vec3.rotateY( cvec, cvec, [0,0,0], crot.y )
+    vec3.rotateX( cvec, cvec, [0,0,0], crot.x )
+    console.log(crot)
+  }
+  
+  var placeBlockID = 1
+  var _world = this.world
+  this.inputs.down.on("fire", function() {
+    var loc = currTargetLoc
+    if (currTargetBlock) _world.setBlock( 0, loc[0], loc[1], loc[2] )
+  })
+  this.inputs.down.on("mid-fire", function() {
+    if (currTargetBlock) placeBlockID = currTargetBlock
+  })
+  var pbody = this.playerBody
+  this.inputs.down.on("alt-fire", function() {
+    if (!currTargetBlock) return
+    var loc = [
+      currTargetLoc[0] + currTargetNorm[0],
+      currTargetLoc[1] + currTargetNorm[1],
+      currTargetLoc[2] + currTargetNorm[2]
+    ]
+    var blockbb = new aabb(loc, [1,1,1])
+    if (blockbb.intersects(pbody.aabb)) return
+    _world.setBlock( placeBlockID, loc[0], loc[1], loc[2] )
+  })
+  
 
 
   // temp hacks for development
@@ -169,6 +238,7 @@ Engine.prototype.tick = function() {
   this.world.tick(dt)     // currently just does chunking
   this.controls.tick(dt)  // key state -> movement forces
   this.physics.tick(dt)   // iterates physics
+  this.highlightPickedBlock()
   this.inputs.tick(dt)    // clears cumulative frame values
 }
 

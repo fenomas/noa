@@ -7,7 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Andy Hall",
-  "keywords": [ "voxel", "game", "engine" ],
+  "keywords": [
+    "voxel",
+    "game",
+    "engine"
+  ],
   "license": "MIT",
   "dependencies": {
     "aabb-3d": "^0.1.0",
@@ -17,13 +21,14 @@
     "gl-vec3": "^1.0.2",
     "ndarray": "^1.0.16",
     "voxel-fps-controller": "^0.1.0",
-    "voxel-physics-engine": "^0.2.0"
+    "voxel-physics-engine": "^0.2.0",
+    "voxel-raycast": "^0.2.1"
   },
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/andyhall/noa"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andyhall/noa"
   },
-  "bugs" : {
-    "url" : "https://github.com/andyhall/noa/issues"
+  "bugs": {
+    "url": "https://github.com/andyhall/noa/issues"
   }
 }
