@@ -101,29 +101,18 @@ function Engine(opts) {
   this.defineBlock( 1, 1 )    // dirt
   this.defineBlock( 2, [3,3,2,1,3,3] ) // grass
   this.defineBlock( 3, 4 )    // stone
-  this.defineBlock( 4, 5 )
-  this.defineBlock( 5, 6 )
-  this.defineBlock( 6, 7 )    // colors
-  this.defineBlock( 7, 8 )
-  this.defineBlock( 8, 9 )
-  this.defineBlock( 9,10 )
-  this.defineBlock(10,11 )
-  
-  
+  for (var i=4; i<30; i++) {
+    this.defineBlock( i, i+1 )
+  }
   
   this.defineMaterial( 1, [1,1,1], "dirt" )
   this.defineMaterial( 2, [1,1,1], "grass" )
   this.defineMaterial( 3, [1,1,1], "grass_dirt" )
   this.defineMaterial( 4, [1,1,1], "cobblestone" )
-  this.defineMaterial( 5, [ 0.9, 0.9, 0.95 ], null )
-  this.defineMaterial( 6, [ 0.3, 0.9, 0.4 ], null )
-  this.defineMaterial( 7, [ 0.9, 0.5, 0.4 ], null )
-  this.defineMaterial( 8, [ 0.3, 0.4, 0.9 ], null )
-  this.defineMaterial( 9, [ 0.7, 0.9, 0.4 ], null )
-  this.defineMaterial(10, [ 0.3, 0.7, 0.9 ], null )
-  this.defineMaterial(11, [ 0.8, 0.2, 0.7 ], null )
-  
-  
+  for (i=5; i<30; i++) {
+    this.defineMaterial( i, [ Math.random(), Math.random(), Math.random() ], null )
+  }
+
   
   
   // ad-hoc raycasting/highlighting stuff
