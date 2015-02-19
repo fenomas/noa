@@ -25,9 +25,6 @@ function Engine(opts) {
   // inputs manager - abstracts key/mouse input
   this.inputs = createInputs(this, opts, this.container._element)
 
-  // register for domReady event to sent up GL events, etc.
-  this.container._shell.on('init', this.onDomReady.bind(this))
-
   // create world manager
   this.world = createWorld( this, opts )
 
@@ -213,13 +210,6 @@ function Engine(opts) {
  *   Engine API
 */ 
 
-// TODO: this should really be made a listener
-Engine.prototype.onDomReady = function() {
-  // registers noa for tick/render/resize events
-  this.container.initEvents()
-  // sets up key events
-  this.inputs.initEvents(document)
-}
 
 
 // TODO: revisit this timing handling - e.g. option for fixed timesteps
