@@ -19,14 +19,14 @@ function Engine(opts) {
   // container (html/div) manager
   this.container = createContainer(this, opts)
 
-  // rendering manager - abstracts all draws to 3D context
-  this.rendering = createRendering(this, opts, this.container.canvas)
-
   // inputs manager - abstracts key/mouse input
   this.inputs = createInputs(this, opts, this.container._element)
 
   // create world manager
   this.world = createWorld( this, opts )
+
+  // rendering manager - abstracts all draws to 3D context
+  this.rendering = createRendering(this, opts, this.container.canvas)
 
   // mesh chunk of world data and hand off to renderer
   this.mesher = createMesher( this, opts )
@@ -226,27 +226,15 @@ Engine.prototype.render = function(dt) {
 }
 
 
-// ad-hoc - TODO: this should be an event listener
-Engine.prototype.onChunkAdded = function(chunk, id, i, j, k) {
-  // TODO: pass in material/colors/chunk metadata somehow
-  var aovals = [ 1, 0.8, 0.6 ]
-  var getMaterial = this.blockToMaterial.bind(this)
-  var meshDataArr = this.mesher.meshChunk( chunk, getMaterial, this.materialColors, aovals )
-  if (meshDataArr.length) { // empty if the chunk is empty
-    var cs = this.world.chunkSize
-    this.rendering.addMeshDataArray( meshDataArr, id, i*cs, j*cs, k*cs )
-  }
+
+/*
+ *   Utility APIs
+*/ 
+
+Engine.prototype.getPlayerPosition = function() {
+  return this.playerBody.aabb.base
 }
 
-// ad-hoc - TODO: this should be an event listener
-Engine.prototype.onChunkChanged = function(chunk, id, i, j, k) {
-  // TODO: pass in material/colors/chunk metadata somehow
-  var aovals = [ 1, 0.8, 0.6 ]
-  var getMaterial = this.blockToMaterial.bind(this)
-  var meshDataArr = this.mesher.meshChunk( chunk, getMaterial, this.materialColors, aovals )
-  var cs = this.world.chunkSize
-  this.rendering.updateMeshDataArr( meshDataArr, id, i*cs, j*cs, k*cs )
-}
 
 
 
