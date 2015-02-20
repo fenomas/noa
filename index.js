@@ -38,26 +38,26 @@ function Engine(opts) {
   this.controls = createControls( this, opts )
 
 
-  
+
+
+  // Set up plock picking and fire events
+  this.blockTestDistance = opts.blockTestDistance || 10
+
+  this._placeBlockID = 2
+  this.inputs.down.on('fire',     handleFireEvent.bind(null, this, 1))
+  this.inputs.down.on('mid-fire', handleFireEvent.bind(null, this, 2))
+  this.inputs.down.on('alt-fire', handleFireEvent.bind(null, this, 3))
+
 
 
 
   // ad-hoc stuff to set up player and camera
   //  ..this should be modularized somewhere
-
-
   var pbox = new aabb( [0,30,0], [2/3, 3/2, 2/3] )
   this.playerBody = this.physics.addBody( {}, pbox )
-
-  var cameraOffset = [ 1/3, 3/2, 1/3 ]
-  this.getCameraPosition = function() {
-    var pos = vec3.create()
-    vec3.add( pos, this.playerBody.aabb.base, cameraOffset )
-    return pos
-  }
+  this.controls.setTarget( this.playerBody )
 
   var c = this.rendering._camera
-  this.controls.setTarget( this.playerBody )
   var accessor = {
     getRotationXY: function() {
       return [ c.rotation.x, c.rotation.y ]
@@ -74,21 +74,21 @@ function Engine(opts) {
 
   // ad-hoc stuff for managing blockIDs and materials
   // this should be modularized into a registry of some kind
-  
-  
+
+
   // accessor for mapping block IDs to material ID of a given face
   // dir is a value 0..5: [ +x, -x, +y, -y, +z, -z ]
   this.blockToMaterial = function(id, dir) {
     var m = this.blockMaterialMap[id]
     return (m.length) ? m[dir] : m
   }
-  
+
   // data structures mapping block IDs to materials/colors
   // array maps block ID to material by face: [ +x, -x, +y, -y, +z, -z ]
   this.blockMaterialMap = [ null ]  // 0: air
   this.materialColors =   [ null ]  // 0: air
   this.materialTextures = [ null ]  // 0: air
-  
+
   // makeshift registry
   this.defineBlock = function( id, matID ) {
     this.blockMaterialMap[id] = matID
@@ -97,14 +97,14 @@ function Engine(opts) {
     this.materialColors[id] = col
     this.materialTextures[id] = tex ? opts.texturePath+tex+'.png' : null
   }
-  
+
   this.defineBlock( 1, 1 )    // dirt
   this.defineBlock( 2, [3,3,2,1,3,3] ) // grass
   this.defineBlock( 3, 4 )    // stone
   for (var i=4; i<30; i++) {
     this.defineBlock( i, i+1 )
   }
-  
+
   this.defineMaterial( 1, [1,1,1], "dirt" )
   this.defineMaterial( 2, [1,1,1], "grass" )
   this.defineMaterial( 3, [1,1,1], "grass_dirt" )
@@ -113,66 +113,8 @@ function Engine(opts) {
     this.defineMaterial( i, [ Math.random(), Math.random(), Math.random() ], null )
   }
 
-  
-  
-  // ad-hoc raycasting/highlighting stuff
-  var traceRay = raycast.bind({}, this.world)
-  this.pick = function(distance) {
-    var cpos = this.getCameraPosition()
-    var crot = this.rendering._camera.rotation
-    var cvec = vec3.fromValues( 0,0,10 ) // +z is forward direction
-    vec3.rotateX( cvec, cvec, [0,0,0], crot.x )
-    vec3.rotateY( cvec, cvec, [0,0,0], crot.y )
-    var hit_normal = []
-    var hit_position = []
-    var hit_block = traceRay(cpos, cvec, distance, hit_position, hit_normal)
-    currTargetBlock = hit_block
-    if (currTargetBlock) currTargetLoc = hit_position.map(Math.floor)
-    if (currTargetBlock) currTargetNorm = hit_normal
-    return !!hit_block
-  }
-  
-  var currTargetBlock = 0
-  var currTargetLoc = []
-  var currTargetNorm = []
 
-  this.highlightPickedBlock = function() {
-    var hit = this.pick(10)
-    var loc = currTargetLoc
-    this.rendering.highlightBlock( hit, loc[0], loc[1], loc[2] )
-  }
-  
-  this.pickTest = function() {
-    var cpos = this.getCameraPosition()
-    var crot = this.rendering._camera.rotation
-    var cvec = vec3.fromValues( 0,0,10 ) // +z is forward direction
-    vec3.rotateY( cvec, cvec, [0,0,0], crot.y )
-    vec3.rotateX( cvec, cvec, [0,0,0], crot.x )
-    console.log(crot)
-  }
-  
-  var placeBlockID = 1
-  var _world = this.world
-  this.inputs.down.on("fire", function() {
-    var loc = currTargetLoc
-    if (currTargetBlock) _world.setBlock( 0, loc[0], loc[1], loc[2] )
-  })
-  this.inputs.down.on("mid-fire", function() {
-    if (currTargetBlock) placeBlockID = currTargetBlock
-  })
-  var pbody = this.playerBody
-  this.inputs.down.on("alt-fire", function() {
-    if (!currTargetBlock) return
-    var loc = [
-      currTargetLoc[0] + currTargetNorm[0],
-      currTargetLoc[1] + currTargetNorm[1],
-      currTargetLoc[2] + currTargetNorm[2]
-    ]
-    var blockbb = new aabb(loc, [1,1,1])
-    if (blockbb.intersects(pbody.aabb)) return
-    _world.setBlock( placeBlockID, loc[0], loc[1], loc[2] )
-  })
-  
+
 
 
   // temp hacks for development
@@ -181,11 +123,10 @@ function Engine(opts) {
   window.ndarray = ndarray
   window.vec3 = vec3
   var debug = false
-  window.addEventListener('keydown', function(e){
-    if(e.keyCode==90) { // z
-      debug = !debug
-      if (debug) scene.debugLayer.show(); else scene.debugLayer.hide();
-    }
+  this.inputs.bind( 'debug', 'Z' )
+  this.inputs.down.on('debug', function() {
+    debug = !debug
+    if (debug) scene.debugLayer.show(); else scene.debugLayer.hide();
   })
 
 
@@ -201,24 +142,15 @@ function Engine(opts) {
 
 
 
-// TODO: revisit this timing handling - e.g. option for fixed timesteps
-var lastTick = 0
-function getTickTime() {
-  var d = new Date()
-  var dt = d-lastTick
-  if (dt>100) dt=100
-  lastTick = d
-  return dt
-}
 
 Engine.prototype.tick = function() {
-  var dt = getTickTime()
+  var dt = getTickTime(this)
   checkForPointerlock(this)
-  this.world.tick(dt)     // currently just does chunking
-  this.controls.tick(dt)  // key state -> movement forces
-  this.physics.tick(dt)   // iterates physics
-  this.highlightPickedBlock()
-  this.inputs.tick(dt)    // clears cumulative frame values
+  this.world.tick(dt)        // chunk management
+  this.controls.tick(dt)     // applies movement forces
+  this.physics.tick(dt)      // iterates physics
+  this.doBlockTargeting()    // raycasts to a target block and highlights it
+  this.inputs.tick(dt)       // clears cumulative input values
 }
 
 Engine.prototype.render = function(dt) {
@@ -232,9 +164,109 @@ Engine.prototype.render = function(dt) {
 */ 
 
 Engine.prototype.getPlayerPosition = function() {
-  return this.playerBody.aabb.base
+  var offset = [ 1/3, 0, 1/3 ] // todo: get from entity props
+  var pos = vec3.create()
+  vec3.add( pos, this.playerBody.aabb.base, offset )
+  return pos
 }
 
+Engine.prototype.getCameraPosition = function() {
+  var offset = [ 1/3, 3/2, 1/3 ] // todo: get from entity props
+  var pos = vec3.create()
+  vec3.add( pos, this.playerBody.aabb.base, offset )
+  return pos
+}
+
+Engine.prototype.getCameraVector = function() {
+  var crot = this.rendering._camera.rotation
+  var cvec = vec3.fromValues( 0,0,1 ) // +z is forward direction
+  vec3.rotateX( cvec, cvec, [0,0,0], crot.x )
+  vec3.rotateY( cvec, cvec, [0,0,0], crot.y )
+  return cvec
+}
+
+// Determine which block if any is targeted and within range
+Engine.prototype.pick = function(pos, vec, dist) {
+  pos = pos || this.getCameraPosition()
+  vec = vec || this.getCameraVector()
+  dist = dist || this.blockTestDistance
+  if (!this._traceRay) this._traceRay = raycast.bind({}, this.world)
+  var hitNorm = []
+  var hitPos = []
+  var hitBlock = this._traceRay(pos, vec, dist, hitPos, hitNorm)
+  if (hitBlock) return {
+    block: hitBlock,
+    position: hitPos,
+    normal: hitNorm
+  }
+  return null
+}
+
+
+// Determine which block if any is targeted and within range
+Engine.prototype.doBlockTargeting = function() {
+  var result = this.pick()
+  var loc = []
+  // process and cache results
+  if (result) {
+    loc = result.position.map(Math.floor)
+    var norm = result.normal
+    this._blockTargetLoc = loc
+    this._blockPlacementLoc = [ loc[0]+norm[0], loc[1]+norm[1], loc[2]+norm[2] ]
+  } else {
+    this._blockTargetLoc = this._blockPlacementLoc = null
+  }
+  // highlight block as needed
+  this.rendering.highlightBlock( !!result, loc[0], loc[1], loc[2] )
+}
+
+
+// test if block loc is clear. TODO: move to entity manager
+Engine.prototype.noCollisionsAt = function( loc ) {
+  var pbb = this.playerBody.aabb
+  var newbb = new aabb( loc, [1,1,1] )
+  return ( ! pbb.intersects(newbb))
+}
+
+
+/*
+ *   Internals
+*/ 
+
+
+// handle fire (usually mousebutton) events - place/pick/destroy blocks
+function handleFireEvent( noa, type ) {
+  var loc = noa._blockTargetLoc
+  // no action if there's no target block
+  if (!loc) return
+  if (type==1) { // main fire - destroy block, i.e. set to air
+    noa.world.setBlock( 0, loc[0], loc[1], loc[2] )
+  }
+  if (type==2) { // middle fire - pick block
+    noa._placeBlockID = noa.world.getBlock( loc[0], loc[1], loc[2] )
+  }
+  if (type==3) { // alt-fire - place block, physics permitting
+    var id = noa._placeBlockID
+    var place = noa._blockPlacementLoc
+    if (noa.noCollisionsAt(place)) {
+      noa.world.setBlock( id, place[0], place[1], place[2] )
+    }
+  }
+}
+
+
+
+
+// Manually track tick times.. consider changing this to fixed timesteps?
+var lastTick = 0
+function getTickTime(noa) {
+  var last = noa._lastTick || 0
+  var d = new Date()
+  var dt = d-last
+  if (dt>100) dt=100 // clamp timestep to 100ms to prevent blowups
+  noa._lastTick = d
+  return dt
+}
 
 
 
