@@ -9,6 +9,7 @@ var createMesher = require('./lib/mesher')
 var createInputs = require('./lib/inputs')
 var createPhysics = require('./lib/physics')
 var createControls = require('./lib/controls')
+var createRegistry = require('./lib/registry')
 var raycast = require('voxel-raycast')
 
 module.exports = Engine
@@ -21,6 +22,9 @@ function Engine(opts) {
 
   // inputs manager - abstracts key/mouse input
   this.inputs = createInputs(this, opts, this.container._element)
+
+  // create block/item property registry
+  this.registry = createRegistry( this, opts )
 
   // create world manager
   this.world = createWorld( this, opts )
@@ -47,10 +51,9 @@ function Engine(opts) {
   this.inputs.down.on('fire',     handleFireEvent.bind(null, this, 1))
   this.inputs.down.on('mid-fire', handleFireEvent.bind(null, this, 2))
   this.inputs.down.on('alt-fire', handleFireEvent.bind(null, this, 3))
-
-
-
-
+  
+  
+  
   // ad-hoc stuff to set up player and camera
   //  ..this should be modularized somewhere
   var pbox = new aabb( [0,30,0], [2/3, 3/2, 2/3] )
@@ -68,51 +71,6 @@ function Engine(opts) {
     }
   }
   this.controls.setCameraAccessor( accessor )
-
-
-
-
-  // ad-hoc stuff for managing blockIDs and materials
-  // this should be modularized into a registry of some kind
-
-
-  // accessor for mapping block IDs to material ID of a given face
-  // dir is a value 0..5: [ +x, -x, +y, -y, +z, -z ]
-  this.blockToMaterial = function(id, dir) {
-    var m = this.blockMaterialMap[id]
-    return (m.length) ? m[dir] : m
-  }
-
-  // data structures mapping block IDs to materials/colors
-  // array maps block ID to material by face: [ +x, -x, +y, -y, +z, -z ]
-  this.blockMaterialMap = [ null ]  // 0: air
-  this.materialColors =   [ null ]  // 0: air
-  this.materialTextures = [ null ]  // 0: air
-
-  // makeshift registry
-  this.defineBlock = function( id, matID ) {
-    this.blockMaterialMap[id] = matID
-  }
-  this.defineMaterial = function( id, col, tex ) {
-    this.materialColors[id] = col
-    this.materialTextures[id] = tex ? opts.texturePath+tex+'.png' : null
-  }
-
-  this.defineBlock( 1, 1 )    // dirt
-  this.defineBlock( 2, [3,3,2,1,3,3] ) // grass
-  this.defineBlock( 3, 4 )    // stone
-  for (var i=4; i<30; i++) {
-    this.defineBlock( i, i+1 )
-  }
-
-  this.defineMaterial( 1, [1,1,1], "dirt" )
-  this.defineMaterial( 2, [1,1,1], "grass" )
-  this.defineMaterial( 3, [1,1,1], "grass_dirt" )
-  this.defineMaterial( 4, [1,1,1], "cobblestone" )
-  for (i=5; i<30; i++) {
-    this.defineMaterial( i, [ Math.random(), Math.random(), Math.random() ], null )
-  }
-
 
 
 
