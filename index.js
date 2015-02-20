@@ -56,7 +56,7 @@ function Engine(opts) {
   
   // ad-hoc stuff to set up player and camera
   //  ..this should be modularized somewhere
-  var pbox = new aabb( [0,30,0], [2/3, 3/2, 2/3] )
+  var pbox = new aabb( [0,30,0], [ .6, 1.8, .6 ] )
   this.playerBody = this.physics.addBody( {}, pbox )
   this.controls.setTarget( this.playerBody )
 
@@ -122,14 +122,14 @@ Engine.prototype.render = function(dt) {
 */ 
 
 Engine.prototype.getPlayerPosition = function() {
-  var offset = [ 1/3, 0, 1/3 ] // todo: get from entity props
+  var offset = [ .3, 0, .3 ] // todo: get from entity props
   var pos = vec3.create()
   vec3.add( pos, this.playerBody.aabb.base, offset )
   return pos
 }
 
 Engine.prototype.getCameraPosition = function() {
-  var offset = [ 1/3, 3/2, 1/3 ] // todo: get from entity props
+  var offset = [ .3, 1.7, .3 ] // todo: get from entity props
   var pos = vec3.create()
   vec3.add( pos, this.playerBody.aabb.base, offset )
   return pos
@@ -183,7 +183,7 @@ Engine.prototype.doBlockTargeting = function() {
 Engine.prototype.noCollisionsAt = function( loc ) {
   var pbb = this.playerBody.aabb
   var newbb = new aabb( loc, [1,1,1] )
-  return ( ! pbb.intersects(newbb))
+  return ( !pbb.intersects(newbb) || pbb.touches(newbb) )
 }
 
 
