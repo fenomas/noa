@@ -10,6 +10,7 @@ var createInputs = require('./lib/inputs')
 var createPhysics = require('./lib/physics')
 var createControls = require('./lib/controls')
 var createRegistry = require('./lib/registry')
+var createEntities = require('./lib/entities')
 var raycast = require('voxel-raycast')
 
 module.exports = Engine
@@ -41,25 +42,33 @@ function Engine(opts) {
   // controls - hooks up input events to physics of player, etc.
   this.controls = createControls( this, opts )
 
+  // entity manager
+  this.entities = createEntities( this, opts )
+
+
+  // create an entity for the player and hook up controller to its physics body
+  this.playerEntity = this.entities.add(
+    [2,30,2],    // starting location- TODO: get from options
+    .6, 1.8,     // width/height - TODO: get from options
+    null, null,  // no mesh, no tick function,
+    true, true   // block terrain, simulate physics
+  )
+  this.controls.setTarget( this.playerEntity.body )
 
 
 
-  // Set up plock picking and fire events
+
+  // Set up block picking and fire events
   this.blockTestDistance = opts.blockTestDistance || 10
 
   this._placeBlockID = 2
   this.inputs.down.on('fire',     handleFireEvent.bind(null, this, 1))
   this.inputs.down.on('mid-fire', handleFireEvent.bind(null, this, 2))
   this.inputs.down.on('alt-fire', handleFireEvent.bind(null, this, 3))
-  
-  
-  
-  // ad-hoc stuff to set up player and camera
-  //  ..this should be modularized somewhere
-  var pbox = new aabb( [0,30,0], [ .6, 1.8, .6 ] )
-  this.playerBody = this.physics.addBody( {}, pbox )
-  this.controls.setTarget( this.playerBody )
 
+
+
+  // ad-hoc stuff to set up player and camera
   var c = this.rendering._camera
   var accessor = {
     getRotationXY: function() {
@@ -95,19 +104,18 @@ function Engine(opts) {
 
 
 /*
- *   Engine API
+ *   Core Engine API
 */ 
-
-
 
 
 Engine.prototype.tick = function() {
   var dt = getTickTime(this)
   checkForPointerlock(this)
-  this.world.tick(dt)        // chunk management
+  this.world.tick(dt)        // chunk management / remesh updated chunks
   this.controls.tick(dt)     // applies movement forces
   this.physics.tick(dt)      // iterates physics
   this.doBlockTargeting()    // raycasts to a target block and highlights it
+  this.entities.tick(dt)     // move entities and call their tick functions
   this.inputs.tick(dt)       // clears cumulative input values
 }
 
@@ -117,22 +125,28 @@ Engine.prototype.render = function(dt) {
 
 
 
+
+
 /*
  *   Utility APIs
 */ 
 
+Engine.prototype.addBlock = function(id, x, y, z) {
+  // add a new terrain block, if nothing blocks the terrain there
+  if (this.entities.isTerrainBlocked(x,y,z)) return
+  this.world.setBlock( id, x, y, z );
+}
+
+
 Engine.prototype.getPlayerPosition = function() {
-  var offset = [ .3, 0, .3 ] // todo: get from entity props
-  var pos = vec3.create()
-  vec3.add( pos, this.playerBody.aabb.base, offset )
-  return pos
+  return this.playerEntity.getPosition()
 }
 
 Engine.prototype.getCameraPosition = function() {
-  var offset = [ .3, 1.7, .3 ] // todo: get from entity props
-  var pos = vec3.create()
-  vec3.add( pos, this.playerBody.aabb.base, offset )
-  return pos
+  var height = this.playerEntity.bb.vec[1]
+  var loc = this.playerEntity.getPosition()
+  loc[1] += height * .9 // eyes below top of head
+  return loc
 }
 
 Engine.prototype.getCameraVector = function() {
@@ -179,13 +193,6 @@ Engine.prototype.doBlockTargeting = function() {
 }
 
 
-// test if block loc is clear. TODO: move to entity manager
-Engine.prototype.noCollisionsAt = function( loc ) {
-  var pbb = this.playerBody.aabb
-  var newbb = new aabb( loc, [1,1,1] )
-  return ( !pbb.intersects(newbb) || pbb.touches(newbb) )
-}
-
 
 /*
  *   Internals
@@ -206,9 +213,7 @@ function handleFireEvent( noa, type ) {
   if (type==3) { // alt-fire - place block, physics permitting
     var id = noa._placeBlockID
     var place = noa._blockPlacementLoc
-    if (noa.noCollisionsAt(place)) {
-      noa.world.setBlock( id, place[0], place[1], place[2] )
-    }
+    noa.addBlock( id, place[0], place[1], place[2] )
   }
 }
 
