@@ -61,7 +61,7 @@ function Engine(opts) {
   this.playerEntity = this.entities.add(
     opts.playerStart,    // starting location- TODO: get from options
     opts.playerWidth, opts.playerHeight,
-    null, null,  // no mesh, no tick function,
+    null, null, null,  // no mesh, no meshOffset, no tick function,
     true, true   // block terrain, simulate physics
   )
   this.controls.setTarget( this.playerEntity.body )
