@@ -1,7 +1,8 @@
 
-var ndarray = require('ndarray')
 var aabb = require('aabb-3d')
 var vec3 = require('gl-vec3')
+var extend = require('extend')
+var ndarray = require('ndarray')
 var createContainer = require('./lib/container')
 var createRendering = require('./lib/rendering')
 var createWorld = require('./lib/world')
@@ -15,8 +16,18 @@ var raycast = require('voxel-raycast')
 
 module.exports = Engine
 
+
+var defaults = {
+  playerHeight: 1.8,
+  playerWidth: 0.6,
+  playerStart: [5,25,5],
+
+}
+
+
 function Engine(opts) {
   if (!(this instanceof Engine)) return new Engine(opts)
+  opts = extend(defaults, opts)
 
   // container (html/div) manager
   this.container = createContainer(this, opts)
@@ -48,8 +59,8 @@ function Engine(opts) {
 
   // create an entity for the player and hook up controller to its physics body
   this.playerEntity = this.entities.add(
-    [2,30,2],    // starting location- TODO: get from options
-    .6, 1.8,     // width/height - TODO: get from options
+    opts.playerStart,    // starting location- TODO: get from options
+    opts.playerWidth, opts.playerHeight,
     null, null,  // no mesh, no tick function,
     true, true   // block terrain, simulate physics
   )
