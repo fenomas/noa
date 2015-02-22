@@ -72,10 +72,6 @@ function Engine(opts) {
   // Set up block picking and fire events
   this.blockTestDistance = opts.blockTestDistance || 10
 
-  this._placeBlockID = 2
-  this.inputs.down.on('fire',     handleFireEvent.bind(null, this, 1))
-  this.inputs.down.on('mid-fire', handleFireEvent.bind(null, this, 2))
-  this.inputs.down.on('alt-fire', handleFireEvent.bind(null, this, 3))
 
 
 
@@ -125,7 +121,7 @@ Engine.prototype.tick = function() {
   this.world.tick(dt)        // chunk management / remesh updated chunks
   this.controls.tick(dt)     // applies movement forces
   this.physics.tick(dt)      // iterates physics
-  this.doBlockTargeting()    // raycasts to a target block and highlights it
+  this.setBlockTargets()     // finds targeted blocks, and highlights one if needed
   this.entities.tick(dt)     // move entities and call their tick functions
   this.inputs.tick(dt)       // clears cumulative input values
 }
@@ -142,10 +138,29 @@ Engine.prototype.render = function(dt) {
  *   Utility APIs
 */ 
 
+Engine.prototype.getBlock = function(x, y, z) {
+  var arr = (x.length) ? x : [x,y,z]
+  return this.world.getBlock( arr[0], arr[1], arr[2] );
+}
+
+Engine.prototype.setBlock = function(id, x, y, z) {
+  // skips the entity collision check
+  var arr = (x.length) ? x : [x,y,z]
+  this.world.setBlock( id, arr[0], arr[1], arr[2] );
+}
+
 Engine.prototype.addBlock = function(id, x, y, z) {
   // add a new terrain block, if nothing blocks the terrain there
   if (this.entities.isTerrainBlocked(x,y,z)) return
-  this.world.setBlock( id, x, y, z );
+  this.addBlock(id,x,y,z);
+}
+
+Engine.prototype.getTargetBlock = function() {
+  return this._blockTargetLoc
+}
+
+Engine.prototype.getTargetBlockAdjacent = function() {
+  return this._blockPlacementLoc
 }
 
 
@@ -187,7 +202,7 @@ Engine.prototype.pick = function(pos, vec, dist) {
 
 
 // Determine which block if any is targeted and within range
-Engine.prototype.doBlockTargeting = function() {
+Engine.prototype.setBlockTargets = function() {
   var result = this.pick()
   var loc = []
   // process and cache results
@@ -208,26 +223,6 @@ Engine.prototype.doBlockTargeting = function() {
 /*
  *   Internals
 */ 
-
-
-// handle fire (usually mousebutton) events - place/pick/destroy blocks
-function handleFireEvent( noa, type ) {
-  var loc = noa._blockTargetLoc
-  // no action if there's no target block
-  if (!loc) return
-  if (type==1) { // main fire - destroy block, i.e. set to air
-    noa.world.setBlock( 0, loc[0], loc[1], loc[2] )
-  }
-  if (type==2) { // middle fire - pick block
-    noa._placeBlockID = noa.world.getBlock( loc[0], loc[1], loc[2] )
-  }
-  if (type==3) { // alt-fire - place block, physics permitting
-    var id = noa._placeBlockID
-    var place = noa._blockPlacementLoc
-    noa.addBlock( id, place[0], place[1], place[2] )
-  }
-}
-
 
 
 
