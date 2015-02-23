@@ -64,14 +64,13 @@ function Engine(opts) {
     null, null, null,  // no mesh, no meshOffset, no tick function,
     true, true   // block terrain, simulate physics
   )
+  this.playerEntity.body.gravityMultiplier = 2 // less floaty
   this.controls.setTarget( this.playerEntity.body )
-
 
 
 
   // Set up block picking and fire events
   this.blockTestDistance = opts.blockTestDistance || 10
-
 
 
 
