@@ -151,8 +151,9 @@ Engine.prototype.setBlock = function(id, x, y, z) {
 
 Engine.prototype.addBlock = function(id, x, y, z) {
   // add a new terrain block, if nothing blocks the terrain there
-  if (this.entities.isTerrainBlocked(x,y,z)) return
-  this.addBlock(id,x,y,z);
+  var arr = (x.length) ? x : [x,y,z]
+  if (this.entities.isTerrainBlocked(arr[0], arr[1], arr[2])) return
+  this.world.setBlock( id, arr[0], arr[1], arr[2] );
 }
 
 Engine.prototype.getTargetBlock = function() {
