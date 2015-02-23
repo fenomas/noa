@@ -117,7 +117,8 @@ function Engine(opts) {
 Engine.prototype.tick = function() {
   var dt = getTickTime(this)
   checkForPointerlock(this)
-  this.world.tick(dt)        // chunk management / remesh updated chunks
+  this.world.tick(dt)        // chunk creation/removal
+  this.rendering.tick(dt)    // deferred remeshing of updated chunks
   this.controls.tick(dt)     // applies movement forces
   this.physics.tick(dt)      // iterates physics
   this.setBlockTargets()     // finds targeted blocks, and highlights one if needed
