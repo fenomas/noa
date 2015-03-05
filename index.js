@@ -221,6 +221,11 @@ Engine.prototype.setBlockTargets = function() {
 }
 
 
+// set a mesh and position offset for the player entity.
+Engine.prototype.setPlayerMesh = function(mesh, meshOffset) {
+  this.playerEntity.mesh = mesh
+  this.playerEntity.meshOffset = meshOffset
+}
 
 /*
  *   Internals
