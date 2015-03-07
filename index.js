@@ -16,13 +16,14 @@ var createRegistry = require('./lib/registry')
 var createEntities = require('./lib/entities')
 var raycast = require('voxel-raycast')
 
+
 module.exports = Engine
 
 
 var defaults = {
   playerHeight: 1.8,
   playerWidth: 0.6,
-  playerStart: [5,25,5],
+  playerStart: [0,10,0],
 
 }
 
@@ -78,14 +79,14 @@ function Engine(opts) {
 
 
   // ad-hoc stuff to set up player and camera
-  var c = this.rendering._camera
+  var cam = this.rendering.getCameraHolder()
   var accessor = {
     getRotationXY: function() {
-      return [ c.rotation.x, c.rotation.y ]
+      return [ cam.rotation.x, cam.rotation.y ]
     },
     setRotationXY: function(x,y) {
-      c.rotation.x = x
-      c.rotation.y = y
+      cam.rotation.x = x
+      cam.rotation.y = y
     }
   }
   this.controls.setCameraAccessor( accessor )
@@ -173,7 +174,7 @@ Engine.prototype.getPlayerPosition = function() {
   return this.playerEntity.getPosition()
 }
 
-Engine.prototype.getCameraPosition = function() {
+Engine.prototype.getPlayerEyePosition = function() {
   var height = this.playerEntity.bb.vec[1]
   var loc = this.playerEntity.getPosition()
   loc[1] += height * .9 // eyes below top of head
@@ -181,7 +182,7 @@ Engine.prototype.getCameraPosition = function() {
 }
 
 Engine.prototype.getCameraVector = function() {
-  var crot = this.rendering._camera.rotation
+  var crot = this.rendering.getCameraHolder().rotation
   var cvec = vec3.fromValues( 0,0,1 ) // +z is forward direction
   vec3.rotateX( cvec, cvec, [0,0,0], crot.x )
   vec3.rotateY( cvec, cvec, [0,0,0], crot.y )
@@ -190,7 +191,7 @@ Engine.prototype.getCameraVector = function() {
 
 // Determine which block if any is targeted and within range
 Engine.prototype.pick = function(pos, vec, dist) {
-  pos = pos || this.getCameraPosition()
+  pos = pos || this.getPlayerEyePosition()
   vec = vec || this.getCameraVector()
   dist = dist || this.blockTestDistance
   if (!this._traceRay) this._traceRay = raycast.bind({}, this.world)
