@@ -64,9 +64,9 @@ function Engine(opts) {
   this.playerEntity = this.entities.add(
     opts.playerStart,    // starting location- TODO: get from options
     opts.playerWidth, opts.playerHeight,
-    null, null,   // no mesh, no meshOffset, 
-    {}, null,     // empty data object, no tick function,
-    true, true    // block terrain, simulate physics
+    null, null,     // no mesh, no meshOffset, 
+    {}, true,       // empty data object, do physics
+    true, true      // collideTerrain, collideEntities
   )
   this.playerEntity.body.gravityMultiplier = 2 // less floaty
   this.controls.setTarget( this.playerEntity.body )
