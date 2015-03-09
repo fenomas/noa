@@ -131,10 +131,6 @@ Engine.prototype.tick = function() {
   this.inputs.tick(dt)       // clears cumulative input values
 }
 
-Engine.prototype.render = function(dt) {
-  this.rendering.render()
-}
-
 
 
 
