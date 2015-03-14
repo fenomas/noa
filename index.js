@@ -75,7 +75,7 @@ function Engine(opts) {
 
   // Set up block picking and fire events
   this.blockTestDistance = opts.blockTestDistance || 10
-
+  this._traceWorldRay = raycast.bind(null, this.world)
 
 
   // ad-hoc stuff to set up player and camera
@@ -190,10 +190,9 @@ Engine.prototype.pick = function(pos, vec, dist) {
   pos = pos || this.getPlayerEyePosition()
   vec = vec || this.getCameraVector()
   dist = dist || this.blockTestDistance
-  if (!this._traceRay) this._traceRay = raycast.bind({}, this.world)
   var hitNorm = []
   var hitPos = []
-  var hitBlock = this._traceRay(pos, vec, dist, hitPos, hitNorm)
+  var hitBlock = this._traceWorldRay(pos, vec, dist, hitPos, hitNorm)
   if (hitBlock) return {
     block: hitBlock,
     position: hitPos,
@@ -204,20 +203,21 @@ Engine.prototype.pick = function(pos, vec, dist) {
 
 
 // Determine which block if any is targeted and within range
+// also tell rendering to highlight the struck block face
 Engine.prototype.setBlockTargets = function() {
   var result = this.pick()
-  var loc = []
   // process and cache results
   if (result) {
-    loc = result.position.map(Math.floor)
+    var loc = result.position.map(Math.floor)
     var norm = result.normal
     this._blockTargetLoc = loc
     this._blockPlacementLoc = [ loc[0]+norm[0], loc[1]+norm[1], loc[2]+norm[2] ]
+    var axis = norm[0] ? 0 : norm[1] ? 1 : 2
+    this.rendering.highlightBlockFace(true, loc, norm)
   } else {
     this._blockTargetLoc = this._blockPlacementLoc = null
+    this.rendering.highlightBlockFace( false )
   }
-  // highlight block as needed
-  this.rendering.highlightBlock( !!result, loc[0], loc[1], loc[2] )
 }
 
 
