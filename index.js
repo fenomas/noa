@@ -27,6 +27,10 @@ var defaults = {
 
 }
 
+/*
+ *    Main game engine object
+ *  Emits: tick
+*/
 
 function Engine(opts) {
   if (!(this instanceof Engine)) return new Engine(opts)
