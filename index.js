@@ -24,6 +24,7 @@ var defaults = {
   playerHeight: 1.8,
   playerWidth: 0.6,
   playerStart: [0,10,0],
+  playerAutoStep: false,
 
 }
 
@@ -73,6 +74,7 @@ function Engine(opts) {
     true, true      // collideTerrain, collideEntities
   )
   this.playerEntity.body.gravityMultiplier = 2 // less floaty
+  this.playerEntity.body.autoStep = opts.playerAutoStep // auto step onto blocks
   this.controls.setTarget( this.playerEntity.body )
 
 
