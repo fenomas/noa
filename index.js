@@ -25,6 +25,7 @@ var defaults = {
   playerWidth: 0.6,
   playerStart: [0,10,0],
   playerAutoStep: false,
+  tickRate: 30,
 
 }
 
@@ -36,6 +37,7 @@ var defaults = {
 function Engine(opts) {
   if (!(this instanceof Engine)) return new Engine(opts)
   opts = extend(defaults, opts)
+  this._tickRate = opts.tickRate
 
   // container (html/div) manager
   this.container = createContainer(this, opts)
@@ -125,18 +127,33 @@ inherits( Engine, EventEmitter )
 
 
 Engine.prototype.tick = function() {
-  var dt = getTickTime(this)
-  checkForPointerlock(this)
+  var dt = this._tickRate    // fixed timesteps!
   this.world.tick(dt)        // chunk creation/removal
   this.rendering.tick(dt)    // deferred remeshing of updated chunks
-  this.controls.tick(dt)     // applies movement forces
+  this.controls.tickPhysics(dt)  // applies movement forces
   this.physics.tick(dt)      // iterates physics
   this.setBlockTargets()     // finds targeted blocks, and highlights one if needed
-  this.entities.tick(dt)     // move entities and call their tick functions
+  this.entities.tick(dt)     // tick entities and call their tick functions
   this.emit('tick', dt)
-  this.inputs.tick(dt)       // clears cumulative input values
 }
 
+
+Engine.prototype.render = function(framePart) {
+  var dt = framePart*this._tickRate // ms since last tick
+  // update camera based on mouse move and scroll
+  if (this.container._shell.pointerLock || this.inputs.state.fire) {
+    // for now only move camera when pointerlock or mousedown. TODO: revisit?
+    this.controls.tickCamera()
+  }
+  var scroll = this.inputs.state.scrolly
+  if (scroll) this.rendering.zoomInOrOut(scroll)
+  // clears cumulative move/scroll inputs
+  this.inputs.tick()
+  // update entity meshes to account for time since last physics tick
+  this.entities.updateEntitiesForRender(dt)
+  // render whole scene
+  this.rendering.render(dt)
+}
 
 
 
@@ -239,28 +256,8 @@ Engine.prototype.setPlayerMesh = function(mesh, meshOffset) {
 
 
 
-// Manually track tick times.. consider changing this to fixed timesteps?
-var lastTick = 0
-function getTickTime(noa) {
-  var last = noa._lastTick || 0
-  var d = new Date()
-  var dt = d-last
-  if (dt>100) dt=100 // clamp timestep to 100ms to prevent blowups
-  noa._lastTick = d
-  return dt
-}
 
 
-
-// this is a hack for now. TODO: find a more elegant approach
-function checkForPointerlock(noa) {
-  // prevent the camera from turning unless pointerlock or mouse is down
-  var turn = noa.container._shell.pointerLock ||
-      noa.inputs.state.fire
-  if (!turn) {
-    noa.inputs.state.dx = noa.inputs.state.dy = 0
-  }
-}
 
 
 
