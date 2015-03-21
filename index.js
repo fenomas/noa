@@ -62,6 +62,16 @@ function Engine(opts) {
 
   // controls - hooks up input events to physics of player, etc.
   this.controls = createControls( this, opts )
+  // accessor to let controls read/write camera rotation
+  this.controls.setCameraAccessor({
+    renderingRef: this.rendering,
+    getRotationXY: function() {
+      return this.renderingRef.getCameraRotation()
+    },
+    setRotationXY: function(x,y) {
+      this.renderingRef.setCameraRotation(x,y)
+    }
+  })
 
   // entity manager
   this.entities = createEntities( this, opts )
@@ -86,18 +96,6 @@ function Engine(opts) {
   this._traceWorldRay = raycast.bind(null, this.world)
 
 
-  // ad-hoc stuff to set up player and camera
-  var cam = this.rendering.getCameraHolder()
-  var accessor = {
-    getRotationXY: function() {
-      return [ cam.rotation.x, cam.rotation.y ]
-    },
-    setRotationXY: function(x,y) {
-      cam.rotation.x = x
-      cam.rotation.y = y
-    }
-  }
-  this.controls.setCameraAccessor( accessor )
 
 
 
@@ -201,11 +199,9 @@ Engine.prototype.getPlayerEyePosition = function() {
 }
 
 Engine.prototype.getCameraVector = function() {
-  var crot = this.rendering.getCameraHolder().rotation
-  var cvec = vec3.fromValues( 0,0,1 ) // +z is forward direction
-  vec3.rotateX( cvec, cvec, [0,0,0], crot.x )
-  vec3.rotateY( cvec, cvec, [0,0,0], crot.y )
-  return cvec
+  // rendering works with babylon's xyz vectors
+  var v = this.rendering.getCameraVector()
+  return vec3.fromValues( v.x, v.y, v.z )
 }
 
 // Determine which block if any is targeted and within range
