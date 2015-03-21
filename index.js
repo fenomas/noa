@@ -87,6 +87,9 @@ function Engine(opts) {
   )
   this.playerEntity.body.gravityMultiplier = 2 // less floaty
   this.playerEntity.body.autoStep = opts.playerAutoStep // auto step onto blocks
+  if (opts.playerAutoStep) {
+    this.playerEntity.body.onStep = this.entities._onPlayerAutoStep.bind(this.entities)
+  }
   this.controls.setTarget( this.playerEntity.body )
 
 
