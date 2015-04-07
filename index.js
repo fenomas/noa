@@ -110,7 +110,7 @@ function Engine(opts) {
   window.vec3 = vec3
   var debug = false
   this.inputs.bind( 'debug', 'Z' )
-  this.inputs.down.on('debug', function() {
+  this.inputs.down.on('debug', function onDebug() {
     debug = !debug
     if (debug) scene.debugLayer.show(); else scene.debugLayer.hide();
   })
