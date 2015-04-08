@@ -83,7 +83,8 @@ function Engine(opts) {
     opts.playerWidth, opts.playerHeight,
     null, null,     // no mesh, no meshOffset, 
     {}, true,       // empty data object, do physics
-    true, true      // collideTerrain, collideEntities
+    true, true,     // collideTerrain, collideEntities
+    true            // shadow
   )
   this.playerEntity.body.gravityMultiplier = 2 // less floaty
   this.playerEntity.body.autoStep = opts.playerAutoStep // auto step onto blocks
