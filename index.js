@@ -131,6 +131,7 @@ Engine.prototype.tick = function() {
   var dt = this._tickRate    // fixed timesteps!
   this.world.tick(dt)        // chunk creation/removal
   this.rendering.tick(dt)    // deferred remeshing of updated chunks
+  this.controls.tickZoom(dt) // ticks camera zoom based on scroll events
   this.controls.tickPhysics(dt)  // applies movement forces
   this.physics.tick(dt)      // iterates physics
   this.setBlockTargets()     // finds targeted blocks, and highlights one if needed
@@ -146,10 +147,9 @@ Engine.prototype.render = function(framePart) {
     // for now only move camera when pointerlock or mousedown. TODO: revisit?
     this.controls.tickCamera()
   }
-  var scroll = this.inputs.state.scrolly
-  if (scroll) this.rendering.zoomInOrOut(scroll)
-  // clears cumulative move/scroll inputs
-  this.inputs.tick()
+  // clear cumulative mouse inputs
+  // TODO: do this, or give inputs tickMouse/tickScroll methods?
+  this.inputs.state.dx = this.inputs.state.dy = 0
   // update entity meshes to account for time since last physics tick
   this.entities.updateEntitiesForRender(dt)
   // render whole scene
@@ -209,6 +209,7 @@ Engine.prototype.getCameraVector = function() {
 
 // Determine which block if any is targeted and within range
 Engine.prototype.pick = function(pos, vec, dist) {
+  if (dist===0) return null
   pos = pos || this.getPlayerEyePosition()
   vec = vec || this.getCameraVector()
   dist = dist || this.blockTestDistance
