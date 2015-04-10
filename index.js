@@ -97,7 +97,10 @@ function Engine(opts) {
 
   // Set up block picking and fire events
   this.blockTestDistance = opts.blockTestDistance || 10
-  this._traceWorldRay = raycast.bind(null, this.world)
+  var getBlockAccessor = {
+    getBlock: this.world.getBlockID.bind(this.world)
+  }
+  this._traceWorldRay = raycast.bind(null, getBlockAccessor)
 
 
 
@@ -166,20 +169,20 @@ Engine.prototype.render = function(framePart) {
 
 Engine.prototype.getBlock = function(x, y, z) {
   var arr = (x.length) ? x : [x,y,z]
-  return this.world.getBlock( arr[0], arr[1], arr[2] );
+  return this.world.getBlockID( arr[0], arr[1], arr[2] );
 }
 
 Engine.prototype.setBlock = function(id, x, y, z) {
   // skips the entity collision check
   var arr = (x.length) ? x : [x,y,z]
-  this.world.setBlock( id, arr[0], arr[1], arr[2] );
+  this.world.setBlockID( id, arr[0], arr[1], arr[2] );
 }
 
 Engine.prototype.addBlock = function(id, x, y, z) {
   // add a new terrain block, if nothing blocks the terrain there
   var arr = (x.length) ? x : [x,y,z]
   if (this.entities.isTerrainBlocked(arr[0], arr[1], arr[2])) return
-  this.world.setBlock( id, arr[0], arr[1], arr[2] );
+  this.world.setBlockID( id, arr[0], arr[1], arr[2] );
 }
 
 Engine.prototype.getTargetBlock = function() {
