@@ -8,7 +8,6 @@ var EventEmitter = require('events').EventEmitter
 var createContainer = require('./lib/container')
 var createRendering = require('./lib/rendering')
 var createWorld = require('./lib/world')
-var createMesher = require('./lib/mesher')
 var createInputs = require('./lib/inputs')
 var createPhysics = require('./lib/physics')
 var createControls = require('./lib/controls')
@@ -53,9 +52,6 @@ function Engine(opts) {
 
   // rendering manager - abstracts all draws to 3D context
   this.rendering = createRendering(this, opts, this.container.canvas)
-
-  // mesh chunk of world data and hand off to renderer
-  this.mesher = createMesher( this, opts )
 
   // physics engine - solves collisions, properties, etc.
   this.physics = createPhysics( this, opts )
