@@ -91,13 +91,16 @@ function Engine(opts) {
 
 
 
-  // Set up block picking and fire events
+  // Set up block picking functions
   this.blockTestDistance = opts.blockTestDistance || 10
-  var getBlockAccessor = {
+  
+  this._traceWorldRay = raycast.bind(null, {
     getBlock: this.world.getBlockID.bind(this.world)
-  }
-  this._traceWorldRay = raycast.bind(null, getBlockAccessor)
-
+  })
+  
+  this._traceWorldRayCollision = raycast.bind(null, {
+    getBlock: this.world.getBlockSolidity.bind(this.world)
+  })
 
 
 
@@ -215,7 +218,7 @@ Engine.prototype.pick = function(pos, vec, dist) {
   dist = dist || this.blockTestDistance
   var hitNorm = []
   var hitPos = []
-  var hitBlock = this._traceWorldRay(pos, vec, dist, hitPos, hitNorm)
+  var hitBlock = this._traceWorldRayCollision(pos, vec, dist, hitPos, hitNorm)
   if (hitBlock) return {
     block: hitBlock,
     position: hitPos,
