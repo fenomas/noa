@@ -19,6 +19,8 @@ var raycast = require('voxel-raycast')
 module.exports = Engine
 
 
+
+
 var defaults = {
   playerHeight: 1.8,
   playerWidth: 0.6,
@@ -90,7 +92,6 @@ function Engine(opts) {
   this.controls.setTarget( this.playerEntity.body )
 
 
-
   // Set up block picking functions
   this.blockTestDistance = opts.blockTestDistance || 10
   
@@ -101,8 +102,6 @@ function Engine(opts) {
   this._traceWorldRayCollision = raycast.bind(null, {
     getBlock: this.world.getBlockSolidity.bind(this.world)
   })
-
-
 
 
 
@@ -119,7 +118,7 @@ function Engine(opts) {
   })
 
 
-
+  
 }
 
 inherits( Engine, EventEmitter )
