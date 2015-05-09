@@ -145,8 +145,11 @@ Engine.prototype.tick = function() {
 Engine.prototype.render = function(framePart) {
   var dt = framePart*this._tickRate // ms since last tick
   // update camera based on mouse move and scroll
-  if (this.container._shell.pointerLock || this.inputs.state.fire) {
-    // for now only move camera when pointerlock or mousedown. TODO: revisit?
+  var nomouse = !('onclick' in window)
+  // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
+  if (this.container._shell.pointerLock || 
+      !this.container._pointerLockSupported || 
+      this.inputs.state.fire) {
     this.controls.tickCamera()
   }
   // clear cumulative mouse inputs
