@@ -114,7 +114,7 @@ function Engine(opts) {
   this.inputs.bind( 'debug', 'Z' )
   this.inputs.down.on('debug', function onDebug() {
     debug = !debug
-    if (debug) scene.debugLayer.show(); else scene.debugLayer.hide();
+    if (debug) window.scene.debugLayer.show(); else window.scene.debugLayer.hide();
   })
 
 
@@ -144,8 +144,6 @@ Engine.prototype.tick = function() {
 
 Engine.prototype.render = function(framePart) {
   var dt = framePart*this._tickRate // ms since last tick
-  // update camera based on mouse move and scroll
-  var nomouse = !('onclick' in window)
   // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
   if (this.container._shell.pointerLock || 
       !this.container._pointerLockSupported || 
@@ -240,7 +238,6 @@ Engine.prototype.setBlockTargets = function() {
     var norm = result.normal
     this._blockTargetLoc = loc
     this._blockPlacementLoc = [ loc[0]+norm[0], loc[1]+norm[1], loc[2]+norm[2] ]
-    var axis = norm[0] ? 0 : norm[1] ? 1 : 2
     this.rendering.highlightBlockFace(true, loc, norm)
   } else {
     this._blockTargetLoc = this._blockPlacementLoc = null
