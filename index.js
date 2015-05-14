@@ -145,8 +145,8 @@ Engine.prototype.tick = function() {
 Engine.prototype.render = function(framePart) {
   var dt = framePart*this._tickRate // ms since last tick
   // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
-  if (this.container._shell.pointerLock || 
-      !this.container._pointerLockSupported || 
+  if (this.container.hasPointerLock() || 
+      !this.container.supportsPointerLock() || 
       this.inputs.state.fire) {
     this.controls.tickCamera()
   }
