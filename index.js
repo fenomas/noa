@@ -250,6 +250,11 @@ Engine.prototype.setBlockTargets = function() {
 Engine.prototype.setPlayerMesh = function(mesh, meshOffset) {
   this.playerEntity.mesh = mesh
   this.playerEntity.meshOffset = meshOffset
+  
+  if (window.DEBUG_OCTREES) {
+    this.rendering.addDynamicMesh(mesh)
+  }
+  
 }
 
 /*
