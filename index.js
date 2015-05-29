@@ -39,6 +39,7 @@ function Engine(opts) {
   if (!(this instanceof Engine)) return new Engine(opts)
   opts = extend(defaults, opts)
   this._tickRate = opts.tickRate
+  this._paused = false
 
   // container (html/div) manager
   this.container = createContainer(this, opts)
@@ -130,6 +131,7 @@ inherits( Engine, EventEmitter )
 
 
 Engine.prototype.tick = function() {
+  if (this._paused) return
   var dt = this._tickRate    // fixed timesteps!
   this.world.tick(dt)        // chunk creation/removal
   this.rendering.tick(dt)    // deferred remeshing of updated chunks
@@ -143,6 +145,7 @@ Engine.prototype.tick = function() {
 
 
 Engine.prototype.render = function(framePart) {
+  if (this._paused) return
   var dt = framePart*this._tickRate // ms since last tick
   // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
   if (this.container.hasPointerLock() || 
@@ -165,6 +168,14 @@ Engine.prototype.render = function(framePart) {
 /*
  *   Utility APIs
 */ 
+
+Engine.prototype.setPaused = function(paused) {
+  this._paused = !!paused
+  // when unpausing, clear any built-up mouse inputs
+  if (!paused) {
+    this.inputs.state.dx = this.inputs.state.dy = 0
+  }
+}
 
 Engine.prototype.getBlock = function(x, y, z) {
   var arr = (x.length) ? x : [x,y,z]
