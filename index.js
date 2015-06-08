@@ -83,7 +83,7 @@ function Engine(opts) {
     null, null,     // no mesh, no meshOffset, 
     {}, true,       // empty data object, do physics
     true, true,     // collideTerrain, collideEntities
-    true            // shadow
+    true, false     // shadow, isSprite
   )
   this.playerEntity.body.gravityMultiplier = 2 // less floaty
   this.playerEntity.body.autoStep = opts.playerAutoStep // auto step onto blocks
@@ -258,12 +258,16 @@ Engine.prototype.setBlockTargets = function() {
 
 
 // set a mesh and position offset for the player entity.
-Engine.prototype.setPlayerMesh = function(mesh, meshOffset) {
+Engine.prototype.setPlayerMesh = function(mesh, meshOffset, isSprite) {
   this.playerEntity.mesh = mesh
   this.playerEntity.meshOffset = meshOffset
+  this.playerEntity.isSprite = isSprite
   
   if (window.DEBUG_OCTREES) {
     this.rendering.addDynamicMesh(mesh)
+  }
+  if (isSprite) {
+    this.rendering.setUpSpriteMesh(mesh)
   }
   
 }
