@@ -77,10 +77,12 @@ function Engine(opts) {
 
 
   // create an entity for the player and hook up controller to its physics body
+  // use placeholder mesh (typically overwritten by client)
+  var pmesh = this.rendering.makePlaceholderMesh()
   this.playerEntity = this.entities.add(
     opts.playerStart,    // starting location- TODO: get from options
     opts.playerWidth, opts.playerHeight,
-    null, null,     // no mesh, no meshOffset, 
+    pmesh, null,    // box mesh, no meshOffset, 
     {}, true,       // empty data object, do physics
     true, true,     // collideTerrain, collideEntities
     true, false     // shadow, isSprite
@@ -259,11 +261,14 @@ Engine.prototype.setBlockTargets = function() {
 
 // set a mesh and position offset for the player entity.
 Engine.prototype.setPlayerMesh = function(mesh, meshOffset, isSprite) {
+  var oldmesh = this.playerEntity.mesh
   this.playerEntity.mesh = mesh
   this.playerEntity.meshOffset = meshOffset
   this.playerEntity.isSprite = isSprite
   
+  if (oldmesh) oldmesh.dispose()
   if (window.DEBUG_OCTREES) {
+    this.rendering.removeDynamicMesh(oldmesh)
     this.rendering.addDynamicMesh(mesh)
   }
   if (isSprite) {
