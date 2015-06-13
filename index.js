@@ -136,8 +136,8 @@ Engine.prototype.tick = function() {
   if (this._paused) return
   var dt = this._tickRate    // fixed timesteps!
   this.world.tick(dt)        // chunk creation/removal
-  this.rendering.tick(dt)    // deferred remeshing of updated chunks
   this.controls.tickZoom(dt) // ticks camera zoom based on scroll events
+  this.rendering.tick(dt)    // zooms camera, does deferred chunk meshing
   this.controls.tickPhysics(dt)  // applies movement forces
   this.physics.tick(dt)      // iterates physics
   this.setBlockTargets()     // finds targeted blocks, and highlights one if needed
