@@ -162,6 +162,7 @@ Engine.prototype.render = function(framePart) {
   this.entities.updateEntitiesForRender(dt)
   // render whole scene
   this.rendering.render(dt)
+  this.emit('render', dt)
 }
 
 
