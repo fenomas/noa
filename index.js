@@ -97,11 +97,11 @@ function Engine(opts) {
 
   // Set up block picking functions
   this.blockTestDistance = opts.blockTestDistance || 10
-  
+
   this._traceWorldRay = raycast.bind(null, {
     getBlock: this.world.getBlockID.bind(this.world)
   })
-  
+
   this._traceWorldRayCollision = raycast.bind(null, {
     getBlock: this.world.getBlockSolidity.bind(this.world)
   })
@@ -121,7 +121,7 @@ function Engine(opts) {
   })
 
 
-  
+
 }
 
 inherits( Engine, EventEmitter )
@@ -266,16 +266,14 @@ Engine.prototype.setPlayerMesh = function(mesh, meshOffset, isSprite) {
   this.playerEntity.mesh = mesh
   this.playerEntity.meshOffset = meshOffset
   this.playerEntity.isSprite = isSprite
-  
+
   if (oldmesh) oldmesh.dispose()
-  if (window.DEBUG_OCTREES) {
-    this.rendering.removeDynamicMesh(oldmesh)
-    this.rendering.addDynamicMesh(mesh)
-  }
+  this.rendering.addDynamicMesh(mesh)
+
   if (isSprite) {
     this.rendering.setUpSpriteMesh(mesh)
   }
-  
+
 }
 
 /*
