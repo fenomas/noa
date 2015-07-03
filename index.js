@@ -139,10 +139,28 @@ Engine.prototype.tick = function() {
   this.controls.tickZoom(dt) // ticks camera zoom based on scroll events
   this.rendering.tick(dt)    // zooms camera, does deferred chunk meshing
   this.controls.tickPhysics(dt)  // applies movement forces
+// t0()
   this.physics.tick(dt)      // iterates physics
+// t1('physics tick')
   this.setBlockTargets()     // finds targeted blocks, and highlights one if needed
   this.entities.tick(dt)     // tick entities and call their tick functions
   this.emit('tick', dt)
+}
+
+
+// hacky temporary profiling substitute 
+// since chrome profiling drops fps so much... :(
+var t, tt=0, tc=0, tlc
+function t0() {
+  t = performance.now()
+}
+function t1(s) {
+  tt += performance.now()-t
+  tc += 1
+  tlc += 1
+  if (tlc<100) return
+  tlc = 0
+  console.log( s, ': avg ', (tt/tc).toFixed(2), 'ms')
 }
 
 
