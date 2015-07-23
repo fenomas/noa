@@ -13,6 +13,7 @@ var createPhysics = require('./lib/physics')
 var createControls = require('./lib/controls')
 var createRegistry = require('./lib/registry')
 var createEntities = require('./lib/entities')
+var createECS = require('./lib/ecs')
 var raycast = require('voxel-raycast')
 
 
@@ -40,6 +41,9 @@ function Engine(opts) {
   opts = extend(defaults, opts)
   this._tickRate = opts.tickRate
   this._paused = false
+
+  // experimental ECS
+  this.ecs = createECS()
 
   // container (html/div) manager
   this.container = createContainer(this, opts)
