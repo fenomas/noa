@@ -44,6 +44,7 @@ function Engine(opts) {
 
   // experimental ECS
   this.ecs = createECS()
+  this.components = {}
 
   // container (html/div) manager
   this.container = createContainer(this, opts)
@@ -98,6 +99,7 @@ function Engine(opts) {
   }
   this.controls.setTarget( this.playerEntity.body )
 
+  this.ecs.addEntityComponents(this.playerEntity.id, [this.components.player])
 
   // Set up block picking functions
   this.blockTestDistance = opts.blockTestDistance || 10
@@ -180,11 +182,10 @@ Engine.prototype.render = function(framePart) {
   // clear cumulative mouse inputs
   // TODO: do this, or give inputs tickMouse/tickScroll methods?
   this.inputs.state.dx = this.inputs.state.dy = 0
-  // update entity meshes to account for time since last physics tick
-  this.entities.updateEntitiesForRender(dt)
-  // render whole scene
+  // events and render
+  this.emit('beforeRender', dt)
   this.rendering.render(dt)
-  this.emit('render', dt)
+  this.emit('afterRender', dt)
 }
 
 
@@ -289,6 +290,12 @@ Engine.prototype.setPlayerMesh = function(mesh, meshOffset, isSprite) {
   this.playerEntity.meshOffset = meshOffset
   this.playerEntity.isSprite = isSprite
 
+  // update ecs data
+  var meshdata = this.ecs.getEntityComponentData(this.playerEntity.id, this.components.mesh)
+  meshdata.mesh = mesh
+  meshdata.offset = meshOffset
+  meshdata.isSprite = isSprite
+  
   if (oldmesh) oldmesh.dispose()
   this.rendering.addDynamicMesh(mesh)
 
