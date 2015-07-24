@@ -149,7 +149,6 @@ Engine.prototype.tick = function() {
   this.physics.tick(dt)      // iterates physics
 // t1('physics tick')
   this.setBlockTargets()     // finds targeted blocks, and highlights one if needed
-  this.entities.tick(dt)     // tick entities and call their tick functions
   this.emit('tick', dt)
 }
 
