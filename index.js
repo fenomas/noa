@@ -81,25 +81,30 @@ function Engine(opts) {
   this.entities = createEntities( this, opts )
 
 
+  // keep reference to the player's mesh for convenience
+  // use placeholder to start with (to be overwritten by client)
+  this.playerMesh = this.rendering.makePlaceholderMesh()
+  
   // create an entity for the player and hook up controller to its physics body
-  // use placeholder mesh (typically overwritten by client)
-  var pmesh = this.rendering.makePlaceholderMesh()
   this.playerEntity = this.entities.add(
     opts.playerStart,    // starting location- TODO: get from options
     opts.playerWidth, opts.playerHeight,
-    pmesh, null,    // box mesh, no meshOffset, 
-    {}, true,       // empty data object, do physics
-    true, true,     // collideTerrain, collideEntities
-    true, false     // shadow, isSprite
+    this.playerMesh, null, // box mesh, no meshOffset, 
+    {}, true,              // empty data object, do physics
+    true, null,            // collideTerrain, onCollide
+    true, null,            // collideEntities, onCollide
+    true, false            // shadow, isSprite
   )
-  this.playerEntity.body.gravityMultiplier = 2 // less floaty
-  this.playerEntity.body.autoStep = opts.playerAutoStep // auto step onto blocks
+  
+  var body = this.entities.getEntityPhysicsData(this.playerEntity).body
+  body.gravityMultiplier = 2 // less floaty
+  body.autoStep = opts.playerAutoStep // auto step onto blocks
   if (opts.playerAutoStep) {
-    this.playerEntity.body.onStep = this.entities._onPlayerAutoStep.bind(this.entities)
+    body.onStep = this.entities._onPlayerAutoStep.bind(this.entities)
   }
-  this.controls.setTarget( this.playerEntity.body )
+  this.controls.setTarget( body )
 
-  this.ecs.addEntityComponents(this.playerEntity.id, [this.components.player])
+  this.ecs.addEntityComponents(this.playerEntity, [this.components.player])
 
   // Set up block picking functions
   this.blockTestDistance = opts.blockTestDistance || 10
@@ -230,12 +235,13 @@ Engine.prototype.getTargetBlockAdjacent = function() {
 
 
 Engine.prototype.getPlayerPosition = function() {
-  return this.playerEntity.getPosition()
+  return this.entities.getEntityPosition(this.playerEntity)
 }
 
 Engine.prototype.getPlayerEyePosition = function() {
-  var height = this.playerEntity.bb.vec[1]
-  var loc = this.playerEntity.getPosition()
+  var box = this.entities.getEntityPositionData(this.playerEntity).aabb
+  var height = box.vec[1]
+  var loc = this.getPlayerPosition()
   loc[1] += height * .9 // eyes below top of head
   return loc
 }
@@ -284,24 +290,19 @@ Engine.prototype.setBlockTargets = function() {
 
 // set a mesh and position offset for the player entity.
 Engine.prototype.setPlayerMesh = function(mesh, meshOffset, isSprite) {
-  var oldmesh = this.playerEntity.mesh
-  this.playerEntity.mesh = mesh
-  this.playerEntity.meshOffset = meshOffset
-  this.playerEntity.isSprite = isSprite
-
   // update ecs data
-  var meshdata = this.ecs.getEntityComponentData(this.playerEntity.id, this.components.mesh)
-  meshdata.mesh = mesh
-  meshdata.offset = meshOffset
-  meshdata.isSprite = isSprite
+  var meshData = this.entities.getEntityMeshData(this.playerEntity)
+  meshData.mesh = mesh
+  meshData.offset = meshOffset
+  meshData.isSprite = isSprite
   
-  if (oldmesh) oldmesh.dispose()
+  if (this.playerMesh) this.playerMesh.dispose()
+  this.playerMesh = mesh
   this.rendering.addDynamicMesh(mesh)
 
   if (isSprite) {
     this.rendering.setUpSpriteMesh(mesh)
   }
-
 }
 
 /*
