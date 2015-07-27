@@ -96,7 +96,7 @@ function Engine(opts) {
     true, false            // shadow, isSprite
   )
   
-  var body = this.entities.getEntityPhysicsData(this.playerEntity).body
+  var body = this.entities.getPhysicsData(this.playerEntity).body
   body.gravityMultiplier = 2 // less floaty
   body.autoStep = opts.playerAutoStep // auto step onto blocks
   if (opts.playerAutoStep) {
@@ -235,11 +235,11 @@ Engine.prototype.getTargetBlockAdjacent = function() {
 
 
 Engine.prototype.getPlayerPosition = function() {
-  return this.entities.getEntityPosition(this.playerEntity)
+  return this.entities.getPosition(this.playerEntity)
 }
 
 Engine.prototype.getPlayerEyePosition = function() {
-  var box = this.entities.getEntityPositionData(this.playerEntity).aabb
+  var box = this.entities.getPositionData(this.playerEntity).aabb
   var height = box.vec[1]
   var loc = this.getPlayerPosition()
   loc[1] += height * .9 // eyes below top of head
@@ -291,7 +291,7 @@ Engine.prototype.setBlockTargets = function() {
 // set a mesh and position offset for the player entity.
 Engine.prototype.setPlayerMesh = function(mesh, meshOffset, isSprite) {
   // update ecs data
-  var meshData = this.entities.getEntityMeshData(this.playerEntity)
+  var meshData = this.entities.getMeshData(this.playerEntity)
   meshData.mesh = mesh
   meshData.offset = meshOffset
   meshData.isSprite = isSprite
