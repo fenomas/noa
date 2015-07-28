@@ -288,14 +288,16 @@ Engine.prototype.setPlayerMesh = function(mesh, meshOffset, isSprite) {
   var meshData = this.entities.getMeshData(this.playerEntity)
   meshData.mesh = mesh
   meshData.offset = meshOffset
-  meshData.isSprite = isSprite
   
   if (this.playerMesh) this.playerMesh.dispose()
   this.playerMesh = mesh
   this.rendering.addDynamicMesh(mesh)
 
   if (isSprite) {
+    this.entities.addComponent(this.playerEntity, this.entities.components.sprite)
     this.rendering.setUpSpriteMesh(mesh)
+  } else {
+    this.entities.removeComponent(this.playerEntity, this.entities.components.sprite)
   }
 }
 
