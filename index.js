@@ -13,7 +13,6 @@ var createPhysics = require('./lib/physics')
 var createControls = require('./lib/controls')
 var createRegistry = require('./lib/registry')
 var createEntities = require('./lib/entities')
-var createECS = require('./lib/ecs')
 var raycast = require('voxel-raycast')
 
 
@@ -41,10 +40,6 @@ function Engine(opts) {
   opts = extend(defaults, opts)
   this._tickRate = opts.tickRate
   this._paused = false
-
-  // experimental ECS
-  this.ecs = createECS()
-  this.components = {}
 
   // container (html/div) manager
   this.container = createContainer(this, opts)
@@ -90,21 +85,20 @@ function Engine(opts) {
     opts.playerStart,    // starting location- TODO: get from options
     opts.playerWidth, opts.playerHeight,
     this.playerMesh, null, // box mesh, no meshOffset, 
-    {}, true,              // empty data object, do physics
+    true,                  // do physics
     true, null,            // collideTerrain, onCollide
     true, null,            // collideEntities, onCollide
     true, false            // shadow, isSprite
   )
   
-  var body = this.entities.getPhysicsData(this.playerEntity).body
+  var body = this.entities.getPhysicsBody(this.playerEntity)
   body.gravityMultiplier = 2 // less floaty
   body.autoStep = opts.playerAutoStep // auto step onto blocks
-  if (opts.playerAutoStep) {
-    body.onStep = this.entities._onPlayerAutoStep.bind(this.entities)
-  }
+  
   this.controls.setTarget( body )
-
-  this.ecs.addEntityComponents(this.playerEntity, [this.components.player])
+  
+  // tag the entity as the player
+  this.entities.addComponent(this.playerEntity, this.entities.components.player)
 
   // Set up block picking functions
   this.blockTestDistance = opts.blockTestDistance || 10
@@ -239,7 +233,7 @@ Engine.prototype.getPlayerPosition = function() {
 }
 
 Engine.prototype.getPlayerEyePosition = function() {
-  var box = this.entities.getPositionData(this.playerEntity).aabb
+  var box = this.entities.getAABB(this.playerEntity)
   var height = box.vec[1]
   var loc = this.getPlayerPosition()
   loc[1] += height * .9 // eyes below top of head
