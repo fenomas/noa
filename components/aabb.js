@@ -3,25 +3,18 @@
 
 module.exports = function (noa) {
 	return {
-		
-		
+
 		name: 'bounding-box',
 
 		state: {
 			aabb: null
 		},
 
-		onAdd: function (entID, state) {
-			//
-		},
+		onAdd: null,
 
-		onRemove: function (entID, state) {
-			//
-		},
+		onRemove: null,
 
-		processor: function (dt, stateArr) {
-			//
-		}
+		processor: null
 
 
 	}

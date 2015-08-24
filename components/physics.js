@@ -22,9 +22,7 @@ module.exports = function (noa) {
 		},
 
 
-		processor: function (dt, stateArr) {
-			//
-		}
+		processor: null
 
 
 	}

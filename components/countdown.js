@@ -11,9 +11,7 @@ module.exports = function (noa) {
 			time:		500.1  // ms
 		},
 
-		onAdd: function (entID, state) {
-			//
-		},
+		onAdd: null,
 
 		onRemove: function (entID, state) {
 			state.callback()
