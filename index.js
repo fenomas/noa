@@ -147,6 +147,7 @@ Engine.prototype.tick = function() {
 // t0()
   this.physics.tick(dt)      // iterates physics
 // t1('physics tick')
+  this.entities.update(dt)   // tells ECS to run all processors
   this.setBlockTargets()     // finds targeted blocks, and highlights one if needed
   this.emit('tick', dt)
 }
