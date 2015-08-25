@@ -103,13 +103,24 @@ function Engine(opts) {
   // Set up block picking functions
   this.blockTestDistance = opts.blockTestDistance || 10
 
-  this._traceWorldRay = raycast.bind(null, {
-    getBlock: this.world.getBlockID.bind(this.world)
-  })
-
-  this._traceWorldRayCollision = raycast.bind(null, {
-    getBlock: this.world.getBlockSolidity.bind(this.world)
-  })
+  // plumbing for picking/raycasting
+  var world = this.world
+  var blockGetter = { getBlock:function(x,y,z) {
+    return world.getBlock(x,y,z)
+  }}
+  var solidGetter = { getBlock:function(x,y,z) {
+    return world.getBlockSolidity(x,y,z)
+  }}
+  
+  // accessors
+  this._traceWorldRay = function(pos, vec, dist, hitPos, hitNorm) {
+    return raycast(blockGetter, pos, vec, dist, hitPos, hitNorm)
+  }
+  
+  this._traceWorldRayCollision = function(pos, vec, dist, hitPos, hitNorm) {
+    return raycast(solidGetter, pos, vec, dist, hitPos, hitNorm)
+  }
+  
 
 
 
