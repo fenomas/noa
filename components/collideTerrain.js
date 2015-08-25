@@ -15,7 +15,7 @@ module.exports = function (noa) {
 			var ents = noa.entities
 			if (ents.hasComponent(eid, ents.components.physics)) {
 				var body = ents.getPhysicsBody(eid)
-				body.onCollide = function(impulse) {
+				body.onCollide = function bodyOnCollide(impulse) {
 					var cb = ents.getData(eid, 'collide-terrain').callback
 					if (cb) cb(impulse, eid)
 				}
