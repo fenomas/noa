@@ -16,7 +16,7 @@ module.exports = function (noa) {
 
 		onRemove: null,
 
-		processor: function(dt, states) {
+		processor: function spriteProcessor (dt, states) {
 			var ents = noa.entities
 			for (var i=0; i<states.length; i++) {
 				var id = states[i].__id

@@ -17,7 +17,7 @@ module.exports = function (noa) {
 			state.callback()
 		},
 
-		processor: function (dt, states) {
+		processor: function countdownProcessor(dt, states) {
 			for (var i=0; i<states.length; i++) {
 				var state = states[i]
 				state.time -= dt

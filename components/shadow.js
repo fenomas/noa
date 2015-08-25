@@ -22,7 +22,7 @@ module.exports = function (noa) {
 		},
 
 
-		processor: function (dt, states) {
+		processor: function shadowProcessor(dt, states) {
 			for (var i=0; i<states.length; i++) {
 				var state = states[i]
 				var shadowDist = noa.entities.shadowDist

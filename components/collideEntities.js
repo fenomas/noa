@@ -35,7 +35,7 @@ module.exports = function (noa) {
 		},
 
 
-		processor: function (dt, states) {
+		processor: function entityCollider(dt, states) {
 			// populate data struct that boxIntersect looks for
 			populateIntervals(intervals, ids, idToi, states, noa.entities)
 			// find collisions and call callbacks

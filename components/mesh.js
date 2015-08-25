@@ -22,13 +22,7 @@ module.exports = function (noa) {
 		},
 
 
-		processor: function (dt, states) {
-			for (var i=0; i<states.length; i++) {
-				// var state = states[i]
-				// var shadowDist = noa.entities.shadowDist
-				// updateShadowHeight(state.__id, state.mesh, state.size, shadowDist, noa)
-			}
-		}
+		processor: null
 
 
 	}
