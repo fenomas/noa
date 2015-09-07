@@ -1,0 +1,28 @@
+
+TODO
+	look closely at camera/container/etc
+	make rendering module have a camera target rather than tracking player mesh
+	
+	
+
+camera management
+	on Render:
+		get mouse inputs, set camera rotation, clear mouse inputs
+
+
+Movement
+	entity movement component
+		heading, runspeed, stopspeed, jumpHeight, etc.
+	input receiving component processor
+		set player entity's heading from camera direction
+		set isRunning, isJumping, etc. from inputs
+	mob AI processor (plays same role as input, but from AI)
+		set mob entity heading, isRunning, etc. based on AI rules
+	movement processor
+		apply forces in direction of heading
+		handle world collisions, friction, autostep, etc.
+	on RENDER
+		update mesh positions to body.position + velocity/dt
+
+
+

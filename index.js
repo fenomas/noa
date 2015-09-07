@@ -10,7 +10,7 @@ var createRendering = require('./lib/rendering')
 var createWorld = require('./lib/world')
 var createInputs = require('./lib/inputs')
 var createPhysics = require('./lib/physics')
-var createControls = require('./lib/controls')
+var createCamControls = require('./lib/camera')
 var createRegistry = require('./lib/registry')
 var createEntities = require('./lib/entities')
 var raycast = require('voxel-raycast')
@@ -59,19 +59,9 @@ function Engine(opts) {
   // physics engine - solves collisions, properties, etc.
   this.physics = createPhysics( this, opts )
 
-  // controls - hooks up input events to physics of player, etc.
-  this.controls = createControls( this, opts )
-  // accessor to let controls read/write camera rotation
-  this.controls.setCameraAccessor({
-    renderingRef: this.rendering,
-    getRotationXY: function() {
-      return this.renderingRef.getCameraRotation()
-    },
-    setRotationXY: function(x,y) {
-      this.renderingRef.setCameraRotation(x,y)
-    }
-  })
-
+  // camera controller
+  this.cameraControls = createCamControls( this, opts )
+  
   // entity manager
   this.entities = createEntities( this, opts )
 
@@ -94,11 +84,20 @@ function Engine(opts) {
   var body = this.entities.getPhysicsBody(this.playerEntity)
   body.gravityMultiplier = 2 // less floaty
   body.autoStep = opts.playerAutoStep // auto step onto blocks
-  
-  this.controls.setTarget( body )
+  this.playerBody = body
   
   // tag the entity as the player
   this.entities.addComponent(this.playerEntity, this.entities.components.player)
+  
+  // input component - sets entity's movement state from key inputs
+  this.entities.addComponent(this.playerEntity, this.entities.components.receivesInputs)
+  
+  // movement component - applies movement forces
+  // todo: populate movement settings from options
+  var moveOpts = {
+    airJumps: 1
+  }
+  this.entities.addComponent(this.playerEntity, this.entities.components.movement, moveOpts)
 
   // Set up block picking functions
   this.blockTestDistance = opts.blockTestDistance || 10
@@ -148,18 +147,24 @@ inherits( Engine, EventEmitter )
 */ 
 
 
+
+
+/**
+ * Tick function, called by container module at a fixed timestep. Emits #tick(dt),
+ * where dt is the tick rate in ms (default 16.6)
+ */
+
 Engine.prototype.tick = function() {
   if (this._paused) return
-  var dt = this._tickRate    // fixed timesteps!
-  this.world.tick(dt)        // chunk creation/removal
-  this.controls.tickZoom(dt) // ticks camera zoom based on scroll events
-  this.rendering.tick(dt)    // zooms camera, does deferred chunk meshing
-  this.controls.tickPhysics(dt)  // applies movement forces
+  var dt = this._tickRate         // fixed timesteps!
+  this.world.tick(dt)             // chunk creation/removal
+  this.cameraControls.tickCamera(dt) // ticks camera zoom based on scroll events
+  this.rendering.tick(dt)         // zooms camera, does deferred chunk meshing
 // t0()
-  this.physics.tick(dt)      // iterates physics
+  this.physics.tick(dt)           // iterates physics
 // t1('physics tick')
-  this.entities.update(dt)   // tells ECS to run all processors
-  this.setBlockTargets()     // finds targeted blocks, and highlights one if needed
+  this.entities.update(dt)        // tells ECS to run all processors
+  this.setBlockTargets()          // finds targeted blocks, and highlights one if needed
   this.emit('tick', dt)
 }
 
@@ -180,17 +185,22 @@ function t1(s) {
 }
 
 
+
+/**
+ * Render function, called every animation frame. Emits #beforeRender(dt), #afterRender(dt) 
+ * where dt is the time in ms *since the last tick*.
+ */
+
 Engine.prototype.render = function(framePart) {
-  if (this._paused) return
+  if (this._paused) {console.log(this.inputs.state.dx);return}
   var dt = framePart*this._tickRate // ms since last tick
   // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
   if (this.container.hasPointerLock() || 
       !this.container.supportsPointerLock() || 
       this.inputs.state.fire) {
-    this.controls.tickCamera()
+    this.cameraControls.updateForRender()
   }
   // clear cumulative mouse inputs
-  // TODO: do this, or give inputs tickMouse/tickScroll methods?
   this.inputs.state.dx = this.inputs.state.dy = 0
   // events and render
   this.emit('beforeRender', dt)
