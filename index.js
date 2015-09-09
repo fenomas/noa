@@ -30,9 +30,16 @@ var defaults = {
   blockTestDistance: 10
 }
 
-/*
- *    Main game engine object
- *  Emits: tick
+/**
+ * Main engine object.  
+ * Emits: *tick, beforeRender, afterRender*
+ * 
+ * ```js
+ * var noaEngine = require('noa-engine')
+ * var noa = noaEngine(opts)
+ * ```
+ * 
+ * @class noa
 */
 
 function Engine(opts) {
@@ -62,7 +69,7 @@ function Engine(opts) {
   // camera controller
   this.cameraControls = createCamControls( this, opts )
   
-  // entity manager
+  // Entity manager / Entity Component System (ECS)
   this.entities = createEntities( this, opts )
   var ents = this.entities
 
@@ -70,7 +77,7 @@ function Engine(opts) {
   // use placeholder to start with (to be overwritten by client)
   // this.playerMesh = this.rendering.makePlaceholderMesh()
   
-  // create an entity for the player and hook up controller to its physics body
+  /** Entity id for the player entity */
   this.playerEntity = ents.add(
     opts.playerStart,    // starting location- TODO: get from options
     opts.playerWidth, opts.playerHeight,
@@ -103,14 +110,11 @@ function Engine(opts) {
   ents.addComponent(this.playerEntity, ents.components.movement, moveOpts)
   
   
-  // entity to track camera target position
+  /** entity to track camera target position */
   this.cameraTarget = ents.createEntity([
-    ents.components.followsPlayer
-    // , ents.components.aabb
+    ents.components.followsPlayer, 
+    ents.components.aabb
   ])
-  ents.addComponent(this.cameraTarget, ents.components.aabb, {
-    aabb: new aabb([0,0,0], [0,0,0])
-  })
 
 
 
@@ -164,10 +168,10 @@ inherits( Engine, EventEmitter )
 
 
 
-/**
+/*
  * Tick function, called by container module at a fixed timestep. Emits #tick(dt),
  * where dt is the tick rate in ms (default 16.6)
- */
+*/
 
 Engine.prototype.tick = function() {
   if (this._paused) return
@@ -201,10 +205,10 @@ function t1(s) {
 
 
 
-/**
+/*
  * Render function, called every animation frame. Emits #beforeRender(dt), #afterRender(dt) 
  * where dt is the time in ms *since the last tick*.
- */
+*/
 
 Engine.prototype.render = function(framePart) {
   if (this._paused) return
@@ -230,6 +234,10 @@ Engine.prototype.render = function(framePart) {
  *   Utility APIs
 */ 
 
+/** 
+ * Pausing the engine will also stop render/tick events, etc.
+ * @param paused
+*/
 Engine.prototype.setPaused = function(paused) {
   this._paused = !!paused
   // when unpausing, clear any built-up mouse inputs
@@ -238,17 +246,20 @@ Engine.prototype.setPaused = function(paused) {
   }
 }
 
+/** @param x,y,z */
 Engine.prototype.getBlock = function(x, y, z) {
   var arr = (x.length) ? x : [x,y,z]
   return this.world.getBlockID( arr[0], arr[1], arr[2] );
 }
 
+/** @param x,y,z */
 Engine.prototype.setBlock = function(id, x, y, z) {
   // skips the entity collision check
   var arr = (x.length) ? x : [x,y,z]
   this.world.setBlockID( id, arr[0], arr[1], arr[2] );
 }
 
+/** @param id,x,y,z */
 Engine.prototype.addBlock = function(id, x, y, z) {
   // add a new terrain block, if nothing blocks the terrain there
   var arr = (x.length) ? x : [x,y,z]
@@ -256,23 +267,28 @@ Engine.prototype.addBlock = function(id, x, y, z) {
   this.world.setBlockID( id, arr[0], arr[1], arr[2] );
 }
 
+/** */
 Engine.prototype.getTargetBlock = function() {
   return this._blockTargetLoc
 }
 
+/** */
 Engine.prototype.getTargetBlockAdjacent = function() {
   return this._blockPlacementLoc
 }
 
 
+/** */
 Engine.prototype.getPlayerPosition = function() {
   return this.entities.getPosition(this.playerEntity)
 }
 
+/** */
 Engine.prototype.getPlayerMesh = function() {
   return this.entities.getMeshData(this.playerEntity).mesh
 }
 
+/** */
 Engine.prototype.getPlayerEyePosition = function() {
   var box = this.entities.getAABB(this.playerEntity)
   var height = box.vec[1]
@@ -281,12 +297,18 @@ Engine.prototype.getPlayerEyePosition = function() {
   return loc
 }
 
+/** */
 Engine.prototype.getCameraVector = function() {
   // rendering works with babylon's xyz vectors
   var v = this.rendering.getCameraVector()
   return vec3.fromValues( v.x, v.y, v.z )
 }
 
+/**
+ * @param pos
+ * @param vec
+ * @param dist
+ */
 // Determine which block if any is targeted and within range
 Engine.prototype.pick = function(pos, vec, dist) {
   if (dist===0) return null
@@ -324,6 +346,7 @@ Engine.prototype.setBlockTargets = function() {
 
 
 // set a mesh and position offset for the player entity.
+// TODO: remove
 Engine.prototype.setPlayerMesh = function(mesh, meshOffset, isSprite) {
   // update ecs data
   var meshData = this.entities.getMeshData(this.playerEntity)
@@ -342,9 +365,6 @@ Engine.prototype.setPlayerMesh = function(mesh, meshOffset, isSprite) {
   }
 }
 
-/*
- *   Internals
-*/ 
 
 
 

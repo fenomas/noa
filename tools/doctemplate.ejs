@@ -1,0 +1,56 @@
+
+# noa-engine
+
+An experimental voxel game engine.
+
+[Live demo of testbed here!](http://andyhall.github.io/noa-testbed/)
+
+For content examples see the [hello-world app](https://github.com/andyhall/noa-hello-world)
+or [testbed app](https://github.com/andyhall/noa-testbed).
+
+----
+
+## API reference:
+
+<? docfiles.forEach(function(doc) { ?>
+
+  <!-- Start <?= doc.filename ?> -->
+
+  <? doc.javadoc.forEach(function(comment) { ?>
+    <? if (!comment.ignore) { ?>
+      <? if (comment.name) { ?>
+      
+      
+        <? if (comment.isClass || comment.isNamespace) { ?>
+        
+          <??>## <?= comment.name ?>
+          <??><?= comment.description ?>
+          
+        <? } else { 
+          __tempName = comment.name;
+          if (comment.isMethod || comment.isFunction) {
+            __tempName += '(' + comment.paramStr + ')';
+          }
+          __tempDesc = '';
+          if (comment.description) {
+            if (comment.description.indexOf('\n') > -1) {
+              __tempDesc = '\n\n  ' + comment.description.split('\n').join('\n  ');
+            } else {
+              __tempDesc = ' - ' + comment.description;
+            }
+          } ?>
+          
+          <??>* **<?= __tempName ?>** <?= __tempDesc ?>
+          
+        <? } ?>
+        
+        
+      <? } ?>
+    <? } ?>
+  <? }) ?>
+
+  <!-- End <?= doc.filename ?> -->
+  
+----
+  
+<? }) ?>
