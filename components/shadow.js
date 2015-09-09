@@ -34,7 +34,7 @@ module.exports = function (noa) {
 	}
 }
 
-var down = [0, -1, 0]
+var down = new Float32Array([0, -1, 0])
 
 function updateShadowHeight(id, mesh, size, shadowDist, noa) {
 	var loc = noa.entities.getPosition(id)
