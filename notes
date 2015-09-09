@@ -1,8 +1,9 @@
 
 TODO
-	check in the day's changes to
-
-	rejigger aabb component to create its own state value
+	work out who owns sprite meshes and sprite display behavior
+	
+	open up entities.add() to be explicit, reduce inter-component dependency
+	THEN generalize for e.g. mobs
 	
 	Later: need to rework camera to just be a free camera that looksAt() stuff?
 	

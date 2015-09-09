@@ -1,5 +1,6 @@
 'use strict';
 
+var aabb = require('aabb-3d')
 
 module.exports = function (noa) {
 	return {
@@ -10,7 +11,9 @@ module.exports = function (noa) {
 			aabb: null
 		},
 
-		onAdd: null,
+		onAdd: function (eid, state) {
+			if (!state.aabb) state.aabb = new aabb([0,0,0], [0,0,0])
+		},
 
 		onRemove: null,
 
