@@ -1,8 +1,10 @@
 
 TODO
-	look closely at camera/container/etc
-	make rendering module have a camera target rather than tracking player mesh
+	check in the day's changes to
+
+	rejigger aabb component to create its own state value
 	
+	Later: need to rework camera to just be a free camera that looksAt() stuff?
 	
 
 camera management

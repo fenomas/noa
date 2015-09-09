@@ -64,40 +64,55 @@ function Engine(opts) {
   
   // entity manager
   this.entities = createEntities( this, opts )
-
+  var ents = this.entities
 
   // keep reference to the player's mesh for convenience
   // use placeholder to start with (to be overwritten by client)
-  this.playerMesh = this.rendering.makePlaceholderMesh()
+  // this.playerMesh = this.rendering.makePlaceholderMesh()
   
   // create an entity for the player and hook up controller to its physics body
-  this.playerEntity = this.entities.add(
+  this.playerEntity = ents.add(
     opts.playerStart,    // starting location- TODO: get from options
     opts.playerWidth, opts.playerHeight,
-    this.playerMesh, null, // box mesh, no meshOffset, 
+    null, null, // box mesh, no meshOffset, 
     true,                  // do physics
     true, null,            // collideTerrain, onCollide
     true, null,            // collideEntities, onCollide
     true, false            // shadow, isSprite
   )
-  
-  var body = this.entities.getPhysicsBody(this.playerEntity)
+    
+  var body = ents.getPhysicsBody(this.playerEntity)
   body.gravityMultiplier = 2 // less floaty
   body.autoStep = opts.playerAutoStep // auto step onto blocks
   this.playerBody = body
   
   // tag the entity as the player
-  this.entities.addComponent(this.playerEntity, this.entities.components.player)
+  ents.addComponent(this.playerEntity, ents.components.player)
   
   // input component - sets entity's movement state from key inputs
-  this.entities.addComponent(this.playerEntity, this.entities.components.receivesInputs)
+  ents.addComponent(this.playerEntity, ents.components.receivesInputs)
+  
+  // add a component to make player mesh fade out when zooming in
+  ents.addComponent(this.playerEntity, ents.components.fadeOnZoom)
   
   // movement component - applies movement forces
   // todo: populate movement settings from options
   var moveOpts = {
     airJumps: 1
   }
-  this.entities.addComponent(this.playerEntity, this.entities.components.movement, moveOpts)
+  ents.addComponent(this.playerEntity, ents.components.movement, moveOpts)
+  
+  
+  // entity to track camera target position
+  this.cameraTarget = ents.createEntity([
+    ents.components.followsPlayer
+    // , ents.components.aabb
+  ])
+  ents.addComponent(this.cameraTarget, ents.components.aabb, {
+    aabb: new aabb([0,0,0], [0,0,0])
+  })
+
+
 
   // Set up block picking functions
   this.blockTestDistance = opts.blockTestDistance || 10
