@@ -207,7 +207,7 @@ function t1(s) {
  */
 
 Engine.prototype.render = function(framePart) {
-  if (this._paused) {console.log(this.inputs.state.dx);return}
+  if (this._paused) return
   var dt = framePart*this._tickRate // ms since last tick
   // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
   if (this.container.hasPointerLock() || 
@@ -267,6 +267,10 @@ Engine.prototype.getTargetBlockAdjacent = function() {
 
 Engine.prototype.getPlayerPosition = function() {
   return this.entities.getPosition(this.playerEntity)
+}
+
+Engine.prototype.getPlayerMesh = function() {
+  return this.entities.getMeshData(this.playerEntity).mesh
 }
 
 Engine.prototype.getPlayerEyePosition = function() {
