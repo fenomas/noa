@@ -85,7 +85,7 @@ function Engine(opts) {
     true,                  // do physics
     true, null,            // collideTerrain, onCollide
     true, null,            // collideEntities, onCollide
-    true, false            // shadow, isSprite
+    true                   // shadow
   )
     
   var body = ents.getPhysicsBody(this.playerEntity)
@@ -341,27 +341,6 @@ Engine.prototype.setBlockTargets = function() {
   } else {
     this._blockTargetLoc = this._blockPlacementLoc = null
     this.rendering.highlightBlockFace( false )
-  }
-}
-
-
-// set a mesh and position offset for the player entity.
-// TODO: remove
-Engine.prototype.setPlayerMesh = function(mesh, meshOffset, isSprite) {
-  // update ecs data
-  var meshData = this.entities.getMeshData(this.playerEntity)
-  meshData.mesh = mesh
-  meshData.offset = meshOffset
-  
-  if (this.playerMesh) this.playerMesh.dispose()
-  this.playerMesh = mesh
-  this.rendering.addDynamicMesh(mesh)
-
-  if (isSprite) {
-    this.entities.addComponent(this.playerEntity, this.entities.components.sprite)
-    this.rendering.setUpSpriteMesh(mesh)
-  } else {
-    this.entities.removeComponent(this.playerEntity, this.entities.components.sprite)
   }
 }
 

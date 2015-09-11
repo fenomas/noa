@@ -1,6 +1,5 @@
 
 TODO
-	work out who owns sprite meshes and sprite display behavior
 	
 	open up entities.add() to be explicit, reduce inter-component dependency
 	THEN generalize for e.g. mobs
@@ -28,4 +27,11 @@ Movement
 		update mesh positions to body.position + velocity/dt
 
 
+
+Function injection:
+	window._ct = 0
+	var q = function(x,y,z) { this.x=x, this.y=y, this.z=z; window._ct++ }
+	q.prototype = BABYLON.Vector3.prototype
+	for (var s in BABYLON.Vector3) { q[s] = BABYLON.Vector3[s] }
+	BABYLON.Vector3 = q
 
