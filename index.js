@@ -81,20 +81,22 @@ function Engine(opts) {
   this.playerEntity = ents.add(
     opts.playerStart,    // starting location- TODO: get from options
     opts.playerWidth, opts.playerHeight,
-    null, null, // box mesh, no meshOffset, 
-    true,                  // do physics
-    true, null,            // collideTerrain, onCollide
-    true, null,            // collideEntities, onCollide
-    true                   // shadow
+    null, null,          // no mesh for now, no meshOffset, 
+    true, true
   )
-    
+  
+  // tag the entity as the player, make it collide with terrain and other entities
+  ents.addComponent(this.playerEntity, ents.components.player)
+	ents.addComponent(this.playerEntity, ents.components.collideTerrain)
+	ents.addComponent(this.playerEntity, ents.components.collideEntities)
+
+  // adjust default physics parameters
   var body = ents.getPhysicsBody(this.playerEntity)
   body.gravityMultiplier = 2 // less floaty
   body.autoStep = opts.playerAutoStep // auto step onto blocks
-  this.playerBody = body
   
-  // tag the entity as the player
-  ents.addComponent(this.playerEntity, ents.components.player)
+  /** reference to player entity's physics body */
+  this.playerBody = body
   
   // input component - sets entity's movement state from key inputs
   ents.addComponent(this.playerEntity, ents.components.receivesInputs)
@@ -259,7 +261,9 @@ Engine.prototype.setBlock = function(id, x, y, z) {
   this.world.setBlockID( id, arr[0], arr[1], arr[2] );
 }
 
-/** @param id,x,y,z */
+/**
+ * Adds a block unless obstructed by entities 
+ * @param id,x,y,z */
 Engine.prototype.addBlock = function(id, x, y, z) {
   // add a new terrain block, if nothing blocks the terrain there
   var arr = (x.length) ? x : [x,y,z]
@@ -267,12 +271,16 @@ Engine.prototype.addBlock = function(id, x, y, z) {
   this.world.setBlockID( id, arr[0], arr[1], arr[2] );
 }
 
-/** */
+/**
+ * Returns location of currently targeted block
+ */
 Engine.prototype.getTargetBlock = function() {
   return this._blockTargetLoc
 }
 
-/** */
+/**
+ * Returns location adjactent to target (e.g. for block placement)
+ */
 Engine.prototype.getTargetBlockAdjacent = function() {
   return this._blockPlacementLoc
 }

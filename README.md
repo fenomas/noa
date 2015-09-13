@@ -25,6 +25,8 @@ var noa = noaEngine(opts)
 
 * **playerEntity**  - Entity id for the player entity
 
+* **playerBody**  - reference to player entity's physics body
+
 * **cameraTarget**  - entity to track camera target position
 
 * **setPaused(paused)**  - Pausing the engine will also stop render/tick events, etc.
@@ -33,11 +35,11 @@ var noa = noaEngine(opts)
 
 * **setBlock(x,y,z)** 
 
-* **addBlock(id,x,y,z)** 
+* **addBlock(id,x,y,z)**  - Adds a block unless obstructed by entities 
 
-* **getTargetBlock()** 
+* **getTargetBlock()**  - Returns location of currently targeted block
 
-* **getTargetBlockAdjacent()** 
+* **getTargetBlockAdjacent()**  - Returns location adjactent to target (e.g. for block placement)
 
 * **getPlayerPosition()** 
 
