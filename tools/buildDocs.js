@@ -4,6 +4,7 @@ var markdox = require('markdox')
 markdox.process(
 	[
 		'index.js',
+		'lib/entities.js',
 		'lib/world.js'
 	],
 	{
