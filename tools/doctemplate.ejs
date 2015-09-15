@@ -29,7 +29,8 @@ or [testbed app](https://github.com/andyhall/noa-testbed).
         <? } else { 
           __tempName = comment.name;
           if (comment.isMethod || comment.isFunction) {
-            __tempName += '(' + comment.paramStr + ')';
+            var space = (comment.paramStr.length) ? ' ' : '';
+            __tempName += space + '('  + comment.paramStr + ')';
           }
           __tempDesc = '';
           if (comment.description) {
