@@ -20,7 +20,7 @@ module.exports = function (noa) {
 				throw new Error('Mesh component added without a mesh - probably a bug!')
 			}
 			if (!state.offset) {
-				state.offset = new vec3()
+				state.offset = new vec3.create()
 			}
 		},
 
