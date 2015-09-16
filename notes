@@ -1,11 +1,11 @@
 
 TODO
-	
-	open up entities.add() to be explicit, reduce inter-component dependency
-	THEN generalize for e.g. mobs
+	make physics engine handle bodies that don't collide with terrain
+	make terrain component aware of this
 	
 	Later: need to rework camera to just be a free camera that looksAt() stuff?
-	
+	.. in order to have a follow camera with a target offset from player mesh
+
 
 camera management
 	on Render:
