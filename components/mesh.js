@@ -1,5 +1,6 @@
 'use strict';
 
+var vec3 = require('gl-vec3')
 
 module.exports = function (noa) {
 	return {
@@ -13,7 +14,14 @@ module.exports = function (noa) {
 
 
 		onAdd: function (eid, state) {
-			noa.rendering.addDynamicMesh(state.mesh)
+			if (state.mesh) {
+				noa.rendering.addDynamicMesh(state.mesh)
+			} else {
+				throw new Error('Mesh component added without a mesh - probably a bug!')
+			}
+			if (!state.offset) {
+				state.offset = new vec3()
+			}
 		},
 
 
