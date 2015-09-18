@@ -309,8 +309,10 @@ Engine.prototype.getPlayerEyePosition = function() {
 Engine.prototype.getCameraVector = function() {
   // rendering works with babylon's xyz vectors
   var v = this.rendering.getCameraVector()
-  return vec3.fromValues( v.x, v.y, v.z )
+  vec3.set(_camVec, v.x, v.y, v.z)
+  return _camVec
 }
+var _camVec = vec3.create()
 
 /**
  * @param pos
