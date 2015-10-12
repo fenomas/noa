@@ -71,7 +71,11 @@ function Engine(opts) {
   
   // Entity manager / Entity Component System (ECS)
   this.entities = createEntities( this, opts )
-  var ents = this.entities
+  
+  // convenience
+  this.ents = this.entities
+  this.ents.comps = this.entities.components
+  var ents = this.ents
 
   // keep reference to the player's mesh for convenience
   // use placeholder to start with (to be overwritten by client)
