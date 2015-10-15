@@ -27,7 +27,8 @@ var defaults = {
   playerStart: [0,10,0],
   playerAutoStep: false,
   tickRate: 30,
-  blockTestDistance: 10
+  blockTestDistance: 10,
+  stickyPointerLock: true,
 }
 
 /**
