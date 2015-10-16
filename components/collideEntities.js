@@ -29,54 +29,56 @@ var noa
  * 
 */
 
- 
+
 
 module.exports = function (_noa) {
 	noa = _noa
-	
+
 	return {
 
 		name: 'collide-entities',
 
 		state: {
-			collideBits: 1|0,
-			collideMask: 1|0,
+			collideBits: 1 | 0,
+			collideMask: 1 | 0,
 			callback: null,
+			// isCylinder: true,
 		},
 
-		onAdd: null, 
+		onAdd: null,
 
 		onRemove: null,
-		
+
 
 		processor: function entityCollider(dt, states) {
 			// populate data struct that boxIntersect looks for
-			var ints = populateIntervals(states)
+			populateIntervals(states)
 			
-			// find collisions and call callbacks
-			boxIntersect(ints, function (i, j) {
+			// run the intersect library
+			boxIntersect(intervals, function intersectHandler(i, j) {
 				var istate = states[i]
 				var jstate = states[j]
-				
+			
+				// todo: implement testing entities as cylinders/spheres?
+				// if (!cylinderTest(istate, jstate)) return
+			
 				if (istate.collideMask & jstate.collideBits) {
 					if (istate.callback) istate.callback(jstate.__id)
 				}
 				if (jstate.collideMask & istate.collideBits) {
 					if (jstate.callback) jstate.callback(istate.__id)
 				}
-				
 			})
+
 		}
-		
-		
+
+
 	}
 }
 
 
 
-
-// implementation:
-
+// shared state
 var intervals = []
 
 function populateIntervals(states) {
@@ -86,7 +88,7 @@ function populateIntervals(states) {
 		intervals.push(new Float32Array(6))
 	}
 	intervals.length = states.length
-	
+
 	var ents = noa.entities
 	// populate [lo, lo, lo, hi, hi, hi] arrays
 	for (var i = 0; i < states.length; i++) {
@@ -100,10 +102,7 @@ function populateIntervals(states) {
 			arr[j + 3] = hi[j]
 		}
 	}
-	
-	return intervals
 }
-
 
 
 
