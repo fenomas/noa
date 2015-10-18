@@ -13,7 +13,7 @@ var createPhysics = require('./lib/physics')
 var createCamControls = require('./lib/camera')
 var createRegistry = require('./lib/registry')
 var createEntities = require('./lib/entities')
-var raycast = require('voxel-raycast')
+var raycast = require('fast-voxel-raycast')
 
 
 module.exports = Engine
@@ -136,16 +136,25 @@ function Engine(opts) {
   var solidGetter = { getBlock:function(x,y,z) {
     return world.getBlockSolidity(x,y,z)
   }}
+  var blockAccessor = function(x,y,z) {
+    return world.getBlock(x,y,z)
+  }
+  var solidAccessor = function(x,y,z) {
+    return world.getBlockSolidity(x,y,z)
+  }
   
   // accessors
   this._traceWorldRay = function(pos, vec, dist, hitPos, hitNorm) {
-    return raycast(blockGetter, pos, vec, dist, hitPos, hitNorm)
+    return raycast(blockAccessor, pos, vec, dist, hitPos, hitNorm)
   }
   
   this._traceWorldRayCollision = function(pos, vec, dist, hitPos, hitNorm) {
-    return raycast(solidGetter, pos, vec, dist, hitPos, hitNorm)
+    return raycast(solidAccessor, pos, vec, dist, hitPos, hitNorm)
   }
   
+  
+  this._blockTargetLoc = vec3.create()
+  this._blockPlacementLoc = vec3.create()
 
 
 
