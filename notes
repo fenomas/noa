@@ -1,4 +1,10 @@
 
+position component update:
+	breaks:
+		entities.getAABB		-> now implicitly read-only
+		entities.getPosition 	-> getPositionData
+		
+
 TODO
 	make physics engine handle bodies that don't collide with terrain
 	make terrain component aware of this

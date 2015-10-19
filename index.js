@@ -120,7 +120,7 @@ function Engine(opts) {
   /** entity to track camera target position */
   this.cameraTarget = ents.createEntity([
     ents.components.followsPlayer, 
-    ents.components.aabb
+    ents.components.position
   ])
 
 
@@ -130,12 +130,6 @@ function Engine(opts) {
 
   // plumbing for picking/raycasting
   var world = this.world
-  var blockGetter = { getBlock:function(x,y,z) {
-    return world.getBlock(x,y,z)
-  }}
-  var solidGetter = { getBlock:function(x,y,z) {
-    return world.getBlockSolidity(x,y,z)
-  }}
   var blockAccessor = function(x,y,z) {
     return world.getBlock(x,y,z)
   }
@@ -302,7 +296,7 @@ Engine.prototype.getTargetBlockAdjacent = function() {
 
 /** */
 Engine.prototype.getPlayerPosition = function() {
-  return this.entities.getPosition(this.playerEntity)
+  return this.entities.getPositionData(this.playerEntity).position
 }
 
 /** */
@@ -312,12 +306,12 @@ Engine.prototype.getPlayerMesh = function() {
 
 /** */
 Engine.prototype.getPlayerEyePosition = function() {
-  var box = this.entities.getAABB(this.playerEntity)
-  var height = box.vec[1]
-  var loc = this.getPlayerPosition()
-  loc[1] += height * .9 // eyes below top of head
-  return loc
+  var dat = this.entities.getPositionData(this.playerEntity)
+  vec3.copy(_eyeLoc, dat.position)
+  _eyeLoc[1] += 0.9 * dat.height
+  return _eyeLoc
 }
+var _eyeLoc = vec3.create()
 
 /** */
 Engine.prototype.getCameraVector = function() {
@@ -329,26 +323,27 @@ Engine.prototype.getCameraVector = function() {
 var _camVec = vec3.create()
 
 /**
+ * Determine which block if any is targeted and within range
  * @param pos
  * @param vec
  * @param dist
  */
-// Determine which block if any is targeted and within range
 Engine.prototype.pick = function(pos, vec, dist) {
   if (dist===0) return null
   pos = pos || this.getPlayerEyePosition()
   vec = vec || this.getCameraVector()
   dist = dist || this.blockTestDistance
-  var hitNorm = []
-  var hitPos = []
-  var hitBlock = this._traceWorldRayCollision(pos, vec, dist, hitPos, hitNorm)
+  var hitBlock = this._traceWorldRayCollision(pos, vec, dist, _hitPos, _hitNorm)
   if (hitBlock) return {
     block: hitBlock,
-    position: hitPos,
-    normal: hitNorm
+    position: _hitPos,
+    normal: _hitNorm
   }
   return null
 }
+var last = ''
+var _hitPos = vec3.create()
+var _hitNorm = vec3.create()
 
 
 // Determine which block if any is targeted and within range
@@ -357,18 +352,22 @@ Engine.prototype.setBlockTargets = function() {
   var result = this.pick()
   // process and cache results
   if (result) {
-    var loc = result.position.map(Math.floor)
+    var hit = result.position
     var norm = result.normal
-    this._blockTargetLoc = loc
-    this._blockPlacementLoc = [ loc[0]+norm[0], loc[1]+norm[1], loc[2]+norm[2] ]
-    this.rendering.highlightBlockFace(true, loc, norm)
+    
+    // hit will be on a voxel's face, so avoid tolerance issues by 
+    // sinking back along the normal before flooring
+    vec3.scaleAndAdd(hit, hit, norm, -0.5)
+    for (var i=0; i<3; i++) hit[i] = Math.floor(hit[i])
+    
+    // save for use by engine, and highlight
+    vec3.copy(this._blockTargetLoc, hit)
+    vec3.add(this._blockPlacementLoc, hit, norm)
+    this.rendering.highlightBlockFace(true, hit, norm)
   } else {
-    this._blockTargetLoc = this._blockPlacementLoc = null
     this.rendering.highlightBlockFace( false )
   }
 }
-
-
 
 
 
