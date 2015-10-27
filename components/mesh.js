@@ -22,6 +22,13 @@ module.exports = function (noa) {
 			if (!state.offset) {
 				state.offset = new vec3.create()
 			}
+			
+			// initialize mesh to correct position
+			var pos = noa.ents.getPositionData(eid).position
+			var mpos = state.mesh.position
+			mpos.x = pos[0] + state.offset[0]
+			mpos.y = pos[1] + state.offset[1]
+			mpos.z = pos[2] + state.offset[2]
 		},
 
 
