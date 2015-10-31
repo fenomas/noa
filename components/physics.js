@@ -1,7 +1,7 @@
 'use strict';
 
 var vec3 = require('gl-vec3')
-var _tempVec = vec3.create()
+var tempVec = vec3.create()
 
 
 module.exports = function (noa) {
@@ -37,13 +37,26 @@ module.exports = function (noa) {
 			// http://gafferongames.com/game-physics/fix-your-timestep/
 
 			var backtrack = - (noa._tickRate - dt) / 1000
+			var pos = tempVec
 			
 			for (var i = 0; i < states.length; ++i) {
 				var state = states[i]
-				var pdat = noa.ents.getPositionData(state.__id)
+				var id = state.__id
+				var pdat = noa.ents.getPositionData(id)
 				
-				// entity.renderPos = pos + backtrack * body.velocity
-				vec3.scaleAndAdd(pdat.renderPosition, pdat.position, state.body.velocity, backtrack)
+				// pos = pos + backtrack * body.velocity
+				vec3.scaleAndAdd(pos, pdat.position, state.body.velocity, backtrack)
+				
+				// copy values over to renderPosition, 
+				// except smooth out y transition if the entity is autostepping
+				if (noa.ents.hasComponent(id, noa.ents.comps.autoStepping)) {
+					var curr = pdat.renderPosition[1]
+					pos[1] = curr + (pos[1]-curr) * .3
+				}
+
+				vec3.copy(pdat.renderPosition, pos)
+
+				
 			}
 		}
 		

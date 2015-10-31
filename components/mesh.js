@@ -44,7 +44,6 @@ module.exports = function (noa) {
 		renderProcessor: function(dt, states) {
 			// before render move each mesh to its render position, 
 			// set by the physics engine or driving logic
-			var autostep = noa.ents.comps.autoStepping
 			
 			for (var i = 0; i < states.length; ++i) {
 				var state = states[i]
@@ -55,12 +54,6 @@ module.exports = function (noa) {
 				var y = rpos[1] + state.offset[1]
 				var z = rpos[2] + state.offset[2]
 				
-				if (noa.ents.hasComponent(id, autostep)) {
-					// soften mesh's vertical movement for a short while after an autostep
-					var curr = state.mesh.position.y
-					y = curr + (y-curr) * .3
-				}
-
 				state.mesh.position.copyFromFloats(x, y, z)
 			}
 		}
