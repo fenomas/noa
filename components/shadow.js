@@ -28,7 +28,21 @@ module.exports = function (noa) {
 				var shadowDist = noa.entities.shadowDist
 				updateShadowHeight(state.__id, state.mesh, state.size, shadowDist, noa)
 			}
+		},
+		
+		
+		renderProcessor: function(dt, states) {
+			// before render adjust shadow x/z to render positions
+			for (var i = 0; i < states.length; ++i) {
+				var state = states[i]
+				var rpos = noa.ents.getPositionData(state.__id).renderPosition
+				var spos = state.mesh.position
+				spos.x = rpos[0]
+				spos.z = rpos[2]
+			}
 		}
+
+
 
 
 	}

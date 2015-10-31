@@ -20,6 +20,7 @@ module.exports = function (noa) {
 
 		state: {
 			position: null,
+			renderPosition: null,
 			width: 0.0,
 			height: 0.0,
 			aabb: null,
@@ -29,6 +30,8 @@ module.exports = function (noa) {
 
 
 		onAdd: function (eid, state) {
+			state.renderPosition = vec3.create()
+			
 			// populate accessors
 			state.setPosition = setPosition
 			state.updateFromAABB = updateFromAABB
@@ -37,6 +40,7 @@ module.exports = function (noa) {
 			var pos = state.position
 			state.position = vec3.create()
 			if (pos) vec3.copy(state.position, pos)
+			vec3.copy(state.renderPosition, state.position)
 			
 			// create "managed" AABB
 			var base = vec3.clone(state.position)

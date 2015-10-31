@@ -61,6 +61,12 @@ function Engine(opts) {
   // create world manager
   this.world = createWorld( this, opts )
 
+  // Entity manager / Entity Component System (ECS)
+  this.entities = createEntities( this, opts )
+  // convenience
+  this.ents = this.entities
+  this.ents.comps = this.entities.components
+  
   // rendering manager - abstracts all draws to 3D context
   this.rendering = createRendering(this, opts, this.container.canvas)
 
@@ -70,17 +76,8 @@ function Engine(opts) {
   // camera controller
   this.cameraControls = createCamControls( this, opts )
   
-  // Entity manager / Entity Component System (ECS)
-  this.entities = createEntities( this, opts )
-  
-  // convenience
-  this.ents = this.entities
-  this.ents.comps = this.entities.components
-  var ents = this.ents
 
-  // keep reference to the player's mesh for convenience
-  // use placeholder to start with (to be overwritten by client)
-  // this.playerMesh = this.rendering.makePlaceholderMesh()
+  var ents = this.ents
   
   /** Entity id for the player entity */
   this.playerEntity = ents.add(
@@ -116,12 +113,10 @@ function Engine(opts) {
   }
   ents.addComponent(this.playerEntity, ents.components.movement, moveOpts)
   
+  // how high above the player's position the eye is (for picking, camera tracking)  
+  this.playerEyeOffset = 0.9 * opts.playerHeight
   
-  /** entity to track camera target position */
-  this.cameraTarget = ents.createEntity([
-    ents.components.followsPlayer, 
-    ents.components.position
-  ])
+
 
 
 
@@ -150,6 +145,9 @@ function Engine(opts) {
   this._blockTargetLoc = vec3.create()
   this._blockPlacementLoc = vec3.create()
 
+  
+  // init rendering stuff that needed to wait for engine internals
+  this.rendering.initScene()
 
 
   // temp hacks for development
@@ -306,9 +304,9 @@ Engine.prototype.getPlayerMesh = function() {
 
 /** */
 Engine.prototype.getPlayerEyePosition = function() {
-  var dat = this.entities.getPositionData(this.playerEntity)
-  vec3.copy(_eyeLoc, dat.position)
-  _eyeLoc[1] += 0.9 * dat.height
+  var pos = this.entities.getPositionData(this.playerEntity).position
+  vec3.copy(_eyeLoc, pos)
+  _eyeLoc[1] += this.playerEyeOffset
   return _eyeLoc
 }
 var _eyeLoc = vec3.create()

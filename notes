@@ -1,4 +1,22 @@
 
+
+camera and movement after latest changes:
+	rendering processors:
+		physics - set backtracked renderPositions from physics data
+		followsEntity - copy entity's renderPosition from followed target
+		mesh - move meshes to render positions
+	rendering function:
+		updateCamera
+			copy camera target pos/rot to cameraHolder mesh
+			tween camera position (inside camera holder) towards capped position
+			check if camera is now inside solid block
+				if so, check obstructions
+					set cam offset and cap distance
+				move camera to cap
+		acutal render
+		
+
+
 position component update:
 	breaks:
 		entities.getAABB		-> now implicitly read-only
@@ -13,9 +31,6 @@ TODO
 	.. in order to have a follow camera with a target offset from player mesh
 
 
-camera management
-	on Render:
-		get mouse inputs, set camera rotation, clear mouse inputs
 
 
 Movement
