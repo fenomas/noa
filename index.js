@@ -340,14 +340,17 @@ Engine.prototype.pick = function(pos, vec, dist) {
   vec = vec || this.getCameraVector()
   dist = dist || this.blockTestDistance
   var hitBlock = this._traceWorldRayCollision(pos, vec, dist, _hitPos, _hitNorm)
-  if (hitBlock) return {
-    block: hitBlock,
-    position: _hitPos,
-    normal: _hitNorm
+  if (hitBlock) {
+    // countersink hit slightly into struck block, so that flooring it gives the expected result
+    for (var i=0; i<3; i++) _hitPos[i] -= 0.01 * _hitNorm[i]
+    return {
+      block: hitBlock,
+      position: _hitPos,
+      normal: _hitNorm
+    }
   }
   return null
 }
-var last = ''
 var _hitPos = vec3.create()
 var _hitNorm = vec3.create()
 
@@ -358,16 +361,14 @@ Engine.prototype.setBlockTargets = function() {
   var result = this.pick()
   // process and cache results
   if (result) {
-    this._blockTarget = result.block
     var hit = result.position
     var norm = result.normal
     
-    // hit will be on a voxel's face, so avoid tolerance issues by 
-    // sinking back along the normal before flooring
-    vec3.scaleAndAdd(hit, hit, norm, -0.5)
+    // pick results are slightly inside struck block, so it's safe to floor 
     for (var i=0; i<3; i++) hit[i] = Math.floor(hit[i])
     
     // save for use by engine, and highlight
+    this._blockTarget = this.getBlock(hit[0], hit[1], hit[2])
     vec3.copy(this._blockTargetLoc, hit)
     vec3.add(this._blockPlacementLoc, hit, norm)
     this.rendering.highlightBlockFace(true, hit, norm)
