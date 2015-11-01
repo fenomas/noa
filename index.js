@@ -142,6 +142,7 @@ function Engine(opts) {
   }
   
   
+  this._blockTarget = null
   this._blockTargetLoc = vec3.create()
   this._blockPlacementLoc = vec3.create()
 
@@ -278,17 +279,24 @@ Engine.prototype.addBlock = function(id, x, y, z) {
 }
 
 /**
- * Returns location of currently targeted block
+ * Returns value of currently targeted block (or null if none)
  */
 Engine.prototype.getTargetBlock = function() {
-  return this._blockTargetLoc
+  return this._blockTarget
+}
+
+/**
+ * Returns location of currently targeted block
+ */
+Engine.prototype.getTargetBlockPosition = function() {
+  return this._blockTarget ? this._blockTargetLoc : null
 }
 
 /**
  * Returns location adjactent to target (e.g. for block placement)
  */
 Engine.prototype.getTargetBlockAdjacent = function() {
-  return this._blockPlacementLoc
+  return this._blockTarget ? this._blockPlacementLoc : null
 }
 
 
@@ -350,6 +358,7 @@ Engine.prototype.setBlockTargets = function() {
   var result = this.pick()
   // process and cache results
   if (result) {
+    this._blockTarget = result.block
     var hit = result.position
     var norm = result.normal
     
@@ -364,6 +373,7 @@ Engine.prototype.setBlockTargets = function() {
     this.rendering.highlightBlockFace(true, hit, norm)
   } else {
     this.rendering.highlightBlockFace( false )
+    this._blockTarget = null
   }
 }
 
