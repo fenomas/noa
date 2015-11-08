@@ -53,7 +53,7 @@ function Engine(opts) {
   this.container = createContainer(this, opts)
 
   // inputs manager - abstracts key/mouse input
-  this.inputs = createInputs(this, opts, this.container._element)
+  this.inputs = createInputs(this, opts, this.container.element)
 
   // create block/item property registry
   this.registry = createRegistry( this, opts )
@@ -223,8 +223,8 @@ Engine.prototype.render = function(framePart) {
   if (this._paused) return
   var dt = framePart*this._tickRate // ms since last tick
   // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
-  if (this.container.hasPointerLock() || 
-      !this.container.supportsPointerLock() || 
+  if (this.container.hasPointerLock || 
+      !this.container.supportsPointerLock || 
       this.inputs.state.fire) {
     this.cameraControls.updateForRender()
   }
@@ -235,7 +235,6 @@ Engine.prototype.render = function(framePart) {
   this.rendering.render(dt)
   this.emit('afterRender', dt)
 }
-
 
 
 
