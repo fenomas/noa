@@ -1,4 +1,6 @@
 
+TODO: go through all BJS material handling and set checkOnlyOnce, markDirty, etc. 
+
 
 camera and movement after latest changes:
 	rendering processors:
