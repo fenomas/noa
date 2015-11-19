@@ -199,17 +199,15 @@ Engine.prototype.tick = function() {
 
 // hacky temporary profiling substitute 
 // since chrome profiling drops fps so much... :(
-var t, tt=0, tc=0, tlc
+var t, tot=0, tc=0
 function t0() {
   t = performance.now()
 }
 function t1(s) {
-  tt += performance.now()-t
-  tc += 1
-  tlc += 1
-  if (tlc<100) return
-  tlc = 0
-  console.log( s, ': avg ', (tt/tc).toFixed(2), 'ms')
+  tc++; tot += performance.now()-t
+  if (tc<300) return
+  console.log( s, 'avg:', (tot/tc).toFixed(2)+'ms')
+  tc=0; tot=0
 }
 
 
@@ -232,7 +230,9 @@ Engine.prototype.render = function(framePart) {
   this.inputs.state.dx = this.inputs.state.dy = 0
   // events and render
   this.emit('beforeRender', dt)
+// t0()
   this.rendering.render(dt)
+// t1('render')
   this.emit('afterRender', dt)
 }
 
