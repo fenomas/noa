@@ -27,8 +27,6 @@ var noa = noaEngine(opts)
 
 * **playerBody**  - reference to player entity's physics body
 
-* **cameraTarget**  - entity to track camera target position
-
 * **setPaused (paused)**  - Pausing the engine will also stop render/tick events, etc.
 
 * **getBlock (x,y,z)** 
@@ -37,7 +35,9 @@ var noa = noaEngine(opts)
 
 * **addBlock (id,x,y,z)**  - Adds a block unless obstructed by entities 
 
-* **getTargetBlock()**  - Returns location of currently targeted block
+* **getTargetBlock()**  - Returns value of currently targeted block (or null if none)
+
+* **getTargetBlockPosition()**  - Returns location of currently targeted block
 
 * **getTargetBlockAdjacent()**  - Returns location adjactent to target (e.g. for block placement)
 
@@ -49,6 +49,8 @@ var noa = noaEngine(opts)
 
 * **getCameraVector()** 
 
+* **pick (pos, vec, dist)**  - Determine which block if any is targeted and within range
+
 <!-- End index.js -->
 
 ----
@@ -57,44 +59,21 @@ var noa = noaEngine(opts)
 
 ## noa.entities
 Wrangles entities. 
-Encapsulates an ECS. Exposes helpers for adding entities, components, 
-and getting component data for entities. 
+This class is an instance of [ECS](https://github.com/andyhall/ent-comp), 
+and as such implements the usual ECS methods.
+It's also decorated with helpers and accessor functions for getting component existence/state.
 
 Expects entity definitions in a specific format - see source `components` folder for examples.
 
-* **components**  - Collection of known components
-
-* **createComponent (comp)**  - Creates a new component from a definiton object
-
-* **deleteComponent (comp)** 
-
-* **createEntity (compList)**  - Takes an array of components to add (per `addComponent`)
-
-* **removeEntity (id)**  - deletes an entity, after removing all its components
-
-* **addComponent (id, comp, state)**  - Add component to an entity. Optional `state` param can be only partially populated.
-
-* **getDataList (comp)**  - Get array of state objects for all entities having a given component 
-
-* **isPlayer (id)**  - test if entity is the player
-
-* **getAABB (id)**  - get an entity's bounding box
-
-* **getPosition (id)**  - get an entity's position (bottom center of aabb)
-
-* **getPhysicsBody (id)**  - get reference to an entity's physics body
-
-* **getMeshData (id)**  - returns `{mesh, offset}`
+* **names**  - Hash containing the component names of built-in components.
 
 * **isTerrainBlocked (x,y,z)** 
 
 * **add (position, width, height..)** 
 
-  Helper to set up a general entity
+  Helper to set up a general entity, and populate with some common components depending on arguments.
   
-    Parameters: position, width, height, mesh, meshOffset, doPhysics, shadow
-
-* **remove()**  - Queues an entity to be removed next tick
+  Parameters: position, width, height, mesh, meshOffset, doPhysics, shadow
 
 <!-- End lib/entities.js -->
 
@@ -118,6 +97,8 @@ Module for managing the world, and its chunks
 * **getBlockProperties (x,y,z)** 
 
 * **setBlockID (x,y,z)** 
+
+* **isBoxUnobstructed (x,y,z)** 
 
 * **setChunkData (id, array)**  - client should call this after creating a chunk's worth of data (as an ndarray) 
 
