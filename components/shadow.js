@@ -1,10 +1,14 @@
 'use strict';
 
+var shadowDist
 
-module.exports = function (noa) {
+module.exports = function (noa, dist) {
+	
+	shadowDist = dist
+	
 	return {
 		
-		name: 'has-shadow',
+		name: 'shadow',
 
 		state: {
 			mesh:	null,
@@ -22,16 +26,16 @@ module.exports = function (noa) {
 		},
 
 
-		processor: function shadowProcessor(dt, states) {
+		system: function shadowSystem(dt, states) {
+			var dist = shadowDist
 			for (var i=0; i<states.length; i++) {
 				var state = states[i]
-				var shadowDist = noa.entities.shadowDist
-				updateShadowHeight(state.__id, state.mesh, state.size, shadowDist, noa)
+				updateShadowHeight(state.__id, state.mesh, state.size, dist, noa)
 			}
 		},
 		
 		
-		renderProcessor: function(dt, states) {
+		renderSystem: function(dt, states) {
 			// before render adjust shadow x/z to render positions
 			for (var i = 0; i < states.length; ++i) {
 				var state = states[i]

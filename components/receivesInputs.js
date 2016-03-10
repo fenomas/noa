@@ -11,7 +11,7 @@
 module.exports = function (noa) {
 	return {
 
-		name: 'receives-inputs',
+		name: 'receivesInputs',
 
 		state: {},
 
@@ -19,14 +19,13 @@ module.exports = function (noa) {
 
 		onRemove: null,
 
-		processor: function inputProcessor(dt, states) {
+		system: function inputProcessor(dt, states) {
 			var ents = noa.entities
-			var moveComp = ents.components.movement
 			var inputState = noa.inputs.state
 			var camHeading = noa.rendering.getCameraRotation()[1]
 
 			for (var i = 0; i < states.length; i++) {
-				var moveState = ents.getData(states[i].__id, moveComp)
+				var moveState = ents.getMovement(states[i].__id)
 				setMovementState(moveState, inputState, camHeading)
 			}
 		}

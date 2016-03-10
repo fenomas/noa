@@ -4,7 +4,7 @@
 module.exports = function (noa) {
 	return {
 
-		name: 'collide-terrain',
+		name: 'collideTerrain',
 
 		state: {
 			callback: null
@@ -13,10 +13,10 @@ module.exports = function (noa) {
 		onAdd: function(eid, state) {
 			// add collide handler for physics engine to call
 			var ents = noa.entities
-			if (ents.hasComponent(eid, ents.components.physics)) {
+			if (ents.hasPhysics(eid)) {
 				var body = ents.getPhysicsBody(eid)
 				body.onCollide = function bodyOnCollide(impulse) {
-					var cb = ents.getData(eid, 'collide-terrain').callback
+					var cb = noa.ents.getCollideTerrain(eid).callback
 					if (cb) cb(impulse, eid)
 				}
 			}
@@ -24,13 +24,13 @@ module.exports = function (noa) {
 
 		onRemove: function(eid, state) {
 			var ents = noa.entities
-			if (ents.hasComponent(eid, ents.components.physics)) {
+			if (ents.hasPhysics(eid)) {
 				ents.getPhysicsBody(eid).onCollide = null
 			}
 		},
 		
 
-		processor: null
+		system: null
 
 
 	}

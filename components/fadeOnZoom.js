@@ -8,7 +8,7 @@
 module.exports = function (noa) {
 	return {
 
-		name: 'fade-on-zoom',
+		name: 'fadeOnZoom',
 
 		state: {
 			cutoff: 2.999,
@@ -19,7 +19,7 @@ module.exports = function (noa) {
 
 		onRemove: null,
 
-		processor: function fadeOnZoomProc(dt, states) {
+		system: function fadeOnZoomProc(dt, states) {
 			var zoom = noa.rendering._currentZoom
 			var ents = noa.entities
 			for (var i = 0; i < states.length; i++) {
@@ -32,7 +32,7 @@ module.exports = function (noa) {
 
 
 function checkZoom(state, id, zoom, ents) {
-	if (!ents.hasComponent(id, ents.components.mesh)) return
+	if (!ents.hasMesh(id)) return
 
 	if (state._showing && zoom < state.cutoff || !state._showing && zoom > state.cutoff) {
 		var mesh = ents.getMeshData(id).mesh

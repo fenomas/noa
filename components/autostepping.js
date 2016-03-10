@@ -14,12 +14,12 @@ module.exports = function (noa) {
 
 		onRemove: null,
 
-		processor: function(dt, states) {
+		system: function(dt, states) {
 			// remove self after time elapses
 			for (var i = 0; i < states.length; ++i) {
 				var state = states[i]
 				state.time -= dt
-				if (state.time < 0) noa.ents.removeComponent(state.__id, this)
+				if (state.time < 0) noa.ents.removeComponent(state.__id, 'autostepping')
 			}
 		},
 		

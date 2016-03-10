@@ -4,7 +4,7 @@
 module.exports = function () {
 	return {
 		
-		name: 'is-player',
+		name: 'player',
 
 		state: {},
 
@@ -12,7 +12,7 @@ module.exports = function () {
 
 		onRemove: null,
 
-		processor: null
+		system: null
 
 
 	}

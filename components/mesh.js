@@ -5,7 +5,7 @@ var vec3 = require('gl-vec3')
 module.exports = function (noa) {
 	return {
 		
-		name: 'has-mesh',
+		name: 'mesh',
 
 		state: {
 			mesh: null, 
@@ -37,11 +37,11 @@ module.exports = function (noa) {
 		},
 
 
-		processor: null,
+		system: null,
 		
 		
 		
-		renderProcessor: function(dt, states) {
+		renderSystem: function(dt, states) {
 			// before render move each mesh to its render position, 
 			// set by the physics engine or driving logic
 			

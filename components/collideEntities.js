@@ -36,7 +36,7 @@ module.exports = function (_noa) {
 
 	return {
 
-		name: 'collide-entities',
+		name: 'collideEntities',
 
 		state: {
 			collideBits: 1 | 0,
@@ -50,7 +50,7 @@ module.exports = function (_noa) {
 		onRemove: null,
 
 
-		processor: function entityCollider(dt, states) {
+		system: function entityCollider(dt, states) {
 			// populate data struct that boxIntersect looks for
 			populateIntervals(states)
 			

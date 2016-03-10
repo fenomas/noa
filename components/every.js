@@ -16,7 +16,7 @@ module.exports = function (noa) {
 
 		onRemove: null,
 
-		processor: function everyProcessor(dt, states) {
+		system: function everyProcessor(dt, states) {
 			for (var i=0; i<states.length; i++) {
 				var state = states[i]
 				state._ct += dt

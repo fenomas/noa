@@ -13,7 +13,7 @@ module.exports = function (noa) {
 	
 	return {
 
-		name: 'follows-entity',
+		name: 'followsEntity',
 
 		state: {
 			entity: 0|0,
@@ -29,7 +29,7 @@ module.exports = function (noa) {
 		
 		
 		// on tick, copy over regular positions
-		processor: function followEntity(dt, states) {
+		system: function followEntity(dt, states) {
 			var pos = _tempVec
 			for (var i=0; i<states.length; i++) {
 				var state = states[i]
@@ -42,7 +42,7 @@ module.exports = function (noa) {
 		
 		
 		// on render, copy over render positions
-		renderProcessor: function followEntityMesh(dt, states) {
+		renderSystem: function followEntityMesh(dt, states) {
 			for (var i=0; i<states.length; i++) {
 				var state = states[i]
 				var self = noa.ents.getPositionData(state.__id)

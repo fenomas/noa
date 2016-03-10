@@ -52,7 +52,7 @@ module.exports = function (noa) {
 
 		onRemove: null,
 
-		processor: null
+		system: null
 
 
 	}

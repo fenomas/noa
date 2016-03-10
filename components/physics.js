@@ -7,7 +7,7 @@ var tempVec = vec3.create()
 module.exports = function (noa) {
 	return {
 		
-		name: 'physics-body',
+		name: 'physics',
 
 
 		state: {
@@ -25,10 +25,10 @@ module.exports = function (noa) {
 		},
 
 
-		processor: null,
+		system: null,
 		
 		
-		renderProcessor: function(dt, states) {
+		renderSystem: function(dt, states) {
 			// dt is time (ms) since physics engine tick
 			// to avoid temporal aliasing, render the state as if lerping between
 			// the last position and the next one 
@@ -49,7 +49,7 @@ module.exports = function (noa) {
 				
 				// copy values over to renderPosition, 
 				// except smooth out y transition if the entity is autostepping
-				if (noa.ents.hasComponent(id, noa.ents.comps.autoStepping)) {
+				if (noa.ents.isStepping(id)) {
 					var curr = pdat.renderPosition[1]
 					pos[1] = curr + (pos[1]-curr) * .3
 				}

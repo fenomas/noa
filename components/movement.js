@@ -46,7 +46,7 @@ module.exports = function (noa) {
 		onRemove: null,
 
 
-		processor: function movementProcessor(dt, states) {
+		system: function movementProcessor(dt, states) {
 			var ents = noa.entities
 
 			for (var i = 0; i < states.length; i++) {

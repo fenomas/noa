@@ -65,7 +65,6 @@ function Engine(opts) {
   this.entities = createEntities( this, opts )
   // convenience
   this.ents = this.entities
-  this.ents.comps = this.entities.components
   
   // rendering manager - abstracts all draws to 3D context
   this.rendering = createRendering(this, opts, this.container.canvas)
@@ -88,9 +87,9 @@ function Engine(opts) {
   )
   
   // tag the entity as the player, make it collide with terrain and other entities
-  ents.addComponent(this.playerEntity, ents.components.player)
-	ents.addComponent(this.playerEntity, ents.components.collideTerrain)
-	ents.addComponent(this.playerEntity, ents.components.collideEntities)
+  ents.addComponent(this.playerEntity, ents.names.player)
+  ents.addComponent(this.playerEntity, ents.names.collideTerrain)
+  ents.addComponent(this.playerEntity, ents.names.collideEntities)
 
   // adjust default physics parameters
   var body = ents.getPhysicsBody(this.playerEntity)
@@ -101,17 +100,17 @@ function Engine(opts) {
   this.playerBody = body
   
   // input component - sets entity's movement state from key inputs
-  ents.addComponent(this.playerEntity, ents.components.receivesInputs)
+  ents.addComponent(this.playerEntity, ents.names.receivesInputs)
   
   // add a component to make player mesh fade out when zooming in
-  ents.addComponent(this.playerEntity, ents.components.fadeOnZoom)
+  ents.addComponent(this.playerEntity, ents.names.fadeOnZoom)
   
   // movement component - applies movement forces
   // todo: populate movement settings from options
   var moveOpts = {
     airJumps: 1
   }
-  ents.addComponent(this.playerEntity, ents.components.movement, moveOpts)
+  ents.addComponent(this.playerEntity, ents.names.movement, moveOpts)
   
   // how high above the player's position the eye is (for picking, camera tracking)  
   this.playerEyeOffset = 0.9 * opts.playerHeight
@@ -191,7 +190,6 @@ Engine.prototype.tick = function() {
 // t0()
   this.physics.tick(dt)           // iterates physics
 // t1('physics tick')
-  this.entities.update(dt)        // tells ECS to run all processors
   this.setBlockTargets()          // finds targeted blocks, and highlights one if needed
   this.emit('tick', dt)
 }
