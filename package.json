@@ -17,7 +17,7 @@
   "dependencies": {
     "aabb-3d": "andyhall/aabb-3d",
     "box-intersect": "^1.0.1",
-    "ensy": "andyhall/entity-system-js#659f3b6bcf79a8511bbbc0289e6bd934200a013a",
+    "ent-comp": "^0.3.0",
     "extend": "^3.0.0",
     "fast-voxel-raycast": "^0.1.1",
     "game-inputs": "^0.2.0",
