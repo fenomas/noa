@@ -15,7 +15,7 @@ var opts = {
 	chunkAddDistance: 1,
 	chunkRemoveDistance: 3,
 	blockTestDistance: 50,
-	texturePath: '/textures/',
+	texturePath: 'textures/',
 	playerStart: [0.5, 15, 0.5],
 	playerHeight: 1.4,
 	playerWidth: 1.0,
