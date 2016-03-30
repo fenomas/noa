@@ -3,14 +3,41 @@
 
 An experimental voxel game engine.
 
-[Live demo of testbed here!](http://andyhall.github.io/noa-testbed/)
+[Live demo of test app here!](http://andyhall.github.io/noa-testbed/)
 
-For content examples see the [hello-world app](https://github.com/andyhall/noa-hello-world)
-or [testbed app](https://github.com/andyhall/noa-testbed).
+### Usage
+
+Under active development, best way to try it is to clone and hack on it:
+
+```sh
+(clone this repo)
+cd noa
+npm install
+npm start       # runs /examples/hello-world
+npm test        # runs /examples/test
+```
+
+Here are live versions of the examples: 
+ * [hello-world example](http://andyhall.github.io/noa/examples/hello-world/)
+ * [test example](http://andyhall.github.io/noa/examples/test/)
+
+To build a new world app, use `noa` as a dependency:
+
+```sh
+npm install noa-engine
+```
+
+```js
+var engine = require('noa-engine')
+var noa = engine({
+    inverseY: true,
+    // see source or examples for more options and usage
+})
+```
 
 ----
 
-## API reference:
+## Partial API reference:
 
 <? docfiles.forEach(function(doc) { ?>
 

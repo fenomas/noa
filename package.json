@@ -4,7 +4,8 @@
   "description": "Experimental voxel game engine",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "sleep 1 && open http://localhost:8080/ & webpack-dev-server -d --inline --content-base examples/hello-world/ examples/hello-world/index.js",
+    "test": "sleep 1 && open http://localhost:8080/ & webpack-dev-server -d --inline --content-base examples/test/ examples/test/index.js",
     "doc": "cat tools/buildDocs.js | node"
   },
   "author": "Andy Hall",
