@@ -56,11 +56,13 @@ var grassID = noa.registry.registerBlock(_id++, 'grass')
 var testID1 = noa.registry.registerBlock(_id++, ['b', 'd', '1', '2', 'c', 'a',])
 var testID2 = noa.registry.registerBlock(_id++, ['tb', 'td', 't1', 't2', 'tc', 'ta',],
 	null, true, false, false)
+var testID3 = noa.registry.registerBlock(_id++, ['1', '2', 'a',])
 var waterID = noa.registry.registerBlock(_id++, 'water', null, false, false, true)
 
 setTimeout(function() {
 	noa.setBlock(testID1, -1, 5, 6)
 	noa.setBlock(testID2, 1, 5, 6)
+	noa.setBlock(testID3, 3, 5, 6)
 }, 500)
 
 // add a listener for when the engine requests a new world chunk
