@@ -16,9 +16,9 @@ var opts = {
 	chunkRemoveDistance: 3,
 	blockTestDistance: 50,
 	texturePath: 'textures/',
-	playerStart: [0.5, 15, 0.5],
+	playerStart: [0.5, 5, 0.5],
 	playerHeight: 1.4,
-	playerWidth: 1.0,
+	playerWidth: 0.6,
 	playerAutoStep: true,
 	useAO: true,
 	AOmultipliers: [0.93, 0.8, 0.5],
@@ -38,22 +38,25 @@ var noa = noaEngine(opts)
 // block materials
 var brownish = [0.45, 0.36, 0.22]
 var greenish = [0.1, 0.8, 0.2]
-noa.registry.registerMaterial('dirtMat', brownish, null)
-noa.registry.registerMaterial('grassMat', greenish, null)
+noa.registry.registerMaterial('dirt', brownish, null)
+noa.registry.registerMaterial('grass', greenish, null)
 var strs = ['a', 'b', 'c', 'd', '1', '2']
 for (var i = 0; i < 6; i++) {
 	var s = strs[i]
 	noa.registry.registerMaterial(s, null, s + '.png')
 	noa.registry.registerMaterial('t' + s, null, 't' + s + '.png', true)
 }
+noa.registry.registerMaterial('water', [0.5, 0.5, 0.8, 0.7], null)
 
 
 // register block types and their material name
-var dirtID = noa.registry.registerBlock('dirt', 'dirtMat')
-var grassID = noa.registry.registerBlock('grass', 'grassMat')
-var testID1 = noa.registry.registerBlock('test1', ['b', 'd', '1', '2', 'c', 'a',])
-var testID2 = noa.registry.registerBlock('test2', ['tb', 'td', 't1', 't2', 'tc', 'ta',], 
+var _id = 1
+var dirtID = noa.registry.registerBlock(_id++, 'dirt')
+var grassID = noa.registry.registerBlock(_id++, 'grass')
+var testID1 = noa.registry.registerBlock(_id++, ['b', 'd', '1', '2', 'c', 'a',])
+var testID2 = noa.registry.registerBlock(_id++, ['tb', 'td', 't1', 't2', 'tc', 'ta',],
 	null, true, false, false)
+var waterID = noa.registry.registerBlock(_id++, 'water', null, false, false, true)
 
 setTimeout(function() {
 	noa.setBlock(testID1, -1, 5, 6)
@@ -71,7 +74,7 @@ noa.world.on('worldDataNeeded', function(id, data, x, y, z) {
 				if (y + j < height) {
 					if (y + j < 0) data.set(i, j, k, dirtID)
 					else data.set(i, j, k, grassID);
-				}
+				} else if (y + j < 1) data.set(i, j, k, waterID)
 			}
 		}
 	}
@@ -81,8 +84,8 @@ noa.world.on('worldDataNeeded', function(id, data, x, y, z) {
 
 // worldgen - return a heightmap for a given [x,z]
 function getHeightMap(x, z) {
-	var xs = 0.8 + Math.sin(x / 10)
-	var zs = 0.4 + Math.sin(z / 15 + x / 30)
+	var xs = 0.8 + 2 * Math.sin(x / 10)
+	var zs = 0.4 + 2 * Math.sin(z / 15 + x / 30)
 	return xs + zs
 }
 
