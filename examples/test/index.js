@@ -21,7 +21,7 @@ var opts = {
 	playerWidth: 0.6,
 	playerAutoStep: true,
 	useAO: true,
-	AOmultipliers: [0.93, 0.8, 0.5],
+	AOmultipliers: [0.92, 0.8, 0.5],
 	reverseAOmultiplier: 1.0,
 }
 
@@ -58,12 +58,15 @@ var testID2 = noa.registry.registerBlock(_id++, ['tb', 'td', 't1', 't2', 'tc', '
 	null, true, false, false)
 var testID3 = noa.registry.registerBlock(_id++, ['1', '2', 'a',])
 var waterID = noa.registry.registerBlock(_id++, 'water', null, false, false, true)
+var customID = noa.registry.registerObjectBlock(_id++, 'customMesh', null, true, false, false)
 
-setTimeout(function() {
-	noa.setBlock(testID1, -1, 5, 6)
-	noa.setBlock(testID2, 1, 5, 6)
-	noa.setBlock(testID3, 3, 5, 6)
-}, 500)
+// object block mesh
+var mesh = BABYLON.Mesh.CreateBox('b', 1, noa.rendering.getScene())
+var mat = BABYLON.Matrix.Scaling(0.2, 1, 0.2)
+mat.setTranslation(new BABYLON.Vector3(0, 0.5, 0))
+mesh.bakeTransformIntoVertices(mat)
+noa.registry.registerMesh('customMesh', mesh, null)
+
 
 // add a listener for when the engine requests a new world chunk
 // `data` is an ndarray - see https://github.com/scijs/ndarray
@@ -73,10 +76,8 @@ noa.world.on('worldDataNeeded', function(id, data, x, y, z) {
 		for (var k = 0; k < data.shape[2]; ++k) {
 			var height = getHeightMap(x + i, z + k)
 			for (var j = 0; j < data.shape[1]; ++j) {
-				if (y + j < height) {
-					if (y + j < 0) data.set(i, j, k, dirtID)
-					else data.set(i, j, k, grassID);
-				} else if (y + j < 1) data.set(i, j, k, waterID)
+				var b = decideBlock(x + i, y + j, z + k, height)
+				if (b) data.set(i, j, k, b)
 			}
 		}
 	}
@@ -91,7 +92,52 @@ function getHeightMap(x, z) {
 	return xs + zs
 }
 
+function decideBlock(x, y, z, height) {
+	// flat area to NE
+	if (x > 0 && z > 0) {
+		var h = 1
+		if (z==63 || x==63) h = 20
+		return (y < h) ? grassID : 0
+	}
+	// general stuff
+	if (y < height) {
+		return (y < 0) ? dirtID : grassID
+	} else {
+		return (y < 1) ? waterID : 0
+	}
+}
 
+
+
+setTimeout(function() {
+	addWorldFeatures()
+}, 1000)
+
+function addWorldFeatures() {
+	noa.setBlock(testID1, -6, 5, 6)
+	noa.setBlock(testID2, -4, 5, 6)
+	noa.setBlock(testID3, -2, 5, 6)
+	
+	var z = 5
+	makeRows(10, 5, z, dirtID)
+	makeRows(10, 5, z+2, dirtID)
+	makeRows(10, 5, z+5, dirtID)
+	makeRows(10, 5, z+9, dirtID)
+	makeRows(10, 5, z+14, dirtID)
+	z += 18
+	makeRows(10, 5, z, customID)
+	makeRows(10, 5, z+2, customID)
+	makeRows(10, 5, z+5, customID)
+	makeRows(10, 5, z+9, customID)
+	makeRows(10, 5, z+14, customID)
+}
+
+function makeRows(length, x, z, block) {
+	for (var i = 0; i < length; i++) {
+		noa.setBlock(block, x + i, 1, z + i)
+		noa.setBlock(block, length * 2 + x - i, 1, z + i)
+	}
+}
 
 
 // 		add a mesh to represent the player
@@ -130,15 +176,18 @@ noa.inputs.down.on('fire', function() {
 	if (loc) noa.setBlock(0, loc);
 })
 
-// on right mouse, place some grass
+// place block on alt-fire (RMB/E)
 noa.inputs.down.on('alt-fire', function() {
 	var loc = noa.getTargetBlockAdjacent()
-	if (loc) noa.addBlock(grassID, loc);
+	if (loc) noa.addBlock(pickedID, loc);
 })
+var pickedID = grassID
 
-// add a key binding for "E" to do the same as alt-fire
-noa.inputs.bind('alt-fire', 'E')
-
+// pick block on middle fire (MMB/Q)
+noa.inputs.down.on('mid-fire', function() {
+	var loc = noa.getTargetBlockPosition()
+	if (loc) pickedID = noa.getBlock(loc)
+})
 
 
 
