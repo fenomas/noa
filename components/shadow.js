@@ -3,16 +3,16 @@
 var shadowDist
 
 module.exports = function (noa, dist) {
-	
+
 	shadowDist = dist
-	
+
 	return {
-		
+
 		name: 'shadow',
 
 		state: {
-			mesh:	null,
-			size:	0.5
+			mesh: null,
+			size: 0.5
 		},
 
 
@@ -21,21 +21,21 @@ module.exports = function (noa, dist) {
 		},
 
 
-		onRemove: function(eid, state) {
+		onRemove: function (eid, state) {
 			state.mesh.dispose()
 		},
 
 
 		system: function shadowSystem(dt, states) {
 			var dist = shadowDist
-			for (var i=0; i<states.length; i++) {
+			for (var i = 0; i < states.length; i++) {
 				var state = states[i]
 				updateShadowHeight(state.__id, state.mesh, state.size, dist, noa)
 			}
 		},
-		
-		
-		renderSystem: function(dt, states) {
+
+
+		renderSystem: function (dt, states) {
 			// before render adjust shadow x/z to render positions
 			for (var i = 0; i < states.length; ++i) {
 				var state = states[i]
@@ -55,13 +55,23 @@ module.exports = function (noa, dist) {
 var down = new Float32Array([0, -1, 0])
 
 function updateShadowHeight(id, mesh, size, shadowDist, noa) {
-	var loc = noa.entities.getPositionData(id).position
-	var pick = noa.pick(loc, down, shadowDist)
-	if (pick) {
-		var y = pick.position[1]
+	var ents = noa.entities
+	var dat = ents.getPositionData(id)
+	var loc = dat.position
+	var b = ents.getPhysicsBody(id)
+	var y, dist
+	// set to entity position if entity standing on ground
+	if (b.resting[1] < 0) {
+		y = dat.renderPosition[1]
+		// if (ents.isStepping(id)) y--
+	} else {
+		var pick = noa.pick(loc, down, shadowDist)
+		if (pick) y = pick.position[1]
+	}
+	if (y !== undefined) {
 		mesh.position.y = y + 0.05
 		var dist = loc[1] - y
-		var scale = size * 0.7 * (1-dist/shadowDist)
+		var scale = size * 0.7 * (1 - dist / shadowDist)
 		mesh.scaling.copyFromFloats(scale, scale, scale)
 		mesh.setEnabled(true)
 	} else {
