@@ -1,3 +1,4 @@
+'use strict';
 
 var aabb = require('aabb-3d')
 var vec3 = require('gl-vec3')
@@ -183,16 +184,43 @@ inherits( Engine, EventEmitter )
 
 Engine.prototype.tick = function() {
   if (this._paused) return
+  var start = performance.now()
   var dt = this._tickRate         // fixed timesteps!
   this.world.tick(dt)             // chunk creation/removal
-  this.cameraControls.tickCamera(dt) // ticks camera zoom based on scroll events
-  this.rendering.tick(dt)         // zooms camera, does deferred chunk meshing
 // t0()
   this.physics.tick(dt)           // iterates physics
 // t1('physics tick')
+  this.cameraControls.tickCamera(dt) // ticks camera zoom based on scroll events
+  this.rendering.tick(dt)   // zooms camera, does deferred chunk meshing
   this.setBlockTargets()          // finds targeted blocks, and highlights one if needed
   this.emit('tick', dt)
+  
+  // debugQueues(this)
 }
+
+
+var __qwasDone=true, __qstart
+function debugQueues(self) {
+  var a = self.world._chunkIDsToAdd.length
+  var b = self.world._chunkIDsPendingCreation.length
+  var c = self.rendering._chunksToMesh.length
+  var d = self.rendering._numMeshedChunks
+  if (a+b+c>0) console.log([
+    'Chunks:','unmade',a,
+    'pending creation',b,
+    'to mesh',c,
+    'meshed',d,
+  ].join('   \t'))
+  if (__qwasDone && a+b+c>0) {
+    __qwasDone = false
+    __qstart = performance.now()
+  }
+  if (!__qwasDone && a+b+c===0) {
+    __qwasDone = true
+    console.log('Queue empty after '+Math.round(performance.now()-__qstart)+'ms')
+  }
+}
+
 
 
 // hacky temporary profiling substitute 
@@ -203,7 +231,7 @@ function t0() {
 }
 function t1(s) {
   tc++; tot += performance.now()-t
-  if (tc<300) return
+  if (tc<100) return
   console.log( s, 'avg:', (tot/tc).toFixed(2)+'ms')
   tc=0; tot=0
 }
