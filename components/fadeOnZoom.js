@@ -11,7 +11,7 @@ module.exports = function (noa) {
 		name: 'fadeOnZoom',
 
 		state: {
-			cutoff: 2.999,
+			cutoff: 1.5,
 			_showing: true
 		},
 

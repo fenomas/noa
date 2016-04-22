@@ -184,15 +184,14 @@ inherits( Engine, EventEmitter )
 
 Engine.prototype.tick = function() {
   if (this._paused) return
-  var start = performance.now()
-  var dt = this._tickRate         // fixed timesteps!
-  this.world.tick(dt)             // chunk creation/removal
+ 
+  var dt = this._tickRate       // fixed timesteps!
+  this.world.tick(dt)           // chunk creation/removal
 // t0()
-  this.physics.tick(dt)           // iterates physics
+  this.physics.tick(dt)         // iterates physics
 // t1('physics tick')
-  this.cameraControls.tickCamera(dt) // ticks camera zoom based on scroll events
-  this.rendering.tick(dt)   // zooms camera, does deferred chunk meshing
-  this.setBlockTargets()          // finds targeted blocks, and highlights one if needed
+  this.rendering.tick(dt)       // zooms camera, does deferred chunk meshing
+  this.setBlockTargets()        // finds targeted blocks, and highlights one if needed
   this.emit('tick', dt)
   
   // debugQueues(this)

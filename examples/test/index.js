@@ -12,7 +12,7 @@ var noaEngine = require('../..')
 var opts = {
 	inverseY: true,
 	chunkSize: 32,
-	chunkAddDistance: 1,
+	chunkAddDistance: 2,
 	chunkRemoveDistance: 3,
 	blockTestDistance: 50,
 	texturePath: 'textures/',
@@ -187,6 +187,21 @@ var pickedID = grassID
 noa.inputs.down.on('mid-fire', function() {
 	var loc = noa.getTargetBlockPosition()
 	if (loc) pickedID = noa.getBlock(loc)
+})
+
+
+// each tick, consume any scroll events and use them to zoom camera
+var zoom = 0
+noa.on('tick', function(dt) {
+	var scroll = noa.inputs.state.scrolly
+	if (scroll === 0) return
+	noa.inputs.state.scrolly = 0
+
+	// handle zoom controls
+	zoom += (scroll > 0) ? 1 : -1
+	if (zoom < 0) zoom = 0
+	if (zoom > 10) zoom = 10
+	noa.rendering.zoomDistance = zoom
 })
 
 
