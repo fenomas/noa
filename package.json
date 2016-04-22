@@ -37,6 +37,8 @@
     "url": "https://github.com/andyhall/noa/issues"
   },
   "devDependencies": {
-    "markdox": "^0.1.10"
+    "markdox": "^0.1.10",
+    "webpack": "^1.13.0",
+    "webpack-dev-server": "^1.14.1"
   }
 }
