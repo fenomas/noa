@@ -27,7 +27,7 @@
     "inherits": "^2.0.1",
     "ndarray": "^1.0.16",
     "ndarray-hash": "^1.0.0",
-    "voxel-physics-engine": "^0.6.0"
+    "voxel-physics-engine": "^0.7.0"
   },
   "repository": {
     "type": "git",
