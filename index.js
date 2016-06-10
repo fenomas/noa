@@ -370,7 +370,8 @@ Engine.prototype.pick = function(pos, vec, dist) {
     return {
       block: hitBlock,
       position: _hitPos,
-      normal: _hitNorm
+      normal: _hitNorm,
+      distance: vec3.distance(pos, _hitPos)
     }
   }
   return null
