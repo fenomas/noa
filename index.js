@@ -335,6 +335,13 @@ Engine.prototype.getPlayerMesh = function() {
 }
 
 /** */
+Engine.prototype.setPlayerEyeOffset = function(y) {
+  this.playerEyeOffset = y
+  var state = this.ents.getState(this.rendering.cameraTarget, this.ents.names.followsEntity)
+  state.offset[1] = y
+}
+
+/** */
 Engine.prototype.getPlayerEyePosition = function() {
   var pos = this.entities.getPositionData(this.playerEntity).position
   vec3.copy(_eyeLoc, pos)

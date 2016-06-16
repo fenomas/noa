@@ -59,12 +59,14 @@ module.exports = function (noa) {
 }
 
 function setPosition(x, y, z) {
+	// jshint -W040
 	vec3.set(this.position, x, y, z)
 	var hw = this.width / 2
 	this.aabb.setPosition([x - hw, y, z - hw])
 }
 
 function updateFromAABB() {
+	// jshint -W040
 	var hw = this.width / 2
 	var vec = this.aabb.base
 	vec3.set(this.position, vec[0] + hw, vec[1], vec[2] + hw)
