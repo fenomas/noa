@@ -30,6 +30,7 @@ var defaults = {
   tickRate: 30,
   blockTestDistance: 10,
   stickyPointerLock: true,
+  dragCameraOutsidePointerLock: true,
 }
 
 /**
@@ -49,6 +50,7 @@ function Engine(opts) {
   opts = extend(defaults, opts)
   this._tickRate = opts.tickRate
   this._paused = false
+  this._dragOutsideLock = opts.dragCameraOutsidePointerLock
 
   // container (html/div) manager
   this.container = createContainer(this, opts)
@@ -248,7 +250,7 @@ Engine.prototype.render = function(framePart) {
   // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
   if (this.container.hasPointerLock || 
       !this.container.supportsPointerLock || 
-      this.inputs.state.fire) {
+      (this._dragOutsideLock && this.inputs.state.fire)) {
     this.cameraControls.updateForRender()
   }
   // clear cumulative mouse inputs
