@@ -24,7 +24,7 @@ module.exports = function (noa) {
 			}
 			
 			// initialize mesh to correct position
-			var pos = noa.ents.getPositionData(eid).position
+			var pos = noa.ents.getPosition(eid)
 			var mpos = state.mesh.position
 			mpos.x = pos[0] + state.offset[0]
 			mpos.y = pos[1] + state.offset[1]

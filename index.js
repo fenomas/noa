@@ -328,7 +328,7 @@ Engine.prototype.getTargetBlockAdjacent = function() {
 
 /** */
 Engine.prototype.getPlayerPosition = function() {
-  return this.entities.getPositionData(this.playerEntity).position
+  return this.entities.getPosition(this.playerEntity)
 }
 
 /** */
@@ -345,7 +345,7 @@ Engine.prototype.setPlayerEyeOffset = function(y) {
 
 /** */
 Engine.prototype.getPlayerEyePosition = function() {
-  var pos = this.entities.getPositionData(this.playerEntity).position
+  var pos = this.entities.getPosition(this.playerEntity)
   vec3.copy(_eyeLoc, pos)
   _eyeLoc[1] += this.playerEyeOffset
   return _eyeLoc
