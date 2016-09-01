@@ -63,7 +63,6 @@ function updateShadowHeight(id, mesh, size, shadowDist, noa) {
 	// set to entity position if entity standing on ground
 	if (b.resting[1] < 0) {
 		y = dat.renderPosition[1]
-		// if (ents.isStepping(id)) y--
 	} else {
 		var pick = noa.pick(loc, down, shadowDist)
 		if (pick) y = pick.position[1]

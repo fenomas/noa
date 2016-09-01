@@ -47,13 +47,13 @@ module.exports = function (noa) {
 				// pos = pos + backtrack * body.velocity
 				vec3.scaleAndAdd(pos, pdat.position, state.body.velocity, backtrack)
 				
-				// copy values over to renderPosition, 
-				// except smooth out y transition if the entity is autostepping
-				if (noa.ents.isStepping(id)) {
-					var curr = pdat.renderPosition[1]
-					pos[1] = curr + (pos[1]-curr) * .3
+				// smooth out position update if component is present
+				// (normally set after sudden movements like auto-stepping)
+				if (noa.ents.cameraSmoothed(id)) {
+					vec3.lerp(pos, pdat.renderPosition, pos, 0.3)
 				}
 
+				// copy values over to renderPosition, 
 				vec3.copy(pdat.renderPosition, pos)
 
 				

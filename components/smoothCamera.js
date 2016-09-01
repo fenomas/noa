@@ -4,7 +4,7 @@
 module.exports = function (noa) {
 	return {
 		
-		name: 'autostepping',
+		name: 'smooth-camera',
 
 		state: {
 			time: 100.1
@@ -19,7 +19,7 @@ module.exports = function (noa) {
 			for (var i = 0; i < states.length; ++i) {
 				var state = states[i]
 				state.time -= dt
-				if (state.time < 0) noa.ents.removeComponent(state.__id, 'autostepping')
+				if (state.time < 0) noa.ents.removeComponentLater(state.__id, 'smooth-camera')
 			}
 		},
 		
