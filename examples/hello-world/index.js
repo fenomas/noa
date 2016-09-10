@@ -147,7 +147,6 @@ var zoom = 0
 noa.on('tick', function(dt) {
 	var scroll = noa.inputs.state.scrolly
 	if (scroll === 0) return
-	noa.inputs.state.scrolly = 0
 
 	// handle zoom controls
 	zoom += (scroll > 0) ? 1 : -1
