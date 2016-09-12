@@ -189,6 +189,7 @@ Engine.prototype.tick = function() {
  
   var dt = this._tickRate       // fixed timesteps!
   this.world.tick(dt)           // chunk creation/removal
+  if (this.world._noChunksLoaded) return
 // t0()
   this.physics.tick(dt)         // iterates physics
 // t1('physics tick')
