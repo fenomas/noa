@@ -49,28 +49,37 @@ for (var i = 0; i < 6; i++) {
 noa.registry.registerMaterial('water', [0.5, 0.5, 0.8, 0.7], null)
 
 
-// register block types and their material name
-var _id = 1
-var dirtID = noa.registry.registerBlock(_id++, 'dirt')
-var grassID = noa.registry.registerBlock(_id++, 'grass')
-var testID1 = noa.registry.registerBlock(_id++, ['b', 'd', '1', '2', 'c', 'a',])
-var testID2 = noa.registry.registerBlock(_id++, ['tb', 'td', 't1', 't2', 'tc', 'ta',],
-	null, true, false, false)
-var testID3 = noa.registry.registerBlock(_id++, ['1', '2', 'a',])
-var waterID = noa.registry.registerBlock(_id++, 'water', null, false, false, true)
-var customID = noa.registry.registerObjectBlock(_id++, 'customMesh', null, true, false, false)
 
 // object block mesh
 var mesh = BABYLON.Mesh.CreateBox('b', 1, noa.rendering.getScene())
 var mat = BABYLON.Matrix.Scaling(0.2, 1, 0.2)
 mat.setTranslation(new BABYLON.Vector3(0, 0.5, 0))
 mesh.bakeTransformIntoVertices(mat)
-noa.registry.registerMesh('customMesh', mesh, null)
+
+
+// block types registration
+var _id = 1
+var dirtID = noa.registry.registerBlock(_id++, { material: 'dirt' })
+var grassID = noa.registry.registerBlock(_id++, { material: 'grass' })
+var testID1 = noa.registry.registerBlock(_id++, { material: ['b', 'd', '1', '2', 'c', 'a',] })
+var testID2 = noa.registry.registerBlock(_id++, {
+	material: ['tb', 'td', 't1', 't2', 'tc', 'ta',],
+	opaque: false,
+})
+var testID3 = noa.registry.registerBlock(_id++, { material: ['1', '2', 'a',] })
+var waterID = noa.registry.registerBlock(_id++, {
+	material: 'water',
+	fluid: true
+})
+var customID = noa.registry.registerBlock(_id++, { blockMesh: mesh, opaque: false })
+
+
+
 
 
 // add a listener for when the engine requests a new world chunk
 // `data` is an ndarray - see https://github.com/scijs/ndarray
-noa.world.on('worldDataNeeded', function(id, data, x, y, z) {
+noa.world.on('worldDataNeeded', function (id, data, x, y, z) {
 	// populate ndarray with world data (block IDs or 0 for air)
 	for (var i = 0; i < data.shape[0]; ++i) {
 		for (var k = 0; k < data.shape[2]; ++k) {
@@ -96,7 +105,7 @@ function decideBlock(x, y, z, height) {
 	// flat area to NE
 	if (x > 0 && z > 0) {
 		var h = 1
-		if (z==63 || x==63) h = 20
+		if (z == 63 || x == 63) h = 20
 		return (y < h) ? grassID : 0
 	}
 	// general stuff
@@ -109,7 +118,7 @@ function decideBlock(x, y, z, height) {
 
 
 
-setTimeout(function() {
+setTimeout(function () {
 	addWorldFeatures()
 }, 1000)
 
@@ -117,19 +126,19 @@ function addWorldFeatures() {
 	noa.setBlock(testID1, -6, 5, 6)
 	noa.setBlock(testID2, -4, 5, 6)
 	noa.setBlock(testID3, -2, 5, 6)
-	
+
 	var z = 5
 	makeRows(10, 5, z, dirtID)
-	makeRows(10, 5, z+2, dirtID)
-	makeRows(10, 5, z+5, dirtID)
-	makeRows(10, 5, z+9, dirtID)
-	makeRows(10, 5, z+14, dirtID)
+	makeRows(10, 5, z + 2, dirtID)
+	makeRows(10, 5, z + 5, dirtID)
+	makeRows(10, 5, z + 9, dirtID)
+	makeRows(10, 5, z + 14, dirtID)
 	z += 18
 	makeRows(10, 5, z, customID)
-	makeRows(10, 5, z+2, customID)
-	makeRows(10, 5, z+5, customID)
-	makeRows(10, 5, z+9, customID)
-	makeRows(10, 5, z+14, customID)
+	makeRows(10, 5, z + 2, customID)
+	makeRows(10, 5, z + 5, customID)
+	makeRows(10, 5, z + 9, customID)
+	makeRows(10, 5, z + 14, customID)
 }
 
 function makeRows(length, x, z, block) {
@@ -171,20 +180,20 @@ noa.entities.addComponent(eid, noa.entities.names.mesh, {
 
 
 // on left mouse, set targeted block to be air
-noa.inputs.down.on('fire', function() {
+noa.inputs.down.on('fire', function () {
 	var loc = noa.getTargetBlockPosition()
 	if (loc) noa.setBlock(0, loc);
 })
 
 // place block on alt-fire (RMB/E)
-noa.inputs.down.on('alt-fire', function() {
+noa.inputs.down.on('alt-fire', function () {
 	var loc = noa.getTargetBlockAdjacent()
 	if (loc) noa.addBlock(pickedID, loc);
 })
 var pickedID = grassID
 
 // pick block on middle fire (MMB/Q)
-noa.inputs.down.on('mid-fire', function() {
+noa.inputs.down.on('mid-fire', function () {
 	var loc = noa.getTargetBlockPosition()
 	if (loc) pickedID = noa.getBlock(loc)
 })
@@ -192,7 +201,7 @@ noa.inputs.down.on('mid-fire', function() {
 
 // each tick, consume any scroll events and use them to zoom camera
 var zoom = 0
-noa.on('tick', function(dt) {
+noa.on('tick', function (dt) {
 	var scroll = noa.inputs.state.scrolly
 	if (scroll === 0) return
 

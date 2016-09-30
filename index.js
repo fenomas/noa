@@ -63,14 +63,14 @@ function Engine(opts) {
 
   // create world manager
   this.world = createWorld( this, opts )
+  
+  // rendering manager - abstracts all draws to 3D context
+  this.rendering = createRendering(this, opts, this.container.canvas)
 
   // Entity manager / Entity Component System (ECS)
   this.entities = createEntities( this, opts )
   // convenience
   this.ents = this.entities
-  
-  // rendering manager - abstracts all draws to 3D context
-  this.rendering = createRendering(this, opts, this.container.canvas)
 
   // physics engine - solves collisions, properties, etc.
   this.physics = createPhysics( this, opts )

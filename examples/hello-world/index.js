@@ -63,8 +63,8 @@ noa.registry.registerMaterial('grass', greenish, textureURL)
 
 
 // register block types and their material name
-var dirtID = noa.registry.registerBlock(1, 'dirt')
-var grassID = noa.registry.registerBlock(2, 'grass')
+var dirtID = noa.registry.registerBlock(1, { material: 'dirt' })
+var grassID = noa.registry.registerBlock(2, { material: 'grass' })
 
 
 // add a listener for when the engine requests a new world chunk
@@ -73,7 +73,7 @@ noa.world.on('worldDataNeeded', function (id, data, x, y, z) {
 	// populate ndarray with world data (block IDs or 0 for air)
 	for (var i = 0; i < data.shape[0]; ++i) {
 		for (var k = 0; k < data.shape[2]; ++k) {
-			var height = getHeightMap(x+i, z+k)
+			var height = getHeightMap(x + i, z + k)
 			for (var j = 0; j < data.shape[1]; ++j) {
 				if (y + j < height) {
 					if (y + j < 0) data.set(i, j, k, dirtID)
@@ -112,7 +112,7 @@ mesh.scaling.x = mesh.scaling.z = w
 mesh.scaling.y = h
 
 // offset of mesh relative to the entity's "position" (center of its feet)
-var offset = [0, h/2, 0]
+var offset = [0, h / 2, 0]
 
 // a "mesh" component to the player entity
 noa.entities.addComponent(eid, noa.entities.names.mesh, {
@@ -144,7 +144,7 @@ noa.inputs.bind('alt-fire', 'E')
 
 // each tick, consume any scroll events and use them to zoom camera
 var zoom = 0
-noa.on('tick', function(dt) {
+noa.on('tick', function (dt) {
 	var scroll = noa.inputs.state.scrolly
 	if (scroll === 0) return
 

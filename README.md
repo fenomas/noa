@@ -72,6 +72,8 @@ var noa = noaEngine(opts)
 
 * **getPlayerMesh()** 
 
+* **setPlayerEyeOffset()** 
+
 * **getPlayerEyePosition()** 
 
 * **getCameraVector()** 
@@ -94,13 +96,19 @@ Expects entity definitions in a specific format - see source `components` folder
 
 * **names**  - Hash containing the component names of built-in components.
 
+* **addComponentAgain (id,name,state)** 
+
 * **isTerrainBlocked (x,y,z)** 
+
+* **setEntitySize (x,y,z)** 
+
+* **getEntitiesInAABB (box)** 
 
 * **add (position, width, height..)** 
 
   Helper to set up a general entity, and populate with some common components depending on arguments.
   
-  Parameters: position, width, height, mesh, meshOffset, doPhysics, shadow
+  Parameters: position, width, height [, mesh, meshOffset, doPhysics, shadow]
 
 <!-- End lib/entities.js -->
 
