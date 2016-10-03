@@ -25,7 +25,7 @@ module.exports = Engine
 var defaults = {
   playerHeight: 1.8,
   playerWidth: 0.6,
-  playerStart: [0,10,0],
+  playerStart: [0, 10, 0],
   playerAutoStep: false,
   tickRate: 30,
   blockTestDistance: 10,
@@ -59,28 +59,28 @@ function Engine(opts) {
   this.inputs = createInputs(this, opts, this.container.element)
 
   // create block/item property registry
-  this.registry = createRegistry( this, opts )
+  this.registry = createRegistry(this, opts)
 
   // create world manager
-  this.world = createWorld( this, opts )
-  
+  this.world = createWorld(this, opts)
+
   // rendering manager - abstracts all draws to 3D context
   this.rendering = createRendering(this, opts, this.container.canvas)
 
   // Entity manager / Entity Component System (ECS)
-  this.entities = createEntities( this, opts )
+  this.entities = createEntities(this, opts)
   // convenience
   this.ents = this.entities
 
   // physics engine - solves collisions, properties, etc.
-  this.physics = createPhysics( this, opts )
+  this.physics = createPhysics(this, opts)
 
   // camera controller
-  this.cameraControls = createCamControls( this, opts )
-  
+  this.cameraControls = createCamControls(this, opts)
+
 
   var ents = this.ents
-  
+
   /** Entity id for the player entity */
   this.playerEntity = ents.add(
     opts.playerStart,    // starting location- TODO: get from options
@@ -88,7 +88,7 @@ function Engine(opts) {
     null, null,          // no mesh for now, no meshOffset, 
     true, true
   )
-  
+
   // tag the entity as the player, make it collide with terrain and other entities
   ents.addComponent(this.playerEntity, ents.names.player)
   ents.addComponent(this.playerEntity, ents.names.collideTerrain)
@@ -98,26 +98,26 @@ function Engine(opts) {
   var body = ents.getPhysicsBody(this.playerEntity)
   body.gravityMultiplier = 2 // less floaty
   body.autoStep = opts.playerAutoStep // auto step onto blocks
-  
+
   /** reference to player entity's physics body */
   this.playerBody = body
-  
+
   // input component - sets entity's movement state from key inputs
   ents.addComponent(this.playerEntity, ents.names.receivesInputs)
-  
+
   // add a component to make player mesh fade out when zooming in
   ents.addComponent(this.playerEntity, ents.names.fadeOnZoom)
-  
+
   // movement component - applies movement forces
   // todo: populate movement settings from options
   var moveOpts = {
     airJumps: 1
   }
   ents.addComponent(this.playerEntity, ents.names.movement, moveOpts)
-  
+
   // how high above the player's position the eye is (for picking, camera tracking)  
   this.playerEyeOffset = 0.9 * opts.playerHeight
-  
+
 
 
 
@@ -159,7 +159,7 @@ function Engine(opts) {
   window.ndarray = ndarray
   window.vec3 = vec3
   var debug = false
-  this.inputs.bind( 'debug', 'Z' )
+  this.inputs.bind('debug', 'Z')
   this.inputs.down.on('debug', function onDebug() {
     debug = !debug
     if (debug) window.scene.debugLayer.show(); else window.scene.debugLayer.hide();
@@ -169,12 +169,12 @@ function Engine(opts) {
 
 }
 
-inherits( Engine, EventEmitter )
+inherits(Engine, EventEmitter)
 
 
 /*
  *   Core Engine API
-*/ 
+*/
 
 
 
@@ -184,15 +184,15 @@ inherits( Engine, EventEmitter )
  * where dt is the tick rate in ms (default 16.6)
 */
 
-Engine.prototype.tick = function() {
+Engine.prototype.tick = function () {
   if (this._paused) return
- 
+
   var dt = this._tickRate       // fixed timesteps!
   this.world.tick(dt)           // chunk creation/removal
   if (this.world._noChunksLoaded) return
-// t0()
+  // t0()
   this.physics.tick(dt)         // iterates physics
-// t1('physics tick')
+  // t1('physics tick')
   this.rendering.tick(dt)       // zooms camera, does deferred chunk meshing
   this.setBlockTargets()        // finds targeted blocks, and highlights one if needed
   this.emit('tick', dt)
@@ -201,25 +201,25 @@ Engine.prototype.tick = function() {
 }
 
 
-var __qwasDone=true, __qstart
+var __qwasDone = true, __qstart
 function debugQueues(self) {
   var a = self.world._chunkIDsToAdd.length
   var b = self.world._chunkIDsPendingCreation.length
   var c = self.rendering._chunksToMesh.length
   var d = self.rendering._numMeshedChunks
-  if (a+b+c>0) console.log([
-    'Chunks:','unmade',a,
-    'pending creation',b,
-    'to mesh',c,
-    'meshed',d,
+  if (a + b + c > 0) console.log([
+    'Chunks:', 'unmade', a,
+    'pending creation', b,
+    'to mesh', c,
+    'meshed', d,
   ].join('   \t'))
-  if (__qwasDone && a+b+c>0) {
+  if (__qwasDone && a + b + c > 0) {
     __qwasDone = false
     __qstart = performance.now()
   }
-  if (!__qwasDone && a+b+c===0) {
+  if (!__qwasDone && a + b + c === 0) {
     __qwasDone = true
-    console.log('Queue empty after '+Math.round(performance.now()-__qstart)+'ms')
+    console.log('Queue empty after ' + Math.round(performance.now() - __qstart) + 'ms')
   }
 }
 
@@ -227,15 +227,15 @@ function debugQueues(self) {
 
 // hacky temporary profiling substitute 
 // since chrome profiling drops fps so much... :(
-var t, tot=0, tc=0
+var t, tot = 0, tc = 0
 function t0() {
   t = performance.now()
 }
 function t1(s) {
-  tc++; tot += performance.now()-t
-  if (tc<100) return
-  console.log( s, 'avg:', (tot/tc).toFixed(2)+'ms')
-  tc=0; tot=0
+  tc++; tot += performance.now() - t
+  if (tc < 100) return
+  console.log(s, 'avg:', (tot / tc).toFixed(2) + 'ms')
+  tc = 0; tot = 0
 }
 
 
@@ -245,22 +245,22 @@ function t1(s) {
  * where dt is the time in ms *since the last tick*.
 */
 
-Engine.prototype.render = function(framePart) {
+Engine.prototype.render = function (framePart) {
   if (this._paused) return
-  var dt = framePart*this._tickRate // ms since last tick
+  var dt = framePart * this._tickRate // ms since last tick
   // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
-  if (this.container.hasPointerLock || 
-      !this.container.supportsPointerLock || 
-      (this._dragOutsideLock && this.inputs.state.fire)) {
+  if (this.container.hasPointerLock ||
+    !this.container.supportsPointerLock ||
+    (this._dragOutsideLock && this.inputs.state.fire)) {
     this.cameraControls.updateForRender()
   }
   // clear cumulative mouse inputs
   this.inputs.state.dx = this.inputs.state.dy = 0
   // events and render
   this.emit('beforeRender', dt)
-// t0()
+  // t0()
   this.rendering.render(dt)
-// t1('render')
+  // t1('render')
   this.emit('afterRender', dt)
 }
 
@@ -268,13 +268,13 @@ Engine.prototype.render = function(framePart) {
 
 /*
  *   Utility APIs
-*/ 
+*/
 
 /** 
  * Pausing the engine will also stop render/tick events, etc.
  * @param paused
 */
-Engine.prototype.setPaused = function(paused) {
+Engine.prototype.setPaused = function (paused) {
   this._paused = !!paused
   // when unpausing, clear any built-up mouse inputs
   if (!paused) {
@@ -298,7 +298,7 @@ Engine.prototype.setBlock = function(id, x, y, z) {
 /**
  * Adds a block unless obstructed by entities 
  * @param id,x,y,z */
-Engine.prototype.addBlock = function(id, x, y, z) {
+Engine.prototype.addBlock = function (id, x, y, z) {
   // add a new terrain block, if nothing blocks the terrain there
   var arr = (x.length) ? x : [x,y,z]
   if (this.entities.isTerrainBlocked(arr[0], arr[1], arr[2])) return
@@ -328,24 +328,24 @@ Engine.prototype.getTargetBlockAdjacent = function() {
 
 
 /** */
-Engine.prototype.getPlayerPosition = function() {
+Engine.prototype.getPlayerPosition = function () {
   return this.entities.getPosition(this.playerEntity)
 }
 
 /** */
-Engine.prototype.getPlayerMesh = function() {
+Engine.prototype.getPlayerMesh = function () {
   return this.entities.getMeshData(this.playerEntity).mesh
 }
 
 /** */
-Engine.prototype.setPlayerEyeOffset = function(y) {
+Engine.prototype.setPlayerEyeOffset = function (y) {
   this.playerEyeOffset = y
   var state = this.ents.getState(this.rendering.cameraTarget, this.ents.names.followsEntity)
   state.offset[1] = y
 }
 
 /** */
-Engine.prototype.getPlayerEyePosition = function() {
+Engine.prototype.getPlayerEyePosition = function () {
   var pos = this.entities.getPosition(this.playerEntity)
   vec3.copy(_eyeLoc, pos)
   _eyeLoc[1] += this.playerEyeOffset
@@ -354,7 +354,7 @@ Engine.prototype.getPlayerEyePosition = function() {
 var _eyeLoc = vec3.create()
 
 /** */
-Engine.prototype.getCameraVector = function() {
+Engine.prototype.getCameraVector = function () {
   // rendering works with babylon's xyz vectors
   var v = this.rendering.getCameraVector()
   vec3.set(_camVec, v.x, v.y, v.z)
