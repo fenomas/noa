@@ -71,7 +71,13 @@ var waterID = noa.registry.registerBlock(_id++, {
 	material: 'water',
 	fluid: true
 })
-var customID = noa.registry.registerBlock(_id++, { blockMesh: mesh, opaque: false })
+var customID = noa.registry.registerBlock(_id++, {
+	blockMesh: mesh,
+	opaque: false,
+	onCustomMeshCreate: function (mesh, x, y, z) {
+		mesh.rotation.y = ((x + 0.234) * 1.234 + (z + 0.567) * 6.78) % (2 * Math.PI)
+	},
+})
 
 
 
