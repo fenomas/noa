@@ -187,21 +187,18 @@ noa.entities.addComponent(eid, noa.entities.names.mesh, {
 
 // on left mouse, set targeted block to be air
 noa.inputs.down.on('fire', function () {
-	var loc = noa.getTargetBlockPosition()
-	if (loc) noa.setBlock(0, loc);
+	if (noa.targetedBlock) noa.setBlock(0, noa.targetedBlock.position)
 })
 
 // place block on alt-fire (RMB/E)
 noa.inputs.down.on('alt-fire', function () {
-	var loc = noa.getTargetBlockAdjacent()
-	if (loc) noa.addBlock(pickedID, loc);
+	if (noa.targetedBlock) noa.addBlock(pickedID, noa.targetedBlock.adjacent)
 })
 var pickedID = grassID
 
 // pick block on middle fire (MMB/Q)
 noa.inputs.down.on('mid-fire', function () {
-	var loc = noa.getTargetBlockPosition()
-	if (loc) pickedID = noa.getBlock(loc)
+	if (noa.targetedBlock) pickedID = noa.targetedBlock.blockID
 })
 
 

@@ -128,14 +128,12 @@ noa.entities.addComponent(eid, noa.entities.names.mesh, {
 
 // on left mouse, set targeted block to be air
 noa.inputs.down.on('fire', function () {
-	var loc = noa.getTargetBlockPosition()
-	if (loc) noa.setBlock(0, loc);
+	if (noa.targetedBlock) noa.setBlock(0, noa.targetedBlock.position);
 })
 
 // on right mouse, place some grass
 noa.inputs.down.on('alt-fire', function () {
-	var loc = noa.getTargetBlockAdjacent()
-	if (loc) noa.addBlock(grassID, loc);
+	if (noa.targetedBlock) noa.addBlock(grassID, noa.targetedBlock.adjacent)
 })
 
 // add a key binding for "E" to do the same as alt-fire

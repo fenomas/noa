@@ -31,11 +31,12 @@ var defaults = {
   blockTestDistance: 10,
   stickyPointerLock: true,
   dragCameraOutsidePointerLock: true,
+  skipDefaultHighlighting: false,
 }
 
 /**
  * Main engine object.  
- * Emits: *tick, beforeRender, afterRender*
+ * Emits: *tick, beforeRender, afterRender, targetBlockChanged*
  * 
  * ```js
  * var noaEngine = require('noa-engine')
@@ -51,6 +52,7 @@ function Engine(opts) {
   this._tickRate = opts.tickRate
   this._paused = false
   this._dragOutsideLock = opts.dragCameraOutsidePointerLock
+  var self = this
 
   // container (html/div) manager
   this.container = createContainer(this, opts)
@@ -127,28 +129,38 @@ function Engine(opts) {
 
   // plumbing for picking/raycasting
   var world = this.world
-  var blockAccessor = function(x,y,z) {
-    return world.getBlock(x,y,z)
+  var blockAccessor = function (x, y, z) {
+    return world.getBlockID(x, y, z)
   }
-  var solidAccessor = function(x,y,z) {
-    return world.getBlockSolidity(x,y,z)
+  var solidAccessor = function (x, y, z) {
+    return world.getBlockSolidity(x, y, z)
   }
-  
+
   // accessors
-  this._traceWorldRay = function(pos, vec, dist, hitPos, hitNorm) {
+  this._traceWorldRay = function (pos, vec, dist, hitPos, hitNorm) {
     return raycast(blockAccessor, pos, vec, dist, hitPos, hitNorm)
   }
-  
-  this._traceWorldRayCollision = function(pos, vec, dist, hitPos, hitNorm) {
+
+  this._traceWorldRayCollision = function (pos, vec, dist, hitPos, hitNorm) {
     return raycast(solidAccessor, pos, vec, dist, hitPos, hitNorm)
   }
-  
-  
-  this._blockTarget = null
-  this._blockTargetLoc = vec3.create()
-  this._blockPlacementLoc = vec3.create()
 
-  
+  // this gets populated with a data class defined down near updateBlockTargets
+  this.targetedBlock = null
+
+  // add a default block highlighting function
+  if (!opts.skipDefaultHighlighting) {
+    // the default listener, defined onto noa in case people want to remove it later
+    this.defaultBlockHighlightFunction = function (tgt) {
+      if (tgt) {
+        self.rendering.highlightBlockFace(true, tgt.position, tgt.normal)
+      } else {
+        self.rendering.highlightBlockFace(false)
+      }
+    }
+    this.on('targetBlockChanged', this.defaultBlockHighlightFunction)
+  }
+
   // init rendering stuff that needed to wait for engine internals
   this.rendering.initScene()
 
@@ -194,7 +206,7 @@ Engine.prototype.tick = function () {
   this.physics.tick(dt)         // iterates physics
   // t1('physics tick')
   this.rendering.tick(dt)       // zooms camera, does deferred chunk meshing
-  this.setBlockTargets()        // finds targeted blocks, and highlights one if needed
+  updateBlockTargets(this)        // finds targeted blocks, and highlights one if needed
   this.emit('tick', dt)
   this.inputs.tick()            // clears accumulated tick/mouseMove data
   // debugQueues(this)
@@ -283,16 +295,22 @@ Engine.prototype.setPaused = function (paused) {
 }
 
 /** @param x,y,z */
-Engine.prototype.getBlock = function(x, y, z) {
-  var arr = (x.length) ? x : [x,y,z]
-  return this.world.getBlockID( arr[0], arr[1], arr[2] );
+Engine.prototype.getBlock = function (x, y, z) {
+  if (x.length) {
+    return this.world.getBlockID(x[0], x[1], x[2])
+  } else {
+    return this.world.getBlockID(x, y, z)
+  }
 }
 
 /** @param x,y,z */
-Engine.prototype.setBlock = function(id, x, y, z) {
+Engine.prototype.setBlock = function (id, x, y, z) {
   // skips the entity collision check
-  var arr = (x.length) ? x : [x,y,z]
-  this.world.setBlockID( id, arr[0], arr[1], arr[2] );
+  if (x.length) {
+    return this.world.setBlockID(id, x[0], x[1], x[2])
+  } else {
+    return this.world.setBlockID(id, x, y, z)
+  }
 }
 
 /**
@@ -300,31 +318,15 @@ Engine.prototype.setBlock = function(id, x, y, z) {
  * @param id,x,y,z */
 Engine.prototype.addBlock = function (id, x, y, z) {
   // add a new terrain block, if nothing blocks the terrain there
-  var arr = (x.length) ? x : [x,y,z]
-  if (this.entities.isTerrainBlocked(arr[0], arr[1], arr[2])) return
-  this.world.setBlockID( id, arr[0], arr[1], arr[2] );
+  if (x.length) {
+    if (this.entities.isTerrainBlocked(x[0], x[1], x[2])) return
+    this.world.setBlockID(id, x[0], x[1], x[2])
+  } else {
+    if (this.entities.isTerrainBlocked(x, y, z)) return
+    this.world.setBlockID(id, x, y, z)
+  }
 }
 
-/**
- * Returns value of currently targeted block (or null if none)
- */
-Engine.prototype.getTargetBlock = function() {
-  return this._blockTarget
-}
-
-/**
- * Returns location of currently targeted block
- */
-Engine.prototype.getTargetBlockPosition = function() {
-  return this._blockTarget ? this._blockTargetLoc : null
-}
-
-/**
- * Returns location adjactent to target (e.g. for block placement)
- */
-Engine.prototype.getTargetBlockAdjacent = function() {
-  return this._blockTarget ? this._blockPlacementLoc : null
-}
 
 
 /** */
@@ -363,58 +365,68 @@ Engine.prototype.getCameraVector = function () {
 var _camVec = vec3.create()
 
 /**
- * Determine which block if any is targeted and within range
+ * Raycast through the world, returning a result object for any non-air block
  * @param pos
  * @param vec
  * @param dist
  */
-Engine.prototype.pick = function(pos, vec, dist) {
-  if (dist===0) return null
+Engine.prototype.pick = function (pos, vec, dist, ignoreNonSolid) {
+  if (dist === 0) return null
   pos = pos || this.getPlayerEyePosition()
   vec = vec || this.getCameraVector()
   dist = dist || this.blockTestDistance
-  var hitBlock = this._traceWorldRayCollision(pos, vec, dist, _hitPos, _hitNorm)
-  if (hitBlock) {
-    // countersink hit slightly into struck block, so that flooring it gives the expected result
-    for (var i=0; i<3; i++) _hitPos[i] -= 0.01 * _hitNorm[i]
-    return {
-      block: hitBlock,
-      position: _hitPos,
-      normal: _hitNorm,
-      distance: vec3.distance(pos, _hitPos)
-    }
-  }
-  return null
+  var rpos = _hitResult.position
+  var rnorm = _hitResult.normal
+  var hit = (ignoreNonSolid) ?
+    this._traceWorldRayCollision(pos, vec, dist, rpos, rnorm) :
+    this._traceWorldRay(pos, vec, dist, rpos, rnorm)
+  if (!hit) return null
+  // position is right on a voxel border - adjust it so flooring will work as expected
+  for (var i=0; i<3; i++) rpos[i] -= 0.01 * rnorm[i]
+  return _hitResult
 }
-var _hitPos = vec3.create()
-var _hitNorm = vec3.create()
+var _hitResult = {
+  position: vec3.create(),
+  normal: vec3.create(),
+}
 
 
 // Determine which block if any is targeted and within range
 // also tell rendering to highlight the struck block face
-Engine.prototype.setBlockTargets = function() {
-  var result = this.pick()
-  // process and cache results
+function updateBlockTargets(noa) {
+  var newhash = ''
+  var result = noa.pick(null, null, null, true)
   if (result) {
-    var hit = result.position
-    var norm = result.normal
-    
-    // pick results are slightly inside struck block, so it's safe to floor 
-    for (var i=0; i<3; i++) hit[i] = Math.floor(hit[i])
-    
-    // save for use by engine, and highlight
-    this._blockTarget = this.getBlock(hit[0], hit[1], hit[2])
-    vec3.copy(this._blockTargetLoc, hit)
-    vec3.add(this._blockPlacementLoc, hit, norm)
-    this.rendering.highlightBlockFace(true, hit, norm)
+    var dat = _targetedBlockDat
+    for (var i = 0; i < 3; i++) {
+      // position values are right on a border, so adjust them before flooring!
+      var n = result.normal[i] | 0
+      var p = Math.floor(result.position[i])
+      dat.position[i] = p
+      dat.normal[i] = n
+      dat.adjacent[i] = p + n
+      newhash += '|' + p + '|' + n
+    }
+    dat.blockID = noa.world.getBlockID(dat.position[0], dat.position[1], dat.position[2])
+    newhash += '|' + result.blockID
+    noa.targetedBlock = dat
   } else {
-    this.rendering.highlightBlockFace( false )
-    this._blockTarget = null
+    noa.targetedBlock = null
+  }
+  if (newhash != _prevTargetHash) {
+    noa.emit('targetBlockChanged', noa.targetedBlock)
+    _prevTargetHash = newhash
   }
 }
 
+var _targetedBlockDat = {
+  blockID: 0,
+  position: [],
+  normal: [],
+  adjacent: [],
+}
 
-
+var _prevTargetHash = ''
 
 
 

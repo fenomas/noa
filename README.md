@@ -43,7 +43,7 @@ inverseY: true,
 
 ## noa
 Main engine object.  
-Emits: *tick, beforeRender, afterRender*
+Emits: *tick, beforeRender, afterRender, targetBlockChanged*
 
 ```js
 var noaEngine = require('noa-engine')
@@ -62,12 +62,6 @@ var noa = noaEngine(opts)
 
 * **addBlock (id,x,y,z)**  - Adds a block unless obstructed by entities 
 
-* **getTargetBlock()**  - Returns value of currently targeted block (or null if none)
-
-* **getTargetBlockPosition()**  - Returns location of currently targeted block
-
-* **getTargetBlockAdjacent()**  - Returns location adjactent to target (e.g. for block placement)
-
 * **getPlayerPosition()** 
 
 * **getPlayerMesh()** 
@@ -78,7 +72,7 @@ var noa = noaEngine(opts)
 
 * **getCameraVector()** 
 
-* **pick (pos, vec, dist)**  - Determine which block if any is targeted and within range
+* **pick (pos, vec, dist)**  - Raycast through the world, returning a result object for any non-air block
 
 <!-- End index.js -->
 
