@@ -35,6 +35,25 @@ inverseY: true,
 })
 ```
 
+### Docs
+
+The source is pretty fully commented. There is a partial API reference 
+at the end of this file, but I haven't been able to find a good way of 
+generating JSDocs that I can live with, so for now it's best to consult 
+the source.
+
+### Recent changes:
+
+* 0.18.0
+* Simplifies block targeting. Instead of several accessor methods, now there's a persistent `noa.targetedBlock` with details on whatever block is currently targeted.
+* `noa` now emits `targetBlockChanged`
+* Built-in block highlighting can now be overridden or turned off with option `skipDefaultHighlighting`
+* 0.17.0
+* Adds per-block callbacks: `onCreate`, `onDestroy`, `onCustomMeshCreate`
+* 0.16.0
+* Simplifies block registration - now takes an options argument, and the same API is used for custom mesh blocks
+* Removes the idea of registration for meshes
+
 ----
 
 ## Partial API reference:
