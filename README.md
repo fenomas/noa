@@ -44,15 +44,22 @@ the source.
 
 ### Recent changes:
 
-* 0.18.0
-* Simplifies block targeting. Instead of several accessor methods, now there's a persistent `noa.targetedBlock` with details on whatever block is currently targeted.
-* `noa` now emits `targetBlockChanged`
-* Built-in block highlighting can now be overridden or turned off with option `skipDefaultHighlighting`
-* 0.17.0
-* Adds per-block callbacks: `onCreate`, `onDestroy`, `onCustomMeshCreate`
-* 0.16.0
-* Simplifies block registration - now takes an options argument, and the same API is used for custom mesh blocks
-* Removes the idea of registration for meshes
+ * 0.19.0
+   * Revise per-block callbacks:
+     * `onLoad` when a block is created as part of a newly-loaded chunk  
+     * `onUnload` - when the block goes away because its chunk was unloaded
+     * `onSet` - when a block gets set to that particular id
+     * `onUnset` - when a block that had that id gets set to something else
+     * `onCustomMeshCreate` - when that block's custom mesh is instantiated (either due to load or set)
+ * 0.18.0
+   * Simplifies block targeting. Instead of several accessor methods, now there's a persistent `noa.targetedBlock` with details on whatever  block is currently targeted.
+   * `noa` now emits `targetBlockChanged`
+   * Built-in block highlighting can now be overridden or turned off with option `skipDefaultHighlighting`
+ * 0.17.0
+   * Adds per-block callbacks: `onCreate`, `onDestroy`, `onCustomMeshCreate`
+ * 0.16.0
+   * Simplifies block registration - now takes an options argument, and the same API is used for custom mesh blocks
+   * Removes the idea of registration for meshes
 
 ----
 
