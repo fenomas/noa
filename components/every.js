@@ -21,8 +21,8 @@ module.exports = function (noa) {
 				var state = states[i]
 				state._ct += dt
 				if (state._ct > state.every) {
+					state.callback(state.every)
 					state._ct -= state.every
-					state.callback()
 				}
 			}
 		}
