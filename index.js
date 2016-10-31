@@ -206,7 +206,7 @@ Engine.prototype.tick = function () {
   this.physics.tick(dt)         // iterates physics
   // t1('physics tick')
   this.rendering.tick(dt)       // zooms camera, does deferred chunk meshing
-  updateBlockTargets(this)        // finds targeted blocks, and highlights one if needed
+  updateBlockTargets(this)      // finds targeted blocks, and highlights one if needed
   this.emit('tick', dt)
   this.inputs.tick()            // clears accumulated tick/mouseMove data
   // debugQueues(this)
