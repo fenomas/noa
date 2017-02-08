@@ -21,6 +21,11 @@ module.exports = Engine
 
 
 
+// profiling flag
+var PROFILE = 0
+
+
+
 
 var defaults = {
   playerHeight: 1.8,
@@ -198,16 +203,20 @@ inherits(Engine, EventEmitter)
 
 Engine.prototype.tick = function () {
   if (this._paused) return
-
+  profile_hook('start')
   var dt = this._tickRate       // fixed timesteps!
   this.world.tick(dt)           // chunk creation/removal
   if (this.world._noChunksLoaded) return
-  // t0()
+  profile_hook('world')
   this.physics.tick(dt)         // iterates physics
-  // t1('physics tick')
+  profile_hook('physics')
   this.rendering.tick(dt)       // zooms camera, does deferred chunk meshing
+  profile_hook('rendering')
   updateBlockTargets(this)      // finds targeted blocks, and highlights one if needed
+  profile_hook('targets')
   this.emit('tick', dt)
+  profile_hook('tick content')
+  profile_hook('end')
   this.inputs.tick()            // clears accumulated tick/mouseMove data
   // debugQueues(this)
 }
@@ -237,18 +246,6 @@ function debugQueues(self) {
 
 
 
-// hacky temporary profiling substitute 
-// since chrome profiling drops fps so much... :(
-var t, tot = 0, tc = 0
-function t0() {
-  t = performance.now()
-}
-function t1(s) {
-  tc++; tot += performance.now() - t
-  if (tc < 100) return
-  console.log(s, 'avg:', (tot / tc).toFixed(2) + 'ms')
-  tc = 0; tot = 0
-}
 
 
 
@@ -427,6 +424,26 @@ var _targetedBlockDat = {
 }
 
 var _prevTargetHash = ''
+
+
+
+
+
+
+
+
+
+
+var profile_hook = function (s) { }
+if (PROFILE) (function () {
+    var every = 200
+    var timer = new (require('./lib/util').Timer)(every)
+    profile_hook = function (state) {
+        if (state === 'start') timer.start()
+        else if (state === 'end') timer.report()
+        else timer.add(state)
+    }
+})()
 
 
 
