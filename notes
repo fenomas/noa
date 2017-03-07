@@ -1,6 +1,8 @@
 
 TODO: go through all BJS material handling and set checkOnlyOnce, markDirty, etc. 
 
+	* Add a "player crossed a chunk border" event
+
 
 camera and movement after latest changes:
 	rendering processors:
