@@ -4,7 +4,6 @@ var aabb = require('aabb-3d')
 var vec3 = require('gl-vec3')
 var extend = require('extend')
 var ndarray = require('ndarray')
-var inherits = require('inherits')
 var EventEmitter = require('events').EventEmitter
 var createContainer = require('./lib/container')
 var createRendering = require('./lib/rendering')
@@ -186,7 +185,7 @@ function Engine(opts) {
 
 }
 
-inherits(Engine, EventEmitter)
+Engine.prototype = Object.create(EventEmitter.prototype)
 
 
 /*
