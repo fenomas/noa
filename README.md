@@ -1,7 +1,7 @@
 
 # noa-engine
 
-An experimental voxel game engine.
+An experimental voxel engine.
 
 [Live demo of test app here!](http://andyhall.github.io/noa-testbed/)
 
