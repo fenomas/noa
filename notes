@@ -20,11 +20,6 @@ camera and movement after latest changes:
 		acutal render
 		
 
-
-position component update:
-	breaks:
-		entities.getAABB		-> now implicitly read-only
-		entities.getPosition 	-> getPositionData
 		
 
 TODO

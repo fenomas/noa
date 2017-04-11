@@ -1,7 +1,6 @@
 'use strict'
 
 var vec3 = require('gl-vec3')
-var _tempVec = vec3.create()
 
 
 /*
@@ -49,20 +48,17 @@ module.exports = function (noa) {
 
 
 	function updatePosition(state) {
-		var pos = _tempVec
 		var id = state.__id
 		var self = noa.ents.getPositionData(id)
 		var other = noa.ents.getPositionData(state.entity)
 		if (other) {
-			vec3.add(pos, other.position, state.offset)
-			self.setPosition(pos[0], pos[1], pos[2])
+			vec3.add(self.position, other.position, state.offset)
 		} else {
 			noa.ents.removeComponentLater(id, noa.ents.names.followsEntity)
 		}
 	}
 
 	function updateRenderPosition(state) {
-		var pos = _tempVec
 		var id = state.__id
 		var self = noa.ents.getPositionData(id)
 		var other = noa.ents.getPositionData(state.entity)

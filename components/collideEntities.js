@@ -93,14 +93,16 @@ function populateIntervals(states) {
 	// populate [lo, lo, lo, hi, hi, hi] arrays
 	for (var i = 0; i < states.length; i++) {
 		var id = states[i].__id
-		var box = ents.getAABB(id)
-		var lo = box.base
-		var hi = box.max
+		var dat = ents.getPositionData(id)
+		var hw = dat.width / 2
+		var pos = dat.position
 		var arr = intervals[i]
-		for (var j = 0; j < 3; j++) {
-			arr[j] = lo[j]
-			arr[j + 3] = hi[j]
-		}
+		arr[0] = pos[0] - hw
+		arr[1] = pos[1]
+		arr[2] = pos[2] - hw
+		arr[3] = pos[0] + hw
+		arr[4] = pos[1] + dat.height
+		arr[5] = pos[2] + hw
 	}
 }
 
