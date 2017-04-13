@@ -31,7 +31,7 @@ module.exports = function (noa) {
 
 		onAdd: function (eid, state) {
 			if (state.position) {
-				if (state.position instanceof Float32Array && !hasWarned) {
+				if (!(state.position instanceof Float32Array) && !hasWarned) {
 					console.warn('Better to set entity positions as instances of "gl-vec3"!')
 					hasWarned = true
 				}
