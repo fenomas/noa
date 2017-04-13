@@ -2,8 +2,6 @@
 
 var boxIntersect = require('box-intersect')
 
-var noa
-
 
 /**
  * 
@@ -31,8 +29,7 @@ var noa
 
 
 
-module.exports = function (_noa) {
-	noa = _noa
+module.exports = function (noa) {
 
 	return {
 
@@ -51,17 +48,25 @@ module.exports = function (_noa) {
 
 
 		system: function entityCollider(dt, states) {
-			// populate data struct that boxIntersect looks for
-			populateIntervals(states)
-			
+			var ents = noa.ents
+
+			// data struct that boxIntersect looks for
+			// - array of [lo, lo, lo, hi, hi, hi] extents
+			var intervals = []
+			for (var i = 0; i < states.length; i++) {
+				var id = states[i].__id
+				var dat = ents.getPositionData(id)
+				intervals[i] = dat._extents
+			}
+
 			// run the intersect library
 			boxIntersect(intervals, function intersectHandler(i, j) {
 				var istate = states[i]
 				var jstate = states[j]
-			
+
 				// todo: implement testing entities as cylinders/spheres?
 				// if (!cylinderTest(istate, jstate)) return
-			
+
 				if (istate.collideMask & jstate.collideBits) {
 					if (istate.callback) istate.callback(jstate.__id)
 				}
@@ -77,34 +82,6 @@ module.exports = function (_noa) {
 }
 
 
-
-// shared state
-var intervals = []
-
-function populateIntervals(states) {
-	// grow/shrink [lo, lo, hi, hi] array entries
-	// optimized to common case where states.length is the same as last time
-	while (intervals.length < states.length) {
-		intervals.push(new Float32Array(6))
-	}
-	intervals.length = states.length
-
-	var ents = noa.entities
-	// populate [lo, lo, lo, hi, hi, hi] arrays
-	for (var i = 0; i < states.length; i++) {
-		var id = states[i].__id
-		var dat = ents.getPositionData(id)
-		var hw = dat.width / 2
-		var pos = dat.position
-		var arr = intervals[i]
-		arr[0] = pos[0] - hw
-		arr[1] = pos[1]
-		arr[2] = pos[2] - hw
-		arr[3] = pos[0] + hw
-		arr[4] = pos[1] + dat.height
-		arr[5] = pos[2] + hw
-	}
-}
 
 
 
