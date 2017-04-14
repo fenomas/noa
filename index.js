@@ -84,12 +84,13 @@ function Engine(opts) {
   // camera controller
   this.cameraControls = createCamControls(this, opts)
 
+  this.playerStart = opts.playerStart
 
   var ents = this.ents
 
   /** Entity id for the player entity */
   this.playerEntity = ents.add(
-    opts.playerStart,    // starting location- TODO: get from options
+    this.playerStart,    // starting location- TODO: get from options
     opts.playerWidth, opts.playerHeight,
     null, null,          // no mesh for now, no meshOffset, 
     true, true
@@ -123,10 +124,6 @@ function Engine(opts) {
 
   // how high above the player's position the eye is (for picking, camera tracking)  
   this.playerEyeOffset = 0.9 * opts.playerHeight
-
-
-
-
 
   // Set up block picking functions
   this.blockTestDistance = opts.blockTestDistance || 10
@@ -333,6 +330,12 @@ Engine.prototype.addBlock = function (id, x, y, z) {
 Engine.prototype.getPlayerPosition = function () {
   return this.entities.getPosition(this.playerEntity)
 }
+
+/** */
+Engine.prototype.resetPlayerPosition = function () {
+  return this.entities.getPositionData(this.playerEntity).setPosition(this.playerStart[0], this.playerStart[1], this.playerStart[2])
+}
+
 
 /** */
 Engine.prototype.getPlayerMesh = function () {
