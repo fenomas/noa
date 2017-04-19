@@ -56,6 +56,9 @@ the source.
 
 ### Recent changes:
 
+ * 0.22.0
+   * Removed redundant `player` component - use `noa.playerEntity`
+   * Changed `position` component internals, client code hopefull unaffected
  * 0.21.0
    * Support unloading/reloading new world data.  
      Sample implementation in the `examples/test` app (hit "O" to swap world data)
