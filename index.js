@@ -96,8 +96,7 @@ function Engine(opts) {
     true, true
   )
 
-  // tag the entity as the player, make it collide with terrain and other entities
-  ents.addComponent(this.playerEntity, ents.names.player)
+  // make player entity it collide with terrain and other entities
   ents.addComponent(this.playerEntity, ents.names.collideTerrain)
   ents.addComponent(this.playerEntity, ents.names.collideEntities)
 
