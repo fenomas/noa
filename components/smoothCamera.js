@@ -1,9 +1,9 @@
-'use strict';
+'use strict'
 
 
 module.exports = function (noa) {
 	return {
-		
+
 		name: 'smooth-camera',
 
 		state: {
@@ -14,7 +14,7 @@ module.exports = function (noa) {
 
 		onRemove: null,
 
-		system: function(dt, states) {
+		system: function (dt, states) {
 			// remove self after time elapses
 			for (var i = 0; i < states.length; ++i) {
 				var state = states[i]
@@ -22,7 +22,7 @@ module.exports = function (noa) {
 				if (state.time < 0) noa.ents.removeComponentLater(state.__id, 'smooth-camera')
 			}
 		},
-		
+
 
 
 	}

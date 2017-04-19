@@ -1,15 +1,15 @@
-'use strict';
+'use strict'
 
 var vec3 = require('gl-vec3')
 
 module.exports = function (noa) {
 	return {
-		
+
 		name: 'mesh',
 
 		state: {
-			mesh: null, 
-			offset: null 
+			mesh: null,
+			offset: null
 		},
 
 
@@ -22,7 +22,7 @@ module.exports = function (noa) {
 			if (!state.offset) {
 				state.offset = new vec3.create()
 			}
-			
+
 			// initialize mesh to correct position
 			var pos = noa.ents.getPosition(eid)
 			var mpos = state.mesh.position
@@ -32,28 +32,28 @@ module.exports = function (noa) {
 		},
 
 
-		onRemove: function(eid, state) {
+		onRemove: function (eid, state) {
 			state.mesh.dispose()
 		},
 
 
 		system: null,
-		
-		
-		
-		renderSystem: function(dt, states) {
+
+
+
+		renderSystem: function (dt, states) {
 			// before render move each mesh to its render position, 
 			// set by the physics engine or driving logic
-			
+
 			for (var i = 0; i < states.length; ++i) {
 				var state = states[i]
 				var id = state.__id
-				
+
 				var rpos = noa.ents.getPositionData(id).renderPosition
 				var x = rpos[0] + state.offset[0]
 				var y = rpos[1] + state.offset[1]
 				var z = rpos[2] + state.offset[2]
-				
+
 				state.mesh.position.copyFromFloats(x, y, z)
 			}
 		}

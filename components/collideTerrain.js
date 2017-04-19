@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 
 module.exports = function (noa) {
@@ -10,7 +10,7 @@ module.exports = function (noa) {
 			callback: null
 		},
 
-		onAdd: function(eid, state) {
+		onAdd: function (eid, state) {
 			// add collide handler for physics engine to call
 			var ents = noa.entities
 			if (ents.hasPhysics(eid)) {
@@ -22,13 +22,13 @@ module.exports = function (noa) {
 			}
 		},
 
-		onRemove: function(eid, state) {
+		onRemove: function (eid, state) {
 			var ents = noa.entities
 			if (ents.hasPhysics(eid)) {
 				ents.getPhysicsBody(eid).onCollide = null
 			}
 		},
-		
+
 
 		system: null
 

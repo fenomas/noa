@@ -1,14 +1,14 @@
-'use strict';
+'use strict'
 
 
 module.exports = function (noa) {
 	return {
-		
+
 		name: 'every',
 
 		state: {
-			every:		100.0, //ms
-			callback:	null,
+			every: 100.0, //ms
+			callback: null,
 			_ct: 0.0
 		},
 
@@ -17,7 +17,7 @@ module.exports = function (noa) {
 		onRemove: null,
 
 		system: function everyProcessor(dt, states) {
-			for (var i=0; i<states.length; i++) {
+			for (var i = 0; i < states.length; i++) {
 				var state = states[i]
 				state._ct += dt
 				if (state._ct > state.every) {

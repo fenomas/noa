@@ -220,7 +220,7 @@ noa.on('tick', function (dt) {
 // pausing
 
 noa.inputs.bind('pause', 'P')
-noa.inputs.down.on('pause', function() {
+noa.inputs.down.on('pause', function () {
 	paused = !paused
 	noa.setPaused(paused)
 })
@@ -236,7 +236,7 @@ function setWorld(switched) {
 }
 
 noa.inputs.bind('swap-world', 'O')
-noa.inputs.down.on('swap-world', function() {
+noa.inputs.down.on('swap-world', function () {
 	swapped = !swapped
 	setWorld(swapped)
 	noa.world.invalidateAllChunks()

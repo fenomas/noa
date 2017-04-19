@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 var vec3 = require('gl-vec3')
 
@@ -12,7 +12,7 @@ var vec3 = require('gl-vec3')
 
 
 module.exports = function (noa) {
-	
+
 	var hasWarned = false
 
 	return {
@@ -36,7 +36,7 @@ module.exports = function (noa) {
 					hasWarned = true
 				}
 			} else state.position = vec3.create()
-			
+
 			state.renderPosition = vec3.create()
 			vec3.copy(state.renderPosition, state.position)
 

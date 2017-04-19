@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 /**
  * 
@@ -55,7 +55,7 @@ function setMovementState(state, inputs, camHeading) {
 		}
 		state.heading = camHeading
 	}
-	
+
 }
 
 

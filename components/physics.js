@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 var vec3 = require('gl-vec3')
 var AABB = require('aabb-3d')

@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 var vec3 = require('gl-vec3')
 
@@ -21,7 +21,7 @@ module.exports = function (noa) {
 			heading: 0, 			// radians
 			running: false,
 			jumping: false,
-			
+
 			// options:
 			maxSpeed: 10,
 			moveForce: 30,
@@ -34,7 +34,7 @@ module.exports = function (noa) {
 			jumpForce: 12,
 			jumpTime: 500, 			// ms
 			airJumps: 1,
-			
+
 			// internal state
 			_jumpCount: 0,
 			_isJumping: 0,
@@ -67,7 +67,7 @@ var tempvec2 = vec3.create()
 var zeroVec = vec3.create()
 
 
-function applyMovementPhysics (dt, state, body) {
+function applyMovementPhysics(dt, state, body) {
 	// move implementation originally written as external module
 	//   see https://github.com/andyhall/voxel-fps-controller
 	//   for original code
@@ -79,7 +79,7 @@ function applyMovementPhysics (dt, state, body) {
 		state._isJumping = false
 		state._jumpCount = 0
 	}
-	
+
 	// process jump input
 	if (state.jumping) {
 		if (state._isJumping) { // continue previous jump
@@ -100,18 +100,18 @@ function applyMovementPhysics (dt, state, body) {
 	} else {
 		state._isJumping = false
 	}
-	
+
 	// apply movement forces if entity is moving, otherwise just friction
 	var m = tempvec
 	var push = tempvec2
 	if (state.running) {
-		
+
 		var speed = state.maxSpeed
 		// todo: add crouch/sprint modifiers if needed
 		// if (state.sprint) speed *= state.sprintMoveMult
 		// if (state.crouch) speed *= state.crouchMoveMult
 		vec3.set(m, 0, 0, speed)
-		
+
 		// rotate move vector to entity's heading
 		vec3.rotateY(m, m, zeroVec, state.heading)
 
@@ -135,16 +135,16 @@ function applyMovementPhysics (dt, state, body) {
 			vec3.scale(push, push, canPush)
 			body.applyForce(push)
 		}
-		
+
 		// different friction when not moving
 		// idea from Sonic: http://info.sonicretro.org/SPG:Running
 		body.friction = state.runningFriction
 	} else {
 		body.friction = state.standingFriction
 	}
-	
-	
-	
+
+
+
 }
 
 
