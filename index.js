@@ -22,6 +22,7 @@ module.exports = Engine
 
 // profiling flag
 var PROFILE = 0
+var PROFILE_RENDER = 0
 
 
 
@@ -259,6 +260,7 @@ function debugQueues(self) {
 
 Engine.prototype.render = function (framePart) {
   if (this._paused) return
+  profile_hook_render('start')
   var dt = framePart * this._tickRate // ms since last tick
   // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
   if (this.container.hasPointerLock ||
@@ -270,10 +272,12 @@ Engine.prototype.render = function (framePart) {
   this.inputs.state.dx = this.inputs.state.dy = 0
   // events and render
   this.emit('beforeRender', dt)
-  // t0()
+  profile_hook_render('before render')
   this.rendering.render(dt)
-  // t1('render')
+  profile_hook_render('render')
   this.emit('afterRender', dt)
+  profile_hook_render('after render')
+  profile_hook_render('end')
 }
 
 
@@ -438,14 +442,22 @@ var _prevTargetHash = ''
 
 
 var profile_hook = function (s) { }
+var profile_hook_render = function (s) { }
 if (PROFILE) (function () {
-    var every = 200
-    var timer = new (require('./lib/util').Timer)(every)
-    profile_hook = function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
+  var timer = new (require('./lib/util').Timer)(100, 'tick')
+  profile_hook = function (state) {
+    if (state === 'start') timer.start()
+    else if (state === 'end') timer.report()
+    else timer.add(state)
+  }
+})()
+if (PROFILE_RENDER) (function () {
+  var timer = new (require('./lib/util').Timer)(200, 'render')
+  profile_hook_render = function (state) {
+    if (state === 'start') timer.start()
+    else if (state === 'end') timer.report()
+    else timer.add(state)
+  }
 })()
 
 
