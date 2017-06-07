@@ -1,7 +1,7 @@
 
 # noa-engine
 
-An experimental voxel game engine.
+An experimental voxel engine.
 
 [Live demo of test app here!](http://andyhall.github.io/noa-testbed/)
 
@@ -35,6 +35,18 @@ var noa = engine({
 })
 ```
 
+### Status, contributing, etc.
+
+This library attempts to be something you can build a voxel game on top of. 
+It's not a fully-featured game engine; it just tries to manage the painful parts 
+of using voxels (e.g. chunking, meshing), and certain things that are 
+tightly coupled to voxel implementation (e.g. physics), 
+and otherwise stay out of your way.
+
+Contributions are welcome! But please open an issue before building any 
+nontrivial new features. I want to keep this library lean if I can, 
+so if your idea could be done as a separate module then that's probably what I'll suggest.
+
 ### Docs
 
 The source is pretty fully commented. There is a partial API reference 
@@ -44,6 +56,11 @@ the source.
 
 ### Recent changes:
 
+ * 0.21.0
+   * Support unloading/reloading new world data.  
+     Sample implementation in the `examples/test` app (hit "O" to swap world data)
+   * changes `noa.world#setChunkData` params: `id, array, userData`
+   * changes `noa.world#chunkBeingRemoved` event params: `id, array, userData`
  * 0.20.0
    * Near chunks get loaded and distant ones get unloaded faster and more sensibly
    * Greatly speeds up chunk init, meshing, and disposal (and fixes some new Chrome deopts)

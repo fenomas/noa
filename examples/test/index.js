@@ -217,3 +217,33 @@ noa.on('tick', function (dt) {
 
 
 
+// pausing
+
+noa.inputs.bind('pause', 'P')
+noa.inputs.down.on('pause', function() {
+	paused = !paused
+	noa.setPaused(paused)
+})
+var paused = false
+
+
+
+// world swapping test
+
+function setWorld(switched) {
+	dirtID = (switched) ? 2 : 1
+	grassID = (switched) ? 1 : 2
+}
+
+noa.inputs.bind('swap-world', 'O')
+noa.inputs.down.on('swap-world', function() {
+	swapped = !swapped
+	setWorld(swapped)
+	noa.world.invalidateAllChunks()
+})
+var swapped = false
+
+
+
+
+

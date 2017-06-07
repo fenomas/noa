@@ -4,7 +4,6 @@ var aabb = require('aabb-3d')
 var vec3 = require('gl-vec3')
 var extend = require('extend')
 var ndarray = require('ndarray')
-var inherits = require('inherits')
 var EventEmitter = require('events').EventEmitter
 var createContainer = require('./lib/container')
 var createRendering = require('./lib/rendering')
@@ -186,7 +185,7 @@ function Engine(opts) {
 
 }
 
-inherits(Engine, EventEmitter)
+Engine.prototype = Object.create(EventEmitter.prototype)
 
 
 /*
@@ -206,8 +205,12 @@ Engine.prototype.tick = function () {
   profile_hook('start')
   var dt = this._tickRate       // fixed timesteps!
   this.world.tick(dt)           // chunk creation/removal
-  if (this.world._noChunksLoaded) return
   profile_hook('world')
+  if (!this.world.playerChunkLoaded) {
+    // when waiting on worldgen, just tick the meshing queue and exit
+    this.rendering.tick(dt)
+    return
+  }
   this.physics.tick(dt)         // iterates physics
   profile_hook('physics')
   this.rendering.tick(dt)       // zooms camera, does deferred chunk meshing
