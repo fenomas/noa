@@ -57,7 +57,7 @@ module.exports = function (noa) {
 			vec3.add(pos, other.position, state.offset)
 			self.setPosition(pos[0], pos[1], pos[2])
 		} else {
-			noa.ents.removeComponentLater(id, noa.ents.names.followsEntity)
+			noa.ents.removeComponentLater(id, noa.noa.ents.names.followsEntity)
 		}
 	}
 
