@@ -1,12 +1,10 @@
 'use strict';
 
 var shadowDist
-var shadowOffset
 
-module.exports = function (noa, dist, offset) {
+module.exports = function (noa, dist) {
 
 	shadowDist = dist
-	shadowOffset = offset
 
     // create a mesh to re-use for shadows
 	var scene = noa.rendering.getScene()
@@ -41,10 +39,9 @@ module.exports = function (noa, dist, offset) {
 
 		system: function shadowSystem(dt, states) {
 			var dist = shadowDist
-			var offset = shadowOffset
 			for (var i = 0; i < states.length; i++) {
 				var state = states[i]
-				updateShadowHeight(state.__id, state.mesh, state.size, dist, offset, noa)
+				updateShadowHeight(state.__id, state.mesh, state.size, dist, noa)
 			}
 		},
 
@@ -68,7 +65,7 @@ module.exports = function (noa, dist, offset) {
 
 var down = new Float32Array([0, -1, 0])
 
-function updateShadowHeight(id, mesh, size, shadowDist, shadowOffset, noa) {
+function updateShadowHeight(id, mesh, size, shadowDist, noa) {
 	var ents = noa.entities
 	var dat = ents.getPositionData(id)
 	var loc = dat.position
@@ -82,7 +79,7 @@ function updateShadowHeight(id, mesh, size, shadowDist, shadowOffset, noa) {
 		if (pick) y = pick.position[1]
 	}
 	if (y !== undefined) {
-		mesh.position.y = y + shadowOffset
+		mesh.position.y = y + 0.05
 		var dist = loc[1] - y
 		var scale = size * 0.7 * (1 - dist / shadowDist)
 		mesh.scaling.copyFromFloats(scale, scale, scale)
