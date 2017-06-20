@@ -3,7 +3,7 @@
 var boxIntersect = require('box-intersect')
 
 
-/**
+/*
  * 
  * 	Every frame, entities with this component will get checked for colliions
  * 
