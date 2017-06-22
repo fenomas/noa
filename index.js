@@ -228,7 +228,7 @@ Engine.prototype.tick = function () {
 var __qwasDone = true, __qstart
 function debugQueues(self) {
     var a = self.world._chunkIDsToAdd.length
-    var b = self.world._chunkIDsPendingCreation.length
+    var b = self.world._chunkIDsToCreate.length
     var c = self.rendering._chunksToMesh.length
     var d = self.rendering._numMeshedChunks
     if (a + b + c > 0) console.log([
