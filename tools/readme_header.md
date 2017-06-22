@@ -13,13 +13,13 @@ Under active development, best way to try it is to clone and hack on it:
 (clone this repo)
 cd noa
 npm install
-npm start       # runs /examples/hello-world
-npm test        # runs /examples/test
+npm start       # runs /docs/hello-world
+npm test        # runs /docs/test
 ```
 
-Here are live versions of the examples: 
- * [hello-world example](http://andyhall.github.io/noa/examples/hello-world/)
- * [test example](http://andyhall.github.io/noa/examples/test/)
+Live versions of the test content: 
+ * [hello-world example](http://andyhall.github.io/noa/hello-world/)
+ * [test example](http://andyhall.github.io/noa/test/)
 
 To build a new world app, use `noa` as a dependency:
 
@@ -31,7 +31,7 @@ npm install --save noa-engine
 var engine = require('noa-engine')
 var noa = engine({
     inverseY: true,
-    // see source or examples for more options and usage
+    // see source or /docs/ examples for more options and usage
 })
 ```
 
@@ -58,10 +58,11 @@ the source.
 
  * 0.22.0
    * Removed redundant `player` component - use `noa.playerEntity`
-   * Changed `position` component internals, client code hopefull unaffected
+   * Changed `position` component internals, client code hopefully unaffected
+   * Restructuring that hopefully wasn't breaking
  * 0.21.0
    * Support unloading/reloading new world data.  
-     Sample implementation in the `examples/test` app (hit "O" to swap world data)
+     Sample implementation in the `docs/test` app (hit "O" to swap world data)
  * 0.20.0
    * Near chunks get loaded and distant ones get unloaded faster and more sensibly
    * Greatly speeds up chunk init, meshing, and disposal (and fixes some new Chrome deopts)

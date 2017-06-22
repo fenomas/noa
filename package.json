@@ -1,11 +1,11 @@
 {
   "name": "noa-engine",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "description": "Experimental voxel game engine",
   "main": "index.js",
   "scripts": {
-    "start": "sleep 1 && open http://localhost:8080/ & webpack-dev-server -d --inline --content-base examples/hello-world/ examples/hello-world/index.js",
-    "test": "sleep 1 && open http://localhost:8080/ & webpack-dev-server -d --inline --content-base examples/test/ examples/test/index.js",
+    "start": "sleep 1 && open http://localhost:8080/ & (cd docs/hello-world/; webpack-dev-server -d --inline index.js) || true",
+    "test": "sleep 1 && open http://localhost:8080/ & (cd docs/test/; webpack-dev-server -d --inline index.js) || true",
     "doc": "cat tools/buildDocs.js | node"
   },
   "author": "Andy Hall",
