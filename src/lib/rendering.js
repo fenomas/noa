@@ -21,11 +21,13 @@ var col3 = BABYLON.Color3
 window.BABYLON = BABYLON
 
 
-// profiling flag
+// profiling flags
 var PROFILE = 0
+var SHOW_FPS = 0
 
 
 var defaults = {
+    showFPS: false,
     antiAlias: true,
     clearColor: [0.8, 0.9, 1],
     ambientColor: [1, 1, 1],
@@ -66,6 +68,7 @@ function Rendering(noa, _opts, canvas) {
 
     // for debugging
     window.scene = this._scene
+    if (SHOW_FPS || opts.showFPS) setUpFPS()
 }
 
 
@@ -159,6 +162,7 @@ Rendering.prototype.render = function (dt) {
     updateCamera(this)
     this._engine.beginFrame()
     this._scene.render()
+    fps_hook()
     this._engine.endFrame()
 }
 
@@ -696,5 +700,34 @@ var profile_hook = (function () {
 
 
 
+var fps_hook = function () { }
+function setUpFPS() {
+    var div = document.createElement('div')
+    div.id = 'noa_fps'
+    var style = 'position:absolute; top:0; right:0; z-index:0;'
+    style += 'color:white; background-color:rgba(0,0,0,0.5);'
+    style += 'font:14px monospace; text-align:center;'
+    style += 'min-width:2em; margin:4px;'
+    div.style = style
+    document.body.appendChild(div)
+    var every = 1000
+    var ct = 0
+    var longest = 0
+    var start = performance.now()
+    var last = start
+    fps_hook = function () {
+        ct++
+        var nt = performance.now()
+        if (nt - last > longest) longest = nt - last
+        last = nt
+        if (nt - start < every) return
+        var fps = Math.round(ct / (nt - start) * 1000)
+        var min = Math.round(1 / longest * 1000)
+        div.innerHTML = fps + '<br>' + min
+        ct = 0
+        longest = 0
+        start = nt
+    }
+}
 
 
