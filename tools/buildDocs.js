@@ -1,6 +1,7 @@
+'use strict'
 
 var fs = require('fs')
-var markdox = require('markdox')
+// var markdox = require('markdox')
 
 var fixtures = [
 	'index.js',
@@ -16,11 +17,12 @@ var options = {
 	}
 }
 
-markdox.process(fixtures, options, function () {
-	header = fs.readFileSync(__dirname + '/tools/readme_header.md')
-	body = fs.readFileSync(__dirname + '/README.md')
+// markdox.process(fixtures, options, function () {
+	var header = fs.readFileSync(__dirname + '/tools/readme_header.md')
+	// var body = fs.readFileSync(__dirname + '/README.md')
+	var body = '\n\n\n(docs currently broken by some weird npm+markdox issue..)\n\n\n'
 	var joined = header + body
 	fs.writeFile(__dirname + '/README.md', joined, function (err) {
 		if (err) return console.log(err);
 	})
-})
+// })

@@ -10,6 +10,7 @@
 var noaEngine = require('../..')
 
 var opts = {
+	showFPS: true,
 	inverseY: true,
 	chunkSize: 32,
 	chunkAddDistance: 2,

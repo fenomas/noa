@@ -57,9 +57,9 @@ the source.
 ### Recent changes:
 
  * 0.22.0
-   * Removed redundant `player` component - use `noa.playerEntity`
-   * Changed `position` component internals, client code hopefully unaffected
-   * Restructuring that hopefully wasn't breaking
+   * Removed redundant `player` component - use `noa.playerEntity` property
+   * Added `showFPS` option
+   * Many internal changes that hopefully didn't break compatibility
  * 0.21.0
    * Support unloading/reloading new world data.  
      Sample implementation in the `docs/test` app (hit "O" to swap world data)
@@ -87,109 +87,7 @@ the source.
 
 ## Partial API reference:
 
-<!-- Start index.js -->
 
-## noa
-Main engine object.  
-Emits: *tick, beforeRender, afterRender, targetBlockChanged*
+(docs currently broken by some weird npm+markdox issue..)
 
-```js
-var noaEngine = require('noa-engine')
-var noa = noaEngine(opts)
-```
-
-* **playerEntity**  - Entity id for the player entity
-
-* **playerBody**  - reference to player entity's physics body
-
-* **setPaused (paused)**  - Pausing the engine will also stop render/tick events, etc.
-
-* **getBlock (x,y,z)** 
-
-* **setBlock (x,y,z)** 
-
-* **addBlock (id,x,y,z)**  - Adds a block unless obstructed by entities 
-
-* **getPlayerPosition()** 
-
-* **getPlayerMesh()** 
-
-* **setPlayerEyeOffset()** 
-
-* **getPlayerEyePosition()** 
-
-* **getCameraVector()** 
-
-* **pick (pos, vec, dist)**  - Raycast through the world, returning a result object for any non-air block
-
-<!-- End index.js -->
-
-----
-
-<!-- Start lib/entities.js -->
-
-## noa.entities
-Wrangles entities. 
-This class is an instance of [ECS](https://github.com/andyhall/ent-comp), 
-and as such implements the usual ECS methods.
-It's also decorated with helpers and accessor functions for getting component existence/state.
-
-Expects entity definitions in a specific format - see source `components` folder for examples.
-
-* **names**  - Hash containing the component names of built-in components.
-
-* **addComponentAgain (id,name,state)** 
-
-* **isTerrainBlocked (x,y,z)** 
-
-* **setEntitySize (x,y,z)** 
-
-* **getEntitiesInAABB (box)** 
-
-* **add (position, width, height..)** 
-
-  Helper to set up a general entity, and populate with some common components depending on arguments.
-  
-  Parameters: position, width, height [, mesh, meshOffset, doPhysics, shadow]
-
-<!-- End lib/entities.js -->
-
-----
-
-<!-- Start lib/world.js -->
-
-## noa.world 
-Emits:
- * worldDataNeeded  (id, ndarray, x, y, z)
- * chunkAdded (chunk)
- * chunkChanged (chunk)
- * chunkBeingRemoved (id, ndarray, userData)
-Module for managing the world, and its chunks
-
-* **getBlockID (x,y,z)** 
-
-* **getBlockSolidity (x,y,z)** 
-
-* **getBlockOpacity (x,y,z)** 
-
-* **getBlockTransparency (x,y,z)** 
-
-* **getBlockFluidity (x,y,z)** 
-
-* **getBlockProperties (x,y,z)** 
-
-* **getBlockObjectMesh (x,y,z)** 
-
-* **setBlockID (x,y,z)** 
-
-* **isBoxUnobstructed (x,y,z)** 
-
-* **setChunkData (id, array, userData)** 
-
-  client should call this after creating a chunk's worth of data (as an ndarray)  
-  If userData is passed in it will be attached to the chunk
-
-<!-- End lib/world.js -->
-
-----
 
