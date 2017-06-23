@@ -23,7 +23,7 @@ window.BABYLON = BABYLON
 
 // profiling flags
 var PROFILE = 0
-var SHOW_FPS = 0
+
 
 
 var defaults = {
@@ -60,7 +60,6 @@ function Rendering(noa, _opts, canvas) {
     // internals
     this._meshedChunks = {}
     this._numMeshedChunks = 0
-    this._materialCache = {}
     this.useAO = !!opts.useAO
     this.aoVals = opts.AOmultipliers
     this.revAoVal = opts.reverseAOmultiplier
@@ -68,7 +67,7 @@ function Rendering(noa, _opts, canvas) {
 
     // for debugging
     window.scene = this._scene
-    if (SHOW_FPS || opts.showFPS) setUpFPS()
+    if (opts.showFPS) setUpFPS()
 }
 
 
@@ -218,8 +217,8 @@ Rendering.prototype.addDynamicMesh = function (mesh) {
         mesh.onDisposeObservable.add(remover)
     } else {
         // the babylon 2.3- way, which no longer works in 2.4+
-        var prev = mesh.onDispose || function() {}
-        mesh.onDispose = function() { prev(); remover() }
+        var prev = mesh.onDispose || function () { }
+        mesh.onDispose = function () { prev(); remover() }
     }
 }
 
@@ -274,6 +273,9 @@ Rendering.prototype.makeStandardMaterial = function (name) {
 
 
 
+
+
+
 /*
  *
  * 
@@ -291,18 +293,38 @@ Rendering.prototype.prepareChunkForRendering = function (chunk) {
     window.chunk = chunk
 }
 
-
 Rendering.prototype.disposeChunkForRendering = function (chunk) {
-    removeTerrainMesh(this, chunk)
+    this.removeTerrainMesh(chunk)
     removeUnorderedListItem(this._octree.blocks, chunk.octreeBlock)
     chunk.octreeBlock.entries.length = 0
     chunk.octreeBlock = null
 }
 
-
-Rendering.prototype.meshChunk = function (chunk) {
-    meshChunkImpl(this, chunk)
+Rendering.prototype.addTerrainMesh = function (chunk, mesh) {
+    this._meshedChunks[chunk.id] = mesh
+    this._numMeshedChunks++
+    if (mesh.getIndices().length) chunk.octreeBlock.entries.push(mesh)
+    mesh.getChildren().map(function (m) {
+        chunk.octreeBlock.entries.push(m)
+    })
 }
+
+Rendering.prototype.removeTerrainMesh = function (chunk) {
+    var mesh = this._meshedChunks[chunk.id]
+    if (mesh) {
+        removeUnorderedListItem(chunk.octreeBlock.entries, mesh)
+        mesh.getChildren().map(function (m) {
+            removeUnorderedListItem(chunk.octreeBlock.entries, m)
+        })
+        mesh.dispose()
+        delete this._meshedChunks[chunk.id]
+        this._numMeshedChunks--
+    }
+}
+
+
+
+
 
 
 
@@ -314,10 +336,6 @@ Rendering.prototype.meshChunk = function (chunk) {
  *   INTERNALS
  *
 */
-
-
-
-
 
 
 
@@ -445,16 +463,6 @@ function getHighlightMesh(rendering) {
 
 
 
-// manage materials/textures to avoid duplicating them
-function getOrCreateMaterial(self, matID) {
-    var name = 'terrain' + matID
-    var mat = self._materialCache[name]
-    if (!mat) {
-        mat = makeTerrainMaterial(self, matID)
-        self._materialCache[name] = mat
-    }
-    return mat
-}
 
 
 
@@ -463,167 +471,10 @@ function getOrCreateMaterial(self, matID) {
 
 
 
-/*
- * 
- * 
- *      Chunking and meshing
- * 
- * 
-*/
-
-
-function meshChunkImpl(self, chunk) {
-    profile_hook('start')
-
-    // remove current version if this is an update to an existing chunk
-    removeTerrainMesh(self, chunk)
-
-    // runs chunk through the meshing algorithm, creating the vertex/etc. data
-    var meshdata = runChunkMesher(self, chunk)
-    profile_hook('meshed')
-
-    // creates the actual terrain mesh that will be added to the scene
-    if (meshdata.length) {
-        var mesh = makeTerrainMesh(self, meshdata, chunk)
-        addTerrainMesh(self, chunk, mesh)
-        profile_hook('built terrain')
-    }
-
-    profile_hook('end')
-
-}
-
-
-function addTerrainMesh(self, chunk, mesh) {
-    self._meshedChunks[chunk.id] = mesh
-    self._numMeshedChunks++
-    mesh.getChildren().map(function (m) {
-        chunk.octreeBlock.entries.push(m)
-    })
-}
-
-function removeTerrainMesh(self, chunk) {
-    var mesh = self._meshedChunks[chunk.id]
-    if (mesh) {
-        mesh.getChildren().map(function (m) {
-            removeUnorderedListItem(chunk.octreeBlock.entries, m)
-        })
-        mesh.dispose()
-        delete self._meshedChunks[chunk.id]
-        self._numMeshedChunks--
-    }
-}
-
-
-// given an updated chunk reference, run it through mesher
-function runChunkMesher(self, chunk) {
-    var noa = self.noa
-    var matGetter = noa.registry.getBlockFaceMaterialAccessor()
-    var colGetter = noa.registry.getMaterialVertexColorAccessor()
-    // returns an array of chunk#Submesh
-    var blockFaceMats = noa.registry._blockMats
-    return chunk.mesh(matGetter, colGetter, self.useAO, self.aoVals, self.revAoVal, blockFaceMats)
-}
 
 
 
-// single canonical function to make a Material for a materialID
-function makeTerrainMaterial(self, id) {
-    var url = self.noa.registry.getMaterialTexture(id)
-    var matData = self.noa.registry.getMaterialData(id)
-    var alpha = matData.alpha
-    if (!url && alpha == 1) {
-        // base material is fine for non-textured case, if no alpha
-        return self.flatMaterial
-    }
-    var mat = self.flatMaterial.clone('terrain' + id)
-    if (url) {
-        var tex = new BABYLON.Texture(url, self._scene, true, false, BABYLON.Texture.NEAREST_SAMPLINGMODE)
-        if (matData.textureAlpha) {
-            tex.hasAlpha = true
-            mat.diffuseTexture = tex
-        } else {
-            mat.ambientTexture = tex
-        }
-    }
-    if (matData.alpha < 1) {
-        mat.alpha = matData.alpha
-    }
-    return mat
-}
 
-
-
-//
-// Given arrays of data for an enmeshed chunk, create a 
-// babylon mesh with child meshes for each terrain material
-//
-function makeTerrainMesh(self, meshdata, chunk) {
-    var scene = self._scene
-
-    // create/position parent mesh
-    var mesh = new BABYLON.Mesh('chunk_' + chunk.id, scene)
-    var x = chunk.i * chunk.size
-    var y = chunk.j * chunk.size
-    var z = chunk.k * chunk.size
-    mesh.position.x = x
-    mesh.position.y = y
-    mesh.position.z = z
-    mesh.freezeWorldMatrix()
-    mesh.freezeNormals()
-
-    // preprocess meshdata entries to merge those that use default terrain material
-    var mdat, i
-    var first = null
-    var keylist = Object.keys(meshdata)
-    for (i = 0; i < keylist.length; ++i) {
-        mdat = meshdata[keylist[i]]
-        var url = self.noa.registry.getMaterialTexture(mdat.id)
-        var alpha = self.noa.registry.getMaterialData(mdat.id).alpha
-        if (url || alpha < 1) continue
-
-        if (!first) {
-            first = mdat
-        } else {
-            // merge data in "mdat" onto "first"
-            var offset = first.positions.length / 3
-            first.positions = first.positions.concat(mdat.positions)
-            first.normals = first.normals.concat(mdat.normals)
-            first.colors = first.colors.concat(mdat.colors)
-            first.uvs = first.uvs.concat(mdat.uvs)
-            // indices must be offset relative to data being merged onto
-            for (var j = 0, len = mdat.indices.length; j < len; ++j) {
-                first.indices.push(mdat.indices[j] + offset)
-            }
-            // get rid of entry that's been merged
-            delete meshdata[keylist[i]]
-        }
-    }
-
-    // go through (remaining) meshdata entries and create a mesh for each
-    keylist = Object.keys(meshdata)
-    for (i = 0; i < keylist.length; ++i) {
-        mdat = meshdata[keylist[i]]
-        var matID = mdat.id
-        var m = new BABYLON.Mesh('terrain ' + matID, self._scene)
-        m.parent = mesh
-
-        m.material = getOrCreateMaterial(self, matID)
-
-        var vdat = new BABYLON.VertexData()
-        vdat.positions = mdat.positions
-        vdat.indices = mdat.indices
-        vdat.normals = mdat.normals
-        vdat.colors = mdat.colors
-        vdat.uvs = mdat.uvs
-        vdat.applyToMesh(m)
-
-        m.freezeWorldMatrix()
-        m.freezeNormals()
-    }
-
-    return mesh
-}
 
 
 
@@ -649,10 +500,12 @@ Rendering.prototype.debug_SceneCheck = function () {
         if (missing(m.material, mats)) warn(m.material, 'mesh material not in scene')
         if (!empty(m) && !m.material) warn(m, 'non-empty scene mesh with no material')
     })
+    var unusedMats = []
     mats.forEach(function (mat) {
         for (var i in meshes) if (meshes[i].material === mat) return
-        warn(mat, 'material not used by any mesh')
+        unusedMats.push(mat.name)
     })
+    console.warn('Materials unused by any mesh: ', unusedMats.join(', '))
     dyns.forEach(function (m) {
         if (missing(m, meshes)) warn(m, 'octree/dynamic mesh not in scene')
     })
