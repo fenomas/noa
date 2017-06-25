@@ -100,7 +100,7 @@ Submesh.prototype.dispose = function () {
 /*
  * 
  *  Mesh Builder - turns an array of Submesh data into a 
- *  Babylon.js mesh and child meshes, ready to be added to the scene
+ *  Babylon.js mesh/submeshes, ready to be added to the scene
  * 
 */
 
@@ -111,88 +111,82 @@ function MeshBuilder(noa) {
     var baseMaterial = noa.rendering.flatMaterial
 
 
+    // core
     this.build = function (meshdata, chunk, ignoreMaterials) {
 
         // preprocess meshdata entries to merge those that use default terrain material
-        var mdat, i
-        var first = null
-        var keylist = Object.keys(meshdata)
-        for (i = 0; i < keylist.length; ++i) {
-            mdat = meshdata[keylist[i]]
-
-            if (!ignoreMaterials) {
-                var url = registry.getMaterialTexture(mdat.id)
-                var alpha = registry.getMaterialData(mdat.id).alpha
-                if (url || alpha < 1) continue
-            }
-
-            if (!first) {
-                first = mdat
-            } else {
-                // merge data in "mdat" onto "first"
-                var offset = first.positions.length / 3
-                first.positions = first.positions.concat(mdat.positions)
-                first.normals = first.normals.concat(mdat.normals)
-                first.colors = first.colors.concat(mdat.colors)
-                first.uvs = first.uvs.concat(mdat.uvs)
-                // indices must be offset relative to data being merged onto
-                for (var j = 0, len = mdat.indices.length; j < len; ++j) {
-                    first.indices.push(mdat.indices[j] + offset)
-                }
-                // get rid of entry that's been merged
-                mdat.dispose()
-                delete meshdata[keylist[i]]
-            }
+        var mergeCriteria = function (mdat) {
+            if (ignoreMaterials) return true
+            var url = registry.getMaterialTexture(mdat.id)
+            var alpha = registry.getMaterialData(mdat.id).alpha
+            if (url || alpha < 1) return false
         }
+        mergeSubmeshes(meshdata, mergeCriteria)
 
-        // go through (remaining) meshdata entries and create a mesh for each
-        var builtMeshes = []
-        keylist = Object.keys(meshdata)
-        for (i = 0; i < keylist.length; ++i) {
-            mdat = meshdata[keylist[i]]
-            var matID = mdat.id
-            var name = 'terrain_' + chunk.id + ' id_' + matID
-            var mesh = new BABYLON.Mesh(name, scene)
-            builtMeshes.push(mesh)
+        // now merge everything, keeping track of vertices/indices/materials
+        var results = mergeSubmeshes(meshdata, () => true)
 
-            mesh.material = (ignoreMaterials) ? baseMaterial : getOrCreateMaterial(matID)
+        // merge sole remaining submesh instance into a babylon mesh
+        var mdat = meshdata[results.mergedID]
+        var name = 'chunk_' + chunk.id
+        var mats = results.matIDs.map(id => getTerrainMaterial(id, ignoreMaterials))
+        var mesh = buildMeshFromSubmesh(mdat, name, mats, results.vertices, results.indices)
 
-            var vdat = new BABYLON.VertexData()
-            vdat.positions = mdat.positions
-            vdat.indices = mdat.indices
-            vdat.normals = mdat.normals
-            vdat.colors = mdat.colors
-            vdat.uvs = mdat.uvs
-            vdat.applyToMesh(mesh)
-
-            mdat.dispose()
-        }
-
-        // if more than one mesh is made, give them an empty parent
-        var parent
-        if (builtMeshes.length > 1) {
-            parent = new BABYLON.Mesh('chunk_' + chunk.id, scene)
-            for (var s in builtMeshes) builtMeshes[s].parent = parent
-        } else {
-            parent = builtMeshes[0]
-            parent.name = 'chunk_' + chunk.id
-        }
-
-        // position the parent
+        // position, freeze and exit
         var x = chunk.i * chunk.size
         var y = chunk.j * chunk.size
         var z = chunk.k * chunk.size
-        parent.position.x = x
-        parent.position.y = y
-        parent.position.z = z
+        mesh.position.x = x
+        mesh.position.y = y
+        mesh.position.z = z
 
-        // freeze everyone and exit
-        parent.freezeWorldMatrix()
-        parent.freezeNormals()
+        mesh.freezeWorldMatrix()
+        mesh.freezeNormals()
+        return mesh
+    }
 
-        for (var s2 in builtMeshes) {
-            builtMeshes[s2].freezeWorldMatrix()
-            builtMeshes[s2].freezeNormals()
+
+
+    // this version builds a parent mesh + child meshes, rather than
+    // one big mesh with submeshes and a multimaterial.
+    // This should be obsolete, unless the first one has problems..
+    this.buildWithoutMultimats = function (meshdata, chunk, ignoreMaterials) {
+
+        // preprocess meshdata entries to merge those that use default terrain material
+        var mergeCriteria = function (mdat) {
+            if (ignoreMaterials) return true
+            var url = registry.getMaterialTexture(mdat.id)
+            var alpha = registry.getMaterialData(mdat.id).alpha
+            if (url || alpha < 1) return false
+        }
+        mergeSubmeshes(meshdata, mergeCriteria)
+
+        // go through (remaining) meshdata entries and create a mesh for each
+        // call the first one the parent, and attach others to it
+        var parent = null
+        var keylist = Object.keys(meshdata)
+        for (var i = 0; i < keylist.length; ++i) {
+            var mdat = meshdata[keylist[i]]
+            var matID = mdat.id
+            var mat = getTerrainMaterial(matID, ignoreMaterials)
+            var name = 'chunk_inner_' + chunk.id + ' ' + matID
+            var mesh = buildMeshFromSubmesh(mdat, name, [mat])
+
+            if (!parent) {
+                parent = mesh
+                // position the parent globally
+                var x = chunk.i * chunk.size
+                var y = chunk.j * chunk.size
+                var z = chunk.k * chunk.size
+                parent.position.x = x
+                parent.position.y = y
+                parent.position.z = z
+            } else {
+                mesh.parent = parent
+            }
+
+            mesh.freezeWorldMatrix()
+            mesh.freezeNormals()
         }
 
         return parent
@@ -200,12 +194,105 @@ function MeshBuilder(noa) {
 
 
 
+    // given a set of submesh objects, merge all those that 
+    // meet some criteria into the first such submesh
+    //      modifies meshDataList in place!
+    function mergeSubmeshes(meshDataList, criteria) {
+        var vertices = []
+        var indices = []
+        var matIDs = []
+
+        var keylist = Object.keys(meshDataList)
+        var target = null
+        var targetID
+        for (var i = 0; i < keylist.length; ++i) {
+            var mdat = meshDataList[keylist[i]]
+            if (!criteria(mdat)) continue
+
+            vertices.push(mdat.positions.length)
+            indices.push(mdat.indices.length)
+            matIDs.push(mdat.id)
+
+            if (!target) {
+                target = mdat
+                targetID = keylist[i]
+
+            } else {
+                var indexOffset = target.positions.length / 3
+                // merge data in "mdat" onto "target"
+                target.positions = target.positions.concat(mdat.positions)
+                target.normals = target.normals.concat(mdat.normals)
+                target.colors = target.colors.concat(mdat.colors)
+                target.uvs = target.uvs.concat(mdat.uvs)
+                // indices must be offset relative to data being merged onto
+                for (var j = 0, len = mdat.indices.length; j < len; ++j) {
+                    target.indices.push(mdat.indices[j] + indexOffset)
+                }
+                // get rid of entry that's been merged
+                mdat.dispose()
+                delete meshDataList[keylist[i]]
+            }
+        }
+
+        return {
+            mergedID: targetID,
+            vertices: vertices,
+            indices: indices,
+            matIDs: matIDs,
+        }
+    }
+
+
+
+    function buildMeshFromSubmesh(submesh, name, mats, verts, inds) {
+
+        // base mesh and vertexData object
+        var mesh = new BABYLON.Mesh(name, scene)
+        var vdat = new BABYLON.VertexData()
+        vdat.positions = submesh.positions
+        vdat.indices = submesh.indices
+        vdat.normals = submesh.normals
+        vdat.colors = submesh.colors
+        vdat.uvs = submesh.uvs
+        vdat.applyToMesh(mesh)
+        submesh.dispose()
+
+        if (mats.length === 1) {
+            // if only one material ID, assign as a regular mesh and return
+            mesh.material = mats[0]
+
+        } else {
+            // else we need to make a multimaterial and define (babylon) submeshes
+            var multiMat = new BABYLON.MultiMaterial('multimat ' + name, scene)
+            mesh.subMeshes = []
+            var totalVerts = vdat.positions.length
+            var totalInds = vdat.indices.length
+            var vertStart = 0
+            var indStart = 0
+            for (var i = 0; i < mats.length; i++) {
+                multiMat.subMaterials[i] = mats[i]
+                var sub = new BABYLON.SubMesh(i, vertStart, verts[i], indStart, inds[i], mesh)
+                mesh.subMeshes[i] = sub
+                vertStart += verts[i]
+                indStart += inds[i]
+            }
+            mesh.material = multiMat
+        }
+
+        return mesh
+    }
+
+
+
+
+    //                         Material wrangling
 
 
     var materialCache = {}
 
     // manage materials/textures to avoid duplicating them
-    function getOrCreateMaterial(matID) {
+    function getTerrainMaterial(matID, ignore) {
+        if (ignore) return baseMaterial
         var name = 'terrain mat ' + matID
         if (!materialCache[name]) materialCache[name] = makeTerrainMaterial(matID)
         return materialCache[name]

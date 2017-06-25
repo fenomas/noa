@@ -491,21 +491,36 @@ Rendering.prototype.debug_SceneCheck = function () {
     var dyns = this._octree.dynamicContent
     var octs = []
     var mats = this._scene.materials
+    var allmats = []
+    mats.forEach(mat => {
+        if (mat.subMaterials) mat.subMaterials.forEach(mat => allmats.push(mat))
+        else allmats.push(mat)
+    })
     this._octree.blocks.forEach(function (b) {
         for (var i in b.entries) octs.push(b.entries[i])
     })
     meshes.forEach(function (m) {
         if (m._isDisposed) warn(m, 'disposed mesh in scene')
-        if (!empty(m) && missing(m, dyns, octs)) warn(m, 'non-empty mesh missing from octree')
-        if (missing(m.material, mats)) warn(m.material, 'mesh material not in scene')
-        if (!empty(m) && !m.material) warn(m, 'non-empty scene mesh with no material')
+        if (empty(m)) return
+        if (missing(m, dyns, octs)) warn(m, 'non-empty mesh missing from octree')
+        if (!m.material) { warn(m, 'non-empty scene mesh with no material'); return }
+        (m.material.subMaterials || [m.material]).forEach(function (mat) {
+            if (missing(mat, mats)) warn(mat, 'mesh material not in scene')
+        })
     })
     var unusedMats = []
-    mats.forEach(function (mat) {
-        for (var i in meshes) if (meshes[i].material === mat) return
-        unusedMats.push(mat.name)
+    allmats.forEach(mat => {
+        var used = false
+        meshes.forEach(mesh => {
+            if (mesh.material === mat) used = true
+            if (!mesh.material || !mesh.material.subMaterials) return
+            if (mesh.material.subMaterials.includes(mat)) used = true
+        })
+        if (!used) unusedMats.push(mat.name)
     })
-    console.warn('Materials unused by any mesh: ', unusedMats.join(', '))
+    if (unusedMats.length) {
+        console.warn('Materials unused by any mesh: ', unusedMats.join(', '))
+    }
     dyns.forEach(function (m) {
         if (missing(m, meshes)) warn(m, 'octree/dynamic mesh not in scene')
     })
@@ -528,6 +543,7 @@ Rendering.prototype.debug_MeshCount = function () {
         var n = m.name || ''
         n = n.replace(/(-|\d)+.*/, '#')
         n = n.replace(/(rotHolder|camHolder|camScreen)/, 'rendering use')
+        n = n.replace(/atlas sprite .*/, 'atlas sprites')
         ct[n] = ct[n] || 0
         ct[n]++
     })
