@@ -2,16 +2,15 @@
 
 var constants = require('./constants')
 var ndarray = require('ndarray')
-var TerrainMesher = require('./terrainMesher')
-
-
 window.ndarray = ndarray
+
 
 module.exports = Chunk
 
 
-
-
+// shared references to terrain/object meshers
+var terrainMesher = require('./terrainMesher')
+var objectMesher = require('./objectMesher')
 
 
 /* 
@@ -51,6 +50,7 @@ function Chunk(noa, id, i, j, k, size) {
     this.isDisposed = false
     this.isGenerated = false
     this.inInvalid = false
+    this.octreeBlock = null
 
     this.isEmpty = false
     this.isFull = false
@@ -77,11 +77,9 @@ function Chunk(noa, id, i, j, k, size) {
     // build unpadded and transposed array views for internal use
     rebuildArrayViews(this)
 
-    // storage for block for selection octree
-    this.octreeBlock = null
+    // adds some properties to the chunk for handling object meshes
+    objectMesher.initChunk(this)
 
-    // storage for list of known object meshes
-    this._objectMeshes = {}
 }
 
 
@@ -128,8 +126,8 @@ Chunk.prototype.set = function (x, y, z, id) {
     this._unpaddedView.set(x, y, z, newID)
 
     // handle object meshes
-    if (oldID & OBJECT_BIT) removeObjectMeshAt(this, x, y, z)
-    if (newID & OBJECT_BIT) addObjectMeshAt(this, id, x, y, z)
+    if (oldID & OBJECT_BIT) removeObjectBlock(this, x, y, z)
+    if (newID & OBJECT_BIT) addObjectBlock(this, id, x, y, z)
 
     // track full/emptyness
     if (newID !== 0) this.isEmpty = false
@@ -163,14 +161,12 @@ function callBlockHandler(chunk, blockID, type, x, y, z) {
 
 
 
-// Mesh self into a babylon JS mesh
+// Convert chunk's voxel terrain into a babylon.js mesh
+// Used internally, but needs to be public so mesh-building hacks can call it
 Chunk.prototype.mesh = function (matGetter, colGetter, useAO, aoVals, revAoVal) {
-    if (!terrainMesher) terrainMesher = new TerrainMesher(this.noa)
     return terrainMesher.meshChunk(this, matGetter, colGetter, useAO, aoVals, revAoVal)
 }
 
-// one terrainMesher instance for all chunks
-var terrainMesher
 
 
 
@@ -184,7 +180,7 @@ Chunk.prototype.updateMeshes = function () {
         this._terrainDirty = false
     }
     if (this._objectsDirty) {
-        this.processObjectMeshes()
+        objectMesher.processChunk(this)
         this._objectsDirty = false
     }
 }
@@ -264,7 +260,7 @@ Chunk.prototype.initData = function () {
                 var atEdge = edge2 || (k === 0 || k === len - 1)
                 if (!atEdge) {
                     if (OBJECT_BIT & packed) {
-                        addObjectMeshAt(this, id, i - 1, j - 1, k - 1)
+                        addObjectBlock(this, id, i - 1, j - 1, k - 1)
                     }
                     callBlockHandler(this, id, 'onLoad', i - 1, j - 1, k - 1)
                 }
@@ -290,6 +286,18 @@ function rebuildArrayViews(chunk) {
 
 
 
+// accessors related to meshing
+
+function addObjectBlock(chunk, id, x, y, z) { 
+    objectMesher.addObjectBlock(chunk, id, x, y, z)
+    chunk._objectsDirty = true
+}
+
+function removeObjectBlock(chunk, x, y, z) { 
+    objectMesher.removeObjectBlock(chunk, x, y, z)
+    chunk._objectsDirty = true
+}
+
 
 
 
@@ -300,12 +308,8 @@ Chunk.prototype.dispose = function () {
     // look through the data for onUnload handlers
     callAllBlockHandlers(this, 'onUnload')
 
-    // dispose unmerged object meshes
-    for (var s in this._objectMeshes) {
-        var dat = this._objectMeshes[s]
-        if (dat.mesh) dat.mesh.dispose()
-    }
-    this._objectMeshes = null
+    // let meshers dispose their stuff
+    objectMesher.disposeChunk(this)
 
     // apparently there's no way to dispose typed arrays, so just null everything
     this.array.data = null
@@ -341,132 +345,6 @@ function callAllBlockHandlers(chunk, type) {
         d0 += si
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-/*
- * 
- * 
- *      Object mesh handling
- * 
-*/
-
-// helper class to hold data about object meshes
-function ObjMeshDat(id, x, y, z, mesh) {
-    this.id = id | 0
-    this.x = x | 0
-    this.y = y | 0
-    this.z = z | 0
-    this.mesh = mesh || null
-}
-
-
-
-// adds an object mesh location to the list of meshes being tracked
-function addObjectMeshAt(chunk, id, x, y, z) {
-    var key = x + '|' + y + '|' + z
-    var dat = new ObjMeshDat(id, x, y, z, null)
-    chunk._objectMeshes[key] = dat
-    chunk._objectsDirty = true
-}
-
-
-
-// undoes the previous
-function removeObjectMeshAt(chunk, x, y, z) {
-    var key = x + '|' + y + '|' + z
-    var dat = chunk._objectMeshes[key]
-    if (!dat) return
-    if (dat.mesh) {
-        removeUnorderedListItem(chunk.octreeBlock.entries, dat.mesh)
-        dat.mesh.dispose()
-    }
-    delete (chunk._objectMeshes[key])
-    chunk._objectsDirty = true
-}
-
-
-
-
-
-// Run through the known object mesh locations and create any meshes that are missing
-
-Chunk.prototype.processObjectMeshes = function () {
-    var x0 = this.i * this.size
-    var y0 = this.j * this.size
-    var z0 = this.k * this.size
-
-    var objHash = this._objectMeshes
-    for (var s in objHash) {
-        var dat = objHash[s]
-        if (dat.mesh) continue // skip anything already built
-
-        var srcMesh = objectMeshLookup[dat.id]
-        // var mesh = srcMesh.createInstance('object mesh instance')
-        var mesh = srcMesh.clone('object mesh instance')
-        mesh.position.x = x0 + dat.x + 0.5
-        mesh.position.y = y0 + dat.y
-        mesh.position.z = z0 + dat.z + 0.5
-
-        mesh.computeWorldMatrix(true)
-        if (!mesh.billboardMode) {
-            mesh.freezeWorldMatrix()
-            mesh.freezeNormals()
-        }
-
-        // call custom handler to let it, say, rotate the mesh
-        var handlers = blockHandlerLookup[dat.id]
-        if (handlers && handlers.onCustomMeshCreate) {
-            handlers.onCustomMeshCreate(mesh, x0 + dat.x, y0 + dat.y, z0 + dat.z)
-        }
-
-        // stuff necessary to add mesh to scene
-        this.octreeBlock.entries.push(mesh)
-
-        dat.mesh = mesh
-    }
-}
-
-
-
-
-
-
-
-
-// helper to swap item to end and pop(), instead of splice()ing
-function removeUnorderedListItem(list, item) {
-    var i = list.indexOf(item)
-    if (i < 0) { return }
-    if (i === list.length - 1) {
-        list.pop()
-    } else {
-        list[i] = list.pop()
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

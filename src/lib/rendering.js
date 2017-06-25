@@ -5,6 +5,7 @@ var extend = require('extend')
 var glvec3 = require('gl-vec3')
 var aabb = require('aabb-3d')
 var sweep = require('voxel-aabb-sweep')
+var removeUnorderedListItem = require('./util').removeUnorderedListItem
 
 
 // For now, assume Babylon.js has been imported into the global space already
@@ -121,10 +122,11 @@ function initScene(self, canvas, opts) {
     self.flatMaterial = self.makeStandardMaterial('flatmat')
     self.flatMaterial.specularColor = BABYLON.Color3.Black()
 
-    // same for emissive elements
-    self.emissiveMat = self.makeStandardMaterial('emissivemat')
-    self.emissiveMat.specularColor = BABYLON.Color3.Black()
-    self.emissiveMat.emissiveColor = BABYLON.Color3.White()
+    // // same for emissive elements
+    // removing this until I find I need it...
+    // self.emissiveMat = self.makeStandardMaterial('emissivemat')
+    // self.emissiveMat.specularColor = BABYLON.Color3.Black()
+    // self.emissiveMat.emissiveColor = BABYLON.Color3.White()
 }
 
 
@@ -227,16 +229,6 @@ Rendering.prototype.removeDynamicMesh = function (mesh) {
     removeUnorderedListItem(this._octree.dynamicContent, mesh)
 }
 
-// helper to swap item to end and pop(), instead of splice()ing
-function removeUnorderedListItem(list, item) {
-    var i = list.indexOf(item)
-    if (i < 0) { return }
-    if (i === list.length - 1) {
-        list.pop()
-    } else {
-        list[i] = list.pop()
-    }
-}
 
 
 

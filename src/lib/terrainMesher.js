@@ -4,10 +4,9 @@
 
 
 var mesher
-module.exports = function (noa) {
-    if (!mesher) mesher = new TerrainMesher(noa)
-    return mesher
-}
+module.exports = new TerrainMesher()
+
+
 
 
 // enable for profiling..
@@ -23,10 +22,10 @@ var PROFILE = 0
 */
 
 
-function TerrainMesher(noa) {
+function TerrainMesher() {
 
     var greedyMesher = new GreedyMesher()
-    var meshBuilder = new MeshBuilder(noa)
+    var meshBuilder = new MeshBuilder()
 
 
     /*
@@ -37,6 +36,7 @@ function TerrainMesher(noa) {
 
     this.meshChunk = function (chunk, matGetter, colGetter, ignoreMaterials, useAO, aoVals, revAoVal) {
         profile_hook('start')
+        var noa = chunk.noa
 
         // args
         var array = chunk.array
@@ -52,7 +52,7 @@ function TerrainMesher(noa) {
         // builds the babylon mesh that will be added to the scene
         var mesh
         if (subMeshes.length) {
-            mesh = meshBuilder.build(subMeshes, chunk, ignoreMaterials)
+            mesh = meshBuilder.build(chunk, subMeshes, ignoreMaterials)
             profile_hook('built terrain')
         }
 
@@ -104,21 +104,20 @@ Submesh.prototype.dispose = function () {
  * 
 */
 
-function MeshBuilder(noa) {
+function MeshBuilder() {
 
-    var scene = noa.rendering.getScene()
-    var registry = noa.registry
-    var baseMaterial = noa.rendering.flatMaterial
+    var noa
 
 
     // core
-    this.build = function (meshdata, chunk, ignoreMaterials) {
+    this.build = function (chunk, meshdata, ignoreMaterials) {
+        noa = chunk.noa
 
         // preprocess meshdata entries to merge those that use default terrain material
         var mergeCriteria = function (mdat) {
             if (ignoreMaterials) return true
-            var url = registry.getMaterialTexture(mdat.id)
-            var alpha = registry.getMaterialData(mdat.id).alpha
+            var url = noa.registry.getMaterialTexture(mdat.id)
+            var alpha = noa.registry.getMaterialData(mdat.id).alpha
             if (url || alpha < 1) return false
         }
         mergeSubmeshes(meshdata, mergeCriteria)
@@ -150,13 +149,14 @@ function MeshBuilder(noa) {
     // this version builds a parent mesh + child meshes, rather than
     // one big mesh with submeshes and a multimaterial.
     // This should be obsolete, unless the first one has problems..
-    this.buildWithoutMultimats = function (meshdata, chunk, ignoreMaterials) {
+    this.buildWithoutMultimats = function (chunk, meshdata, ignoreMaterials) {
+        noa = chunk.noa
 
         // preprocess meshdata entries to merge those that use default terrain material
         var mergeCriteria = function (mdat) {
             if (ignoreMaterials) return true
-            var url = registry.getMaterialTexture(mdat.id)
-            var alpha = registry.getMaterialData(mdat.id).alpha
+            var url = noa.registry.getMaterialTexture(mdat.id)
+            var alpha = noa.registry.getMaterialData(mdat.id).alpha
             if (url || alpha < 1) return false
         }
         mergeSubmeshes(meshdata, mergeCriteria)
@@ -245,8 +245,9 @@ function MeshBuilder(noa) {
 
 
     function buildMeshFromSubmesh(submesh, name, mats, verts, inds) {
-
+        
         // base mesh and vertexData object
+        var scene = noa.rendering.getScene()
         var mesh = new BABYLON.Mesh(name, scene)
         var vdat = new BABYLON.VertexData()
         vdat.positions = submesh.positions
@@ -292,7 +293,7 @@ function MeshBuilder(noa) {
 
     // manage materials/textures to avoid duplicating them
     function getTerrainMaterial(matID, ignore) {
-        if (ignore) return baseMaterial
+        if (ignore) return noa.rendering.flatMaterial
         var name = 'terrain mat ' + matID
         if (!materialCache[name]) materialCache[name] = makeTerrainMaterial(matID)
         return materialCache[name]
@@ -301,15 +302,16 @@ function MeshBuilder(noa) {
 
     // canonical function to make a terrain material
     function makeTerrainMaterial(id) {
-        var url = registry.getMaterialTexture(id)
-        var matData = registry.getMaterialData(id)
+        var url = noa.registry.getMaterialTexture(id)
+        var matData = noa.registry.getMaterialData(id)
         var alpha = matData.alpha
         if (!url && alpha == 1) {
             // base material is fine for non-textured case, if no alpha
-            return baseMaterial
+            return noa.rendering.flatMaterial
         }
-        var mat = baseMaterial.clone('terrain' + id)
+        var mat = noa.rendering.flatMaterial.clone('terrain' + id)
         if (url) {
+            var scene = noa.rendering.getScene()
             var tex = new BABYLON.Texture(url, scene, true, false, BABYLON.Texture.NEAREST_SAMPLINGMODE)
             if (matData.textureAlpha) {
                 tex.hasAlpha = true
