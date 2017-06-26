@@ -180,7 +180,7 @@ Chunk.prototype.updateMeshes = function () {
         this._terrainDirty = false
     }
     if (this._objectsDirty) {
-        objectMesher.processChunk(this)
+        objectMesher.buildObjectMesh(this)
         this._objectsDirty = false
     }
 }

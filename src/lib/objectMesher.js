@@ -14,16 +14,13 @@ var PROFILE = 0
 
 
 // helper class to hold data about a single object mesh
-function ObjMeshDat(id, x, y, z, mesh) {
+function ObjMeshDat(id, x, y, z) {
     this.id = id | 0
     this.x = x | 0
     this.y = y | 0
     this.z = z | 0
-    this.mesh = mesh || null
 }
-ObjMeshDat.prototype.dispose = function () {
-    this.mesh = null
-}
+
 
 
 
@@ -45,16 +42,23 @@ function ObjectMesher() {
 
     // adds properties to the new chunk that will be used when processing
     this.initChunk = function (chunk) {
-        chunk._objectMeshes = {}
+        chunk._objectBlocks = {}
+        chunk._mergedObjectSPS = null
     }
 
     this.disposeChunk = function (chunk) {
-        // dispose unmerged object meshes
-        for (var s in chunk._objectMeshes) {
-            var dat = chunk._objectMeshes[s]
-            if (dat.mesh) dat.mesh.dispose()
+        removeCurrentSPS(chunk)
+        chunk._objectBlocks = null
+    }
+
+    function removeCurrentSPS(chunk) {
+        var sps = chunk._mergedObjectSPS
+        if (sps && sps.mesh && chunk.octreeBlock && chunk.octreeBlock.entries) {
+            removeUnorderedListItem(chunk.octreeBlock.entries, sps.mesh)
         }
-        chunk._objectMeshes = null
+        if (sps && sps.mesh) sps.mesh.dispose()
+        if (sps) sps.dispose()
+        chunk._mergedObjectSPS = null
     }
 
 
@@ -62,19 +66,15 @@ function ObjectMesher() {
     // accessors for the chunk to regester as object voxels are set/unset
     this.addObjectBlock = function (chunk, id, x, y, z) {
         var key = x + '|' + y + '|' + z
-        chunk._objectMeshes[key] = new ObjMeshDat(id, x, y, z, null)
+        chunk._objectBlocks[key] = new ObjMeshDat(id, x, y, z, null)
     }
 
     this.removeObjectBlock = function (chunk, x, y, z) {
         var key = x + '|' + y + '|' + z
-        var dat = chunk._objectMeshes[key]
-        if (!dat) return
-        if (dat.mesh) {
-            removeUnorderedListItem(chunk.octreeBlock.entries, dat.mesh)
-            dat.mesh.dispose()
-        }
-        delete chunk._objectMeshes[key]
+        if (chunk._objectBlocks[key]) delete chunk._objectBlocks[key]
     }
+
+
 
 
     /*
@@ -83,52 +83,84 @@ function ObjectMesher() {
      * 
     */
 
-
-    this.processChunk = function (chunk) {
+    this.buildObjectMesh = function (chunk) {
+        profile_hook('start')
+        var scene = chunk.noa.rendering.getScene()
+        var objectMeshLookup = chunk.noa.registry._blockMesh
+        var blockHandlerLookup = chunk.noa.registry._blockHandlers
 
         var x0 = chunk.i * chunk.size
         var y0 = chunk.j * chunk.size
         var z0 = chunk.k * chunk.size
-        var objectMeshLookup = chunk.noa.registry._blockMesh
-        var blockHandlerLookup = chunk.noa.registry._blockHandlers
 
-        var objHash = chunk._objectMeshes
-        for (var s in objHash) {
-            var dat = objHash[s]
-            if (dat.mesh) continue // skip anything already built
+        // remove the current (if any) sps/mesh
+        removeCurrentSPS(chunk)
 
-            var srcMesh = objectMeshLookup[dat.id]
-            // var mesh = srcMesh.createInstance('object mesh instance')
-            var mesh = srcMesh.clone('object mesh instance')
-            mesh.position.x = x0 + dat.x + 0.5
-            mesh.position.y = y0 + dat.y
-            mesh.position.z = z0 + dat.z + 0.5
-
-            mesh.computeWorldMatrix(true)
-            if (!mesh.billboardMode) {
-                mesh.freezeWorldMatrix()
-                mesh.freezeNormals()
-            }
-
-            // call custom handler to let it, say, rotate the mesh
-            var handlers = blockHandlerLookup[dat.id]
-            if (handlers && handlers.onCustomMeshCreate) {
-                handlers.onCustomMeshCreate(mesh, x0 + dat.x, y0 + dat.y, z0 + dat.z)
-            }
-
-            // stuff necessary to add mesh to scene
-            chunk.octreeBlock.entries.push(mesh)
-
-            dat.mesh = mesh
+        // preprocess to build arrays of block object data, keyed by block mesh ID
+        var hasObjects = false
+        var shapeData = {}
+        var hash = chunk._objectBlocks
+        for (var key in hash) {
+            var meshID = hash[key].id
+            if (!shapeData[meshID]) shapeData[meshID] = []
+            shapeData[meshID].push(hash[key])
+            hasObjects = true
         }
 
+        if (!hasObjects) return null // last object was removed
 
+        // base SPS
+        var sps = new BABYLON.SolidParticleSystem('merged_sps_' + chunk.id, scene, {
+            updatable: false,
+        })
 
+        // for each set of shapes, create a builder function and add to the SPS
+        var material
+        for (var id in shapeData) {
+            var mesh = objectMeshLookup[id]
+            if (mesh.material) material = mesh.material
 
+            // if (mesh.material && !mesh.material.name) console.log(mesh.name, mesh)
+
+            var shapes = shapeData[id]
+            var count = shapes.length
+            var handlerFn
+            var handlers = blockHandlerLookup[id]
+            if (handlers) handlerFn = handlers.onCustomMeshCreate
+            // jshint -W083
+            var setShape = function (particle, partIndex, shapeIndex) {
+                var dat = shapes[shapeIndex]
+                // global positions for custom handler, if any
+                particle.position.set(x0 + dat.x + 0.5, y0 + dat.y, z0 + dat.z + 0.5)
+                if (handlerFn) handlerFn(particle, x0 + dat.x, y0 + dat.y, z0 + dat.z)
+                // revert to local positions
+                particle.position.x -= x0
+                particle.position.y -= y0
+                particle.position.z -= z0
+            }
+            sps.addShape(mesh, count, { positionFunction: setShape })
+            shapes.length = 0
+        }
+        profile_hook('made SPS')
+
+        // SPS now has all meshes
+        var merged = sps.buildMesh()
+        merged.material = material
+
+        profile_hook('built mesh')
+
+        merged.position.x = x0
+        merged.position.y = y0
+        merged.position.z = z0
+        merged.freezeWorldMatrix()
+        merged.freezeNormals()
+
+        chunk.octreeBlock.entries.push(merged)
+
+        chunk._mergedObjectSPS = sps
+
+        profile_hook('end')
     }
-
-
-
 
 }
 
@@ -136,4 +168,18 @@ function ObjectMesher() {
 
 
 
+
+
+
+
+var profile_hook = (function () {
+    if (!PROFILE) return function () { }
+    var every = 50
+    var timer = new (require('./util').Timer)(every, 'Object meshing')
+    return function (state) {
+        if (state === 'start') timer.start()
+        else if (state === 'end') timer.report()
+        else timer.add(state)
+    }
+})()
 

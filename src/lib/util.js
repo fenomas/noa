@@ -29,8 +29,10 @@ function Timer(_every, _title) {
     var every = _every || 1
     var times = []
     var names = []
+    var started = 0
     var last = 0
     var iter = 0
+    var total = 0
     var clearNext = true
 
     this.start = function () {
@@ -38,7 +40,7 @@ function Timer(_every, _title) {
             times.length = names.length = 0
             clearNext = false
         }
-        last = performance.now()
+        started = last = performance.now()
         iter++
     }
     this.add = function (name) {
@@ -50,12 +52,15 @@ function Timer(_every, _title) {
         last = t
     }
     this.report = function () {
+        total += performance.now() - started
         if (iter === every) {
+            var end = '  total: ' + (total/every).toFixed(2) + 'ms (avg, ' + every + ' runs)'
             console.log(title + ':', names.map(function (name, i) {
                 return name + ': ' + (times[i] / every).toFixed(2) + 'ms    '
-            }).join(''), (every > 1) ? '  (avg over ' + every + ' runs)' : '')
+            }).join(''), (every > 1) ? end : '')
             clearNext = true
             iter = 0
+            total = 0
         }
     }
 }
