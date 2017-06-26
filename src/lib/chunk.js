@@ -13,18 +13,17 @@ var terrainMesher = require('./terrainMesher')
 var objectMesher = require('./objectMesher')
 
 
+
+
 /* 
  * 
- *   BabylonJS Voxel Chunk
+ *   Chunk
  * 
  *  Stores and manages voxel ids and flags for each voxel within chunk
  *  See constants.js for internal data representation
  * 
 */
 
-
-// enable for profiling..
-var PROFILE = 0
 
 
 // data representation
@@ -288,12 +287,12 @@ function rebuildArrayViews(chunk) {
 
 // accessors related to meshing
 
-function addObjectBlock(chunk, id, x, y, z) { 
+function addObjectBlock(chunk, id, x, y, z) {
     objectMesher.addObjectBlock(chunk, id, x, y, z)
     chunk._objectsDirty = true
 }
 
-function removeObjectBlock(chunk, x, y, z) { 
+function removeObjectBlock(chunk, x, y, z) {
     objectMesher.removeObjectBlock(chunk, x, y, z)
     chunk._objectsDirty = true
 }

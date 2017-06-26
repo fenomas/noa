@@ -43,22 +43,24 @@ function ObjectMesher() {
     // adds properties to the new chunk that will be used when processing
     this.initChunk = function (chunk) {
         chunk._objectBlocks = {}
-        chunk._mergedObjectSPS = null
+        chunk._mergedObjectSystems = []
     }
 
     this.disposeChunk = function (chunk) {
-        removeCurrentSPS(chunk)
+        removeCurrentSystems(chunk)
         chunk._objectBlocks = null
     }
 
-    function removeCurrentSPS(chunk) {
-        var sps = chunk._mergedObjectSPS
-        if (sps && sps.mesh && chunk.octreeBlock && chunk.octreeBlock.entries) {
-            removeUnorderedListItem(chunk.octreeBlock.entries, sps.mesh)
+    function removeCurrentSystems(chunk) {
+        var systems = chunk._mergedObjectSystems
+        while (systems.length) {
+            var sps = systems.pop()
+            if (sps.mesh && chunk.octreeBlock && chunk.octreeBlock.entries) {
+                removeUnorderedListItem(chunk.octreeBlock.entries, sps.mesh)
+            }
+            if (sps.mesh) sps.mesh.dispose()
+            sps.dispose()
         }
-        if (sps && sps.mesh) sps.mesh.dispose()
-        if (sps) sps.dispose()
-        chunk._mergedObjectSPS = null
     }
 
 
@@ -85,52 +87,92 @@ function ObjectMesher() {
 
     this.buildObjectMesh = function (chunk) {
         profile_hook('start')
+        // remove the current (if any) sps/mesh
+        removeCurrentSystems(chunk)
+
         var scene = chunk.noa.rendering.getScene()
         var objectMeshLookup = chunk.noa.registry._blockMesh
-        var blockHandlerLookup = chunk.noa.registry._blockHandlers
+
+        // preprocess everything to build lists of object block keys
+        // hashed by material ID and then by block ID
+        var matIndexes = {}
+        for (var key in chunk._objectBlocks) {
+            var blockDat = chunk._objectBlocks[key]
+            var blockID = blockDat.id
+            var mat = objectMeshLookup[blockID].material
+            var matIndex = (mat) ? scene.materials.indexOf(mat) : -1
+            if (!matIndexes[matIndex]) matIndexes[matIndex] = {}
+            if (!matIndexes[matIndex][blockID]) matIndexes[matIndex][blockID] = []
+            matIndexes[matIndex][blockID].push(key)
+        }
+        profile_hook('preprocess')
+
+        // data structure now looks like:
+        // matIndexes = {
+        //      2: {                    // i.e. 2nd material in scene
+        //          14: {               // i.e. voxel ID 14 from registry
+        //              [ '2|3|4' ]     // key of block's local coords
+        //          }
+        //      }
+        // }
 
         var x0 = chunk.i * chunk.size
         var y0 = chunk.j * chunk.size
         var z0 = chunk.k * chunk.size
 
-        // remove the current (if any) sps/mesh
-        removeCurrentSPS(chunk)
+        // build one SPS for each material
+        for (var ix in matIndexes) {
 
-        // preprocess to build arrays of block object data, keyed by block mesh ID
-        var hasObjects = false
-        var shapeData = {}
-        var hash = chunk._objectBlocks
-        for (var key in hash) {
-            var meshID = hash[key].id
-            if (!shapeData[meshID]) shapeData[meshID] = []
-            shapeData[meshID].push(hash[key])
-            hasObjects = true
+            var meshHash = matIndexes[ix]
+            var sps = buildSPSforMaterialIndex(chunk, scene, meshHash, x0, y0, z0)
+            profile_hook('made SPS')
+
+            // build SPS into the scene
+            var merged = sps.buildMesh()
+            profile_hook('built mesh')
+
+            // finish up
+            merged.material = (ix > -1) ? scene.materials[ix] : null
+            merged.position.x = x0
+            merged.position.y = y0
+            merged.position.z = z0
+            merged.freezeWorldMatrix()
+            merged.freezeNormals()
+
+            chunk.octreeBlock.entries.push(merged)
+            chunk._mergedObjectSystems.push(sps)
         }
 
-        if (!hasObjects) return null // last object was removed
+        profile_hook('end')
+    }
 
-        // base SPS
-        var sps = new BABYLON.SolidParticleSystem('merged_sps_' + chunk.id, scene, {
+
+
+
+    function buildSPSforMaterialIndex(chunk, scene, meshHash, x0, y0, z0) {
+        var blockHash = chunk._objectBlocks
+        // base sps
+        var sps = new BABYLON.SolidParticleSystem('object_sps_' + chunk.id, scene, {
             updatable: false,
         })
 
-        // for each set of shapes, create a builder function and add to the SPS
-        var material
-        for (var id in shapeData) {
-            var mesh = objectMeshLookup[id]
-            if (mesh.material) material = mesh.material
+        var blockHandlerLookup = chunk.noa.registry._blockHandlers
+        var objectMeshLookup = chunk.noa.registry._blockMesh
 
-            // if (mesh.material && !mesh.material.name) console.log(mesh.name, mesh)
+        // run through mesh hash adding shapes and position functions
+        for (var blockID in meshHash) {
+            var mesh = objectMeshLookup[blockID]
+            var blockArr = meshHash[blockID]
+            var count = blockArr.length
 
-            var shapes = shapeData[id]
-            var count = shapes.length
             var handlerFn
-            var handlers = blockHandlerLookup[id]
+            var handlers = blockHandlerLookup[blockID]
             if (handlers) handlerFn = handlers.onCustomMeshCreate
             // jshint -W083
             var setShape = function (particle, partIndex, shapeIndex) {
-                var dat = shapes[shapeIndex]
-                // global positions for custom handler, if any
+                var key = blockArr[shapeIndex]
+                var dat = blockHash[key]
+                // set global positions for the custom handler, if any
                 particle.position.set(x0 + dat.x + 0.5, y0 + dat.y, z0 + dat.z + 0.5)
                 if (handlerFn) handlerFn(particle, x0 + dat.x, y0 + dat.y, z0 + dat.z)
                 // revert to local positions
@@ -139,28 +181,14 @@ function ObjectMesher() {
                 particle.position.z -= z0
             }
             sps.addShape(mesh, count, { positionFunction: setShape })
-            shapes.length = 0
+            blockArr.length = 0
         }
-        profile_hook('made SPS')
 
-        // SPS now has all meshes
-        var merged = sps.buildMesh()
-        merged.material = material
-
-        profile_hook('built mesh')
-
-        merged.position.x = x0
-        merged.position.y = y0
-        merged.position.z = z0
-        merged.freezeWorldMatrix()
-        merged.freezeNormals()
-
-        chunk.octreeBlock.entries.push(merged)
-
-        chunk._mergedObjectSPS = sps
-
-        profile_hook('end')
+        return sps
     }
+
+
+
 
 }
 

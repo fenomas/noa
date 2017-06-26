@@ -55,9 +55,9 @@ function World(noa, _opts) {
     this._chunkIDsToCreate = []
     this._chunkIDsToMesh = []
     this._chunkIDsToMeshFirst = []
-    this._maxChunksPendingCreation = 6
-    this._maxChunksPendingMeshing = 12
-    this._maxProcessingPerTick = 7 // ms
+    this._maxChunksPendingCreation = 20
+    this._maxChunksPendingMeshing = 20
+    this._maxProcessingPerTick = 9 // ms
     this._maxProcessingPerRender = 5 // ms
 
     // triggers a short visit to the meshing queue before renders
