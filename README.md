@@ -57,9 +57,11 @@ the source.
 ### Recent changes:
 
  * 0.22.0
+   * Large/complicated scenes should mesh and render much faster
+   * Chunk terrain/object meshing now merges results. Block object meshes must be static!
    * Removed redundant `player` component - use `noa.playerEntity` property
    * Added `showFPS` option
-   * Many internal changes that hopefully didn't break compatibility
+   * Many internal changes that hopefully don't break compatibility
  * 0.21.0
    * Support unloading/reloading new world data.  
      Sample implementation in the `docs/test` app (hit "O" to swap world data)
