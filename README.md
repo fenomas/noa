@@ -17,6 +17,8 @@ npm start       # runs /docs/hello-world
 npm test        # runs /docs/test
 ```
 
+The `start` and `test` scripts assume that `webpack` and `webpack-dev-server` are installed globally via npm or yarn.
+
 Live versions of the test content: 
  * [hello-world example](http://andyhall.github.io/noa/hello-world/)
  * [test example](http://andyhall.github.io/noa/test/)
