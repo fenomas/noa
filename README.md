@@ -3,7 +3,7 @@
 
 An experimental voxel engine.
 
-[Live demo of test app here!](http://andyhall.github.io/noa-testbed/)
+[Live demo of test app here!](https://andyhall.github.io/noa-testbed/)
 
 ### Usage
 
@@ -20,8 +20,8 @@ npm test        # runs /docs/test
 The `start` and `test` scripts assume that `webpack` and `webpack-dev-server` are installed globally via npm or yarn.
 
 Live versions of the test content: 
- * [hello-world example](http://andyhall.github.io/noa/hello-world/)
- * [test example](http://andyhall.github.io/noa/test/)
+ * [hello-world example](https://andyhall.github.io/noa/hello-world/)
+ * [test example](https://andyhall.github.io/noa/test/)
 
 To build a new world app, use `noa` as a dependency:
 
@@ -67,6 +67,8 @@ the source.
  * 0.21.0
    * Support unloading/reloading new world data.  
      Sample implementation in the `docs/test` app (hit "O" to swap world data)
+   * changes `noa.world#setChunkData` params: `id, array, userData`
+   * changes `noa.world#chunkBeingRemoved` event params: `id, array, userData`
  * 0.20.0
    * Near chunks get loaded and distant ones get unloaded faster and more sensibly
    * Greatly speeds up chunk init, meshing, and disposal (and fixes some new Chrome deopts)

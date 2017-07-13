@@ -3,7 +3,7 @@
 
 An experimental voxel engine.
 
-[Live demo of test app here!](http://andyhall.github.io/noa-testbed/)
+[Live demo of test app here!](https://andyhall.github.io/noa-testbed/)
 
 ### Usage
 
@@ -20,8 +20,8 @@ npm test        # runs /docs/test
 The `start` and `test` scripts assume that `webpack` and `webpack-dev-server` are installed globally via npm or yarn.
 
 Live versions of the test content: 
- * [hello-world example](http://andyhall.github.io/noa/hello-world/)
- * [test example](http://andyhall.github.io/noa/test/)
+ * [hello-world example](https://andyhall.github.io/noa/hello-world/)
+ * [test example](https://andyhall.github.io/noa/test/)
 
 To build a new world app, use `noa` as a dependency:
 
