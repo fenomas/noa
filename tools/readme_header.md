@@ -67,6 +67,8 @@ the source.
  * 0.21.0
    * Support unloading/reloading new world data.  
      Sample implementation in the `docs/test` app (hit "O" to swap world data)
+   * changes `noa.world#setChunkData` params: `id, array, userData`
+   * changes `noa.world#chunkBeingRemoved` event params: `id, array, userData`
  * 0.20.0
    * Near chunks get loaded and distant ones get unloaded faster and more sensibly
    * Greatly speeds up chunk init, meshing, and disposal (and fixes some new Chrome deopts)
