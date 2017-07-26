@@ -187,8 +187,7 @@ var _searchBox = new aabb([], [])
  * @param height..
  */
 Entities.prototype.add = function (position, width, height, // required
-	mesh, meshOffset,
-	doPhysics, shadow) {
+	mesh, meshOffset, doPhysics, shadow) {
 
 	var self = this
 

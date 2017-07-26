@@ -443,7 +443,7 @@ var _prevTargetHash = ''
 var profile_hook = function (s) { }
 var profile_hook_render = function (s) { }
 if (PROFILE) (function () {
-    var timer = new (require('./lib/util').Timer)(100, 'tick')
+    var timer = new (require('./lib/util').Timer)(200, 'tick   ')
     profile_hook = function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
@@ -451,7 +451,7 @@ if (PROFILE) (function () {
     }
 })()
 if (PROFILE_RENDER) (function () {
-    var timer = new (require('./lib/util').Timer)(200, 'render')
+    var timer = new (require('./lib/util').Timer)(200, 'render ')
     profile_hook_render = function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()

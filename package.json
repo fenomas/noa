@@ -29,10 +29,7 @@
     "voxel-aabb-sweep": "^0.5.0",
     "voxel-physics-engine": "^0.7.2"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/andyhall/noa"
-  },
+  "repository": "https://github.com/andyhall/noa",
   "bugs": {
     "url": "https://github.com/andyhall/noa/issues"
   },

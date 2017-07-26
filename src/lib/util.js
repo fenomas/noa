@@ -54,10 +54,10 @@ function Timer(_every, _title) {
     this.report = function () {
         total += performance.now() - started
         if (iter === every) {
-            var end = '  total: ' + (total/every).toFixed(2) + 'ms (avg, ' + every + ' runs)'
-            console.log(title + ':', names.map(function (name, i) {
+            var head = title + ' total ' + (total / every).toFixed(2) + 'ms (avg, ' + every + ' runs)    '
+            console.log(head, names.map(function (name, i) {
                 return name + ': ' + (times[i] / every).toFixed(2) + 'ms    '
-            }).join(''), (every > 1) ? end : '')
+            }).join(''))
             clearNext = true
             iter = 0
             total = 0

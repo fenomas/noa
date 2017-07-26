@@ -160,11 +160,17 @@ Rendering.prototype.tick = function (dt) {
 
 
 Rendering.prototype.render = function (dt) {
+    profile_hook('start')
     updateCamera(this)
+    profile_hook('updateCamera')
     this._engine.beginFrame()
+    profile_hook('beginFrame')
     this._scene.render()
+    profile_hook('render')
     fps_hook()
     this._engine.endFrame()
+    profile_hook('endFrame')
+    profile_hook('end')
 }
 
 Rendering.prototype.resize = function (e) {
@@ -282,7 +288,6 @@ Rendering.prototype.prepareChunkForRendering = function (chunk) {
     var max = new vec3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
     chunk.octreeBlock = new BABYLON.OctreeBlock(min, max)
     this._octree.blocks.push(chunk.octreeBlock)
-    window.chunk = chunk
 }
 
 Rendering.prototype.disposeChunkForRendering = function (chunk) {
@@ -482,14 +487,16 @@ Rendering.prototype.debug_SceneCheck = function () {
     var meshes = this._scene.meshes
     var dyns = this._octree.dynamicContent
     var octs = []
+    var numOcts = 0
     var mats = this._scene.materials
     var allmats = []
     mats.forEach(mat => {
         if (mat.subMaterials) mat.subMaterials.forEach(mat => allmats.push(mat))
         else allmats.push(mat)
     })
-    this._octree.blocks.forEach(function (b) {
-        for (var i in b.entries) octs.push(b.entries[i])
+    this._octree.blocks.forEach(function (block) {
+        numOcts++
+        block.entries.forEach(m => octs.push(m))
     })
     meshes.forEach(function (m) {
         if (m._isDisposed) warn(m, 'disposed mesh in scene')
@@ -519,12 +526,16 @@ Rendering.prototype.debug_SceneCheck = function () {
     octs.forEach(function (m) {
         if (missing(m, meshes)) warn(m, 'octree block mesh not in scene')
     })
+    var avgPerOct = Math.round(10 * octs.length / numOcts) / 10
+    console.log('meshes - octree:', octs.length, '  dynamic:', dyns.length,
+        '   avg meshes/octreeBlock:', avgPerOct)
     function warn(obj, msg) { console.warn(obj.name + ' --- ' + msg) }
     function empty(mesh) { return (mesh.getIndices().length === 0) }
     function missing(obj, list1, list2) {
         if (!obj) return false
-        if (list2) return !(list1.includes(obj) || list2.includes(obj))
-        return !list1.includes(obj)
+        if (list1.includes(obj)) return false
+        if (list2 && list2.includes(obj)) return false
+        return true
     }
     return 'done.'
 }
