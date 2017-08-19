@@ -36,8 +36,8 @@ box-intersect@^1.0.1:
     typedarray-pool "^1.1.0"
 
 "coffee-script@>= 1.3.3":
-  version "1.12.6"
-  resolved "https://registry.yarnpkg.com/coffee-script/-/coffee-script-1.12.6.tgz#285a3f7115689065064d6bf9ef4572db66695cbf"
+  version "1.12.7"
+  resolved "https://registry.yarnpkg.com/coffee-script/-/coffee-script-1.12.7.tgz#c05dae0cb79591d05b3070a8433a98c9a89ccc53"
 
 "commander@>= 0.6.0":
   version "2.11.0"
@@ -226,11 +226,11 @@ voxel-aabb-sweep@^0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/voxel-aabb-sweep/-/voxel-aabb-sweep-0.5.0.tgz#af4246eed88f15978390832251733067667e3a8b"
 
-voxel-physics-engine@^0.7.2:
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/voxel-physics-engine/-/voxel-physics-engine-0.7.2.tgz#3888435abdfcb5f4e3702010946e6cbef711b9b4"
+voxel-physics-engine@^0.7.3:
+  version "0.7.3"
+  resolved "https://registry.yarnpkg.com/voxel-physics-engine/-/voxel-physics-engine-0.7.3.tgz#ed18ca2820b63069e6997eb3600ed2bd26e9eb88"
   dependencies:
-    aabb-3d andyhall/aabb-3d
+    aabb-3d "github:andyhall/aabb-3d"
     extend "^3.0.0"
     gl-vec3 "^1.0.3"
     voxel-aabb-sweep "^0.5.0"
