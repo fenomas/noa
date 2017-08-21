@@ -50,6 +50,7 @@ function Chunk(noa, id, i, j, k, size) {
     this.isGenerated = false
     this.inInvalid = false
     this.octreeBlock = null
+    this._terrainMesh = null
 
     this.isEmpty = false
     this.isFull = false

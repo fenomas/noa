@@ -60,28 +60,27 @@ module.exports = function (noa) {
 			}
 
 			// run the intersect library
-			boxIntersect(intervals, function intersectHandler(i, j) {
-				var istate = states[i]
-				var jstate = states[j]
-
-				// todo: implement testing entities as cylinders/spheres?
-				// if (!cylinderTest(istate, jstate)) return
-
-				if (istate.collideMask & jstate.collideBits) {
-					if (istate.callback) istate.callback(jstate.__id)
-				}
-				if (jstate.collideMask & istate.collideBits) {
-					if (jstate.callback) jstate.callback(istate.__id)
-				}
+			boxIntersect(intervals, function(i, j) {
+				handle(states[i], states[j])
 			})
-
+			
 		}
-
 
 	}
 }
 
+var handle = function intersectHandler(istate, jstate) {
 
+	// todo: implement testing entities as cylinders/spheres?
+	// if (!cylinderTest(istate, jstate)) return
+
+	if (istate.collideMask & jstate.collideBits) {
+		if (istate.callback) istate.callback(jstate.__id)
+	}
+	if (jstate.collideMask & istate.collideBits) {
+		if (jstate.callback) jstate.callback(istate.__id)
+	}
+}
 
 
 

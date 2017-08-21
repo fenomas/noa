@@ -256,10 +256,10 @@ function Timer(_every, _title) {
     this.report = function () {
         total += performance.now() - started
         if (iter === every) {
-            var end = '  total: ' + (total/every).toFixed(2) + 'ms (avg, ' + every + ' runs)'
-            console.log(title + ':', names.map(function (name, i) {
+            var head = title + ' total ' + (total / every).toFixed(2) + 'ms (avg, ' + every + ' runs)    '
+            console.log(head, names.map(function (name, i) {
                 return name + ': ' + (times[i] / every).toFixed(2) + 'ms    '
-            }).join(''), (every > 1) ? end : '')
+            }).join(''))
             clearNext = true
             iter = 0
             total = 0
@@ -3693,7 +3693,7 @@ var _prevTargetHash = ''
 var profile_hook = function (s) { }
 var profile_hook_render = function (s) { }
 if (PROFILE) (function () {
-    var timer = new (__webpack_require__(2).Timer)(100, 'tick')
+    var timer = new (__webpack_require__(2).Timer)(200, 'tick   ')
     profile_hook = function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
@@ -3701,7 +3701,7 @@ if (PROFILE) (function () {
     }
 })()
 if (PROFILE_RENDER) (function () {
-    var timer = new (__webpack_require__(2).Timer)(200, 'render')
+    var timer = new (__webpack_require__(2).Timer)(200, 'render ')
     profile_hook_render = function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
@@ -6090,6 +6090,7 @@ var defaults = {
     useAO: true,
     AOmultipliers: [0.93, 0.8, 0.5],
     reverseAOmultiplier: 1.0,
+    useOctreesForDynamicMeshes: true,
 }
 
 
@@ -6104,16 +6105,16 @@ function Rendering(noa, _opts, canvas) {
     this._cameraZoomSpeed = opts.cameraZoomSpeed
     this._maxCamAngle = opts.cameraMaxAngle
 
-    // set up babylon scene
-    initScene(this, canvas, opts)
-
     // internals
-    this._meshedChunks = {}
-    this._numMeshedChunks = 0
+    this._dynamicMeshes = []
     this.useAO = !!opts.useAO
     this.aoVals = opts.AOmultipliers
     this.revAoVal = opts.reverseAOmultiplier
     this.meshingCutoffTime = 6 // ms
+    this._dynamicMeshOctrees = opts.useOctreesForDynamicMeshes
+
+    // set up babylon scene
+    initScene(this, canvas, opts)
 
     // for debugging
     window.scene = this._scene
@@ -6148,7 +6149,7 @@ function initScene(self, canvas, opts) {
 
     // plane obscuring the camera - for overlaying an effect on the whole view
     self._camScreen = BABYLON.Mesh.CreatePlane('camScreen', 10, scene)
-    self.addDynamicMesh(self._camScreen)
+    self.addMeshToScene(self._camScreen)
     self._camScreen.position.z = .1
     self._camScreen.parent = self._camera
     self._camScreenMat = self.makeStandardMaterial('camscreenmat')
@@ -6199,9 +6200,9 @@ Rendering.prototype.getScene = function () {
     return this._scene
 }
 
-// tick function is empty at the moment..
+// per-tick listener for rendering-related stuff
 Rendering.prototype.tick = function (dt) {
-
+    if (this._dynamicMeshOctrees) updateDynamicMeshOctrees(this)
 }
 
 
@@ -6209,11 +6210,17 @@ Rendering.prototype.tick = function (dt) {
 
 
 Rendering.prototype.render = function (dt) {
+    profile_hook('start')
     updateCamera(this)
+    profile_hook('updateCamera')
     this._engine.beginFrame()
+    profile_hook('beginFrame')
     this._scene.render()
+    profile_hook('render')
     fps_hook()
     this._engine.endFrame()
+    profile_hook('endFrame')
+    profile_hook('end')
 }
 
 Rendering.prototype.resize = function (e) {
@@ -6257,47 +6264,88 @@ Rendering.prototype.setCameraRotation = function (x, y) {
 }
 
 
-// add a dynamic (mobile, non-terrain) mesh to the scene
-Rendering.prototype.addDynamicMesh = function (mesh) {
-    var i = this._octree.dynamicContent.indexOf(mesh)
-    if (i >= 0) return
-    this._octree.dynamicContent.push(mesh)
-    var remover = removeUnorderedListItem.bind(null, this._octree.dynamicContent, mesh)
-    if (mesh.onDisposeObservable) {
-        // the babylon 2.4+ way:
-        mesh.onDisposeObservable.add(remover)
+
+
+// add a mesh to the scene's octree setup so that it renders
+// pass in isStatic=true if the mesh won't move (i.e. change octree blocks)
+Rendering.prototype.addMeshToScene = function (mesh, isStatic) {
+    // exit silently if mesh has already been added and not removed
+    if (mesh._currentNoaChunk || this._octree.dynamicContent.includes(mesh)) {
+        return
+    }
+    var pos = mesh.position
+    var chunk = this.noa.world._getChunkByCoords(pos.x, pos.y, pos.z)
+    if (this._dynamicMeshOctrees && chunk && chunk.octreeBlock) {
+        // add to an octree
+        chunk.octreeBlock.entries.push(mesh)
+        mesh._currentNoaChunk = chunk
     } else {
-        // the babylon 2.3- way, which no longer works in 2.4+
-        var prev = mesh.onDispose || function () { }
-        mesh.onDispose = function () { prev(); remover() }
+        // mesh added outside an active chunk - so treat as scene-dynamic
+        this._octree.dynamicContent.push(mesh)
+    }
+    // remember for updates if it's not static
+    if (!isStatic) this._dynamicMeshes.push(mesh)
+    // handle remover when mesh gets disposed
+    var remover = this.removeMeshFromScene.bind(this, mesh)
+    mesh.onDisposeObservable.add(remover)
+}
+
+// undo the above
+Rendering.prototype.removeMeshFromScene = function (mesh) {
+    if (mesh._currentNoaChunk && mesh._currentNoaChunk.octreeBlock) {
+        removeUnorderedListItem(mesh._currentNoaChunk.octreeBlock.entries, mesh)
+    }
+    mesh._currentNoaChunk = null
+    removeUnorderedListItem(this._octree.dynamicContent, mesh)
+    removeUnorderedListItem(this._dynamicMeshes, mesh)
+}
+
+
+
+
+// runs once per tick - move any dynamic meshes to correct chunk octree
+function updateDynamicMeshOctrees(self) {
+    for (var i = 0; i < self._dynamicMeshes.length; i++) {
+        var mesh = self._dynamicMeshes[i]
+        if (mesh._isDisposed) continue // shouldn't be possible
+        var pos = mesh.position
+        var prev = mesh._currentNoaChunk || null
+        var next = self.noa.world._getChunkByCoords(pos.x, pos.y, pos.z) || null
+        if (prev === next) continue
+        // mesh has moved chunks since last update
+        // remove from previous location...
+        if (prev && prev.octreeBlock) {
+            removeUnorderedListItem(prev.octreeBlock.entries, mesh)
+        } else {
+            removeUnorderedListItem(self._octree.dynamicContent, mesh)
+        }
+        // ... and add to new location
+        if (next && next.octreeBlock) {
+            next.octreeBlock.entries.push(mesh)
+        } else {
+            self._octree.dynamicContent.push(mesh)
+        }
+        mesh._currentNoaChunk = next
     }
 }
 
-// remove a dynamic (mobile, non-terrain) mesh to the scene
-Rendering.prototype.removeDynamicMesh = function (mesh) {
-    removeUnorderedListItem(this._octree.dynamicContent, mesh)
-}
 
 
-
-
-Rendering.prototype.makeMeshInstance = function (mesh, isTerrain) {
+Rendering.prototype.makeMeshInstance = function (mesh, isStatic) {
     var m = mesh.createInstance(mesh.name + ' instance' || 'instance')
     if (mesh.billboardMode) m.billboardMode = mesh.billboardMode
-    if (!isTerrain) {
-        // non-terrain stuff should be dynamic w.r.t. selection octrees
-        this.addDynamicMesh(m)
-    }
+    // add to scene so as to render
+    this.addMeshToScene(m, isStatic)
 
     // testing performance tweaks
 
     // make instance meshes skip over getLOD checks, since there may be lots of them
-    mesh.getLOD = m.getLOD = function () { return mesh }
+    // mesh.getLOD = m.getLOD = function () { return mesh }
     m._currentLOD = mesh
 
     // make terrain instance meshes skip frustum checks 
     // (they'll still get culled by octree checks)
-    if (isTerrain) m.isInFrustum = function () { return true }
+    // if (isStatic) m.isInFrustum = function () { return true }
 
     return m
 }
@@ -6331,7 +6379,6 @@ Rendering.prototype.prepareChunkForRendering = function (chunk) {
     var max = new vec3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
     chunk.octreeBlock = new BABYLON.OctreeBlock(min, max)
     this._octree.blocks.push(chunk.octreeBlock)
-    window.chunk = chunk
 }
 
 Rendering.prototype.disposeChunkForRendering = function (chunk) {
@@ -6342,25 +6389,15 @@ Rendering.prototype.disposeChunkForRendering = function (chunk) {
 }
 
 Rendering.prototype.addTerrainMesh = function (chunk, mesh) {
-    this._meshedChunks[chunk.id] = mesh
-    this._numMeshedChunks++
-    if (mesh.getIndices().length) chunk.octreeBlock.entries.push(mesh)
-    mesh.getChildren().map(function (m) {
-        chunk.octreeBlock.entries.push(m)
-    })
+    this.removeTerrainMesh(chunk)
+    if (mesh.getIndices().length) this.addMeshToScene(mesh, true)
+    chunk._terrainMesh = mesh
 }
 
 Rendering.prototype.removeTerrainMesh = function (chunk) {
-    var mesh = this._meshedChunks[chunk.id]
-    if (mesh) {
-        removeUnorderedListItem(chunk.octreeBlock.entries, mesh)
-        mesh.getChildren().map(function (m) {
-            removeUnorderedListItem(chunk.octreeBlock.entries, m)
-        })
-        mesh.dispose()
-        delete this._meshedChunks[chunk.id]
-        this._numMeshedChunks--
-    }
+    if (!chunk._terrainMesh) return
+    chunk._terrainMesh.dispose()
+    chunk._terrainMesh = null
 }
 
 
@@ -6496,8 +6533,8 @@ function getHighlightMesh(rendering) {
         lines.color = new col3(1, 1, 1)
         lines.parent = mesh
 
-        rendering.addDynamicMesh(m)
-        rendering.addDynamicMesh(lines)
+        rendering.addMeshToScene(m)
+        rendering.addMeshToScene(lines)
     }
     return m
 }
@@ -6531,14 +6568,16 @@ Rendering.prototype.debug_SceneCheck = function () {
     var meshes = this._scene.meshes
     var dyns = this._octree.dynamicContent
     var octs = []
+    var numOcts = 0
     var mats = this._scene.materials
     var allmats = []
     mats.forEach(mat => {
         if (mat.subMaterials) mat.subMaterials.forEach(mat => allmats.push(mat))
         else allmats.push(mat)
     })
-    this._octree.blocks.forEach(function (b) {
-        for (var i in b.entries) octs.push(b.entries[i])
+    this._octree.blocks.forEach(function (block) {
+        numOcts++
+        block.entries.forEach(m => octs.push(m))
     })
     meshes.forEach(function (m) {
         if (m._isDisposed) warn(m, 'disposed mesh in scene')
@@ -6568,12 +6607,16 @@ Rendering.prototype.debug_SceneCheck = function () {
     octs.forEach(function (m) {
         if (missing(m, meshes)) warn(m, 'octree block mesh not in scene')
     })
+    var avgPerOct = Math.round(10 * octs.length / numOcts) / 10
+    console.log('meshes - octree:', octs.length, '  dynamic:', dyns.length,
+        '   avg meshes/octreeBlock:', avgPerOct)
     function warn(obj, msg) { console.warn(obj.name + ' --- ' + msg) }
     function empty(mesh) { return (mesh.getIndices().length === 0) }
     function missing(obj, list1, list2) {
         if (!obj) return false
-        if (list2) return !(list1.includes(obj) || list2.includes(obj))
-        return !list1.includes(obj)
+        if (list1.includes(obj)) return false
+        if (list2 && list2.includes(obj)) return false
+        return true
     }
     return 'done.'
 }
@@ -6990,6 +7033,16 @@ function getPlayerChunkCoords(world) {
 }
 
 
+// for internal use
+World.prototype._getChunkByCoords = function (x, y, z) {
+    var cs = this.chunkSize
+    var i = Math.floor(x / cs)
+    var j = Math.floor(y / cs)
+    var k = Math.floor(z / cs)
+    return getChunk(this, i, j, k)
+}
+
+
 
 
 // run through chunk tracking queues looking for work to do next
@@ -7394,6 +7447,7 @@ function Chunk(noa, id, i, j, k, size) {
     this.isGenerated = false
     this.inInvalid = false
     this.octreeBlock = null
+    this._terrainMesh = null
 
     this.isEmpty = false
     this.isFull = false
@@ -10350,8 +10404,7 @@ var _searchBox = new aabb([], [])
  * @param height..
  */
 Entities.prototype.add = function (position, width, height, // required
-	mesh, meshOffset,
-	doPhysics, shadow) {
+	mesh, meshOffset, doPhysics, shadow) {
 
 	var self = this
 
@@ -11175,7 +11228,7 @@ module.exports = function (noa) {
 
 		onAdd: function (eid, state) {
 			if (state.mesh) {
-				noa.rendering.addDynamicMesh(state.mesh)
+				noa.rendering.addMeshToScene(state.mesh)
 			} else {
 				throw new Error('Mesh component added without a mesh - probably a bug!')
 			}
@@ -11452,28 +11505,27 @@ module.exports = function (noa) {
 			}
 
 			// run the intersect library
-			boxIntersect(intervals, function intersectHandler(i, j) {
-				var istate = states[i]
-				var jstate = states[j]
-
-				// todo: implement testing entities as cylinders/spheres?
-				// if (!cylinderTest(istate, jstate)) return
-
-				if (istate.collideMask & jstate.collideBits) {
-					if (istate.callback) istate.callback(jstate.__id)
-				}
-				if (jstate.collideMask & istate.collideBits) {
-					if (jstate.callback) jstate.callback(istate.__id)
-				}
+			boxIntersect(intervals, function(i, j) {
+				handle(states[i], states[j])
 			})
-
+			
 		}
-
 
 	}
 }
 
+var handle = function intersectHandler(istate, jstate) {
 
+	// todo: implement testing entities as cylinders/spheres?
+	// if (!cylinderTest(istate, jstate)) return
+
+	if (istate.collideMask & jstate.collideBits) {
+		if (istate.callback) istate.callback(jstate.__id)
+	}
+	if (jstate.collideMask & istate.collideBits) {
+		if (jstate.callback) jstate.callback(istate.__id)
+	}
+}
 
 
 

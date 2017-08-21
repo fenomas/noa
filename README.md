@@ -58,6 +58,10 @@ the source.
 
 ### Recent changes:
 
+ * 0.23.0
+   * Now uses octrees for scene selection for all meshes, even movine ones
+   * Option `useOctreesForDynamicMeshes` (default `true`) to disable previous
+   * `noa.rendering.addDynamicMesh` changed to `addMeshToScene(mesh, isStatic)`
  * 0.22.0
    * Large/complicated scenes should mesh and render much faster
    * Chunk terrain/object meshing now merges results. Block object meshes must be static!

@@ -339,6 +339,16 @@ function getPlayerChunkCoords(world) {
 }
 
 
+// for internal use
+World.prototype._getChunkByCoords = function (x, y, z) {
+    var cs = this.chunkSize
+    var i = Math.floor(x / cs)
+    var j = Math.floor(y / cs)
+    var k = Math.floor(z / cs)
+    return getChunk(this, i, j, k)
+}
+
+
 
 
 // run through chunk tracking queues looking for work to do next
