@@ -218,7 +218,7 @@ Engine.prototype.tick = function () {
     updateBlockTargets(this)      // finds targeted blocks, and highlights one if needed
     profile_hook('targets')
     this.emit('tick', dt)
-    profile_hook('tick content')
+    profile_hook('tick event')
     profile_hook('end')
     this.inputs.tick()            // clears accumulated tick/mouseMove data
     // debugQueues(this)

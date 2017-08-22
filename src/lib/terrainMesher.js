@@ -245,7 +245,7 @@ function MeshBuilder() {
 
 
     function buildMeshFromSubmesh(submesh, name, mats, verts, inds) {
-        
+
         // base mesh and vertexData object
         var scene = noa.rendering.getScene()
         var mesh = new BABYLON.Mesh(name, scene)
@@ -377,8 +377,8 @@ function GreedyMesher() {
     var OBJECT_BIT = constants.OBJECT_BIT
 
 
-    var maskCache = new Int16Array(256),
-        aomaskCache = new Uint16Array(256)
+    var maskCache = new Int16Array(16)
+    var aomaskCache = new Uint16Array(16)
 
 
 
@@ -407,7 +407,7 @@ function GreedyMesher() {
             var len1 = arrT.shape[1]
             var len2 = arrT.shape[2]
 
-            // preallocate mask arrays if needed
+            // create bigger mask arrays as needed
             if (maskCache.length < len1 * len2) {
                 maskCache = new Int16Array(len1 * len2)
                 aomaskCache = new Uint16Array(len1 * len2)
@@ -583,12 +583,12 @@ function GreedyMesher() {
             var h = 1
             for (var j = 0; j < len1; j += w, n += w) {
 
-                var maskVal = mask[n]
+                var maskVal = mask[n] | 0
                 if (!maskVal) {
                     w = 1
                     continue
                 }
-                var ao = aomask[n]
+                var ao = aomask[n] | 0
 
                 // Compute width and height of area with same mask/aomask values
                 for (w = 1; w < len1 - j; ++w) {
@@ -897,7 +897,7 @@ function GreedyMesher() {
 
 var profile_hook = (function () {
     if (!PROFILE) return function () { }
-    var every = 200
+    var every = 50
     var timer = new (require('./util').Timer)(every, 'Terrain meshing')
     return function (state) {
         if (state === 'start') timer.start()
