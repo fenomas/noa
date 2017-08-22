@@ -62,6 +62,8 @@ the source.
    * Now uses octrees for scene selection for all meshes, even movine ones
    * Option `useOctreesForDynamicMeshes` (default `true`) to disable previous
    * `noa.rendering.addDynamicMesh` changed to `addMeshToScene(mesh, isStatic)`
+   * Entities can now be cylindrical w.r.t. `collideEntities` component
+   * Adds pairwise entity collision handler `noa.entities.onPairwiseEntityCollision`
  * 0.22.0
    * Large/complicated scenes should mesh and render much faster
    * Chunk terrain/object meshing now merges results. Block object meshes must be static!

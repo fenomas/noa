@@ -29,7 +29,7 @@
     "ndarray": "^1.0.16",
     "ndarray-hash": "^1.0.0",
     "voxel-aabb-sweep": "^0.5.0",
-    "voxel-physics-engine": "^0.7.3"
+    "voxel-physics-engine": "^0.7.4"
   },
   "repository": "https://github.com/andyhall/noa",
   "bugs": {

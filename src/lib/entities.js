@@ -88,6 +88,9 @@ function Entities(noa, opts) {
 	this.getCollideTerrain = this.getStateAccessor(this.names.collideTerrain)
 	this.getCollideEntities = this.getStateAccessor(this.names.collideEntities)
 
+	// pairwise collideEntities event - this is for client to override
+	this.onPairwiseEntityCollision = function (id1, id2) { }
+
 	// events
 	var self = this
 	noa.on('tick', function (dt) { self.tick(dt) })

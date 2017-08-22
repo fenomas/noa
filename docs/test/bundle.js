@@ -10305,6 +10305,9 @@ function Entities(noa, opts) {
 	this.getCollideTerrain = this.getStateAccessor(this.names.collideTerrain)
 	this.getCollideEntities = this.getStateAccessor(this.names.collideEntities)
 
+	// pairwise collideEntities event - this is for client to override
+	this.onPairwiseEntityCollision = function (id1, id2) { }
+
 	// events
 	var self = this
 	noa.on('tick', function (dt) { self.tick(dt) })
@@ -11446,29 +11449,23 @@ module.exports = function (noa) {
 
 
 var boxIntersect = __webpack_require__(87)
+var vec3 = __webpack_require__(0)
 
 
 /*
+ * 	Every frame, entities with this component will get mutually checked for colliions
  * 
- * 	Every frame, entities with this component will get checked for colliions
- * 
+ *   * cylinder: flag for checking collisions as a vertical cylindar (rather than AABB)
  *   * collideBits: category for this entity
  *   * collideMask: categories this entity collides with
  *   * callback: function(other_id) - called when `own.collideBits & other.collideMask` is true
-/*
-
-
-/*
+ * 
  * 
  * 		Notes:
- * 	normal entity (e.g. monster) probably wants bits=1; mask=1
- *  bullets want bits=0, mask=1  (collide with things, but things don't collide back)
- *  something with no callback (e.g. critter) probably wants bits=1, mask=0
- * 
- * 
- * TODO: could optimize this by doing bipartite checks for certain groups 
- * 		instead of one big collision check for everything
- * 		(IF there's a bottleneck...)
+ * 	Set collideBits=0 for entities like bullets, which can collide with things 
+ * 		but are never the target of a collision.
+ * 	Set collideMask=0 for things with no callback - things that get collided with,
+ * 		but don't themselves instigate collisions.
  * 
 */
 
@@ -11481,10 +11478,10 @@ module.exports = function (noa) {
 		name: 'collideEntities',
 
 		state: {
+			cylinder: false,
 			collideBits: 1 | 0,
 			collideMask: 1 | 0,
 			callback: null,
-			// isCylinder: true,
 		},
 
 		onAdd: null,
@@ -11505,30 +11502,109 @@ module.exports = function (noa) {
 			}
 
 			// run the intersect library
-			boxIntersect(intervals, function(i, j) {
-				handle(states[i], states[j])
+			boxIntersect(intervals, function (a, b) {
+				var stateA = states[a]
+				var stateB = states[b]
+				var intervalA = intervals[a]
+				var intervalB = intervals[b]
+				if (cylindricalHitTest(stateA, stateB, intervalA, intervalB)) {
+					handleCollision(noa, stateA, stateB)
+				}
 			})
-			
+
+		}
+	}
+
+
+
+	/*
+	 * 
+	 * 		IMPLEMENTATION
+	 * 
+	*/
+
+
+	function handleCollision(noa, stateA, stateB) {
+		var idA = stateA.__id
+		var idB = stateB.__id
+
+		// entities really do overlap, so check masks and call event handlers
+		if (stateA.collideMask & stateB.collideBits) {
+			if (stateA.callback) stateA.callback(idB)
+		}
+		if (stateB.collideMask & stateA.collideBits) {
+			if (stateB.callback) stateB.callback(idA)
 		}
 
+		// general pairwise handler
+		noa.ents.onPairwiseEntityCollision(idA, idB)
 	}
+
+
+
+	// For entities whose extents overlap, 
+	// test if collision still happens when taking cylinder flags into account
+
+	function cylindricalHitTest(stateA, stateB, intervalA, intervalB) {
+		if (stateA.cylinder) {
+			if (stateB.cylinder) {
+				if (!cylinderCylinderTest(intervalA, intervalB)) return false
+			} else {
+				if (!cylinderBoxTest(intervalA, intervalB)) return false
+			}
+		} else if (stateB.cylinder) {
+			if (!cylinderBoxTest(intervalB, intervalA)) return false
+		}
+		return true
+	}
+
+
+
+
+	// Cylinder-cylinder hit test (AABBs are known to overlap)
+	// given their extent arrays [lo, lo, lo, hi, hi, hi]
+
+	function cylinderCylinderTest(a, b) {
+		// distance between cylinder centers
+		var rada = (a[3] - a[0]) / 2
+		var radb = (b[3] - b[0]) / 2
+		var dx = a[0] + rada - (b[0] + radb)
+		var dz = a[2] + rada - (b[2] + radb)
+		// collide if dist <= sum of radii
+		var distsq = dx * dx + dz * dz
+		var radsum = rada + radb
+		return (distsq <= radsum * radsum)
+	}
+
+
+
+
+	// Cylinder-Box hit test (AABBs are known to overlap)
+	// given their extent arrays [lo, lo, lo, hi, hi, hi]
+
+	function cylinderBoxTest(cyl, cube) {
+		// X-z center of cylinder
+		var rad = (cyl[3] - cyl[0]) / 2
+		var cx = cyl[0] + rad
+		var cz = cyl[2] + rad
+		// point in X-Z square closest to cylinder
+		var px = clamp(cx, cube[0], cube[3])
+		var pz = clamp(cz, cube[2], cube[5])
+		// collision if distance from that point to circle <= cylinder radius
+		var dx = px - cx
+		var dz = pz - cz
+		var distsq = dx * dx + dz * dz
+		return (distsq <= rad * rad)
+	}
+
+	function clamp(val, lo, hi) {
+		return (val < lo) ? lo : (val > hi) ? hi : val
+	}
+
+
+
+
 }
-
-var handle = function intersectHandler(istate, jstate) {
-
-	// todo: implement testing entities as cylinders/spheres?
-	// if (!cylinderTest(istate, jstate)) return
-
-	if (istate.collideMask & jstate.collideBits) {
-		if (istate.callback) istate.callback(jstate.__id)
-	}
-	if (jstate.collideMask & istate.collideBits) {
-		if (jstate.callback) jstate.callback(istate.__id)
-	}
-}
-
-
-
 
 
 /***/ }),
