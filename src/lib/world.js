@@ -66,9 +66,26 @@ function World(noa, _opts) {
 
     // actual chunk storage - hash size hard coded for now
     this._chunkHash = ndHash([1024, 1024, 1024])
-}
 
+    // instantiate coord conversion functions based on the chunk size
+    // use bit twiddling if chunk size is a power of 2
+    var cs = this.chunkSize
+    if (cs & cs - 1 === 0) {
+        var shift = Math.log2(cs) | 0
+        var mask = (cs - 1) | 0
+        worldCoordToChunkCoord = coord => (coord >> shift) | 0
+        worldCoordToChunkIndex = coord => (coord & mask) | 0
+    } else {
+        worldCoordToChunkCoord = coord => Math.floor(coord / cs) | 0
+        worldCoordToChunkIndex = coord => (((coord % cs) + cs) % cs) | 0
+    }
+
+}
 World.prototype = Object.create(EventEmitter.prototype)
+
+var worldCoordToChunkCoord
+var worldCoordToChunkIndex
+
 
 
 
@@ -80,27 +97,24 @@ World.prototype = Object.create(EventEmitter.prototype)
 
 /** @param x,y,z */
 World.prototype.getBlockID = function (x, y, z) {
-    var cs = this.chunkSize
-    var i = Math.floor(x / cs)
-    var j = Math.floor(y / cs)
-    var k = Math.floor(z / cs)
-    var chunk = getChunk(this, i, j, k)
+    var chunk = this._getChunkByCoords(x, y, z)
     if (!chunk) return 0
-    return chunk.get(x - i * cs, y - j * cs, z - k * cs)
-    // TODO: consider constraining chunksize to be power of 2, 
-    // using math tricks from voxel.js: Chunker#voxelAtCoordinates
+
+    var ix = worldCoordToChunkIndex(x)
+    var iy = worldCoordToChunkIndex(y)
+    var iz = worldCoordToChunkIndex(z)
+    return chunk.get(ix, iy, iz)
 }
 
 /** @param x,y,z */
 World.prototype.getBlockSolidity = function (x, y, z) {
-    // very hot function, so reproduce guts of above rather than passing arrays around
-    var cs = this.chunkSize
-    var i = Math.floor(x / this.chunkSize) | 0
-    var j = Math.floor(y / this.chunkSize) | 0
-    var k = Math.floor(z / this.chunkSize) | 0
-    var chunk = getChunk(this, i, j, k)
+    var chunk = this._getChunkByCoords(x, y, z)
     if (!chunk) return 0
-    return chunk.getSolidityAt(x - i * cs, y - j * cs, z - k * cs)
+
+    var ix = worldCoordToChunkIndex(x)
+    var iy = worldCoordToChunkIndex(y)
+    var iz = worldCoordToChunkIndex(z)
+    return !!chunk.getSolidityAt(ix, iy, iz)
 }
 
 /** @param x,y,z */
@@ -125,42 +139,37 @@ World.prototype.getBlockProperties = function (x, y, z) {
 
 /** @param x,y,z */
 World.prototype.getBlockObjectMesh = function (x, y, z) {
-    var cs = this.chunkSize
-    var i = Math.floor(x / cs)
-    var j = Math.floor(y / cs)
-    var k = Math.floor(z / cs)
-    var chunk = getChunk(this, i, j, k)
-    if (!chunk) return null
-    return chunk.getObjectMeshAt(x - i * cs, y - j * cs, z - k * cs)
+    var chunk = this._getChunkByCoords(x, y, z)
+    if (!chunk) return 0
+
+    var ix = worldCoordToChunkIndex(x)
+    var iy = worldCoordToChunkIndex(y)
+    var iz = worldCoordToChunkIndex(z)
+    return chunk.getObjectMeshAt(ix, iy, iz)
 }
 
 
 /** @param x,y,z */
 World.prototype.setBlockID = function (val, x, y, z) {
-    var cs = this.chunkSize
-    var i = Math.floor(x / cs)
-    var j = Math.floor(y / cs)
-    var k = Math.floor(z / cs)
-    x -= i * cs
-    y -= j * cs
-    z -= k * cs
+    var i = worldCoordToChunkCoord(x)
+    var j = worldCoordToChunkCoord(y)
+    var k = worldCoordToChunkCoord(z)
+    var ix = worldCoordToChunkIndex(x)
+    var iy = worldCoordToChunkIndex(y)
+    var iz = worldCoordToChunkIndex(z)
 
     // if update is on chunk border, update neighbor's padding data too
-    _updateChunkAndBorders(this, i, j, k, cs, x, y, z, val)
+    _updateChunkAndBorders(this, i, j, k, this.chunkSize, ix, iy, iz, val)
 }
 
 
 /** @param x,y,z */
 World.prototype.isBoxUnobstructed = function (box) {
-    var floor = Math.floor
     var base = box.base
     var max = box.max
-    var i0 = floor(base[0]), i1 = floor(max[0]) + 1
-    var j0 = floor(base[1]), j1 = floor(max[1]) + 1
-    var k0 = floor(base[2]), k1 = floor(max[2]) + 1
-    for (var i = i0; i < i1; i++) {
-        for (var j = j0; j < j1; j++) {
-            for (var k = k0; k < k1; k++) {
+    for (var i = Math.floor(base[0]); i < max[0] + 1; i++) {
+        for (var j = Math.floor(base[1]); j < max[1] + 1; j++) {
+            for (var k = Math.floor(base[2]); k < max[2] + 1; k++) {
                 if (this.getBlockSolidity(i, j, k)) return false
             }
         }
@@ -312,39 +321,35 @@ function parseChunkID(id) {
 
 // canonical functions to store/retrieve a chunk held in memory
 function getChunk(world, i, j, k) {
-    var mi = modulo1024(i | 0)
-    var mj = modulo1024(j | 0)
-    var mk = modulo1024(k | 0)
+    var mi = (i | 0) & 1023
+    var mj = (j | 0) & 1023
+    var mk = (k | 0) & 1023
     return world._chunkHash.get(mi, mj, mk)
 }
 
 function setChunk(world, i, j, k, value) {
-    var mi = modulo1024(i | 0)
-    var mj = modulo1024(j | 0)
-    var mk = modulo1024(k | 0)
+    var mi = (i | 0) & 1023
+    var mj = (j | 0) & 1023
+    var mk = (k | 0) & 1023
     world._chunkHash.set(mi, mj, mk, value)
 }
 
-function modulo1024(n) {
-    return (((n | 0) % 1024) + 1024) % 1024
-}
+
 
 function getPlayerChunkCoords(world) {
     var pos = world.noa.getPlayerPosition()
-    var cs = world.chunkSize
-    var i = Math.floor(pos[0] / cs)
-    var j = Math.floor(pos[1] / cs)
-    var k = Math.floor(pos[2] / cs)
+    var i = worldCoordToChunkCoord(pos[0])
+    var j = worldCoordToChunkCoord(pos[1])
+    var k = worldCoordToChunkCoord(pos[2])
     return [i, j, k]
 }
 
 
 // for internal use
 World.prototype._getChunkByCoords = function (x, y, z) {
-    var cs = this.chunkSize
-    var i = Math.floor(x / cs)
-    var j = Math.floor(y / cs)
-    var k = Math.floor(z / cs)
+    var i = worldCoordToChunkCoord(x)
+    var j = worldCoordToChunkCoord(y)
+    var k = worldCoordToChunkCoord(z)
     return getChunk(this, i, j, k)
 }
 
@@ -409,12 +414,12 @@ function requestNewChunk(world, id) {
     var i = pos[0]
     var j = pos[1]
     var k = pos[2]
-    var cs = world.chunkSize
-    var chunk = new Chunk(world.noa, id, i, j, k, cs)
+    var size = world.chunkSize
+    var chunk = new Chunk(world.noa, id, i, j, k, size)
     setChunk(world, i, j, k, chunk)
-    var x = i * cs - 1
-    var y = j * cs - 1
-    var z = k * cs - 1
+    var x = i * size - 1
+    var y = j * size - 1
+    var z = k * size - 1
     enqueueID(id, world._chunkIDsToCreate)
     world.emit('worldDataNeeded', id, chunk.array, x, y, z)
 }
@@ -445,25 +450,22 @@ function removeChunk(world, i, j, k) {
 // changed block in their 1-block padding)
 
 function _updateChunkAndBorders(world, i, j, k, size, x, y, z, val) {
-    // can't for the life of me think of a more sensible way to do this...
-    var iBorder = (x === 0) ? -1 : (x === size - 1) ? 1 : 0
-    var jBorder = (y === 0) ? -1 : (y === size - 1) ? 1 : 0
-    var kBorder = (z === 0) ? -1 : (z === size - 1) ? 1 : 0
+    var ilocs = [0]
+    var jlocs = [0]
+    var klocs = [0]
+    if (x === 0) { ilocs.push(-1) } else if (x === size - 1) { ilocs.push(1) }
+    if (y === 0) { jlocs.push(-1) } else if (y === size - 1) { jlocs.push(1) }
+    if (z === 0) { klocs.push(-1) } else if (z === size - 1) { klocs.push(1) }
 
-    for (var di = -1; di < 2; ++di) {
-        for (var dj = -1; dj < 2; ++dj) {
-            for (var dk = -1; dk < 2; ++dk) {
-
-                if ((di === 0 || di === iBorder) &&
-                    (dj === 0 || dj === jBorder) &&
-                    (dk === 0 || dk === kBorder)) {
-                    _modifyBlockData(world, i + di, j + dj, k + dk,
-                        [size, x, -1][di + 1],
-                        [size, y, -1][dj + 1],
-                        [size, z, -1][dk + 1],
-                        val)
-                }
-
+    for (var di of ilocs) {
+        var lx = [size, x, -1][di + 1]
+        for (var dj of jlocs) {
+            var ly = [size, y, -1][dj + 1]
+            for (var dk of klocs) {
+                var lz = [size, z, -1][dk + 1]
+                _modifyBlockData(world,
+                    i + di, j + dj, k + dk,
+                    lx, ly, lz, val)
             }
         }
     }
