@@ -19,7 +19,7 @@ module.exports = function (noa) {
 			for (var i = 0; i < states.length; ++i) {
 				var state = states[i]
 				state.time -= dt
-				if (state.time < 0) noa.ents.removeComponentLater(state.__id, 'smooth-camera')
+				if (state.time < 0) noa.ents.removeComponent(state.__id, 'smooth-camera')
 			}
 		},
 

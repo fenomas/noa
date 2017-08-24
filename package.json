@@ -20,7 +20,7 @@
   "dependencies": {
     "aabb-3d": "github:andyhall/aabb-3d",
     "box-intersect": "^1.0.1",
-    "ent-comp": "^0.5.0",
+    "ent-comp": "^0.6.0",
     "extend": "^3.0.0",
     "fast-voxel-raycast": "^0.1.1",
     "game-inputs": "^0.2.0",

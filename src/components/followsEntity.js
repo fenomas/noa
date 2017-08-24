@@ -54,7 +54,7 @@ module.exports = function (noa) {
 		if (other) {
 			vec3.add(self.position, other.position, state.offset)
 		} else {
-			noa.ents.removeComponentLater(id, noa.ents.names.followsEntity)
+			noa.ents.removeComponent(id, noa.ents.names.followsEntity)
 		}
 	}
 
@@ -65,7 +65,7 @@ module.exports = function (noa) {
 		if (other) {
 			vec3.add(self.renderPosition, other.renderPosition, state.offset)
 		} else {
-			noa.ents.removeComponentLater(id, noa.ents.names.followsEntity)
+			noa.ents.removeComponent(id, noa.ents.names.followsEntity)
 		}
 	}
 

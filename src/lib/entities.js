@@ -4,7 +4,7 @@ var extend = require('extend')
 var aabb = require('aabb-3d')
 var vec3 = require('gl-vec3')
 var EntComp = require('ent-comp')
-// var EntComp = require('../../../npm-modules/ent-comp')
+// var EntComp = require('../../../../npm-modules/ent-comp')
 
 module.exports = function (noa, opts) {
 	return new Entities(noa, opts)
@@ -117,7 +117,7 @@ Entities.prototype.constructor = Entities
 /** @param id,name,state */
 Entities.prototype.addComponentAgain = function (id, name, state) {
 	// removes component first if necessary
-	if (this.hasComponent(id, name)) this.removeComponent(id, name)
+	if (this.hasComponent(id, name)) this.removeComponent(id, name, true)
 	this.addComponent(id, name, state)
 }
 

@@ -69,9 +69,9 @@ dup@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/ejs/-/ejs-1.0.0.tgz#c9c60a48a46ee452fb32a71c317b95e5aa1fcb3d"
 
-ent-comp@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/ent-comp/-/ent-comp-0.5.0.tgz#6a2e9b3a418201370dd3bcb22eb68bfb2de7c4cd"
+ent-comp@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/ent-comp/-/ent-comp-0.6.0.tgz#62f0f036af62ad60fa31bec7739338a01979c894"
 
 entities@~1.1.1:
   version "1.1.1"
@@ -226,9 +226,9 @@ voxel-aabb-sweep@^0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/voxel-aabb-sweep/-/voxel-aabb-sweep-0.5.0.tgz#af4246eed88f15978390832251733067667e3a8b"
 
-voxel-physics-engine@^0.7.3:
-  version "0.7.3"
-  resolved "https://registry.yarnpkg.com/voxel-physics-engine/-/voxel-physics-engine-0.7.3.tgz#ed18ca2820b63069e6997eb3600ed2bd26e9eb88"
+voxel-physics-engine@^0.7.4:
+  version "0.7.4"
+  resolved "https://registry.yarnpkg.com/voxel-physics-engine/-/voxel-physics-engine-0.7.4.tgz#3997f2165e4b3421967fa17563d5021402069e92"
   dependencies:
     aabb-3d "github:andyhall/aabb-3d"
     extend "^3.0.0"
