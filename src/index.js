@@ -34,20 +34,21 @@ var defaults = {
     playerAutoStep: false,
     tickRate: 30,
     blockTestDistance: 10,
+    ignoreNonSolid:true,
     stickyPointerLock: true,
     dragCameraOutsidePointerLock: true,
     skipDefaultHighlighting: false,
 }
 
 /**
- * Main engine object.  
+ * Main engine object.
  * Emits: *tick, beforeRender, afterRender, targetBlockChanged*
- * 
+ *
  * ```js
  * var noaEngine = require('noa-engine')
  * var noa = noaEngine(opts)
  * ```
- * 
+ *
  * @class noa
 */
 
@@ -92,7 +93,7 @@ function Engine(opts) {
     this.playerEntity = ents.add(
         opts.playerStart,    // starting location- TODO: get from options
         opts.playerWidth, opts.playerHeight,
-        null, null,          // no mesh for now, no meshOffset, 
+        null, null,          // no mesh for now, no meshOffset,
         true, true
     )
 
@@ -121,7 +122,7 @@ function Engine(opts) {
     }
     ents.addComponent(this.playerEntity, ents.names.movement, moveOpts)
 
-    // how high above the player's position the eye is (for picking, camera tracking)  
+    // how high above the player's position the eye is (for picking, camera tracking)
     this.playerEyeOffset = 0.9 * opts.playerHeight
 
 
@@ -253,7 +254,7 @@ function debugQueues(self) {
 
 
 /*
- * Render function, called every animation frame. Emits #beforeRender(dt), #afterRender(dt) 
+ * Render function, called every animation frame. Emits #beforeRender(dt), #afterRender(dt)
  * where dt is the time in ms *since the last tick*.
 */
 
@@ -285,7 +286,7 @@ Engine.prototype.render = function (framePart) {
  *   Utility APIs
 */
 
-/** 
+/**
  * Pausing the engine will also stop render/tick events, etc.
  * @param paused
 */
@@ -317,7 +318,7 @@ Engine.prototype.setBlock = function (id, x, y, z) {
 }
 
 /**
- * Adds a block unless obstructed by entities 
+ * Adds a block unless obstructed by entities
  * @param id,x,y,z */
 Engine.prototype.addBlock = function (id, x, y, z) {
     // add a new terrain block, if nothing blocks the terrain there
