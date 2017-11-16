@@ -58,8 +58,11 @@ the source.
 
 ### Recent changes:
 
+ * 0.24.0
+   * Targeting and `noa.pick` can take a function for which block IDs to target - #36
+   * Reorganizes `registry` internals
  * 0.23.0
-   * Now uses octrees for scene selection for all meshes, even movine ones
+   * Now uses octrees for scene selection for all meshes, even moving ones
    * Option `useOctreesForDynamicMeshes` (default `true`) to disable previous
    * `noa.rendering.addDynamicMesh` changed to `addMeshToScene(mesh, isStatic)`
    * Entities can now be cylindrical w.r.t. `collideEntities` component

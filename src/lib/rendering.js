@@ -442,8 +442,7 @@ function checkCameraEffect(self, id) {
     if (id === 0) {
         self._camScreen.setEnabled(false)
     } else {
-        var matAccessor = self.noa.registry.getBlockFaceMaterialAccessor()
-        var matId = matAccessor(id, 0)
+        var matId = self.noa.registry.getBlockFaceMaterial(id, 0)
         var matData = self.noa.registry.getMaterialData(matId)
         var col = matData.color
         var alpha = matData.alpha

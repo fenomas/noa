@@ -40,8 +40,8 @@ function TerrainMesher() {
 
         // args
         var array = chunk.array
-        var mats = matGetter || noa.registry.getBlockFaceMaterialAccessor()
-        var cols = colGetter || noa.registry.getMaterialVertexColorAccessor()
+        var mats = matGetter || noa.registry.getBlockFaceMaterial
+        var cols = colGetter || noa.registry._getMaterialVertexColor
         var ao = (useAO === undefined) ? noa.rendering.useAO : useAO
         var vals = aoVals || noa.rendering.aoVals
         var rev = isNaN(revAoVal) ? noa.rendering.revAoVal : revAoVal
