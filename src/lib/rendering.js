@@ -443,13 +443,15 @@ function checkCameraEffect(self, id) {
         self._camScreen.setEnabled(false)
     } else {
         var matId = self.noa.registry.getBlockFaceMaterial(id, 0)
-        var matData = self.noa.registry.getMaterialData(matId)
-        var col = matData.color
-        var alpha = matData.alpha
-        if (col && alpha && alpha < 1) {
-            self._camScreenMat.diffuseColor = new col3(col[0], col[1], col[2])
-            self._camScreenMat.alpha = alpha
-            self._camScreen.setEnabled(true)
+        if (matId) {
+            var matData = self.noa.registry.getMaterialData(matId)
+            var col = matData.color
+            var alpha = matData.alpha
+            if (col && alpha && alpha < 1) {
+                self._camScreenMat.diffuseColor = new col3(col[0], col[1], col[2])
+                self._camScreenMat.alpha = alpha
+                self._camScreen.setEnabled(true)
+            }
         }
     }
     self._camLocBlock = id
