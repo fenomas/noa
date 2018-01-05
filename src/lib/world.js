@@ -188,6 +188,7 @@ World.prototype.tick = function () {
     var pos = getPlayerChunkCoords(this)
     var chunkID = getChunkID(pos[0], pos[1], pos[2])
     if (chunkID != this._lastPlayerChunkID) {
+        this.emit('buildChunks', this, pos[0], pos[1], pos[2])
         buildChunkAddQueue(this, pos[0], pos[1], pos[2])
         buildChunkRemoveQueue(this, pos[0], pos[1], pos[2])
     }
