@@ -4,8 +4,8 @@
   "description": "Experimental voxel game engine",
   "main": "src/index.js",
   "scripts": {
-    "start": "sleep 1 && open http://localhost:8080/ & (cd docs/hello-world/; webpack-dev-server -d --inline index.js) || true",
-    "test": "sleep 1 && open http://localhost:8080/ & (cd docs/test/; webpack-dev-server -d --inline index.js) || true",
+    "start": "sleep 1 && open http://localhost:8080/ & (cd docs/hello-world/; webpack-dev-server) || true",
+    "test": "sleep 1 && open http://localhost:8080/ & (cd docs/test/; webpack-dev-server) || true",
     "build-docs": "cat tools/buildDocs.js | node",
     "build-demos": "./tools/build_demos.sh",
     "build": "npm run build-docs; npm run build-demos"
