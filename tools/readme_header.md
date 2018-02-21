@@ -60,6 +60,7 @@ the source.
 
  * 0.24.0
    * Targeting and `noa.pick` can take a function for which block IDs to target - #36
+   * Allows terrain materials to specify a renderMaterial (see `registry.registerMaterial()`)
    * Reorganizes `registry` internals
  * 0.23.0
    * Now uses octrees for scene selection for all meshes, even moving ones

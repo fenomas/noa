@@ -3,9 +3,7 @@ var path = require('path')
 
 
 module.exports = {
-    entry: {
-        bundle: path.resolve('.', 'index.js'),
-    },
+    entry: './index.js',
     output: {
         path: path.resolve('.'),
         filename: 'bundle.js',

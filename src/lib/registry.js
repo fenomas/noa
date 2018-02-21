@@ -179,9 +179,10 @@ function Registry(noa, _options) {
      * Register (by name) a material and its parameters.
      * 
      * @param name,color,textureURL,texHasAlpha
+     * @param renderMaterial an optional BABYLON material to be used for block faces with this block material
     */
 
-    this.registerMaterial = function (name, color, textureURL, texHasAlpha) {
+    this.registerMaterial = function (name, color, textureURL, texHasAlpha, renderMaterial) {
         // console.log('register mat: ', name, color, textureURL)
         var id = matIDs[name] || matData.length
         matIDs[name] = id
@@ -193,7 +194,8 @@ function Registry(noa, _options) {
             color: color || [1, 1, 1],
             alpha: alpha,
             texture: textureURL ? texturePath + textureURL : '',
-            textureAlpha: !!texHasAlpha
+            textureAlpha: !!texHasAlpha,
+            renderMat: renderMaterial || null,
         }
         return id
     }

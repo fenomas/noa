@@ -113,9 +113,10 @@ function MeshBuilder() {
     this.build = function (chunk, meshdata, ignoreMaterials) {
         noa = chunk.noa
 
-        // preprocess meshdata entries to merge those that use default terrain material
+        // preprocess meshdata entries to merge those that will use default terrain material
         var mergeCriteria = function (mdat) {
             if (ignoreMaterials) return true
+            if (mdat.renderMat) return false
             var url = noa.registry.getMaterialTexture(mdat.id)
             var alpha = noa.registry.getMaterialData(mdat.id).alpha
             if (url || alpha < 1) return false
@@ -155,6 +156,7 @@ function MeshBuilder() {
         // preprocess meshdata entries to merge those that use default terrain material
         var mergeCriteria = function (mdat) {
             if (ignoreMaterials) return true
+            if (mdat.renderMat) return false
             var url = noa.registry.getMaterialTexture(mdat.id)
             var alpha = noa.registry.getMaterialData(mdat.id).alpha
             if (url || alpha < 1) return false
@@ -302,8 +304,11 @@ function MeshBuilder() {
 
     // canonical function to make a terrain material
     function makeTerrainMaterial(id) {
-        var url = noa.registry.getMaterialTexture(id)
+        // if user-specified render material is defined, use it
         var matData = noa.registry.getMaterialData(id)
+        if (matData.renderMat) return matData.renderMat
+        // otherwise determine which built-in material to use
+        var url = noa.registry.getMaterialTexture(id)
         var alpha = matData.alpha
         if (!url && alpha == 1) {
             // base material is fine for non-textured case, if no alpha
