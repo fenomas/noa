@@ -318,12 +318,8 @@ function MeshBuilder() {
         if (url) {
             var scene = noa.rendering.getScene()
             var tex = new BABYLON.Texture(url, scene, true, false, BABYLON.Texture.NEAREST_SAMPLINGMODE)
-            if (matData.textureAlpha) {
-                tex.hasAlpha = true
-                mat.diffuseTexture = tex
-            } else {
-                mat.ambientTexture = tex
-            }
+            if (matData.textureAlpha) tex.hasAlpha = true
+            mat.diffuseTexture = tex
         }
         if (matData.alpha < 1) {
             mat.alpha = matData.alpha

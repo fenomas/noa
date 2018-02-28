@@ -51,8 +51,8 @@ noa.registry.registerMaterial('water', [0.5, 0.5, 0.8, 0.7], null)
 
 
 // register a shinyDirt block with a custom render material
-var shinyMat = new BABYLON.StandardMaterial('shinyDirtMat', noa.rendering.getScene())
-shinyMat.specularColor.copyFromFloats(1,1,1)
+var shinyMat = noa.rendering.makeStandardMaterial('shinyDirtMat')
+shinyMat.specularColor.copyFromFloats(1, 1, 1)
 shinyMat.specularPower = 32
 shinyMat.bumpTexture = new BABYLON.Texture('textures/stone.png', scene);
 noa.registry.registerMaterial('shinyDirt', brownish, null, false, shinyMat)

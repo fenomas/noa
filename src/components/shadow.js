@@ -13,7 +13,7 @@ module.exports = function (noa, dist) {
 	disc.rotation.x = Math.PI / 2
 	disc.material = noa.rendering.makeStandardMaterial('shadowMat')
 	disc.material.diffuseColor = BABYLON.Color3.Black()
-	disc.material.specularColor = BABYLON.Color3.Black()
+	disc.material.ambientColor = BABYLON.Color3.Black()
 	disc.material.alpha = 0.5
 	disc.setEnabled(false)
 
