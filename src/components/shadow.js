@@ -26,18 +26,18 @@ module.exports = function (noa, dist) {
 		name: 'shadow',
 
 		state: {
-			mesh: null,
-			size: 0.5
+			size: 0.5,
+			_mesh: null,
 		},
 
 
 		onAdd: function (eid, state) {
-			state.mesh = noa.rendering.makeMeshInstance(disc, false)
+			state._mesh = noa.rendering.makeMeshInstance(disc, false)
 		},
 
 
 		onRemove: function (eid, state) {
-			state.mesh.dispose()
+			state._mesh.dispose()
 		},
 
 
@@ -47,7 +47,7 @@ module.exports = function (noa, dist) {
 			var dist = shadowDist
 			for (var i = 0; i < states.length; i++) {
 				var state = states[i]
-				updateShadowHeight(state.__id, state.mesh, state.size, dist, noa)
+				updateShadowHeight(state.__id, state._mesh, state.size, dist, noa)
 			}
 		},
 
@@ -57,7 +57,7 @@ module.exports = function (noa, dist) {
 			for (var i = 0; i < states.length; ++i) {
 				var state = states[i]
 				var rpos = noa.ents.getPositionData(state.__id).renderPosition
-				var spos = state.mesh.position
+				var spos = state._mesh.position
 				spos.x = rpos[0]
 				spos.z = rpos[2]
 			}
