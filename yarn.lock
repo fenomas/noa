@@ -3004,8 +3004,8 @@ voxel-aabb-sweep@^0.5.0:
   resolved "https://registry.yarnpkg.com/voxel-aabb-sweep/-/voxel-aabb-sweep-0.5.0.tgz#af4246eed88f15978390832251733067667e3a8b"
 
 voxel-physics-engine@^0.7.4:
-  version "0.7.4"
-  resolved "https://registry.yarnpkg.com/voxel-physics-engine/-/voxel-physics-engine-0.7.4.tgz#3997f2165e4b3421967fa17563d5021402069e92"
+  version "0.7.7"
+  resolved "https://registry.yarnpkg.com/voxel-physics-engine/-/voxel-physics-engine-0.7.7.tgz#799965dcb50d5d8db96552e0d343f1a1804c0499"
   dependencies:
     aabb-3d "github:andyhall/aabb-3d"
     extend "^3.0.0"
