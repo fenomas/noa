@@ -1,11 +1,11 @@
 {
   "name": "noa-engine",
-  "version": "0.23.0",
+  "version": "0.24.0",
   "description": "Experimental voxel game engine",
   "main": "src/index.js",
   "scripts": {
-    "start": "sleep 1 && open http://localhost:8080/ & (cd docs/hello-world/; webpack-dev-server -d --inline index.js) || true",
-    "test": "sleep 1 && open http://localhost:8080/ & (cd docs/test/; webpack-dev-server -d --inline index.js) || true",
+    "start": "sleep 1 && open http://localhost:8080/ & (cd docs/hello-world/; webpack-dev-server) || true",
+    "test": "sleep 1 && open http://localhost:8080/ & (cd docs/test/; webpack-dev-server) || true",
     "build-docs": "cat tools/buildDocs.js | node",
     "build-demos": "./tools/build_demos.sh",
     "build": "npm run build-docs; npm run build-demos"
@@ -20,7 +20,7 @@
   "dependencies": {
     "aabb-3d": "github:andyhall/aabb-3d",
     "box-intersect": "^1.0.1",
-    "ent-comp": "^0.6.0",
+    "ent-comp": "^0.6.1",
     "extend": "^3.0.0",
     "fast-voxel-raycast": "^0.1.1",
     "game-inputs": "^0.2.0",
@@ -29,13 +29,15 @@
     "ndarray": "^1.0.16",
     "ndarray-hash": "^1.0.0",
     "voxel-aabb-sweep": "^0.5.0",
-    "voxel-physics-engine": "^0.7.4"
+    "voxel-physics-engine": "^0.7.7"
   },
   "repository": "https://github.com/andyhall/noa",
   "bugs": {
     "url": "https://github.com/andyhall/noa/issues"
   },
   "devDependencies": {
-    "markdox": "^0.1.10"
+    "markdox": "^0.1.10",
+    "webpack": "^3.8.1",
+    "webpack-dev-server": "^2.9.4"
   }
 }

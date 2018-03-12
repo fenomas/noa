@@ -100,12 +100,12 @@ module.exports = function (noa) {
 	function cylindricalHitTest(stateA, stateB, intervalA, intervalB) {
 		if (stateA.cylinder) {
 			if (stateB.cylinder) {
-				if (!cylinderCylinderTest(intervalA, intervalB)) return false
+				return cylinderCylinderTest(intervalA, intervalB)
 			} else {
-				if (!cylinderBoxTest(intervalA, intervalB)) return false
+				return cylinderBoxTest(intervalA, intervalB)
 			}
 		} else if (stateB.cylinder) {
-			if (!cylinderBoxTest(intervalB, intervalA)) return false
+			return cylinderBoxTest(intervalB, intervalA)
 		}
 		return true
 	}

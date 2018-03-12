@@ -72,7 +72,7 @@ function Chunk(noa, id, i, j, k, size) {
     this._objectsDirty = false
 
     // init references shared among all chunks
-    initShared(noa)
+    setBlockLookups(noa)
 
     // build unpadded and transposed array views for internal use
     rebuildArrayViews(this)
@@ -90,11 +90,11 @@ var opaqueLookup
 var objectMeshLookup
 var blockHandlerLookup
 
-function initShared(noa) {
-    solidLookup = noa.registry._blockSolidity
-    opaqueLookup = noa.registry._blockOpacity
-    objectMeshLookup = noa.registry._blockMesh
-    blockHandlerLookup = noa.registry._blockHandlers
+function setBlockLookups(noa) {
+    solidLookup = noa.registry._solidityLookup
+    opaqueLookup = noa.registry._opacityLookup
+    objectMeshLookup = noa.registry._blockMeshLookup
+    blockHandlerLookup = noa.registry._blockHandlerLookup
 }
 
 

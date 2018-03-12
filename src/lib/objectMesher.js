@@ -91,7 +91,7 @@ function ObjectMesher() {
         removeCurrentSystems(chunk)
 
         var scene = chunk.noa.rendering.getScene()
-        var objectMeshLookup = chunk.noa.registry._blockMesh
+        var objectMeshLookup = chunk.noa.registry._blockMeshLookup
 
         // preprocess everything to build lists of object block keys
         // hashed by material ID and then by block ID
@@ -156,8 +156,8 @@ function ObjectMesher() {
             updatable: false,
         })
 
-        var blockHandlerLookup = chunk.noa.registry._blockHandlers
-        var objectMeshLookup = chunk.noa.registry._blockMesh
+        var blockHandlerLookup = chunk.noa.registry._blockHandlerLookup
+        var objectMeshLookup = chunk.noa.registry._blockMeshLookup
 
         // run through mesh hash adding shapes and position functions
         for (var blockID in meshHash) {

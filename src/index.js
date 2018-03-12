@@ -127,29 +127,14 @@ function Engine(opts) {
 
 
 
-
-    // Set up block picking functions
+    // set up block targeting
     this.blockTestDistance = opts.blockTestDistance || 10
 
-    // plumbing for picking/raycasting
-    var world = this.world
-    var blockAccessor = function (x, y, z) {
-        return world.getBlockID(x, y, z)
-    }
-    var solidAccessor = function (x, y, z) {
-        return world.getBlockSolidity(x, y, z)
-    }
+    /** function for which block IDs are targetable. 
+     * Defaults to a solidity check, but can be overridden */
+    this.blockTargetIdCheck = this.registry.getBlockSolidity
 
-    // accessors
-    this._traceWorldRay = function (pos, vec, dist, hitPos, hitNorm) {
-        return raycast(blockAccessor, pos, vec, dist, hitPos, hitNorm)
-    }
-
-    this._traceWorldRayCollision = function (pos, vec, dist, hitPos, hitNorm) {
-        return raycast(solidAccessor, pos, vec, dist, hitPos, hitNorm)
-    }
-
-    // this gets populated with a data class defined down near updateBlockTargets
+    /** Dynamically updated object describing the currently targeted block */
     this.targetedBlock = null
 
     // add a default block highlighting function
@@ -367,22 +352,29 @@ Engine.prototype.getCameraVector = function () {
 }
 var _camVec = vec3.create()
 
+
+
 /**
  * Raycast through the world, returning a result object for any non-air block
  * @param pos
  * @param vec
  * @param dist
  */
-Engine.prototype.pick = function (pos, vec, dist, ignoreNonSolid) {
+Engine.prototype.pick = function (pos, vec, dist, blockIdTestFunction) {
     if (dist === 0) return null
+    // if no block ID function is specified default to solidity check
+    var testFn = blockIdTestFunction || this.registry.getBlockSolidity
+    var world = this.world
+    var testVoxel = function (x, y, z) {
+        var id = world.getBlockID(x, y, z)
+        return testFn(id)
+    }
     pos = pos || this.getPlayerEyePosition()
     vec = vec || this.getCameraVector()
     dist = dist || this.blockTestDistance
     var rpos = _hitResult.position
     var rnorm = _hitResult.normal
-    var hit = (ignoreNonSolid) ?
-        this._traceWorldRayCollision(pos, vec, dist, rpos, rnorm) :
-        this._traceWorldRay(pos, vec, dist, rpos, rnorm)
+    var hit = raycast(testVoxel, pos, vec, dist, rpos, rnorm)
     if (!hit) return null
     // position is right on a voxel border - adjust it so flooring will work as expected
     for (var i = 0; i < 3; i++) rpos[i] -= 0.01 * rnorm[i]
@@ -394,11 +386,17 @@ var _hitResult = {
 }
 
 
-// Determine which block if any is targeted and within range
-// also tell rendering to highlight the struck block face
+
+
+
+
+
+// Each frame, by default pick along the player's view vector 
+// and tell rendering to highlight the struck block face
 function updateBlockTargets(noa) {
     var newhash = ''
-    var result = noa.pick(null, null, null, true)
+    var blockIdFn = noa.blockTargetIdCheck || noa.registry.getBlockSolidity
+    var result = noa.pick(null, null, null, blockIdFn)
     if (result) {
         var dat = _targetedBlockDat
         for (var i = 0; i < 3; i++) {

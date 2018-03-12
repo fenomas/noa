@@ -52,7 +52,6 @@ function Entities(noa, opts) {
 	this.names.shadow = this.createComponent(require('../components/shadow')(noa, shadowDist))
 	this.names.collideTerrain = this.createComponent(require('../components/collideTerrain')(noa))
 	this.names.collideEntities = this.createComponent(require('../components/collideEntities')(noa))
-	this.names.every = this.createComponent(require('../components/every')(noa))
 	this.names.smoothCamera = this.createComponent(require('../components/smoothCamera')(noa))
 	this.names.movement = this.createComponent(require('../components/movement')(noa))
 	this.names.receivesInputs = this.createComponent(require('../components/receivesInputs')(noa))

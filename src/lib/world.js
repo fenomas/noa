@@ -119,22 +119,20 @@ World.prototype.getBlockSolidity = function (x, y, z) {
 
 /** @param x,y,z */
 World.prototype.getBlockOpacity = function (x, y, z) {
-    return this.noa.registry._blockOpacity[this.getBlockID(x, y, z)]
-}
-
-/** @param x,y,z */
-World.prototype.getBlockTransparency = function (x, y, z) {
-    return this.noa.registry._blockTransparency[this.getBlockID(x, y, z)]
+    var id = this.getBlockID(x, y, z)
+    return this.noa.registry.getBlockOpacity(id)
 }
 
 /** @param x,y,z */
 World.prototype.getBlockFluidity = function (x, y, z) {
-    return this.noa.registry._blockIsFluid[this.getBlockID(x, y, z)]
+    var id = this.getBlockID(x, y, z)
+    return this.noa.registry.getBlockFluidity(id)
 }
 
 /** @param x,y,z */
 World.prototype.getBlockProperties = function (x, y, z) {
-    return this.noa.registry._blockProps[this.getBlockID(x, y, z)]
+    var id = this.getBlockID(x, y, z)
+    return this.noa.registry.getBlockProps(id)
 }
 
 /** @param x,y,z */
@@ -188,6 +186,7 @@ World.prototype.tick = function () {
     var pos = getPlayerChunkCoords(this)
     var chunkID = getChunkID(pos[0], pos[1], pos[2])
     if (chunkID != this._lastPlayerChunkID) {
+        this.emit('playerEnteredChunk', pos[0], pos[1], pos[2])
         buildChunkAddQueue(this, pos[0], pos[1], pos[2])
         buildChunkRemoveQueue(this, pos[0], pos[1], pos[2])
     }

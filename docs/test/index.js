@@ -39,8 +39,8 @@ var noa = noaEngine(opts)
 // block materials
 var brownish = [0.45, 0.36, 0.22]
 var greenish = [0.1, 0.8, 0.2]
-noa.registry.registerMaterial('dirt', brownish, null)
 noa.registry.registerMaterial('grass', greenish, null)
+noa.registry.registerMaterial('dirt', brownish, null, false)
 var strs = ['a', 'b', 'c', 'd', '1', '2']
 for (var i = 0; i < 6; i++) {
 	var s = strs[i]
@@ -49,6 +49,13 @@ for (var i = 0; i < 6; i++) {
 }
 noa.registry.registerMaterial('water', [0.5, 0.5, 0.8, 0.7], null)
 
+
+// register a shinyDirt block with a custom render material
+var shinyMat = noa.rendering.makeStandardMaterial('shinyDirtMat')
+shinyMat.specularColor.copyFromFloats(1, 1, 1)
+shinyMat.specularPower = 32
+shinyMat.bumpTexture = new BABYLON.Texture('textures/stone.png', scene);
+noa.registry.registerMaterial('shinyDirt', brownish, null, false, shinyMat)
 
 
 // object block mesh
@@ -61,6 +68,7 @@ mesh.bakeTransformIntoVertices(mat)
 // block types registration
 var _id = 1
 var dirtID = noa.registry.registerBlock(_id++, { material: 'dirt' })
+var shinyDirtID = noa.registry.registerBlock(_id++, { material: 'shinyDirt' })
 var grassID = noa.registry.registerBlock(_id++, { material: 'grass' })
 var testID1 = noa.registry.registerBlock(_id++, { material: ['b', 'd', '1', '2', 'c', 'a',] })
 var testID2 = noa.registry.registerBlock(_id++, {
@@ -135,7 +143,7 @@ function addWorldFeatures() {
 	noa.setBlock(testID3, -2, 5, 6)
 
 	var z = 5
-	makeRows(10, 5, z, dirtID)
+	makeRows(10, 5, z, shinyDirtID)
 	makeRows(10, 5, z + 2, dirtID)
 	makeRows(10, 5, z + 5, dirtID)
 	makeRows(10, 5, z + 9, dirtID)

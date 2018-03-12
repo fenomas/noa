@@ -104,7 +104,6 @@ function initScene(self, canvas, opts) {
     self._camScreen.position.z = .1
     self._camScreen.parent = self._camera
     self._camScreenMat = self.makeStandardMaterial('camscreenmat')
-    self._camScreenMat.specularColor = new col3(0, 0, 0)
     self._camScreen.material = self._camScreenMat
     self._camScreen.setEnabled(false)
     self._camLocBlock = 0
@@ -118,16 +117,9 @@ function initScene(self, canvas, opts) {
     self._light.specular = arrToColor(opts.lightSpecular)
     self._light.groundColor = arrToColor(opts.groundLightColor)
 
-    // create a flat, non-specular material to be used globally
-    // for any mesh that has colored vertices and no texture
+    // make a default flat material (used or clone by terrain, etc)
     self.flatMaterial = self.makeStandardMaterial('flatmat')
-    self.flatMaterial.specularColor = BABYLON.Color3.Black()
 
-    // // same for emissive elements
-    // removing this until I find I need it...
-    // self.emissiveMat = self.makeStandardMaterial('emissivemat')
-    // self.emissiveMat.specularColor = BABYLON.Color3.Black()
-    // self.emissiveMat.emissiveColor = BABYLON.Color3.White()
 }
 
 
@@ -186,7 +178,7 @@ Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
         var slop = 0.001 + 0.001 * dist
         var pos = _highlightPos
         for (var i = 0; i < 3; ++i) {
-            pos[i] = posArr[i] + .5 + ((0.5 + slop) * normArr[i])
+            pos[i] = Math.floor(posArr[i]) + .5 + ((0.5 + slop) * normArr[i])
         }
         m.position.copyFromFloats(pos[0], pos[1], pos[2])
         m.rotation.x = (normArr[1]) ? Math.PI / 2 : 0
@@ -303,9 +295,14 @@ Rendering.prototype.makeMeshInstance = function (mesh, isStatic) {
 
 
 
-// create a new standardMaterial, with any settings needed
+// Create a default standardMaterial:
+//      flat, nonspecular, fully reflects diffuse and ambient light
 Rendering.prototype.makeStandardMaterial = function (name) {
     var mat = new BABYLON.StandardMaterial(name, this._scene)
+    mat.specularColor.copyFromFloats(0, 0, 0)
+    mat.ambientColor.copyFromFloats(1, 1, 1)
+    mat.diffuseColor.copyFromFloats(1, 1, 1)
+    // not 100% sure this helps but it should..
     setTimeout(function () { mat.freeze() }, 10)
     return mat
 }
@@ -442,15 +439,16 @@ function checkCameraEffect(self, id) {
     if (id === 0) {
         self._camScreen.setEnabled(false)
     } else {
-        var matAccessor = self.noa.registry.getBlockFaceMaterialAccessor()
-        var matId = matAccessor(id, 0)
-        var matData = self.noa.registry.getMaterialData(matId)
-        var col = matData.color
-        var alpha = matData.alpha
-        if (col && alpha && alpha < 1) {
-            self._camScreenMat.diffuseColor = new col3(col[0], col[1], col[2])
-            self._camScreenMat.alpha = alpha
-            self._camScreen.setEnabled(true)
+        var matId = self.noa.registry.getBlockFaceMaterial(id, 0)
+        if (matId) {
+            var matData = self.noa.registry.getMaterialData(matId)
+            var col = matData.color
+            var alpha = matData.alpha
+            if (col && alpha && alpha < 1) {
+                self._camScreenMat.diffuseColor = new col3(col[0], col[1], col[2])
+                self._camScreenMat.alpha = alpha
+                self._camScreen.setEnabled(true)
+            }
         }
     }
     self._camLocBlock = id
