@@ -2,12 +2,12 @@
 
 (
     cd docs/hello-world
-    webpack index.js bundle.js
+    webpack
 )
 
 (
     cd docs/test
-    webpack index.js bundle.js
+    webpack
 )
 
 
