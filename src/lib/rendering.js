@@ -178,7 +178,7 @@ Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
         var slop = 0.001 + 0.001 * dist
         var pos = _highlightPos
         for (var i = 0; i < 3; ++i) {
-            pos[i] = posArr[i] + .5 + ((0.5 + slop) * normArr[i])
+            pos[i] = Math.floor(posArr[i]) + .5 + ((0.5 + slop) * normArr[i])
         }
         m.position.copyFromFloats(pos[0], pos[1], pos[2])
         m.rotation.x = (normArr[1]) ? Math.PI / 2 : 0
