@@ -78,7 +78,7 @@ function initScene(self, canvas, opts) {
     if (!BABYLON) throw new Error('BABYLON.js engine not found!')
 
     // init internal properties
-    self._engine = new BABYLON.Engine(canvas, opts.antiAlias)
+    self._engine = new BABYLON.Engine(canvas, opts.antiAlias, {preserveDrawingBuffer: true})
     self._scene = new BABYLON.Scene(self._engine)
     var scene = self._scene
     // remove built-in listeners
