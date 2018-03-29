@@ -78,14 +78,14 @@ function initScene(self, canvas, opts) {
     if (!BABYLON) throw new Error('BABYLON.js engine not found!')
 
     // init internal properties
-    self._engine = new BABYLON.Engine(canvas, opts.antiAlias)
+    self._engine = new BABYLON.Engine(canvas, opts.antiAlias, {preserveDrawingBuffer: true})
     self._scene = new BABYLON.Scene(self._engine)
     var scene = self._scene
     // remove built-in listeners
     scene.detachControl()
 
     // octree setup
-    self._octree = new BABYLON.Octree()
+    self._octree = new BABYLON.Octree(()=>{})
     self._octree.blocks = []
     scene._selectionOctree = self._octree
 
@@ -325,7 +325,7 @@ Rendering.prototype.prepareChunkForRendering = function (chunk) {
     var cs = chunk.size
     var min = new vec3(chunk.x, chunk.y, chunk.z)
     var max = new vec3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
-    chunk.octreeBlock = new BABYLON.OctreeBlock(min, max)
+    chunk.octreeBlock = new BABYLON.OctreeBlock(min, max,null,null,null,()=>{})
     this._octree.blocks.push(chunk.octreeBlock)
 }
 

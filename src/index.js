@@ -250,7 +250,7 @@ Engine.prototype.render = function (framePart) {
     if (this.container.hasPointerLock ||
         !this.container.supportsPointerLock ||
         (this._dragOutsideLock && this.inputs.state.fire)) {
-        this.cameraControls.updateForRender()
+        this.cameraControls.updateForRender(dt)
     }
     // clear cumulative mouse inputs
     this.inputs.state.dx = this.inputs.state.dy = 0
