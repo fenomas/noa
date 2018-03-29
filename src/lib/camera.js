@@ -37,7 +37,7 @@ function CameraController(noa, opts) {
  * On render, move/rotate the camera based on target and mouse inputs
  */
 
-CameraController.prototype.updateForRender = function () {
+CameraController.prototype.updateForRender = function (dt) {
 	// input state
 	var state = this.noa.inputs.state
 
@@ -45,8 +45,8 @@ CameraController.prototype.updateForRender = function () {
 	bugFix(state)
 
 	// Rotation: translate dx/dy inputs into y/x axis camera angle changes
-	var dx = this.rotationScale * state.dy * ((this.inverseY) ? -1 : 1)
-	var dy = this.rotationScale * state.dx
+	var dx = this.rotationScale * state.dy * ((this.inverseY) ? -1 : 1) *dt
+	var dy = this.rotationScale * state.dx *dt
 
 	// normalize/clamp/update
 	var camrot = this.noa.rendering.getCameraRotation() // [x,y]
