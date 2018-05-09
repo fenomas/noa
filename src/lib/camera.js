@@ -15,7 +15,8 @@ module.exports = function (noa, opts) {
 
 
 var defaults = {
-	rotationScale: 0.0025,
+	rotationScaleX: 0.0025,
+	rotationScaleY: 0.0025,
 	inverseY: false,
 }
 
@@ -25,7 +26,8 @@ function CameraController(noa, opts) {
 
 	// options
 	opts = extend({}, defaults, opts)
-	this.rotationScale = opts.rotationScale
+	this.rotationScaleX = opts.rotationScaleX
+	this.rotationScaleY = opts.rotationScaleY
 	this.inverseY = opts.inverseY
 }
 
@@ -45,8 +47,8 @@ CameraController.prototype.updateForRender = function () {
 	bugFix(state)
 
 	// Rotation: translate dx/dy inputs into y/x axis camera angle changes
-	var dx = this.rotationScale * state.dy * ((this.inverseY) ? -1 : 1)
-	var dy = this.rotationScale * state.dx
+	var dx = this.rotationScaleY * state.dy * ((this.inverseY) ? -1 : 1)
+	var dy = this.rotationScaleX * state.dx
 
 	// normalize/clamp/update
 	var camrot = this.noa.rendering.getCameraRotation() // [x,y]
