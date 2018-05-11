@@ -305,8 +305,6 @@ Rendering.prototype.makeStandardMaterial = function (name) {
     mat.specularColor.copyFromFloats(0, 0, 0)
     mat.ambientColor.copyFromFloats(1, 1, 1)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
-    // not 100% sure this helps but it should..
-    setTimeout(function () { mat.freeze() }, 10)
     return mat
 }
 
