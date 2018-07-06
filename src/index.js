@@ -28,6 +28,7 @@ var PROFILE_RENDER = 0
 
 
 var defaults = {
+    debug: false,
     playerHeight: 1.8,
     playerWidth: 0.6,
     playerStart: [0, 10, 0],
@@ -155,16 +156,18 @@ function Engine(opts) {
 
 
     // temp hacks for development
-
-    window.noa = this
-    window.ndarray = ndarray
-    window.vec3 = vec3
-    var debug = false
-    this.inputs.bind('debug', 'Z')
-    this.inputs.down.on('debug', function onDebug() {
-        debug = !debug
-        if (debug) window.scene.debugLayer.show(); else window.scene.debugLayer.hide();
-    })
+    if (opts.debug) {
+        window.noa = this
+        window.scene = this.rendering._scene
+        window.ndarray = ndarray
+        window.vec3 = vec3
+        var debug = false
+        this.inputs.bind('debug', 'Z')
+        this.inputs.down.on('debug', function onDebug() {
+            debug = !debug
+            if (debug) window.scene.debugLayer.show(); else window.scene.debugLayer.hide();
+        })
+    }
 
 
 

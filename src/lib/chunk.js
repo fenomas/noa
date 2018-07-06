@@ -2,7 +2,7 @@
 
 var constants = require('./constants')
 var ndarray = require('ndarray')
-window.ndarray = ndarray
+
 
 
 module.exports = Chunk

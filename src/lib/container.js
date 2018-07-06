@@ -26,7 +26,7 @@ function Container(noa, opts) {
 	this.hasPointerLock = false
 	this.supportsPointerLock = false
 	this.pointerInGame = false
-	this.windowFocused = document.hasFocus()
+	this.isFocused = document.hasFocus()
 
 	// basic listeners
 	var self = this
@@ -39,8 +39,8 @@ function Container(noa, opts) {
 	self.element.addEventListener('mouseenter', function () { self.pointerInGame = true })
 	self.element.addEventListener('mouseleave', function () { self.pointerInGame = false })
 
-	window.addEventListener('focus', function () { self.windowFocused = true })
-	window.addEventListener('blur', function () { self.windowFocused = false })
+	window.addEventListener('focus', function () { self.isFocused = true })
+	window.addEventListener('blur', function () { self.isFocused = false })
 
 	// get shell events after it's initialized
 	this._shell.on('init', onShellInit.bind(null, this))

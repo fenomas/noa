@@ -29,6 +29,7 @@ var opts = {
 	// 
 	// 		Random sampling of some possible options:
 	// 
+	// debug: true,
 	// inverseY: true,
 	// chunkSize: 32,
 	// chunkAddDistance: 1,

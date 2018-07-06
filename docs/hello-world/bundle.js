@@ -3022,6 +3022,7 @@ var opts = {
 	// 
 	// 		Random sampling of some possible options:
 	// 
+	// debug: true,
 	// inverseY: true,
 	// chunkSize: 32,
 	// chunkAddDistance: 1,
@@ -3185,6 +3186,7 @@ var PROFILE_RENDER = 0
 
 
 var defaults = {
+    debug: false,
     playerHeight: 1.8,
     playerWidth: 0.6,
     playerStart: [0, 10, 0],
@@ -3312,16 +3314,18 @@ function Engine(opts) {
 
 
     // temp hacks for development
-
-    window.noa = this
-    window.ndarray = ndarray
-    window.vec3 = vec3
-    var debug = false
-    this.inputs.bind('debug', 'Z')
-    this.inputs.down.on('debug', function onDebug() {
-        debug = !debug
-        if (debug) window.scene.debugLayer.show(); else window.scene.debugLayer.hide();
-    })
+    if (opts.debug) {
+        window.noa = this
+        window.scene = this.rendering._scene
+        window.ndarray = ndarray
+        window.vec3 = vec3
+        var debug = false
+        this.inputs.bind('debug', 'Z')
+        this.inputs.down.on('debug', function onDebug() {
+            debug = !debug
+            if (debug) window.scene.debugLayer.show(); else window.scene.debugLayer.hide();
+        })
+    }
 
 
 
@@ -4367,7 +4371,7 @@ function Container(noa, opts) {
 	this.hasPointerLock = false
 	this.supportsPointerLock = false
 	this.pointerInGame = false
-	this.windowFocused = document.hasFocus()
+	this.isFocused = document.hasFocus()
 
 	// basic listeners
 	var self = this
@@ -4380,8 +4384,8 @@ function Container(noa, opts) {
 	self.element.addEventListener('mouseenter', function () { self.pointerInGame = true })
 	self.element.addEventListener('mouseleave', function () { self.pointerInGame = false })
 
-	window.addEventListener('focus', function () { self.windowFocused = true })
-	window.addEventListener('blur', function () { self.windowFocused = false })
+	window.addEventListener('focus', function () { self.isFocused = true })
+	window.addEventListener('blur', function () { self.isFocused = false })
 
 	// get shell events after it's initialized
 	this._shell.on('init', onShellInit.bind(null, this))
@@ -5973,7 +5977,7 @@ module.exports = function (noa, opts, canvas) {
 
 var vec3 = BABYLON.Vector3 // not a gl-vec3, in this module only!!
 var col3 = BABYLON.Color3
-window.BABYLON = BABYLON
+
 
 
 // profiling flags
@@ -5996,6 +6000,7 @@ var defaults = {
     AOmultipliers: [0.93, 0.8, 0.5],
     reverseAOmultiplier: 1.0,
     useOctreesForDynamicMeshes: true,
+    preserveDrawingBuffer: true,
 }
 
 
@@ -6022,7 +6027,6 @@ function Rendering(noa, _opts, canvas) {
     initScene(this, canvas, opts)
 
     // for debugging
-    window.scene = this._scene
     if (opts.showFPS) setUpFPS()
 }
 
@@ -6032,14 +6036,16 @@ function initScene(self, canvas, opts) {
     if (!BABYLON) throw new Error('BABYLON.js engine not found!')
 
     // init internal properties
-    self._engine = new BABYLON.Engine(canvas, opts.antiAlias)
+    self._engine = new BABYLON.Engine(canvas, opts.antiAlias, {
+        preserveDrawingBuffer: opts.preserveDrawingBuffer,
+    })
     self._scene = new BABYLON.Scene(self._engine)
     var scene = self._scene
     // remove built-in listeners
     scene.detachControl()
 
     // octree setup
-    self._octree = new BABYLON.Octree()
+    self._octree = new BABYLON.Octree($ => { })
     self._octree.blocks = []
     scene._selectionOctree = self._octree
 
@@ -6256,8 +6262,6 @@ Rendering.prototype.makeStandardMaterial = function (name) {
     mat.specularColor.copyFromFloats(0, 0, 0)
     mat.ambientColor.copyFromFloats(1, 1, 1)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
-    // not 100% sure this helps but it should..
-    setTimeout(function () { mat.freeze() }, 10)
     return mat
 }
 
@@ -6279,7 +6283,7 @@ Rendering.prototype.prepareChunkForRendering = function (chunk) {
     var cs = chunk.size
     var min = new vec3(chunk.x, chunk.y, chunk.z)
     var max = new vec3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
-    chunk.octreeBlock = new BABYLON.OctreeBlock(min, max)
+    chunk.octreeBlock = new BABYLON.OctreeBlock(min, max, undefined, undefined, undefined, $ => { })
     this._octree.blocks.push(chunk.octreeBlock)
 }
 
@@ -7303,7 +7307,7 @@ module.exports = createNDHash
 
 var constants = __webpack_require__(16)
 var ndarray = __webpack_require__(5)
-window.ndarray = ndarray
+
 
 
 module.exports = Chunk
@@ -9791,7 +9795,8 @@ module.exports = function (noa, opts) {
 
 
 var defaults = {
-	rotationScale: 0.0025,
+	rotationScaleX: 0.0025,
+	rotationScaleY: 0.0025,
 	inverseY: false,
 }
 
@@ -9801,7 +9806,8 @@ function CameraController(noa, opts) {
 
 	// options
 	opts = extend({}, defaults, opts)
-	this.rotationScale = opts.rotationScale
+	this.rotationScaleX = opts.rotationScaleX
+	this.rotationScaleY = opts.rotationScaleY
 	this.inverseY = opts.inverseY
 }
 
@@ -9821,8 +9827,8 @@ CameraController.prototype.updateForRender = function () {
 	bugFix(state)
 
 	// Rotation: translate dx/dy inputs into y/x axis camera angle changes
-	var dx = this.rotationScale * state.dy * ((this.inverseY) ? -1 : 1)
-	var dy = this.rotationScale * state.dx
+	var dx = this.rotationScaleY * state.dy * ((this.inverseY) ? -1 : 1)
+	var dy = this.rotationScaleX * state.dx
 
 	// normalize/clamp/update
 	var camrot = this.noa.rendering.getCameraRotation() // [x,y]
@@ -9845,8 +9851,8 @@ function clamp(value, to) {
 function bugFix(state) {
 	var dx = state.dx
 	var dy = state.dy
-	var wval = window.innerWidth / 6
-	var hval = window.innerHeight / 6
+	var wval = document.body.clientWidth / 6
+	var hval = document.body.clientHeight / 6
 	var badx = (Math.abs(dx) > wval && (dx / lastx) < -1)
 	var bady = (Math.abs(dy) > hval && (dy / lasty) < -1)
 	if (badx || bady) {

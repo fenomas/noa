@@ -71,8 +71,8 @@ function clamp(value, to) {
 function bugFix(state) {
 	var dx = state.dx
 	var dy = state.dy
-	var wval = window.innerWidth / 6
-	var hval = window.innerHeight / 6
+	var wval = document.body.clientWidth / 6
+	var hval = document.body.clientHeight / 6
 	var badx = (Math.abs(dx) > wval && (dx / lastx) < -1)
 	var bady = (Math.abs(dy) > hval && (dy / lasty) < -1)
 	if (badx || bady) {

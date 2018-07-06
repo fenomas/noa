@@ -19,7 +19,7 @@ module.exports = function (noa, opts, canvas) {
 
 var vec3 = BABYLON.Vector3 // not a gl-vec3, in this module only!!
 var col3 = BABYLON.Color3
-window.BABYLON = BABYLON
+
 
 
 // profiling flags
@@ -69,7 +69,6 @@ function Rendering(noa, _opts, canvas) {
     initScene(this, canvas, opts)
 
     // for debugging
-    window.scene = this._scene
     if (opts.showFPS) setUpFPS()
 }
 
