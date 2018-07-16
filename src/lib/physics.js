@@ -3,7 +3,6 @@
 var createPhysics = require('voxel-physics-engine')
 // var createPhysics = require('../../../../npm-modules/voxel-physics-engine')
 var vec3 = require('gl-vec3')
-var extend = require('extend')
 
 module.exports = function (noa, opts) {
 	return makePhysics(noa, opts)

@@ -997,7 +997,7 @@ module.exports = g;
 /* WEBPACK VAR INJECTION */(function(global, Buffer) {
 
 var bits = __webpack_require__(7)
-var dup = __webpack_require__(92)
+var dup = __webpack_require__(91)
 
 //Legacy pool support
 if(!global.__TYPEDARRAY_POOL) {
@@ -1208,7 +1208,7 @@ exports.clearCache = function clearCache() {
     BUFFER[i].length = 0
   }
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(88).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(87).Buffer))
 
 /***/ }),
 /* 7 */
@@ -2444,7 +2444,7 @@ module.exports = {
 
 var pool  = __webpack_require__(6)
 var bits  = __webpack_require__(7)
-var isort = __webpack_require__(93)
+var isort = __webpack_require__(92)
 
 //Flag for blue
 var BLUE_FLAG = (1<<28)
@@ -3073,10 +3073,10 @@ var createRendering = __webpack_require__(62)
 var createWorld = __webpack_require__(63)
 var createInputs = __webpack_require__(68)
 var createPhysics = __webpack_require__(72)
-var createCamControls = __webpack_require__(76)
-var createRegistry = __webpack_require__(77)
-var createEntities = __webpack_require__(78)
-var raycast = __webpack_require__(101)
+var createCamControls = __webpack_require__(75)
+var createRegistry = __webpack_require__(76)
+var createEntities = __webpack_require__(77)
+var raycast = __webpack_require__(100)
 
 
 module.exports = Engine
@@ -9227,7 +9227,6 @@ module.exports = function( elem, callback, useCapture ) {
 var createPhysics = __webpack_require__(73)
 // var createPhysics = require('../../../../npm-modules/voxel-physics-engine')
 var vec3 = __webpack_require__(0)
-var extend = __webpack_require__(75)
 
 module.exports = function (noa, opts) {
 	return makePhysics(noa, opts)
@@ -9751,99 +9750,6 @@ RigidBody.prototype.atRestZ = function () { return this.resting[2] }
 "use strict";
 
 
-var hasOwn = Object.prototype.hasOwnProperty;
-var toStr = Object.prototype.toString;
-
-var isArray = function isArray(arr) {
-	if (typeof Array.isArray === 'function') {
-		return Array.isArray(arr);
-	}
-
-	return toStr.call(arr) === '[object Array]';
-};
-
-var isPlainObject = function isPlainObject(obj) {
-	if (!obj || toStr.call(obj) !== '[object Object]') {
-		return false;
-	}
-
-	var hasOwnConstructor = hasOwn.call(obj, 'constructor');
-	var hasIsPrototypeOf = obj.constructor && obj.constructor.prototype && hasOwn.call(obj.constructor.prototype, 'isPrototypeOf');
-	// Not own constructor property must be Object
-	if (obj.constructor && !hasOwnConstructor && !hasIsPrototypeOf) {
-		return false;
-	}
-
-	// Own properties are enumerated firstly, so to speed up,
-	// if last one is own, then all properties are own.
-	var key;
-	for (key in obj) { /**/ }
-
-	return typeof key === 'undefined' || hasOwn.call(obj, key);
-};
-
-module.exports = function extend() {
-	var options, name, src, copy, copyIsArray, clone;
-	var target = arguments[0];
-	var i = 1;
-	var length = arguments.length;
-	var deep = false;
-
-	// Handle a deep copy situation
-	if (typeof target === 'boolean') {
-		deep = target;
-		target = arguments[1] || {};
-		// skip the boolean and the target
-		i = 2;
-	}
-	if (target == null || (typeof target !== 'object' && typeof target !== 'function')) {
-		target = {};
-	}
-
-	for (; i < length; ++i) {
-		options = arguments[i];
-		// Only deal with non-null/undefined values
-		if (options != null) {
-			// Extend the base object
-			for (name in options) {
-				src = target[name];
-				copy = options[name];
-
-				// Prevent never-ending loop
-				if (target !== copy) {
-					// Recurse if we're merging plain objects or arrays
-					if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
-						if (copyIsArray) {
-							copyIsArray = false;
-							clone = src && isArray(src) ? src : [];
-						} else {
-							clone = src && isPlainObject(src) ? src : {};
-						}
-
-						// Never move original objects, clone them
-						target[name] = extend(deep, clone, copy);
-
-					// Don't bring in undefined values
-					} else if (typeof copy !== 'undefined') {
-						target[name] = copy;
-					}
-				}
-			}
-		}
-	}
-
-	// Return the modified object
-	return target;
-};
-
-
-/***/ }),
-/* 76 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 module.exports = function (noa, opts) {
 	return new CameraController(noa, opts)
 }
@@ -9935,7 +9841,7 @@ var lasty = 0
 
 
 /***/ }),
-/* 77 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10280,7 +10186,7 @@ function BlockCallbackHolder(opts) {
 
 
 /***/ }),
-/* 78 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10288,7 +10194,7 @@ function BlockCallbackHolder(opts) {
 
 var aabb = __webpack_require__(3)
 var vec3 = __webpack_require__(0)
-var EntComp = __webpack_require__(79)
+var EntComp = __webpack_require__(78)
 // var EntComp = require('../../../../npm-modules/ent-comp')
 
 module.exports = function (noa, opts) {
@@ -10330,17 +10236,17 @@ function Entities(noa, opts) {
 	var shadowDist = opts.shadowDistance
 
 	// register components with the ECS
-	this.names.position = this.createComponent(__webpack_require__(80)(noa))
-	this.names.physics = this.createComponent(__webpack_require__(81)(noa))
-	this.names.followsEntity = this.createComponent(__webpack_require__(82)(noa))
-	this.names.mesh = this.createComponent(__webpack_require__(83)(noa))
-	this.names.shadow = this.createComponent(__webpack_require__(84)(noa, shadowDist))
-	this.names.collideTerrain = this.createComponent(__webpack_require__(85)(noa))
-	this.names.collideEntities = this.createComponent(__webpack_require__(86)(noa))
-	this.names.smoothCamera = this.createComponent(__webpack_require__(97)(noa))
-	this.names.movement = this.createComponent(__webpack_require__(98)(noa))
-	this.names.receivesInputs = this.createComponent(__webpack_require__(99)(noa))
-	this.names.fadeOnZoom = this.createComponent(__webpack_require__(100)(noa))
+	this.names.position = this.createComponent(__webpack_require__(79)(noa))
+	this.names.physics = this.createComponent(__webpack_require__(80)(noa))
+	this.names.followsEntity = this.createComponent(__webpack_require__(81)(noa))
+	this.names.mesh = this.createComponent(__webpack_require__(82)(noa))
+	this.names.shadow = this.createComponent(__webpack_require__(83)(noa, shadowDist))
+	this.names.collideTerrain = this.createComponent(__webpack_require__(84)(noa))
+	this.names.collideEntities = this.createComponent(__webpack_require__(85)(noa))
+	this.names.smoothCamera = this.createComponent(__webpack_require__(96)(noa))
+	this.names.movement = this.createComponent(__webpack_require__(97)(noa))
+	this.names.receivesInputs = this.createComponent(__webpack_require__(98)(noa))
+	this.names.fadeOnZoom = this.createComponent(__webpack_require__(99)(noa))
 
 	// decorate the entities object with accessor functions
 	this.isPlayer = function (id) { return id === noa.playerEntity }
@@ -10530,7 +10436,7 @@ Entities.prototype.add = function (position, width, height, // required
 
 
 /***/ }),
-/* 79 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11188,7 +11094,7 @@ function removeMultiCompNow(ecs, entID, compName, stateObj) {
 
 
 /***/ }),
-/* 80 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11269,7 +11175,7 @@ function updateExtents(ext, pos, height, width) {
 
 
 /***/ }),
-/* 81 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11349,7 +11255,7 @@ module.exports = function (noa) {
 
 
 /***/ }),
-/* 82 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11430,7 +11336,7 @@ module.exports = function (noa) {
 
 
 /***/ }),
-/* 83 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11502,7 +11408,7 @@ module.exports = function (noa) {
 
 
 /***/ }),
-/* 84 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11617,7 +11523,7 @@ function updateShadowHeight(id, mesh, size, shadowDist, noa) {
 
 
 /***/ }),
-/* 85 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11662,13 +11568,13 @@ module.exports = function (noa) {
 
 
 /***/ }),
-/* 86 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var boxIntersect = __webpack_require__(87)
+var boxIntersect = __webpack_require__(86)
 var vec3 = __webpack_require__(0)
 
 
@@ -11828,7 +11734,7 @@ module.exports = function (noa) {
 
 
 /***/ }),
-/* 87 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11838,7 +11744,7 @@ module.exports = boxIntersectWrapper
 
 var pool = __webpack_require__(6)
 var sweep = __webpack_require__(16)
-var boxIntersectIter = __webpack_require__(94)
+var boxIntersectIter = __webpack_require__(93)
 
 function boxEmpty(d, box) {
   for(var j=0; j<d; ++j) {
@@ -11972,7 +11878,7 @@ function boxIntersectWrapper(arg0, arg1, arg2) {
 }
 
 /***/ }),
-/* 88 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11986,9 +11892,9 @@ function boxIntersectWrapper(arg0, arg1, arg2) {
 
 
 
-var base64 = __webpack_require__(89)
-var ieee754 = __webpack_require__(90)
-var isArray = __webpack_require__(91)
+var base64 = __webpack_require__(88)
+var ieee754 = __webpack_require__(89)
+var isArray = __webpack_require__(90)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -13769,7 +13675,7 @@ function isnan (val) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ }),
-/* 89 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13890,7 +13796,7 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 90 */
+/* 89 */
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -13980,7 +13886,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 91 */
+/* 90 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -13991,7 +13897,7 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 92 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14046,7 +13952,7 @@ function dupe(count, value) {
 module.exports = dupe
 
 /***/ }),
-/* 93 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14288,7 +14194,7 @@ function quickSort(left, right, data) {
 }
 
 /***/ }),
-/* 94 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14298,11 +14204,11 @@ module.exports = boxIntersectIter
 
 var pool = __webpack_require__(6)
 var bits = __webpack_require__(7)
-var bruteForce = __webpack_require__(95)
+var bruteForce = __webpack_require__(94)
 var bruteForcePartial = bruteForce.partial
 var bruteForceFull = bruteForce.full
 var sweep = __webpack_require__(16)
-var findMedian = __webpack_require__(96)
+var findMedian = __webpack_require__(95)
 var genPartition = __webpack_require__(17)
 
 //Twiddle parameters
@@ -14788,7 +14694,7 @@ function boxIntersectIter(
 }
 
 /***/ }),
-/* 95 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14938,7 +14844,7 @@ exports.partial = bruteForcePlanner(false)
 exports.full    = bruteForcePlanner(true)
 
 /***/ }),
-/* 96 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15086,7 +14992,7 @@ function findMedian(d, axis, start, end, boxes, ids) {
 }
 
 /***/ }),
-/* 97 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15123,7 +15029,7 @@ module.exports = function (noa) {
 
 
 /***/ }),
-/* 98 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15281,7 +15187,7 @@ function applyMovementPhysics(dt, state, body) {
 
 
 /***/ }),
-/* 99 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15350,7 +15256,7 @@ function setMovementState(state, inputs, camHeading) {
 
 
 /***/ }),
-/* 100 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15400,7 +15306,7 @@ function checkZoom(state, id, zoom, ents) {
 
 
 /***/ }),
-/* 101 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
