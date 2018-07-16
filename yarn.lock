@@ -985,7 +985,7 @@ express@^4.13.3:
     utils-merge "1.0.1"
     vary "~1.1.2"
 
-extend@^3.0.0, extend@~3.0.0:
+extend@~3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/extend/-/extend-3.0.1.tgz#a755ea7bc1adfcc5a31ce7e762dbaadc5e636444"
 
@@ -3008,7 +3008,6 @@ voxel-physics-engine@^0.8.0:
   resolved "https://registry.yarnpkg.com/voxel-physics-engine/-/voxel-physics-engine-0.8.0.tgz#0ca5dd8cb383a529d15f8edf29f72165e983245a"
   dependencies:
     aabb-3d "github:andyhall/aabb-3d"
-    extend "^3.0.0"
     gl-vec3 "^1.0.3"
     voxel-aabb-sweep "^0.5.0"
 

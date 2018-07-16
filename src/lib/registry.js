@@ -1,7 +1,5 @@
 'use strict'
 
-var extend = require('extend')
-
 module.exports = function (noa, opts) {
     return new Registry(noa, opts)
 }
@@ -42,9 +40,9 @@ var blockDefaults = {
 var MAX_BLOCK_IDS = 255 // currently stored in chunks as int8
 
 
-function Registry(noa, _options) {
+function Registry(noa, opts) {
     this.noa = noa
-    var opts = extend({}, defaults, _options)
+    opts = Object.assign({}, defaults, opts)
 
 
     /* 
@@ -112,7 +110,7 @@ function Registry(noa, _options) {
         _options = _options || {}
         blockDefaults.solid = !_options.fluid
         blockDefaults.opaque = !_options.fluid
-        var opts = extend({}, blockDefaults, _options)
+        var opts = Object.assign({}, blockDefaults, _options)
 
         // console.log('register block: ', id, opts)
         if (id < 1 || id > MAX_BLOCK_IDS) throw 'Block id exceeds max: ' + id

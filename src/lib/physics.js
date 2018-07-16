@@ -23,7 +23,7 @@ var defaults = {
 
 
 function makePhysics(noa, opts) {
-	opts = extend({}, defaults, opts)
+	opts = Object.assign({}, defaults, opts)
 	var world = noa.world
 	var blockGetter = function (x, y, z) { return world.getBlockSolidity(x, y, z) }
 	var isFluidGetter = function (x, y, z) { return world.getBlockFluidity(x, y, z) }

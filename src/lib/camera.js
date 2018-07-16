@@ -1,7 +1,5 @@
 'use strict'
 
-var extend = require('extend')
-
 module.exports = function (noa, opts) {
 	return new CameraController(noa, opts)
 }
@@ -25,7 +23,7 @@ function CameraController(noa, opts) {
 	this.noa = noa
 
 	// options
-	opts = extend({}, defaults, opts)
+	opts = Object.assign({}, defaults, opts)
 	this.rotationScaleX = opts.rotationScaleX
 	this.rotationScaleY = opts.rotationScaleY
 	this.inverseY = opts.inverseY

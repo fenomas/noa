@@ -6,11 +6,11 @@
  * @class noa-hello-world
  * 
  * A *minimal* implementation of a voxel game built on the 
- * [noa](https://github.com/andyhall/noa) engine. For a
- * nontrivial example that implements most/all of the engine's
- * features see [noa-testbed](https://github.com/andyhall/noa-testbed).
+ * [noa](https://github.com/andyhall/noa) engine. 
+ * For a nontrivial example that implements most/all 
+ * features see the sample in `/docs/test/`.
  * 
- * [Live demo](http://andyhall.github.io/noa-hello-world)
+ * [Live demo](https://andyhall.github.io/noa/hello-world/)
  * 
  * To run the demo locally:
  * 

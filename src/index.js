@@ -1,8 +1,6 @@
 'use strict'
 
-var aabb = require('aabb-3d')
 var vec3 = require('gl-vec3')
-var extend = require('extend')
 var ndarray = require('ndarray')
 var EventEmitter = require('events').EventEmitter
 var createContainer = require('./lib/container')
@@ -23,6 +21,7 @@ module.exports = Engine
 // profiling flag
 var PROFILE = 0
 var PROFILE_RENDER = 0
+var DEBUG_QUEUES = 0
 
 
 
@@ -54,7 +53,7 @@ var defaults = {
 
 function Engine(opts) {
     if (!(this instanceof Engine)) return new Engine(opts)
-    opts = extend(defaults, opts)
+    opts = Object.assign({}, defaults, opts)
     this._tickRate = opts.tickRate
     this._paused = false
     this._dragOutsideLock = opts.dragCameraOutsidePointerLock
@@ -209,7 +208,7 @@ Engine.prototype.tick = function () {
     profile_hook('tick event')
     profile_hook('end')
     this.inputs.tick()            // clears accumulated tick/mouseMove data
-    // debugQueues(this)
+    if (DEBUG_QUEUES) debugQueues(this)
 }
 
 

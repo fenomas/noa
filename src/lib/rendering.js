@@ -1,7 +1,5 @@
 'use strict'
 
-
-var extend = require('extend')
 var glvec3 = require('gl-vec3')
 var aabb = require('aabb-3d')
 var sweep = require('voxel-aabb-sweep')
@@ -49,9 +47,9 @@ var defaults = {
 
 
 
-function Rendering(noa, _opts, canvas) {
+function Rendering(noa, opts, canvas) {
     this.noa = noa
-    var opts = extend({}, defaults, _opts)
+    opts = Object.assign({}, defaults, opts)
     this.zoomDistance = opts.initialCameraZoom      // zoom setting
     this._currentZoom = this.zoomDistance       // current actual zoom level
     this._cameraZoomSpeed = opts.cameraZoomSpeed

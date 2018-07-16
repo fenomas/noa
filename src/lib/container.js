@@ -1,6 +1,5 @@
 'use strict'
 
-var extend = require('extend')
 var createGameShell = require('game-shell')
 var EventEmitter = require('events').EventEmitter
 
@@ -112,12 +111,12 @@ function createContainerDiv() {
 }
 
 
-function createShell(canvas, _opts) {
+function createShell(canvas, opts) {
 	var shellDefaults = {
 		pointerLock: true,
 		preventDefaults: false
 	}
-	var opts = extend(shellDefaults, _opts)
+	opts = Object.assign(shellDefaults, opts)
 	opts.element = canvas
 	var shell = createGameShell(opts)
 	shell.preventDefaults = opts.preventDefaults

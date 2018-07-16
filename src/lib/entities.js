@@ -1,6 +1,5 @@
 'use strict'
 
-var extend = require('extend')
 var aabb = require('aabb-3d')
 var vec3 = require('gl-vec3')
 var EntComp = require('ent-comp')
@@ -32,7 +31,7 @@ function Entities(noa, opts) {
 	EntComp.call(this)
 
 	this.noa = noa
-	opts = extend(defaults, opts)
+	opts = Object.assign({}, defaults, opts)
 
 	// properties
 	/**

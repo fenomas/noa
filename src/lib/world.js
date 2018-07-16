@@ -1,7 +1,5 @@
 'use strict'
 
-var extend = require('extend')
-var ndarray = require('ndarray')
 var ndHash = require('ndarray-hash')
 var EventEmitter = require('events').EventEmitter
 var Chunk = require('./chunk')
@@ -33,9 +31,9 @@ var defaultOptions = {
  *  * chunkBeingRemoved (id, ndarray, userData)
  */
 
-function World(noa, _opts) {
+function World(noa, opts) {
     this.noa = noa
-    var opts = extend(defaultOptions, _opts)
+    opts = Object.assign({}, defaultOptions, opts)
 
     this.userData = null
     this.playerChunkLoaded = false

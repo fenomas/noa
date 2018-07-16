@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 19);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -68,135 +68,42 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = {
-  create: __webpack_require__(9)
-  , clone: __webpack_require__(21)
-  , angle: __webpack_require__(22)
-  , fromValues: __webpack_require__(10)
-  , copy: __webpack_require__(23)
-  , set: __webpack_require__(24)
-  , add: __webpack_require__(25)
-  , subtract: __webpack_require__(26)
-  , multiply: __webpack_require__(27)
-  , divide: __webpack_require__(28)
-  , min: __webpack_require__(29)
-  , max: __webpack_require__(30)
-  , scale: __webpack_require__(31)
-  , scaleAndAdd: __webpack_require__(32)
-  , distance: __webpack_require__(33)
-  , squaredDistance: __webpack_require__(34)
-  , length: __webpack_require__(35)
-  , squaredLength: __webpack_require__(36)
-  , negate: __webpack_require__(37)
-  , inverse: __webpack_require__(38)
-  , normalize: __webpack_require__(11)
-  , dot: __webpack_require__(12)
-  , cross: __webpack_require__(39)
-  , lerp: __webpack_require__(40)
-  , random: __webpack_require__(41)
-  , transformMat4: __webpack_require__(42)
-  , transformMat3: __webpack_require__(43)
-  , transformQuat: __webpack_require__(44)
-  , rotateX: __webpack_require__(45)
-  , rotateY: __webpack_require__(46)
-  , rotateZ: __webpack_require__(47)
-  , forEach: __webpack_require__(48)
+  create: __webpack_require__(8)
+  , clone: __webpack_require__(20)
+  , angle: __webpack_require__(21)
+  , fromValues: __webpack_require__(9)
+  , copy: __webpack_require__(22)
+  , set: __webpack_require__(23)
+  , add: __webpack_require__(24)
+  , subtract: __webpack_require__(25)
+  , multiply: __webpack_require__(26)
+  , divide: __webpack_require__(27)
+  , min: __webpack_require__(28)
+  , max: __webpack_require__(29)
+  , scale: __webpack_require__(30)
+  , scaleAndAdd: __webpack_require__(31)
+  , distance: __webpack_require__(32)
+  , squaredDistance: __webpack_require__(33)
+  , length: __webpack_require__(34)
+  , squaredLength: __webpack_require__(35)
+  , negate: __webpack_require__(36)
+  , inverse: __webpack_require__(37)
+  , normalize: __webpack_require__(10)
+  , dot: __webpack_require__(11)
+  , cross: __webpack_require__(38)
+  , lerp: __webpack_require__(39)
+  , random: __webpack_require__(40)
+  , transformMat4: __webpack_require__(41)
+  , transformMat3: __webpack_require__(42)
+  , transformQuat: __webpack_require__(43)
+  , rotateX: __webpack_require__(44)
+  , rotateY: __webpack_require__(45)
+  , rotateZ: __webpack_require__(46)
+  , forEach: __webpack_require__(47)
 }
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var hasOwn = Object.prototype.hasOwnProperty;
-var toStr = Object.prototype.toString;
-
-var isArray = function isArray(arr) {
-	if (typeof Array.isArray === 'function') {
-		return Array.isArray(arr);
-	}
-
-	return toStr.call(arr) === '[object Array]';
-};
-
-var isPlainObject = function isPlainObject(obj) {
-	if (!obj || toStr.call(obj) !== '[object Object]') {
-		return false;
-	}
-
-	var hasOwnConstructor = hasOwn.call(obj, 'constructor');
-	var hasIsPrototypeOf = obj.constructor && obj.constructor.prototype && hasOwn.call(obj.constructor.prototype, 'isPrototypeOf');
-	// Not own constructor property must be Object
-	if (obj.constructor && !hasOwnConstructor && !hasIsPrototypeOf) {
-		return false;
-	}
-
-	// Own properties are enumerated firstly, so to speed up,
-	// if last one is own, then all properties are own.
-	var key;
-	for (key in obj) { /**/ }
-
-	return typeof key === 'undefined' || hasOwn.call(obj, key);
-};
-
-module.exports = function extend() {
-	var options, name, src, copy, copyIsArray, clone;
-	var target = arguments[0];
-	var i = 1;
-	var length = arguments.length;
-	var deep = false;
-
-	// Handle a deep copy situation
-	if (typeof target === 'boolean') {
-		deep = target;
-		target = arguments[1] || {};
-		// skip the boolean and the target
-		i = 2;
-	}
-	if (target == null || (typeof target !== 'object' && typeof target !== 'function')) {
-		target = {};
-	}
-
-	for (; i < length; ++i) {
-		options = arguments[i];
-		// Only deal with non-null/undefined values
-		if (options != null) {
-			// Extend the base object
-			for (name in options) {
-				src = target[name];
-				copy = options[name];
-
-				// Prevent never-ending loop
-				if (target !== copy) {
-					// Recurse if we're merging plain objects or arrays
-					if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
-						if (copyIsArray) {
-							copyIsArray = false;
-							clone = src && isArray(src) ? src : [];
-						} else {
-							clone = src && isPlainObject(src) ? src : {};
-						}
-
-						// Never move original objects, clone them
-						target[name] = extend(deep, clone, copy);
-
-					// Don't bring in undefined values
-					} else if (typeof copy !== 'undefined') {
-						target[name] = copy;
-					}
-				}
-			}
-		}
-	}
-
-	// Return the modified object
-	return target;
-};
-
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -272,134 +179,7 @@ function Timer(_every, _title) {
 
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = AABB
-
-var vec3 = __webpack_require__(0)
-
-function AABB(pos, vec) {
-
-  if(!(this instanceof AABB)) {
-    return new AABB(pos, vec)
-  }
-
-  var pos2 = vec3.create()
-  vec3.add(pos2, pos, vec)
- 
-  this.base = vec3.min(vec3.create(), pos, pos2)
-  this.vec = vec3.clone(vec)
-  this.max = vec3.max(vec3.create(), pos, pos2)
-
-  this.mag = vec3.length(this.vec)
-
-}
-
-var cons = AABB
-  , proto = cons.prototype
-
-proto.width = function() {
-  return this.vec[0]
-}
-
-proto.height = function() {
-  return this.vec[1]
-}
-
-proto.depth = function() {
-  return this.vec[2]
-}
-
-proto.x0 = function() {
-  return this.base[0]
-}
-
-proto.y0 = function() {
-  return this.base[1]
-}
-
-proto.z0 = function() {
-  return this.base[2]
-}
-
-proto.x1 = function() {
-  return this.max[0]
-}
-
-proto.y1 = function() {
-  return this.max[1]
-}
-
-proto.z1 = function() {
-  return this.max[2]
-}
-
-proto.translate = function(by) {
-  vec3.add(this.max, this.max, by)
-  vec3.add(this.base, this.base, by)
-  return this
-}
-
-proto.setPosition = function(pos) {
-  vec3.add(this.max, pos, this.vec)
-  vec3.copy(this.base, pos)
-  return this
-}
-
-proto.expand = function(aabb) {
-  var max = vec3.create()
-    , min = vec3.create()
-
-  vec3.max(max, aabb.max, this.max)
-  vec3.min(min, aabb.base, this.base)
-  vec3.subtract(max, max, min)
-
-  return new AABB(min, max)
-}
-
-proto.intersects = function(aabb) {
-  if(aabb.base[0] > this.max[0]) return false
-  if(aabb.base[1] > this.max[1]) return false
-  if(aabb.base[2] > this.max[2]) return false
-  if(aabb.max[0] < this.base[0]) return false
-  if(aabb.max[1] < this.base[1]) return false
-  if(aabb.max[2] < this.base[2]) return false
-
-  return true
-}
-
-proto.touches = function(aabb) {
-
-  var intersection = this.union(aabb);
-
-  return (intersection !== null) &&
-         ((intersection.width() == 0) ||
-         (intersection.height() == 0) || 
-         (intersection.depth() == 0))
-
-}
-
-proto.union = function(aabb) {
-  if(!this.intersects(aabb)) return null
-
-  var base_x = Math.max(aabb.base[0], this.base[0])
-    , base_y = Math.max(aabb.base[1], this.base[1])
-    , base_z = Math.max(aabb.base[2], this.base[2])
-    , max_x = Math.min(aabb.max[0], this.max[0])
-    , max_y = Math.min(aabb.max[1], this.max[1])
-    , max_z = Math.min(aabb.max[2], this.max[2])
-
-  return new AABB([base_x, base_y, base_z], [max_x - base_x, max_y - base_y, max_z - base_z])
-}
-
-
-
-
-
-
-/***/ }),
-/* 4 */
+/* 2 */
 /***/ (function(module, exports) {
 
 // Copyright Joyent, Inc. and other Node contributors.
@@ -707,11 +487,138 @@ function isUndefined(arg) {
 
 
 /***/ }),
-/* 5 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var iota = __webpack_require__(13)
-var isBuffer = __webpack_require__(49)
+module.exports = AABB
+
+var vec3 = __webpack_require__(0)
+
+function AABB(pos, vec) {
+
+  if(!(this instanceof AABB)) {
+    return new AABB(pos, vec)
+  }
+
+  var pos2 = vec3.create()
+  vec3.add(pos2, pos, vec)
+ 
+  this.base = vec3.min(vec3.create(), pos, pos2)
+  this.vec = vec3.clone(vec)
+  this.max = vec3.max(vec3.create(), pos, pos2)
+
+  this.mag = vec3.length(this.vec)
+
+}
+
+var cons = AABB
+  , proto = cons.prototype
+
+proto.width = function() {
+  return this.vec[0]
+}
+
+proto.height = function() {
+  return this.vec[1]
+}
+
+proto.depth = function() {
+  return this.vec[2]
+}
+
+proto.x0 = function() {
+  return this.base[0]
+}
+
+proto.y0 = function() {
+  return this.base[1]
+}
+
+proto.z0 = function() {
+  return this.base[2]
+}
+
+proto.x1 = function() {
+  return this.max[0]
+}
+
+proto.y1 = function() {
+  return this.max[1]
+}
+
+proto.z1 = function() {
+  return this.max[2]
+}
+
+proto.translate = function(by) {
+  vec3.add(this.max, this.max, by)
+  vec3.add(this.base, this.base, by)
+  return this
+}
+
+proto.setPosition = function(pos) {
+  vec3.add(this.max, pos, this.vec)
+  vec3.copy(this.base, pos)
+  return this
+}
+
+proto.expand = function(aabb) {
+  var max = vec3.create()
+    , min = vec3.create()
+
+  vec3.max(max, aabb.max, this.max)
+  vec3.min(min, aabb.base, this.base)
+  vec3.subtract(max, max, min)
+
+  return new AABB(min, max)
+}
+
+proto.intersects = function(aabb) {
+  if(aabb.base[0] > this.max[0]) return false
+  if(aabb.base[1] > this.max[1]) return false
+  if(aabb.base[2] > this.max[2]) return false
+  if(aabb.max[0] < this.base[0]) return false
+  if(aabb.max[1] < this.base[1]) return false
+  if(aabb.max[2] < this.base[2]) return false
+
+  return true
+}
+
+proto.touches = function(aabb) {
+
+  var intersection = this.union(aabb);
+
+  return (intersection !== null) &&
+         ((intersection.width() == 0) ||
+         (intersection.height() == 0) || 
+         (intersection.depth() == 0))
+
+}
+
+proto.union = function(aabb) {
+  if(!this.intersects(aabb)) return null
+
+  var base_x = Math.max(aabb.base[0], this.base[0])
+    , base_y = Math.max(aabb.base[1], this.base[1])
+    , base_z = Math.max(aabb.base[2], this.base[2])
+    , max_x = Math.min(aabb.max[0], this.max[0])
+    , max_y = Math.min(aabb.max[1], this.max[1])
+    , max_z = Math.min(aabb.max[2], this.max[2])
+
+  return new AABB([base_x, base_y, base_z], [max_x - base_x, max_y - base_y, max_z - base_z])
+}
+
+
+
+
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var iota = __webpack_require__(12)
+var isBuffer = __webpack_require__(48)
 
 var hasTypedArrays  = ((typeof Float64Array) !== "undefined")
 
@@ -1056,7 +963,7 @@ module.exports = wrappedNDArrayCtor
 
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports) {
 
 var g;
@@ -1083,13 +990,13 @@ module.exports = g;
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global, Buffer) {
 
-var bits = __webpack_require__(8)
+var bits = __webpack_require__(7)
 var dup = __webpack_require__(92)
 
 //Legacy pool support
@@ -1301,10 +1208,10 @@ exports.clearCache = function clearCache() {
     BUFFER[i].length = 0
   }
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6), __webpack_require__(88).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(88).Buffer))
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1515,7 +1422,7 @@ exports.nextCombination = function(v) {
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = create;
@@ -1534,7 +1441,7 @@ function create() {
 }
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports) {
 
 module.exports = fromValues;
@@ -1556,7 +1463,7 @@ function fromValues(x, y, z) {
 }
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = normalize;
@@ -1584,7 +1491,7 @@ function normalize(out, a) {
 }
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports) {
 
 module.exports = dot;
@@ -1601,7 +1508,7 @@ function dot(a, b) {
 }
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1618,7 +1525,7 @@ function iota(n) {
 module.exports = iota
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -2146,7 +2053,7 @@ function isPrimitive(arg) {
 }
 exports.isPrimitive = isPrimitive;
 
-exports.isBuffer = __webpack_require__(53);
+exports.isBuffer = __webpack_require__(52);
 
 function objectToString(o) {
   return Object.prototype.toString.call(o);
@@ -2190,7 +2097,7 @@ exports.log = function() {
  *     prototype.
  * @param {function} superCtor Constructor function to inherit prototype from.
  */
-exports.inherits = __webpack_require__(54);
+exports.inherits = __webpack_require__(53);
 
 exports._extend = function(origin, add) {
   // Don't do anything if add isn't an object
@@ -2208,10 +2115,10 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6), __webpack_require__(52)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(51)))
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2472,7 +2379,7 @@ module.exports = sweep
 
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2521,7 +2428,7 @@ constants.OBJECT_BIT = OBJECT_BIT
 
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2535,8 +2442,8 @@ module.exports = {
   scanComplete:   scanComplete
 }
 
-var pool  = __webpack_require__(7)
-var bits  = __webpack_require__(8)
+var pool  = __webpack_require__(6)
+var bits  = __webpack_require__(7)
 var isort = __webpack_require__(93)
 
 //Flag for blue
@@ -2961,7 +2868,7 @@ red_loop:
 }
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2987,7 +2894,7 @@ function genPartition(predicate, args) {
 }
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2999,11 +2906,11 @@ function genPartition(predicate, args) {
  * @class noa-hello-world
  * 
  * A *minimal* implementation of a voxel game built on the 
- * [noa](https://github.com/andyhall/noa) engine. For a
- * nontrivial example that implements most/all of the engine's
- * features see [noa-testbed](https://github.com/andyhall/noa-testbed).
+ * [noa](https://github.com/andyhall/noa) engine. 
+ * For a nontrivial example that implements most/all 
+ * features see the sample in `/docs/test/`.
  * 
- * [Live demo](http://andyhall.github.io/noa-hello-world)
+ * [Live demo](https://andyhall.github.io/noa/hello-world/)
  * 
  * To run the demo locally:
  * 
@@ -3016,7 +2923,7 @@ function genPartition(predicate, args) {
 */
 
 
-var noaEngine = __webpack_require__(20)
+var noaEngine = __webpack_require__(19)
 
 var opts = {
 	// 
@@ -3152,22 +3059,20 @@ noa.on('tick', function (dt) {
 
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var aabb = __webpack_require__(3)
 var vec3 = __webpack_require__(0)
-var extend = __webpack_require__(1)
-var ndarray = __webpack_require__(5)
-var EventEmitter = __webpack_require__(4).EventEmitter
-var createContainer = __webpack_require__(50)
-var createRendering = __webpack_require__(63)
-var createWorld = __webpack_require__(64)
-var createInputs = __webpack_require__(69)
-var createPhysics = __webpack_require__(73)
+var ndarray = __webpack_require__(4)
+var EventEmitter = __webpack_require__(2).EventEmitter
+var createContainer = __webpack_require__(49)
+var createRendering = __webpack_require__(62)
+var createWorld = __webpack_require__(63)
+var createInputs = __webpack_require__(68)
+var createPhysics = __webpack_require__(72)
 var createCamControls = __webpack_require__(76)
 var createRegistry = __webpack_require__(77)
 var createEntities = __webpack_require__(78)
@@ -3181,6 +3086,7 @@ module.exports = Engine
 // profiling flag
 var PROFILE = 0
 var PROFILE_RENDER = 0
+var DEBUG_QUEUES = 0
 
 
 
@@ -3191,7 +3097,7 @@ var defaults = {
     playerWidth: 0.6,
     playerStart: [0, 10, 0],
     playerAutoStep: false,
-    tickRate: 30,
+    tickRate: 33,  // ms per tick - not ticks per second
     blockTestDistance: 10,
     stickyPointerLock: true,
     dragCameraOutsidePointerLock: true,
@@ -3212,7 +3118,7 @@ var defaults = {
 
 function Engine(opts) {
     if (!(this instanceof Engine)) return new Engine(opts)
-    opts = extend(defaults, opts)
+    opts = Object.assign({}, defaults, opts)
     this._tickRate = opts.tickRate
     this._paused = false
     this._dragOutsideLock = opts.dragCameraOutsidePointerLock
@@ -3367,7 +3273,7 @@ Engine.prototype.tick = function () {
     profile_hook('tick event')
     profile_hook('end')
     this.inputs.tick()            // clears accumulated tick/mouseMove data
-    // debugQueues(this)
+    if (DEBUG_QUEUES) debugQueues(this)
 }
 
 
@@ -3602,7 +3508,7 @@ var _prevTargetHash = ''
 var profile_hook = function (s) { }
 var profile_hook_render = function (s) { }
 if (PROFILE) (function () {
-    var timer = new (__webpack_require__(2).Timer)(200, 'tick   ')
+    var timer = new (__webpack_require__(1).Timer)(200, 'tick   ')
     profile_hook = function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
@@ -3610,7 +3516,7 @@ if (PROFILE) (function () {
     }
 })()
 if (PROFILE_RENDER) (function () {
-    var timer = new (__webpack_require__(2).Timer)(200, 'render ')
+    var timer = new (__webpack_require__(1).Timer)(200, 'render ')
     profile_hook_render = function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
@@ -3624,7 +3530,7 @@ if (PROFILE_RENDER) (function () {
 
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = clone;
@@ -3644,14 +3550,14 @@ function clone(a) {
 }
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = angle
 
-var fromValues = __webpack_require__(10)
-var normalize = __webpack_require__(11)
-var dot = __webpack_require__(12)
+var fromValues = __webpack_require__(9)
+var normalize = __webpack_require__(10)
+var dot = __webpack_require__(11)
 
 /**
  * Get the angle between two 3D vectors
@@ -3677,7 +3583,7 @@ function angle(a, b) {
 
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ (function(module, exports) {
 
 module.exports = copy;
@@ -3697,7 +3603,7 @@ function copy(out, a) {
 }
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ (function(module, exports) {
 
 module.exports = set;
@@ -3719,7 +3625,7 @@ function set(out, x, y, z) {
 }
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ (function(module, exports) {
 
 module.exports = add;
@@ -3740,7 +3646,7 @@ function add(out, a, b) {
 }
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, exports) {
 
 module.exports = subtract;
@@ -3761,7 +3667,7 @@ function subtract(out, a, b) {
 }
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, exports) {
 
 module.exports = multiply;
@@ -3782,7 +3688,7 @@ function multiply(out, a, b) {
 }
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ (function(module, exports) {
 
 module.exports = divide;
@@ -3803,7 +3709,7 @@ function divide(out, a, b) {
 }
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ (function(module, exports) {
 
 module.exports = min;
@@ -3824,7 +3730,7 @@ function min(out, a, b) {
 }
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ (function(module, exports) {
 
 module.exports = max;
@@ -3845,7 +3751,7 @@ function max(out, a, b) {
 }
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ (function(module, exports) {
 
 module.exports = scale;
@@ -3866,7 +3772,7 @@ function scale(out, a, b) {
 }
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ (function(module, exports) {
 
 module.exports = scaleAndAdd;
@@ -3888,7 +3794,7 @@ function scaleAndAdd(out, a, b, scale) {
 }
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ (function(module, exports) {
 
 module.exports = distance;
@@ -3908,7 +3814,7 @@ function distance(a, b) {
 }
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ (function(module, exports) {
 
 module.exports = squaredDistance;
@@ -3928,7 +3834,7 @@ function squaredDistance(a, b) {
 }
 
 /***/ }),
-/* 35 */
+/* 34 */
 /***/ (function(module, exports) {
 
 module.exports = length;
@@ -3947,7 +3853,7 @@ function length(a) {
 }
 
 /***/ }),
-/* 36 */
+/* 35 */
 /***/ (function(module, exports) {
 
 module.exports = squaredLength;
@@ -3966,7 +3872,7 @@ function squaredLength(a) {
 }
 
 /***/ }),
-/* 37 */
+/* 36 */
 /***/ (function(module, exports) {
 
 module.exports = negate;
@@ -3986,7 +3892,7 @@ function negate(out, a) {
 }
 
 /***/ }),
-/* 38 */
+/* 37 */
 /***/ (function(module, exports) {
 
 module.exports = inverse;
@@ -4006,7 +3912,7 @@ function inverse(out, a) {
 }
 
 /***/ }),
-/* 39 */
+/* 38 */
 /***/ (function(module, exports) {
 
 module.exports = cross;
@@ -4030,7 +3936,7 @@ function cross(out, a, b) {
 }
 
 /***/ }),
-/* 40 */
+/* 39 */
 /***/ (function(module, exports) {
 
 module.exports = lerp;
@@ -4055,7 +3961,7 @@ function lerp(out, a, b, t) {
 }
 
 /***/ }),
-/* 41 */
+/* 40 */
 /***/ (function(module, exports) {
 
 module.exports = random;
@@ -4081,7 +3987,7 @@ function random(out, scale) {
 }
 
 /***/ }),
-/* 42 */
+/* 41 */
 /***/ (function(module, exports) {
 
 module.exports = transformMat4;
@@ -4106,7 +4012,7 @@ function transformMat4(out, a, m) {
 }
 
 /***/ }),
-/* 43 */
+/* 42 */
 /***/ (function(module, exports) {
 
 module.exports = transformMat3;
@@ -4128,7 +4034,7 @@ function transformMat3(out, a, m) {
 }
 
 /***/ }),
-/* 44 */
+/* 43 */
 /***/ (function(module, exports) {
 
 module.exports = transformQuat;
@@ -4161,7 +4067,7 @@ function transformQuat(out, a, q) {
 }
 
 /***/ }),
-/* 45 */
+/* 44 */
 /***/ (function(module, exports) {
 
 module.exports = rotateX;
@@ -4195,7 +4101,7 @@ function rotateX(out, a, b, c){
 }
 
 /***/ }),
-/* 46 */
+/* 45 */
 /***/ (function(module, exports) {
 
 module.exports = rotateY;
@@ -4229,7 +4135,7 @@ function rotateY(out, a, b, c){
 }
 
 /***/ }),
-/* 47 */
+/* 46 */
 /***/ (function(module, exports) {
 
 module.exports = rotateZ;
@@ -4263,12 +4169,12 @@ function rotateZ(out, a, b, c){
 }
 
 /***/ }),
-/* 48 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = forEach;
 
-var vec = __webpack_require__(9)()
+var vec = __webpack_require__(8)()
 
 /**
  * Perform some operation over an array of vec3s.
@@ -4312,7 +4218,7 @@ function forEach(a, stride, offset, count, fn, arg) {
 }
 
 /***/ }),
-/* 49 */
+/* 48 */
 /***/ (function(module, exports) {
 
 /*!
@@ -4339,15 +4245,14 @@ function isSlowBuffer (obj) {
 
 
 /***/ }),
-/* 50 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var extend = __webpack_require__(1)
-var createGameShell = __webpack_require__(51)
-var EventEmitter = __webpack_require__(4).EventEmitter
+var createGameShell = __webpack_require__(50)
+var EventEmitter = __webpack_require__(2).EventEmitter
 
 
 module.exports = function (noa, opts) {
@@ -4457,12 +4362,12 @@ function createContainerDiv() {
 }
 
 
-function createShell(canvas, _opts) {
+function createShell(canvas, opts) {
 	var shellDefaults = {
 		pointerLock: true,
 		preventDefaults: false
 	}
-	var opts = extend(shellDefaults, _opts)
+	opts = Object.assign(shellDefaults, opts)
 	opts.element = canvas
 	var shell = createGameShell(opts)
 	shell.preventDefaults = opts.preventDefaults
@@ -4531,26 +4436,26 @@ function detectPointerLock(self) {
 
 
 /***/ }),
-/* 51 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var EventEmitter = __webpack_require__(4).EventEmitter
-  , util         = __webpack_require__(14)
-  , domready     = __webpack_require__(55)
-  , vkey         = __webpack_require__(56)
-  , invert       = __webpack_require__(57)
-  , uniq         = __webpack_require__(58)
-  , bsearch      = __webpack_require__(59)
-  , iota         = __webpack_require__(13)
+var EventEmitter = __webpack_require__(2).EventEmitter
+  , util         = __webpack_require__(13)
+  , domready     = __webpack_require__(54)
+  , vkey         = __webpack_require__(55)
+  , invert       = __webpack_require__(56)
+  , uniq         = __webpack_require__(57)
+  , bsearch      = __webpack_require__(58)
+  , iota         = __webpack_require__(12)
   , min          = Math.min
 
 //Browser compatibility hacks
-__webpack_require__(60)
-var addMouseWheel = __webpack_require__(61)
-var hrtime = __webpack_require__(62)
+__webpack_require__(59)
+var addMouseWheel = __webpack_require__(60)
+var hrtime = __webpack_require__(61)
 
 //Remove angle braces and other useless crap
 var filtered_vkey = (function() {
@@ -5279,7 +5184,7 @@ module.exports = createShell
 
 
 /***/ }),
-/* 52 */
+/* 51 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -5469,7 +5374,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 53 */
+/* 52 */
 /***/ (function(module, exports) {
 
 module.exports = function isBuffer(arg) {
@@ -5480,7 +5385,7 @@ module.exports = function isBuffer(arg) {
 }
 
 /***/ }),
-/* 54 */
+/* 53 */
 /***/ (function(module, exports) {
 
 if (typeof Object.create === 'function') {
@@ -5509,7 +5414,7 @@ if (typeof Object.create === 'function') {
 
 
 /***/ }),
-/* 55 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -5545,7 +5450,7 @@ if (typeof Object.create === 'function') {
 
 
 /***/ }),
-/* 56 */
+/* 55 */
 /***/ (function(module, exports) {
 
 var ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
@@ -5687,7 +5592,7 @@ for(i = 112; i < 136; ++i) {
 
 
 /***/ }),
-/* 57 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5706,7 +5611,7 @@ function invert(hash) {
 module.exports = invert
 
 /***/ }),
-/* 58 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5770,7 +5675,7 @@ module.exports = unique
 
 
 /***/ }),
-/* 59 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5837,7 +5742,7 @@ module.exports = {
 
 
 /***/ }),
-/* 60 */
+/* 59 */
 /***/ (function(module, exports) {
 
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
@@ -5871,7 +5776,7 @@ if (!window.cancelAnimationFrame)
 
 
 /***/ }),
-/* 61 */
+/* 60 */
 /***/ (function(module, exports) {
 
 //Adapted from here: https://developer.mozilla.org/en-US/docs/Web/Reference/Events/wheel?redirectlocale=en-US&redirectslug=DOM%2FMozilla_event_reference%2Fwheel
@@ -5935,7 +5840,7 @@ module.exports = function( elem, callback, useCapture ) {
 };
 
 /***/ }),
-/* 62 */
+/* 61 */
 /***/ (function(module, exports) {
 
 if(typeof window.performance === "object") {
@@ -5952,18 +5857,16 @@ if(typeof window.performance === "object") {
 
 
 /***/ }),
-/* 63 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-
-var extend = __webpack_require__(1)
 var glvec3 = __webpack_require__(0)
 var aabb = __webpack_require__(3)
-var sweep = __webpack_require__(15)
-var removeUnorderedListItem = __webpack_require__(2).removeUnorderedListItem
+var sweep = __webpack_require__(14)
+var removeUnorderedListItem = __webpack_require__(1).removeUnorderedListItem
 
 
 // For now, assume Babylon.js has been imported into the global space already
@@ -6007,9 +5910,9 @@ var defaults = {
 
 
 
-function Rendering(noa, _opts, canvas) {
+function Rendering(noa, opts, canvas) {
     this.noa = noa
-    var opts = extend({}, defaults, _opts)
+    opts = Object.assign({}, defaults, opts)
     this.zoomDistance = opts.initialCameraZoom      // zoom setting
     this._currentZoom = this.zoomDistance       // current actual zoom level
     this._cameraZoomSpeed = opts.cameraZoomSpeed
@@ -6551,7 +6454,7 @@ Rendering.prototype.debug_MeshCount = function () {
 var profile_hook = (function () {
     if (!PROFILE) return function () { }
     var every = 200
-    var timer = new (__webpack_require__(2).Timer)(every, 'render internals')
+    var timer = new (__webpack_require__(1).Timer)(every, 'render internals')
     return function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
@@ -6595,17 +6498,15 @@ function setUpFPS() {
 
 
 /***/ }),
-/* 64 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var extend = __webpack_require__(1)
-var ndarray = __webpack_require__(5)
-var ndHash = __webpack_require__(65)
-var EventEmitter = __webpack_require__(4).EventEmitter
-var Chunk = __webpack_require__(66)
+var ndHash = __webpack_require__(64)
+var EventEmitter = __webpack_require__(2).EventEmitter
+var Chunk = __webpack_require__(65)
 
 
 module.exports = function (noa, opts) {
@@ -6634,9 +6535,9 @@ var defaultOptions = {
  *  * chunkBeingRemoved (id, ndarray, userData)
  */
 
-function World(noa, _opts) {
+function World(noa, opts) {
     this.noa = noa
-    var opts = extend(defaultOptions, _opts)
+    opts = Object.assign({}, defaultOptions, opts)
 
     this.userData = null
     this.playerChunkLoaded = false
@@ -7236,7 +7137,7 @@ if (PROFILE_QUEUES) (function () {
 var profile_hook = function (s) { }
 if (PROFILE) (function () {
     var every = 200
-    var timer = new (__webpack_require__(2).Timer)(every, 'world ticks')
+    var timer = new (__webpack_require__(1).Timer)(every, 'world ticks')
     profile_hook = function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
@@ -7248,13 +7149,13 @@ if (PROFILE) (function () {
 
 
 /***/ }),
-/* 65 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var ndarray = __webpack_require__(5)
+var ndarray = __webpack_require__(4)
 var useMaps = !(typeof Map === "undefined")
 
 function HashMap(n) {
@@ -7299,14 +7200,14 @@ function createNDHash(shape) {
 module.exports = createNDHash
 
 /***/ }),
-/* 66 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var constants = __webpack_require__(16)
-var ndarray = __webpack_require__(5)
+var constants = __webpack_require__(15)
+var ndarray = __webpack_require__(4)
 
 
 
@@ -7314,8 +7215,8 @@ module.exports = Chunk
 
 
 // shared references to terrain/object meshers
-var terrainMesher = __webpack_require__(67)
-var objectMesher = __webpack_require__(68)
+var terrainMesher = __webpack_require__(66)
+var objectMesher = __webpack_require__(67)
 
 
 
@@ -7657,7 +7558,7 @@ function callAllBlockHandlers(chunk, type) {
 
 
 /***/ }),
-/* 67 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8032,7 +7933,7 @@ function MeshBuilder() {
 function GreedyMesher() {
 
     // data representation constants
-    var constants = __webpack_require__(16)
+    var constants = __webpack_require__(15)
 
     var ID_MASK = constants.ID_MASK
     var VAR_MASK = constants.VAR_MASK
@@ -8562,7 +8463,7 @@ function GreedyMesher() {
 var profile_hook = (function () {
     if (!PROFILE) return function () { }
     var every = 50
-    var timer = new (__webpack_require__(2).Timer)(every, 'Terrain meshing')
+    var timer = new (__webpack_require__(1).Timer)(every, 'Terrain meshing')
     return function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
@@ -8573,14 +8474,14 @@ var profile_hook = (function () {
 
 
 /***/ }),
-/* 68 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 
-var removeUnorderedListItem = __webpack_require__(2).removeUnorderedListItem
+var removeUnorderedListItem = __webpack_require__(1).removeUnorderedListItem
 
 
 module.exports = new ObjectMesher()
@@ -8782,7 +8683,7 @@ function ObjectMesher() {
 var profile_hook = (function () {
     if (!PROFILE) return function () { }
     var every = 50
-    var timer = new (__webpack_require__(2).Timer)(every, 'Object meshing')
+    var timer = new (__webpack_require__(1).Timer)(every, 'Object meshing')
     return function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
@@ -8793,14 +8694,13 @@ var profile_hook = (function () {
 
 
 /***/ }),
-/* 69 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var createInputs = __webpack_require__(70)
-var extend = __webpack_require__(1)
+var createInputs = __webpack_require__(69)
 
 
 module.exports = function (noa, opts, element) {
@@ -8825,7 +8725,7 @@ var defaultBindings = {
 
 
 function makeInputs(noa, opts, element) {
-    opts = extend({}, defaultBindings, opts)
+    opts = Object.assign({}, defaultBindings, opts)
     var inputs = createInputs(element, opts)
     var b = opts.bindings
     for (var name in b) {
@@ -8843,16 +8743,16 @@ function makeInputs(noa, opts, element) {
 
 
 /***/ }),
-/* 70 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var vkey = __webpack_require__(71)
-var EventEmitter = __webpack_require__(4).EventEmitter;
+var vkey = __webpack_require__(70)
+var EventEmitter = __webpack_require__(2).EventEmitter;
 // mousewheel polyfill borrowed directly from game-shell
-var addMouseWheel = __webpack_require__(72)
+var addMouseWheel = __webpack_require__(71)
 
 module.exports = function(domElement, options) {
   return new Inputs(domElement, options)
@@ -9110,7 +9010,7 @@ function XOR(a,b) {
 
 
 /***/ }),
-/* 71 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9254,7 +9154,7 @@ for(i = 112; i < 136; ++i) {
 
 
 /***/ }),
-/* 72 */
+/* 71 */
 /***/ (function(module, exports) {
 
 //Adapted from here: https://developer.mozilla.org/en-US/docs/Web/Reference/Events/wheel?redirectlocale=en-US&redirectslug=DOM%2FMozilla_event_reference%2Fwheel
@@ -9318,15 +9218,16 @@ module.exports = function( elem, callback, useCapture ) {
 };
 
 /***/ }),
-/* 73 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var createPhysics = __webpack_require__(74)
+var createPhysics = __webpack_require__(73)
+// var createPhysics = require('../../../../npm-modules/voxel-physics-engine')
 var vec3 = __webpack_require__(0)
-var extend = __webpack_require__(1)
+var extend = __webpack_require__(75)
 
 module.exports = function (noa, opts) {
 	return makePhysics(noa, opts)
@@ -9346,7 +9247,7 @@ var defaults = {
 
 
 function makePhysics(noa, opts) {
-	opts = extend({}, defaults, opts)
+	opts = Object.assign({}, defaults, opts)
 	var world = noa.world
 	var blockGetter = function (x, y, z) { return world.getBlockSolidity(x, y, z) }
 	var isFluidGetter = function (x, y, z) { return world.getBlockFluidity(x, y, z) }
@@ -9393,29 +9294,28 @@ var _tempvec = vec3.create()
 
 
 /***/ }),
-/* 74 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var extend = __webpack_require__(1)
 var aabb = __webpack_require__(3)
 var vec3 = __webpack_require__(0)
-var sweep = __webpack_require__(15)
-var RigidBody = __webpack_require__(75)
+var sweep = __webpack_require__(14)
+var RigidBody = __webpack_require__(74)
 
 
 module.exports = function (opts, testSolid, testFluid) {
-  return new Physics(opts, testSolid, testFluid)
+    return new Physics(opts, testSolid, testFluid)
 }
 
 var defaults = {
-  gravity: [0, -10, 0],
-  airFriction: 0.995,
-  minBounceImpulse: .5, // lowest collision impulse that bounces
-  fluidDensity: 1.2,
-  fluidDrag: 4.0,
+    gravity: [0, -10, 0],
+    airFriction: 0.9,
+    minBounceImpulse: .5, // lowest collision impulse that bounces
+    fluidDensity: 1.2,
+    fluidDrag: 2.0,
 }
 
 
@@ -9426,18 +9326,18 @@ var defaults = {
  *  Takes testFluid(x,y,z) function to query if a block is a fluid
 */
 function Physics(opts, testSolid, testFluid) {
-  opts = extend({}, defaults, opts)
+    opts = Object.assign({}, defaults, opts)
 
-  this.gravity = opts.gravity
-  this.airFriction = opts.airFriction
-  this.fluidDensity = opts.fluidDensity
-  this.fluidDrag = opts.fluidDrag
-  this.minBounceImpulse = opts.minBounceImpulse
-  this.bodies = []
+    this.gravity = opts.gravity
+    this.airFriction = opts.airFriction
+    this.fluidDensity = opts.fluidDensity
+    this.fluidDrag = opts.fluidDrag
+    this.minBounceImpulse = opts.minBounceImpulse
+    this.bodies = []
 
-  // collision function - TODO: abstract this into a setter?
-  this.testSolid = testSolid
-  this.testFluid = testFluid
+    // collision function - TODO: abstract this into a setter?
+    this.testSolid = testSolid
+    this.testFluid = testFluid
 }
 
 
@@ -9445,24 +9345,23 @@ function Physics(opts, testSolid, testFluid) {
  *    ADDING AND REMOVING RIGID BODIES
 */
 
-Physics.prototype.addBody = function (_aabb, mass,
-  friction, restitution, gravMult,
-  onCollide) {
-  _aabb = _aabb || new aabb([0, 0, 0], [1, 1, 1])
-  if (typeof mass == 'undefined') mass = 1
-  if (typeof friction == 'undefined') friction = 1
-  if (typeof restitution == 'undefined') restitution = 0
-  if (typeof gravMult == 'undefined') gravMult = 1
-  var b = new RigidBody(_aabb, mass, friction, restitution, gravMult, onCollide)
-  this.bodies.push(b)
-  return b
+Physics.prototype.addBody = function (_aabb, mass, friction,
+    restitution, gravMult, onCollide) {
+    _aabb = _aabb || new aabb([0, 0, 0], [1, 1, 1])
+    if (typeof mass == 'undefined') mass = 1
+    if (typeof friction == 'undefined') friction = 1
+    if (typeof restitution == 'undefined') restitution = 0
+    if (typeof gravMult == 'undefined') gravMult = 1
+    var b = new RigidBody(_aabb, mass, friction, restitution, gravMult, onCollide)
+    this.bodies.push(b)
+    return b
 }
 
 Physics.prototype.removeBody = function (b) {
-  var i = this.bodies.indexOf(b)
-  if (i < 0) return undefined
-  this.bodies.splice(i, 1)
-  b.aabb = b.onCollide = null // in case it helps the GC
+    var i = this.bodies.indexOf(b)
+    if (i < 0) return undefined
+    this.bodies.splice(i, 1)
+    b.aabb = b.onCollide = null
 }
 
 
@@ -9481,52 +9380,55 @@ var impacts = vec3.create()
 var oldResting = vec3.create()
 
 
+/*
+ *    TICK HANDLER
+*/
 Physics.prototype.tick = function (dt) {
-  var noGravity = equals(0, vec3.squaredLength(this.gravity))
+    // convert dt to seconds
+    dt = dt / 1000
+    var noGravity = equals(0, vec3.squaredLength(this.gravity))
 
-  var b, i, j, len
-  // convert dt to seconds
-  dt = dt / 1000
-  for (i = 0, len = this.bodies.length; i < len; ++i) {
-    b = this.bodies[i]
+    this.bodies.forEach(b => iterateBody(this, b, dt, noGravity))
+}
+
+
+
+/*
+ *    PER-BODY MAIN PHYSICS ROUTINE
+*/
+
+function iterateBody(self, b, dt, noGravity) {
     vec3.copy(oldResting, b.resting)
 
     // skip bodies with no velocity/forces/impulses
     var localNoGrav = noGravity || (b.gravityMultiplier === 0)
-    if (bodyAsleep(this, b, dt, localNoGrav)) continue
+    if (bodyAsleep(self, b, dt, localNoGrav)) return
     b._sleepFrameCount--
 
     // semi-implicit Euler integration
 
     // a = f/m + gravity*gravityMultiplier
     vec3.scale(a, b._forces, 1 / b.mass)
-    vec3.scaleAndAdd(a, a, this.gravity, b.gravityMultiplier)
+    vec3.scaleAndAdd(a, a, self.gravity, b.gravityMultiplier)
 
-    // v1 = v0 + i/m + a*dt
+    // dv = i/m + a*dt
+    // v1 = v0 + dv
     vec3.scale(dv, b._impulses, 1 / b.mass)
-    vec3.add(b.velocity, b.velocity, dv)
-    vec3.scale(dv, a, dt)
+    vec3.scaleAndAdd(dv, dv, a, dt)
     vec3.add(b.velocity, b.velocity, dv)
 
-    // apply friction if body was on ground last frame
-    if (oldResting[1] < 0) {
-      // friction force <= - u |vel|
-      // max friction impulse = (F/m)*dt = (mg)/m*dt = u*g*dt = dt*b.friction
-      var fMax = dt * b.friction
-      // friction direction - inversed horizontal velocity
-      vec3.scale(friction, b.velocity, -1)
-      friction[1] = 0
-      var vAmt = vec3.length(friction)
-      if (vAmt > fMax) { // slow down
-        vec3.scale(friction, friction, fMax / vAmt)
-        vec3.add(b.velocity, b.velocity, friction)
-      } else { // stop
-        b.velocity[0] = b.velocity[2] = 0
-      }
-    } else {
-      // not on ground, apply air resistance
-      vec3.scale(b.velocity, b.velocity, this.airFriction)
+    // apply friction based on change in velocity this frame
+    if (b.friction) {
+        applyFrictionByAxis(0, b, dv)
+        applyFrictionByAxis(1, b, dv)
+        applyFrictionByAxis(2, b, dv)
     }
+
+    // linear air friction - effectively v *= drag
+    // body airFriction overrides global airFriction
+    var drag = b.airFriction || self.airFriction
+    var dmult = 1 - (1 - drag) * dt / b.mass
+    vec3.scale(b.velocity, b.velocity, dmult)
 
     // x1-x0 = v1*dt
     vec3.scale(dx, b.velocity, dt)
@@ -9537,35 +9439,35 @@ Physics.prototype.tick = function (dt) {
 
     // cache old position for use in autostepping
     if (b.autoStep) {
-      cloneAABB(tmpBox, b.aabb)
+        cloneAABB(tmpBox, b.aabb)
     }
 
     // sweeps aabb along dx and accounts for collisions
-    processCollisions(this, b.aabb, dx, b.resting)
+    processCollisions(self, b.aabb, dx, b.resting)
 
     // if autostep, and on ground, run collisions again with stepped up aabb
     if (b.autoStep) {
-      tryAutoStepping(this, b, tmpBox, dx)
+        tryAutoStepping(self, b, tmpBox, dx)
     }
 
     // Collision impacts. b.resting shows which axes had collisions:
-    for (j = 0; j < 3; ++j) {
-      impacts[j] = 0
-      if (b.resting[j]) {
-        // count impact only if wasn't collided last frame
-        if (!oldResting[j]) impacts[j] = -b.velocity[j]
-        b.velocity[j] = 0
-      }
+    for (var i = 0; i < 3; ++i) {
+        impacts[i] = 0
+        if (b.resting[i]) {
+            // count impact only if wasn't collided last frame
+            if (!oldResting[i]) impacts[i] = -b.velocity[i]
+            b.velocity[i] = 0
+        }
     }
     var mag = vec3.length(impacts)
     if (mag > .001) { // epsilon
-      // bounce if over minBounceImpulse
-      if (mag > this.minBounceImpulse && b.restitution) {
-        vec3.scale(impacts, impacts, b.restitution * b.mass)
-        b.applyImpulse(impacts)
-      }
-      // send collision event regardless
-      if (b.onCollide) b.onCollide(impacts)
+        // bounce if over minBounceImpulse
+        if (mag > self.minBounceImpulse && b.restitution) {
+            vec3.scale(impacts, impacts, b.restitution * b.mass)
+            b.applyImpulse(impacts)
+        }
+        // send collision event regardless
+        if (b.onCollide) b.onCollide(impacts)
     }
 
     // First pass at handling fluids. Assumes fluids are settled
@@ -9577,48 +9479,103 @@ Physics.prototype.tick = function (dt) {
     var y1 = Math.floor(box.max[1])
     var submerged = 0
     for (var cy = y0; cy <= y1; ++cy) {
-      if (this.testFluid(cx, cy, cz)) {
-        ++submerged
-      } else {
-        break
-      }
+        if (self.testFluid(cx, cy, cz)) {
+            ++submerged
+        } else {
+            break
+        }
     }
 
     if (submerged > 0) {
-      // find how much of body is submerged
-      var fluidLevel = y0 + submerged
-      var heightInFluid = fluidLevel - box.base[1]
-      var ratioInFluid = heightInFluid / box.vec[1]
-      if (ratioInFluid > 1) ratioInFluid = 1
-      var vol = box.vec[0] * box.vec[1] * box.vec[2]
-      var displaced = vol * ratioInFluid
-      // bouyant force = -gravity * fluidDensity * volumeDisplaced
-      vec3.scale(g, this.gravity, -b.gravityMultiplier * this.fluidDensity * displaced)
-      // drag force = -dv for some constant d. Here scale it down by ratioInFluid
-      vec3.scale(friction, b.velocity, -this.fluidDrag * ratioInFluid)
-      vec3.add(g, g, friction)
-      b.applyForce(g)
-      b.inFluid = true
+        // find how much of body is submerged
+        var fluidLevel = y0 + submerged
+        var heightInFluid = fluidLevel - box.base[1]
+        var ratioInFluid = heightInFluid / box.vec[1]
+        if (ratioInFluid > 1) ratioInFluid = 1
+        var vol = box.vec[0] * box.vec[1] * box.vec[2]
+        var displaced = vol * ratioInFluid
+        // bouyant force = -gravity * fluidDensity * volumeDisplaced
+        vec3.scale(g, self.gravity, -self.fluidDensity * displaced)
+        // drag force = -dv for some constant d. Here scale it down by ratioInFluid
+        vec3.scale(friction, b.velocity, -self.fluidDrag * ratioInFluid)
+        vec3.add(g, g, friction)
+        b.applyForce(g)
+        b.inFluid = true
     } else {
-      b.inFluid = false
+        b.inFluid = false
     }
 
     // sleep check
     var vsq = vec3.squaredLength(b.velocity)
     if (vsq > 1e-5) b._markActive()
-  }
 }
 
 
-// main collision processor - sweep aabb along velocity vector and set resting vector
+
+
+
+
+/*
+ *    FRICTION
+*/
+
+
+function applyFrictionByAxis(axis, body, dvel) {
+    // friction applies only if moving into a touched surface
+    var restDir = body.resting[axis]
+    var vNormal = dvel[axis]
+    if (restDir === 0) return
+    if (restDir * vNormal <= 0) return
+
+    // current vel lateral to friction axis
+    vec3.copy(lateralVel, body.velocity)
+    lateralVel[axis] = 0
+    var vCurr = vec3.length(lateralVel)
+    if (equals(vCurr, 0)) return
+
+    // treat current change in velocity as the result of a pseudoforce
+    //        Fpseudo = m*dv/dt
+    // Base friction force on normal component of the pseudoforce
+    //        Ff = u * Fnormal
+    //        Ff = u * m * dvnormal / dt
+    // change in velocity due to friction force
+    //        dvF = dt * Ff / m
+    //            = dt * (u * m * dvnormal / dt) / m
+    //            = u * dvnormal
+    var dvMax = Math.abs(body.friction * vNormal)
+
+    // decrease lateral vel by dvMax (or clamp to zero)
+    var scaler = (vCurr > dvMax) ? (vCurr - dvMax) / vCurr : 0
+    body.velocity[(axis + 1) % 3] *= scaler
+    body.velocity[(axis + 2) % 3] *= scaler
+}
+var lateralVel = vec3.create()
+
+
+
+
+
+
+/*
+ *    COLLISION HANDLER
+*/
+
+// sweep aabb along velocity vector and set resting vector
 function processCollisions(self, box, velocity, resting) {
-  vec3.set(resting, 0, 0, 0)
-  return sweep(self.testSolid, box, velocity, function (dist, axis, dir, vec) {
-    resting[axis] = dir
-    vec[axis] = 0
-  })
+    vec3.set(resting, 0, 0, 0)
+    return sweep(self.testSolid, box, velocity, function (dist, axis, dir, vec) {
+        resting[axis] = dir
+        vec[axis] = 0
+    })
 }
 
+
+
+
+
+/*
+ *    AUTO-STEPPING
+*/
 
 var tmpBox = new aabb([], [])
 var tmpResting = vec3.create()
@@ -9627,72 +9584,82 @@ var upvec = vec3.create()
 var leftover = vec3.create()
 
 function tryAutoStepping(self, b, oldBox, dx) {
-  if (b.resting[1] >= 0 && !b.inFluid) return
+    if (b.resting[1] >= 0 && !b.inFluid) return
 
-  // // direction movement was blocked before trying a step
-  var xBlocked = (b.resting[0] !== 0)
-  var zBlocked = (b.resting[2] !== 0)
-  if (!(xBlocked || zBlocked)) return
+    // // direction movement was blocked before trying a step
+    var xBlocked = (b.resting[0] !== 0)
+    var zBlocked = (b.resting[2] !== 0)
+    if (!(xBlocked || zBlocked)) return
 
-  // continue autostepping only if headed sufficiently into obstruction
-  var ratio = Math.abs(dx[0] / dx[2])
-  var cutoff = 4
-  if (!xBlocked && ratio > cutoff) return
-  if (!zBlocked && ratio < 1 / cutoff) return
+    // continue autostepping only if headed sufficiently into obstruction
+    var ratio = Math.abs(dx[0] / dx[2])
+    var cutoff = 4
+    if (!xBlocked && ratio > cutoff) return
+    if (!zBlocked && ratio < 1 / cutoff) return
 
-  // original target position before being obstructed
-  vec3.add(targetPos, oldBox.base, dx)
+    // original target position before being obstructed
+    vec3.add(targetPos, oldBox.base, dx)
 
-  // move towards the target until the first X/Z collision
-  var getVoxels = self.testSolid
-  var d1 = sweep(getVoxels, oldBox, dx, function (dist, axis, dir, vec) {
-    if (axis === 1) vec[axis] = 0
-    else return true
-  })
+    // move towards the target until the first X/Z collision
+    var getVoxels = self.testSolid
+    sweep(getVoxels, oldBox, dx, function (dist, axis, dir, vec) {
+        if (axis === 1) vec[axis] = 0
+        else return true
+    })
 
-  var y = b.aabb.base[1]
-  var ydist = Math.floor(y + 1.001) - y
-  vec3.set(upvec, 0, ydist, 0)
-  var collided = false
-  // sweep up, bailing on any obstruction
-  var d2 = sweep(getVoxels, oldBox, upvec, function (dist, axis, dir, vec) {
-    collided = true
-    return true
-  })
-  if (collided) return // could't move upwards
+    var y = b.aabb.base[1]
+    var ydist = Math.floor(y + 1.001) - y
+    vec3.set(upvec, 0, ydist, 0)
+    var collided = false
+    // sweep up, bailing on any obstruction
+    sweep(getVoxels, oldBox, upvec, function (dist, axis, dir, vec) {
+        collided = true
+        return true
+    })
+    if (collided) return // could't move upwards
 
-  // now move in X/Z however far was left over before hitting the obstruction
-  vec3.subtract(leftover, targetPos, oldBox.base)
-  leftover[1] = 0
-  var d3 = processCollisions(self, oldBox, leftover, tmpResting)
+    // now move in X/Z however far was left over before hitting the obstruction
+    vec3.subtract(leftover, targetPos, oldBox.base)
+    leftover[1] = 0
+    processCollisions(self, oldBox, leftover, tmpResting)
 
-  // bail if no movement happened in the originally blocked direction
-  if (xBlocked && !equals(oldBox.base[0], targetPos[0])) return
-  if (zBlocked && !equals(oldBox.base[2], targetPos[2])) return
+    // bail if no movement happened in the originally blocked direction
+    if (xBlocked && !equals(oldBox.base[0], targetPos[0])) return
+    if (zBlocked && !equals(oldBox.base[2], targetPos[2])) return
 
-  // done - oldBox is now at the target autostepped position
-  cloneAABB(b.aabb, oldBox)
-  b.resting[0] = tmpResting[0]
-  b.resting[2] = tmpResting[2]
-  if (b.onStep) b.onStep()
+    // done - oldBox is now at the target autostepped position
+    cloneAABB(b.aabb, oldBox)
+    b.resting[0] = tmpResting[0]
+    b.resting[2] = tmpResting[2]
+    if (b.onStep) b.onStep()
 }
 
 
-// check if body is, and can stay, asleep
+
+
+
+/*
+ *    SLEEP CHECK
+*/
+
 function bodyAsleep(self, body, dt, noGravity) {
-  if (body._sleepFrameCount > 0) return false
-  // without gravity bodies stay asleep until a force/impulse wakes them up
-  if (noGravity) return true
-  // otherwise check body is resting against something
-  // i.e. sweep along by dv=g*dt and check there's still a collision
-  var isResting = false
-  vec3.scale(dv, self.gravity, dt)
-  sweep(self.testSolid, body.aabb, dv, function () {
-    isResting = true
-    return true
-  }, true)
-  return isResting
+    if (body._sleepFrameCount > 0) return false
+    // without gravity bodies stay asleep until a force/impulse wakes them up
+    if (noGravity) return true
+    // otherwise check body is resting against something
+    // i.e. sweep along by distance d = 1/2 g*t^2
+    // and check there's still a collision
+    var isResting = false
+    var gmult = 0.5 * dt * dt * body.gravityMultiplier
+    vec3.scale(sleepVec, self.gravity, gmult)
+    sweep(self.testSolid, body.aabb, sleepVec, function () {
+        isResting = true
+        return true
+    }, true)
+    return isResting
 }
+var sleepVec = vec3.create()
+
 
 
 
@@ -9700,17 +9667,21 @@ function bodyAsleep(self, body, dt, noGravity) {
 function equals(a, b) { return Math.abs(a - b) < 1e-5 }
 
 function cloneAABB(tgt, src) {
-  for (var i = 0; i < 3; i++) {
-    tgt.base[i] = src.base[i]
-    tgt.max[i] = src.max[i]
-    tgt.vec[i] = src.vec[i]
-  }
+    for (var i = 0; i < 3; i++) {
+        tgt.base[i] = src.base[i]
+        tgt.max[i] = src.max[i]
+        tgt.vec[i] = src.vec[i]
+    }
 }
 
 
+
+
 /***/ }),
-/* 75 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
 
 
 var aabb = __webpack_require__(3)
@@ -9726,42 +9697,42 @@ module.exports = RigidBody
 */
 
 function RigidBody(_aabb, mass, friction, restitution, gravMult, onCollide, autoStep) {
-  this.aabb = new aabb(_aabb.base, _aabb.vec) // clone
-  this.mass = mass
-  // max friction force - i.e. friction coefficient times gravity
-  this.friction = friction
-  this.restitution = restitution
-  this.gravityMultiplier = gravMult
-  this.onCollide = onCollide
-  this.autoStep = !!autoStep
-  this.onStep = null
-  // internals
-  this.velocity = vec3.create()
-  this.resting = [false, false, false]
-  this.inFluid = false
-  this._forces = vec3.create()
-  this._impulses = vec3.create()
-  this._sleepFrameCount = 10 | 0
+    this.aabb = new aabb(_aabb.base, _aabb.vec) // clone
+    this.mass = mass
+    this.friction = friction
+    this.restitution = restitution
+    this.gravityMultiplier = gravMult
+    this.onCollide = onCollide
+    this.autoStep = !!autoStep
+    this.airFriction = 0 // overrides global airFriction if nonzero
+    this.onStep = null
+    // internals
+    this.velocity = vec3.create()
+    this.resting = [0, 0, 0]
+    this.inFluid = false
+    this._forces = vec3.create()
+    this._impulses = vec3.create()
+    this._sleepFrameCount = 10 | 0
 }
 
 RigidBody.prototype.setPosition = function (p) {
-  vec3.subtract(p, p, this.aabb.base)
-  this.aabb.translate(p)
-  this._markActive()
+    vec3.subtract(p, p, this.aabb.base)
+    this.aabb.translate(p)
+    this._markActive()
 }
 RigidBody.prototype.getPosition = function () {
-  return vec3.clone(this.aabb.base)
+    return vec3.clone(this.aabb.base)
 }
 RigidBody.prototype.applyForce = function (f) {
-  vec3.add(this._forces, this._forces, f)
-  this._markActive()
+    vec3.add(this._forces, this._forces, f)
+    this._markActive()
 }
 RigidBody.prototype.applyImpulse = function (i) {
-  vec3.add(this._impulses, this._impulses, i)
-  this._markActive()
+    vec3.add(this._impulses, this._impulses, i)
+    this._markActive()
 }
 RigidBody.prototype._markActive = function () {
-  this._sleepFrameCount = 10 | 0
+    this._sleepFrameCount = 10 | 0
 }
 
 
@@ -9774,13 +9745,104 @@ RigidBody.prototype.atRestZ = function () { return this.resting[2] }
 
 
 /***/ }),
-/* 76 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var extend = __webpack_require__(1)
+var hasOwn = Object.prototype.hasOwnProperty;
+var toStr = Object.prototype.toString;
+
+var isArray = function isArray(arr) {
+	if (typeof Array.isArray === 'function') {
+		return Array.isArray(arr);
+	}
+
+	return toStr.call(arr) === '[object Array]';
+};
+
+var isPlainObject = function isPlainObject(obj) {
+	if (!obj || toStr.call(obj) !== '[object Object]') {
+		return false;
+	}
+
+	var hasOwnConstructor = hasOwn.call(obj, 'constructor');
+	var hasIsPrototypeOf = obj.constructor && obj.constructor.prototype && hasOwn.call(obj.constructor.prototype, 'isPrototypeOf');
+	// Not own constructor property must be Object
+	if (obj.constructor && !hasOwnConstructor && !hasIsPrototypeOf) {
+		return false;
+	}
+
+	// Own properties are enumerated firstly, so to speed up,
+	// if last one is own, then all properties are own.
+	var key;
+	for (key in obj) { /**/ }
+
+	return typeof key === 'undefined' || hasOwn.call(obj, key);
+};
+
+module.exports = function extend() {
+	var options, name, src, copy, copyIsArray, clone;
+	var target = arguments[0];
+	var i = 1;
+	var length = arguments.length;
+	var deep = false;
+
+	// Handle a deep copy situation
+	if (typeof target === 'boolean') {
+		deep = target;
+		target = arguments[1] || {};
+		// skip the boolean and the target
+		i = 2;
+	}
+	if (target == null || (typeof target !== 'object' && typeof target !== 'function')) {
+		target = {};
+	}
+
+	for (; i < length; ++i) {
+		options = arguments[i];
+		// Only deal with non-null/undefined values
+		if (options != null) {
+			// Extend the base object
+			for (name in options) {
+				src = target[name];
+				copy = options[name];
+
+				// Prevent never-ending loop
+				if (target !== copy) {
+					// Recurse if we're merging plain objects or arrays
+					if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
+						if (copyIsArray) {
+							copyIsArray = false;
+							clone = src && isArray(src) ? src : [];
+						} else {
+							clone = src && isPlainObject(src) ? src : {};
+						}
+
+						// Never move original objects, clone them
+						target[name] = extend(deep, clone, copy);
+
+					// Don't bring in undefined values
+					} else if (typeof copy !== 'undefined') {
+						target[name] = copy;
+					}
+				}
+			}
+		}
+	}
+
+	// Return the modified object
+	return target;
+};
+
+
+/***/ }),
+/* 76 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 module.exports = function (noa, opts) {
 	return new CameraController(noa, opts)
@@ -9805,7 +9867,7 @@ function CameraController(noa, opts) {
 	this.noa = noa
 
 	// options
-	opts = extend({}, defaults, opts)
+	opts = Object.assign({}, defaults, opts)
 	this.rotationScaleX = opts.rotationScaleX
 	this.rotationScaleY = opts.rotationScaleY
 	this.inverseY = opts.inverseY
@@ -9879,8 +9941,6 @@ var lasty = 0
 "use strict";
 
 
-var extend = __webpack_require__(1)
-
 module.exports = function (noa, opts) {
     return new Registry(noa, opts)
 }
@@ -9921,9 +9981,9 @@ var blockDefaults = {
 var MAX_BLOCK_IDS = 255 // currently stored in chunks as int8
 
 
-function Registry(noa, _options) {
+function Registry(noa, opts) {
     this.noa = noa
-    var opts = extend({}, defaults, _options)
+    opts = Object.assign({}, defaults, opts)
 
 
     /* 
@@ -9991,7 +10051,7 @@ function Registry(noa, _options) {
         _options = _options || {}
         blockDefaults.solid = !_options.fluid
         blockDefaults.opaque = !_options.fluid
-        var opts = extend({}, blockDefaults, _options)
+        var opts = Object.assign({}, blockDefaults, _options)
 
         // console.log('register block: ', id, opts)
         if (id < 1 || id > MAX_BLOCK_IDS) throw 'Block id exceeds max: ' + id
@@ -10226,7 +10286,6 @@ function BlockCallbackHolder(opts) {
 "use strict";
 
 
-var extend = __webpack_require__(1)
 var aabb = __webpack_require__(3)
 var vec3 = __webpack_require__(0)
 var EntComp = __webpack_require__(79)
@@ -10258,7 +10317,7 @@ function Entities(noa, opts) {
 	EntComp.call(this)
 
 	this.noa = noa
-	opts = extend(defaults, opts)
+	opts = Object.assign({}, defaults, opts)
 
 	// properties
 	/**
@@ -10479,7 +10538,7 @@ Entities.prototype.add = function (position, width, height, // required
 
 module.exports = ECS
 
-var extend = __webpack_require__(14)._extend
+var extend = __webpack_require__(13)._extend
 
 
 /**
@@ -11777,8 +11836,8 @@ module.exports = function (noa) {
 
 module.exports = boxIntersectWrapper
 
-var pool = __webpack_require__(7)
-var sweep = __webpack_require__(17)
+var pool = __webpack_require__(6)
+var sweep = __webpack_require__(16)
 var boxIntersectIter = __webpack_require__(94)
 
 function boxEmpty(d, box) {
@@ -13707,7 +13766,7 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ }),
 /* 89 */
@@ -14237,14 +14296,14 @@ function quickSort(left, right, data) {
 
 module.exports = boxIntersectIter
 
-var pool = __webpack_require__(7)
-var bits = __webpack_require__(8)
+var pool = __webpack_require__(6)
+var bits = __webpack_require__(7)
 var bruteForce = __webpack_require__(95)
 var bruteForcePartial = bruteForce.partial
 var bruteForceFull = bruteForce.full
-var sweep = __webpack_require__(17)
+var sweep = __webpack_require__(16)
 var findMedian = __webpack_require__(96)
-var genPartition = __webpack_require__(18)
+var genPartition = __webpack_require__(17)
 
 //Twiddle parameters
 var BRUTE_FORCE_CUTOFF    = 128       //Cut off for brute force search
@@ -14887,7 +14946,7 @@ exports.full    = bruteForcePlanner(true)
 
 module.exports = findMedian
 
-var genPartition = __webpack_require__(18)
+var genPartition = __webpack_require__(17)
 
 var partitionStartLessThan = genPartition('lo<p0', ['p0'])
 
@@ -15097,7 +15156,7 @@ module.exports = function (noa) {
 			moveForce: 30,
 			responsiveness: 15,
 			runningFriction: 0,
-			standingFriction: 50,
+			standingFriction: 2,
 
 			airMoveMult: 0.5,
 			jumpImpulse: 10,
