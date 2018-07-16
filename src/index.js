@@ -33,7 +33,7 @@ var defaults = {
     playerWidth: 0.6,
     playerStart: [0, 10, 0],
     playerAutoStep: false,
-    tickRate: 30,
+    tickRate: 33,  // ms per tick - not ticks per second
     blockTestDistance: 10,
     stickyPointerLock: true,
     dragCameraOutsidePointerLock: true,

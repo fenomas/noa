@@ -27,7 +27,7 @@ module.exports = function (noa) {
 			moveForce: 30,
 			responsiveness: 15,
 			runningFriction: 0,
-			standingFriction: 50,
+			standingFriction: 2,
 
 			airMoveMult: 0.5,
 			jumpImpulse: 10,
