@@ -94,8 +94,6 @@ function Entities(noa, opts) {
 	noa.on('tick', function (dt) { self.tick(dt) })
 	noa.on('beforeRender', function (dt) { self.render(dt) })
 
-	// this burns entity ID=0, so later code can do (if(entityID)) checks
-	this.createEntity()
 }
 
 // inherit from EntComp
