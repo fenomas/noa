@@ -17,7 +17,7 @@ module.exports = function (noa, opts) {
 
 var defaults = {
 	gravity: [0, -10, 0],
-	airFriction: 0.999
+	airDrag: 0.1,
 }
 
 
