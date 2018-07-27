@@ -77,32 +77,34 @@ function updateShadowHeight(id, mesh, size, shadowDist, noa) {
 	var ents = noa.entities
 	var dat = ents.getPositionData(id)
 	var loc = dat.position
-	var b = ents.getPhysicsBody(id)
 	var y
-	// set to entity position if entity standing on ground
-	if (b.resting[1] < 0) {
+
+	// find Y location, from physics if on ground, otherwise by raycast
+	if (ents.hasPhysics(id) && ents.getPhysicsBody(id).resting[1] < 0) {
 		y = dat.renderPosition[1]
 	} else {
 		var pick = noa.pick(loc, down, shadowDist)
-		if (pick) y = pick.position[1]
+		if (pick) {
+			y = pick.position[1]
+		} else {
+			mesh.setEnabled(false)
+			return
+		}
 	}
-	if (y !== undefined) {
-		y = Math.round(y) // pick results get slightly countersunk
-		// set shadow slightly above ground to avoid z-fighting
-		vec3.set(shadowPos, mesh.position.x, y, mesh.position.z)
-		var sqdist = vec3.squaredDistance(camPos, shadowPos)
-		// offset ~ 0.01 for nearby shadows, up to 0.1 at distance of ~40
-		var offset = 0.01 + 0.1 * (sqdist / 1600)
-		if (offset > 0.1) offset = 0.1
-		mesh.position.y = y + offset
-		// set shadow scale
-		var dist = loc[1] - y
-		var scale = size * 0.7 * (1 - dist / shadowDist)
-		mesh.scaling.copyFromFloats(scale, scale, scale)
-		mesh.setEnabled(true)
-	} else {
-		mesh.setEnabled(false)
-	}
+
+	y = Math.round(y) // pick results get slightly countersunk
+	// set shadow slightly above ground to avoid z-fighting
+	vec3.set(shadowPos, mesh.position.x, y, mesh.position.z)
+	var sqdist = vec3.squaredDistance(camPos, shadowPos)
+	// offset ~ 0.01 for nearby shadows, up to 0.1 at distance of ~40
+	var offset = 0.01 + 0.1 * (sqdist / 1600)
+	if (offset > 0.1) offset = 0.1
+	mesh.position.y = y + offset
+	// set shadow scale
+	var dist = loc[1] - y
+	var scale = size * 0.7 * (1 - dist / shadowDist)
+	mesh.scaling.copyFromFloats(scale, scale, scale)
+	mesh.setEnabled(true)
 }
 
 
