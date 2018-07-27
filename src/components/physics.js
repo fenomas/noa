@@ -1,12 +1,10 @@
 'use strict'
 
 var vec3 = require('gl-vec3')
-var AABB = require('aabb-3d')
 
 
 module.exports = function (noa) {
 
-	var tempVec = vec3.create()
 
 	return {
 
@@ -27,14 +25,28 @@ module.exports = function (noa) {
 
 
 		onRemove: function (entID, state) {
+			// update position before removing
+			// this lets entity wind up at e.g. the result of a collision
+			// even if physics component is removed in collision handler
+			if (noa.ents.hasPosition(state.__id)) {
+				var pdat = noa.ents.getPositionData(state.__id)
+				updatePositionFromPhysics(state, pdat)
+				backtrackRenderPos(state, pdat, 0, false)
+			}
 			noa.physics.removeBody(state.body)
 		},
 
 
-		system: null,
+		system: function (dt, states) {
+			states.forEach(state => {
+				var pdat = noa.ents.getPositionData(state.__id)
+				updatePositionFromPhysics(state, pdat)
+			})
+		},
 
 
 		renderSystem: function (dt, states) {
+
 			// dt is time (ms) since physics engine tick
 			// to avoid temporal aliasing, render the state as if lerping between
 			// the last position and the next one 
@@ -42,32 +54,52 @@ module.exports = function (noa) {
 			// offsetting each entity into the past by tickRate - dt
 			// http://gafferongames.com/game-physics/fix-your-timestep/
 
-			var backtrack = - (noa._tickRate - dt) / 1000
-			var pos = tempVec
-
-			for (var i = 0; i < states.length; ++i) {
-				var state = states[i]
+			var backtrackAmt = - (noa._tickRate - dt) / 1000
+			states.forEach(state => {
 				var id = state.__id
 				var pdat = noa.ents.getPositionData(id)
-
-				// pos = pos + backtrack * body.velocity
-				vec3.scaleAndAdd(pos, pdat.position, state.body.velocity, backtrack)
-
-				// smooth out position update if component is present
-				// (normally set after sudden movements like auto-stepping)
-				if (noa.ents.cameraSmoothed(id)) {
-					vec3.lerp(pos, pdat.renderPosition, pos, 0.3)
-				}
-
-				// copy values over to renderPosition, 
-				vec3.copy(pdat.renderPosition, pos)
-
-
-			}
+				var smoothed = noa.ents.cameraSmoothed(id)
+				backtrackRenderPos(state, pdat, backtrackAmt, smoothed)
+			})
 		}
 
+	}
+
+}
 
 
+
+var offset = vec3.create()
+var pos = vec3.create()
+
+
+
+function updatePositionFromPhysics(state, posDat) {
+	offset[0] = offset[2] = posDat.width / 2
+	offset[1] = 0
+	var pos = posDat.position
+	var base = state.body.aabb.base
+	var max = state.body.aabb.max
+	var ext = posDat._extents
+	for (var j = 0; j < 3; j++) {
+		pos[j] = base[j] + offset[j]
+		ext[j] = base[j]
+		ext[j + 3] = max[j]
 	}
 }
+
+
+function backtrackRenderPos(state, posDat, backtrackAmt, smoothed) {
+	// pos = pos + backtrack * body.velocity
+	vec3.scaleAndAdd(pos, posDat.position, state.body.velocity, backtrackAmt)
+
+	// smooth out update if component is present
+	// (this is set after sudden movements like auto-stepping)
+	if (smoothed) vec3.lerp(pos, posDat.renderPosition, pos, 0.3)
+
+	// copy values over to renderPosition, 
+	vec3.copy(posDat.renderPosition, pos)
+}
+
+
 
