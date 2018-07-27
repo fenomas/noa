@@ -70,6 +70,7 @@ function Entities(noa, opts) {
 	this.setPosition = function (id, x, y, z) {
 		var pdat = this.getPositionData(id)
 		vec3.set(pdat.position, x, y, z)
+		vec3.set(pdat.renderPosition, x, y, z)
 		pdat._extentsChanged = true
 		if (this.hasPhysics(id)) {
 			setAABBFromPosition(this.getPhysicsBody(id).aabb, pdat)
