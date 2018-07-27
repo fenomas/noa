@@ -49,11 +49,10 @@ module.exports = function (noa) {
 		system: function movementProcessor(dt, states) {
 			var ents = noa.entities
 
-			for (var i = 0; i < states.length; i++) {
-				var state = states[i]
+			states.forEach(state => {
 				var body = ents.getPhysicsBody(state.__id)
 				applyMovementPhysics(dt, state, body)
-			}
+			})
 
 		}
 

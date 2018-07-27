@@ -24,10 +24,10 @@ module.exports = function (noa) {
 			var inputState = noa.inputs.state
 			var camHeading = noa.rendering.getCameraRotation()[1]
 
-			for (var i = 0; i < states.length; i++) {
-				var moveState = ents.getMovement(states[i].__id)
+			states.forEach(state => {
+				var moveState = ents.getMovement(state.__id)
 				setMovementState(moveState, inputState, camHeading)
-			}
+			})
 		}
 
 	}

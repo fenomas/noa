@@ -45,22 +45,20 @@ module.exports = function (noa, dist) {
 			var cpos = noa.rendering.getCameraPosition()
 			vec3.set(camPos, cpos.x, cpos.y, cpos.z)
 			var dist = shadowDist
-			for (var i = 0; i < states.length; i++) {
-				var state = states[i]
+			states.forEach(state => {
 				updateShadowHeight(state.__id, state._mesh, state.size, dist, noa)
-			}
+			})
 		},
 
 
 		renderSystem: function (dt, states) {
 			// before render adjust shadow x/z to render positions
-			for (var i = 0; i < states.length; ++i) {
-				var state = states[i]
+			states.forEach(state => {
 				var rpos = noa.ents.getPositionData(state.__id).renderPosition
 				var spos = state._mesh.position
 				spos.x = rpos[0]
 				spos.z = rpos[2]
-			}
+			})
 		}
 
 

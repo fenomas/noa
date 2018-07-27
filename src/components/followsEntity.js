@@ -31,17 +31,17 @@ module.exports = function (noa) {
 
 		// on tick, copy over regular positions
 		system: function followEntity(dt, states) {
-			for (var i = 0; i < states.length; i++) {
-				updatePosition(states[i])
-			}
+			states.forEach(state => {
+				updatePosition(state)
+			})
 		},
 
 
 		// on render, copy over render positions
 		renderSystem: function followEntityMesh(dt, states) {
-			for (var i = 0; i < states.length; i++) {
-				updateRenderPosition(states[i])
-			}
+			states.forEach(state => {
+				updateRenderPosition(state)
+			})
 		}
 	}
 
