@@ -128,7 +128,7 @@ function Engine(opts) {
 
 
     // set up block targeting
-    this.blockTestDistance = opts.blockTestDistance || 10
+    this.blockTestDistance = opts.blockTestDistance
 
     /** function for which block IDs are targetable. 
      * Defaults to a solidity check, but can be overridden */
