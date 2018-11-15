@@ -207,7 +207,6 @@ Engine.prototype.tick = function () {
     this.emit('tick', dt)
     profile_hook('tick event')
     profile_hook('end')
-    this.inputs.tick()            // clears accumulated tick/mouseMove data
     if (DEBUG_QUEUES) debugQueues(this)
 }
 
@@ -263,6 +262,8 @@ Engine.prototype.render = function (framePart) {
     profile_hook_render('render')
     this.emit('afterRender', dt)
     profile_hook_render('after render')
+	// process inputs
+	this.inputs.tick()
     profile_hook_render('end')
 }
 

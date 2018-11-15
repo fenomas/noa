@@ -141,9 +141,9 @@ noa.inputs.down.on('alt-fire', function () {
 noa.inputs.bind('alt-fire', 'E')
 
 
-// each tick, consume any scroll events and use them to zoom camera
+// each render call, consume any scroll events and use them to zoom camera
 var zoom = 0
-noa.on('tick', function (dt) {
+noa.on('afterRender', function (dt) {
 	var scroll = noa.inputs.state.scrolly
 	if (scroll === 0) return
 
