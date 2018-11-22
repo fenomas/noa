@@ -5,7 +5,7 @@ An experimental voxel engine.
 
 [Live demo of test app here!](https://andyhall.github.io/noa-testbed/)
 
-### Usage
+## Usage
 
 Under active development, best way to try it is to clone and hack on it:
 
@@ -13,11 +13,12 @@ Under active development, best way to try it is to clone and hack on it:
 (clone this repo)
 cd noa
 npm install
-npm start       # runs /docs/hello-world
-npm test        # runs /docs/test
+npm start       # runs demo in /docs/hello-world
+npm test        # runs demo in /docs/test
+npm run build   # rebuilds both demos
 ```
 
-The `start` and `test` scripts assume that `webpack` and `webpack-dev-server` are installed globally via npm or yarn.
+The `start` and `test` scripts run the minimal demo projects locally, via `webpack` and `webpack-dev-server` (which will be installed as dev dependencies).
 
 Live versions of the test content: 
  * [hello-world example](https://andyhall.github.io/noa/hello-world/)
@@ -37,7 +38,9 @@ var noa = engine({
 })
 ```
 
-### Status, contributing, etc.
+----
+
+## Status, contributing, etc.
 
 This library attempts to be something you can build a voxel game on top of. 
 It's not a fully-featured game engine; it just tries to manage the painful parts 
@@ -49,14 +52,16 @@ Contributions are welcome! But please open an issue before building any
 nontrivial new features. I want to keep this library lean if I can, 
 so if your idea could be done as a separate module then that's probably what I'll suggest.
 
-### Docs
 
-The source is pretty fully commented. There is a partial API reference 
-at the end of this file, but I haven't been able to find a good way of 
-generating JSDocs that I can live with, so for now it's best to consult 
-the source.
+## Docs
 
-### Recent changes:
+The source is pretty fully commented, mostly with JSDoc-style comments, 
+but I don't currently have a good docgen tool, so for now it's best to 
+consult the source.
+
+----
+
+## Recent changes:
 
  * 0.24.0
    * Terrain materials can specify a renderMaterial (see `registry.registerMaterial()`)
@@ -101,9 +106,8 @@ the source.
 
 ----
 
-## Partial API reference:
+## Credits
 
-
-(docs currently broken by some weird npm+markdox issue..)
+Made by [@fenomas](https://twitter.com/fenomas), license is MIT.
 
 
