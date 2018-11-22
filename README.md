@@ -7,11 +7,12 @@ An experimental voxel engine.
 
 ## Usage
 
-Under active development, best way to try it is to clone and hack on it:
+Under active development, best way to try it is to clone and hack on the `develop` branch:
 
 ```sh
 (clone this repo)
 cd noa
+git checkout develop
 npm install
 npm start       # runs demo in /docs/hello-world
 npm test        # runs demo in /docs/test
@@ -24,7 +25,7 @@ Live versions of the test content:
  * [hello-world example](https://andyhall.github.io/noa/hello-world/)
  * [test example](https://andyhall.github.io/noa/test/)
 
-To build a new world app, use `noa` as a dependency:
+To build a new world, use `noa` as a dependency:
 
 ```sh
 npm install --save noa-engine
@@ -52,6 +53,8 @@ Contributions are welcome! But please open an issue before building any
 nontrivial new features. I want to keep this library lean if I can, 
 so if your idea could be done as a separate module then that's probably what I'll suggest.
 
+> Please note I do all dev work on the `develop` branch; please send any PRs against that branch!
+
 
 ## Docs
 
@@ -63,6 +66,8 @@ consult the source.
 
 ## Recent changes:
 
+ * 0.25.0
+   * Adds `debug` option, updates many dependencies, many small bug fixes.
  * 0.24.0
    * Terrain materials can specify a renderMaterial (see `registry.registerMaterial()`)
    * Targeting and `noa.pick` can take a function for which block IDs to target - #36
