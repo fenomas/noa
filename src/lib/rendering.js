@@ -62,6 +62,7 @@ function Rendering(noa, opts, canvas) {
     this.revAoVal = opts.reverseAOmultiplier
     this.meshingCutoffTime = 6 // ms
     this._dynamicMeshOctrees = opts.useOctreesForDynamicMeshes
+    this._resizeDebounce = 250 // ms
 
     // set up babylon scene
     initScene(this, canvas, opts)
@@ -166,9 +167,20 @@ Rendering.prototype.render = function (dt) {
     profile_hook('end')
 }
 
+
+
 Rendering.prototype.resize = function (e) {
-    this._engine.resize()
+    if (!pendingResize) {
+        pendingResize = true
+        setTimeout(() => {
+            this._engine.resize()
+            pendingResize = false
+        }, this._resizeDebounce)
+    }
 }
+var pendingResize = false
+
+
 
 Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
     var m = getHighlightMesh(this)
