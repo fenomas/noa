@@ -940,9 +940,9 @@ enhanced-resolve@^4.1.0:
     memory-fs "^0.4.0"
     tapable "^1.0.0"
 
-ent-comp@^0.6.3:
-  version "0.6.3"
-  resolved "https://registry.yarnpkg.com/ent-comp/-/ent-comp-0.6.3.tgz#e3156b9749f32d11c138b8ad7b923426532c495b"
+ent-comp@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/ent-comp/-/ent-comp-0.7.0.tgz#e877592f1690135e9c99fd32ed56ea2e5ad95094"
 
 errno@^0.1.3, errno@~0.1.7:
   version "0.1.7"
