@@ -21,7 +21,7 @@ module.exports = function (noa, opts) {
  *      blockProps         id -> obj of less-often accessed properties
  *      blockMeshes:       id -> obj/null (custom mesh to instantiate)
  *      blockHandlers      id -> instance of `BlockCallbackHolder` or null 
- *      matIDs             matName -> matID
+ *      matIDs             matName -> matID (int)
  *      matData            matID -> { color, alpha, texture, textureAlpha }
 */
 
@@ -56,7 +56,7 @@ function Registry(noa, opts) {
     var blockSolidity = [false]
     var blockOpacity = [false]
     var blockIsFluid = [false]
-    var blockMats = [null, null, null, null, null, null]
+    var blockMats = [0, 0, 0, 0, 0, 0]
     var blockProps = [null]
     var blockMeshes = [null]
     var blockHandlers = [null]
@@ -312,7 +312,7 @@ function Registry(noa, opts) {
 // look up material ID given its name
 // if lazy is set, pre-register the name and return an ID
 function getMaterialId(reg, matIDs, name, lazyInit) {
-    if (!name) return null
+    if (!name) return 0
     var id = matIDs[name]
     if (id === undefined && lazyInit) id = reg.registerMaterial(name)
     return id
