@@ -153,6 +153,8 @@ function Engine(opts) {
     // init rendering stuff that needed to wait for engine internals
     this.rendering.initScene()
 
+    // expose constants, for HACKING™
+    this._constants = require('./lib/constants')
 
     // temp hacks for development
     if (opts.debug) {
@@ -311,9 +313,11 @@ Engine.prototype.addBlock = function (id, x, y, z) {
     if (x.length) {
         if (this.entities.isTerrainBlocked(x[0], x[1], x[2])) return
         this.world.setBlockID(id, x[0], x[1], x[2])
+        return id
     } else {
         if (this.entities.isTerrainBlocked(x, y, z)) return
         this.world.setBlockID(id, x, y, z)
+        return id
     }
 }
 

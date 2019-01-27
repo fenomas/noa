@@ -8,7 +8,7 @@ module.exports = new ObjectMesher()
 
 
 // enable for profiling..
-var PROFILE = 0
+var PROFILE = 1
 
 
 
