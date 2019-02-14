@@ -4,9 +4,9 @@
   "description": "Experimental voxel game engine",
   "main": "src/index.js",
   "scripts": {
-    "start": "(cd docs/hello-world/; webpack-dev-server)",
-    "test": "(cd docs/test/; webpack-dev-server)",
-    "build": "./tools/build_demos.sh"
+    "start": "cd docs/hello-world && webpack-dev-server",
+    "test": "cd docs/test && webpack-dev-server",
+    "build": "cd docs/hello-world && webpack && cd ../test && webpack"
   },
   "author": "Andy Hall",
   "keywords": [
@@ -16,7 +16,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "aabb-3d": "github:andyhall/aabb-3d",
+    "aabb-3d": "andyhall/aabb-3d",
     "box-intersect": "^1.0.1",
     "ent-comp": "^0.7.0",
     "fast-voxel-raycast": "^0.1.1",
