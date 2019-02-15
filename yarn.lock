@@ -135,7 +135,7 @@
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/@xtuc/long/-/long-4.2.1.tgz#5c85d662f76fa1d34575766c5dcd6615abcd30d8"
 
-"aabb-3d@github:andyhall/aabb-3d":
+aabb-3d@andyhall/aabb-3d, "aabb-3d@github:andyhall/aabb-3d":
   version "0.2.1"
   resolved "https://codeload.github.com/andyhall/aabb-3d/tar.gz/6b0fb3ce72d4e8e5e8fb3e4b3581a194d952b8fa"
   dependencies:
