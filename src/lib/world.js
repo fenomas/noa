@@ -391,6 +391,11 @@ function processMeshingQueues(self, firstOnly) {
     var arr = parseChunkID(id)
     var chunk = getChunk(self, arr[0], arr[1], arr[2])
     if (chunk.isInvalid) return
+    if (!chunk.isGenerated) {
+        // client code triggered a remesh too early, requeue it
+        self._chunkIDsToMesh.unshift(id)
+        return
+    }
     chunk.updateMeshes()
 
     profile_queues(self, 'meshed')
