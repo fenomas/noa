@@ -236,7 +236,6 @@ Chunk.prototype.initData = function () {
     var data = arr.data
     var len = arr.shape[0]
     var kstride = arr.stride[2]
-    var objHash = this._objectMeshes
     for (var i = 0; i < len; ++i) {
         var edge1 = (i === 0 || i === len - 1)
         for (var j = 0; j < len; ++j) {
