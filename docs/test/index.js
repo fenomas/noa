@@ -31,7 +31,6 @@ var opts = {
 
 // create engine
 var noa = noaEngine(opts)
-window.noa = noa
 
 
 //		World generation

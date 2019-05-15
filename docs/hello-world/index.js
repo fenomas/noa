@@ -29,7 +29,8 @@ var opts = {
 	// 
 	// 		Random sampling of some possible options:
 	// 
-	// debug: true,
+	debug: true,
+	showFPS: true,
 	// inverseY: true,
 	// chunkSize: 32,
 	// chunkAddDistance: 1,
@@ -49,7 +50,6 @@ var opts = {
 
 // create engine
 var noa = noaEngine(opts)
-window.noa = noa
 
 
 //		World generation
