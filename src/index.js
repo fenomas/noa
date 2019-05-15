@@ -1,5 +1,12 @@
 'use strict'
 
+/*!
+ * noa: an experimental voxel game engine.
+ * @url      github.com/andyhall/noa
+ * @author   Andy Hall <andy@fenomas.com>
+ * @license  MIT
+*/
+
 var vec3 = require('gl-vec3')
 var ndarray = require('ndarray')
 var EventEmitter = require('events').EventEmitter
