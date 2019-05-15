@@ -53,6 +53,9 @@ var defaults = {
 
 function Engine(opts) {
     if (!(this instanceof Engine)) return new Engine(opts)
+
+    this.version = require('../package.json').version
+
     opts = Object.assign({}, defaults, opts)
     this._tickRate = opts.tickRate
     this._paused = false
