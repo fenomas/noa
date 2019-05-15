@@ -67,7 +67,9 @@ consult the source.
 ## Recent changes:
 
  * 0.25.0
-   * Adds `debug` option, updates many dependencies, many small bug fixes.
+   * Adds `debug` option: populates `window` with useful references, binds `Z` to BJS inspector
+   * Now current with Babylon.js 4.0
+   * Updates many dependencies, many small bug fixes.
  * 0.24.0
    * Terrain materials can specify a renderMaterial (see `registry.registerMaterial()`)
    * Targeting and `noa.pick` can take a function for which block IDs to target - #36
