@@ -31,6 +31,7 @@ var opts = {
 	// 
 	debug: true,
 	showFPS: true,
+	// silent: false,
 	// inverseY: true,
 	// chunkSize: 32,
 	// chunkAddDistance: 1,
