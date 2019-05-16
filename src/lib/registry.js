@@ -1,7 +1,5 @@
 'use strict'
 
-var extend = require('extend')
-
 module.exports = function (noa, opts) {
     return new Registry(noa, opts)
 }
@@ -23,7 +21,7 @@ module.exports = function (noa, opts) {
  *      blockProps         id -> obj of less-often accessed properties
  *      blockMeshes:       id -> obj/null (custom mesh to instantiate)
  *      blockHandlers      id -> instance of `BlockCallbackHolder` or null 
- *      matIDs             matName -> matID
+ *      matIDs             matName -> matID (int)
  *      matData            matID -> { color, alpha, texture, textureAlpha }
 */
 
@@ -42,9 +40,9 @@ var blockDefaults = {
 var MAX_BLOCK_IDS = 255 // currently stored in chunks as int8
 
 
-function Registry(noa, _options) {
+function Registry(noa, opts) {
     this.noa = noa
-    var opts = extend({}, defaults, _options)
+    opts = Object.assign({}, defaults, opts)
 
 
     /* 
@@ -58,7 +56,7 @@ function Registry(noa, _options) {
     var blockSolidity = [false]
     var blockOpacity = [false]
     var blockIsFluid = [false]
-    var blockMats = [null, null, null, null, null, null]
+    var blockMats = [0, 0, 0, 0, 0, 0]
     var blockProps = [null]
     var blockMeshes = [null]
     var blockHandlers = [null]
@@ -112,7 +110,7 @@ function Registry(noa, _options) {
         _options = _options || {}
         blockDefaults.solid = !_options.fluid
         blockDefaults.opaque = !_options.fluid
-        var opts = extend({}, blockDefaults, _options)
+        var opts = Object.assign({}, blockDefaults, _options)
 
         // console.log('register block: ', id, opts)
         if (id < 1 || id > MAX_BLOCK_IDS) throw 'Block id exceeds max: ' + id
@@ -314,7 +312,7 @@ function Registry(noa, _options) {
 // look up material ID given its name
 // if lazy is set, pre-register the name and return an ID
 function getMaterialId(reg, matIDs, name, lazyInit) {
-    if (!name) return null
+    if (!name) return 0
     var id = matIDs[name]
     if (id === undefined && lazyInit) id = reg.registerMaterial(name)
     return id

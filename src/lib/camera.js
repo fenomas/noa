@@ -1,7 +1,5 @@
 'use strict'
 
-var extend = require('extend')
-
 module.exports = function (noa, opts) {
 	return new CameraController(noa, opts)
 }
@@ -15,7 +13,8 @@ module.exports = function (noa, opts) {
 
 
 var defaults = {
-	rotationScale: 0.0025,
+	rotationScaleX: 0.0025,
+	rotationScaleY: 0.0025,
 	inverseY: false,
 }
 
@@ -24,8 +23,9 @@ function CameraController(noa, opts) {
 	this.noa = noa
 
 	// options
-	opts = extend({}, defaults, opts)
-	this.rotationScale = opts.rotationScale
+	opts = Object.assign({}, defaults, opts)
+	this.rotationScaleX = opts.rotationScaleX
+	this.rotationScaleY = opts.rotationScaleY
 	this.inverseY = opts.inverseY
 }
 
@@ -45,8 +45,8 @@ CameraController.prototype.updateForRender = function () {
 	bugFix(state)
 
 	// Rotation: translate dx/dy inputs into y/x axis camera angle changes
-	var dx = this.rotationScale * state.dy * ((this.inverseY) ? -1 : 1)
-	var dy = this.rotationScale * state.dx
+	var dx = this.rotationScaleY * state.dy * ((this.inverseY) ? -1 : 1)
+	var dy = this.rotationScaleX * state.dx
 
 	// normalize/clamp/update
 	var camrot = this.noa.rendering.getCameraRotation() // [x,y]
@@ -69,8 +69,8 @@ function clamp(value, to) {
 function bugFix(state) {
 	var dx = state.dx
 	var dy = state.dy
-	var wval = window.innerWidth / 6
-	var hval = window.innerHeight / 6
+	var wval = document.body.clientWidth / 6
+	var hval = document.body.clientHeight / 6
 	var badx = (Math.abs(dx) > wval && (dx / lastx) < -1)
 	var bady = (Math.abs(dy) > hval && (dy / lasty) < -1)
 	if (badx || bady) {

@@ -16,11 +16,10 @@ module.exports = function (noa) {
 
 		system: function (dt, states) {
 			// remove self after time elapses
-			for (var i = 0; i < states.length; ++i) {
-				var state = states[i]
+			states.forEach(state => {
 				state.time -= dt
 				if (state.time < 0) noa.ents.removeComponent(state.__id, 'smooth-camera')
-			}
+			})
 		},
 
 

@@ -48,12 +48,11 @@ module.exports = function (noa) {
 
 
 		system: function (dt, states) {
-			for (var i = 0; i < states.length; i++) {
-				var state = states[i]
-				if (!state._extentsChanged) continue
+			states.forEach(state => {
+				if (!state._extentsChanged) return
 				updateExtents(state._extents, state.position, state.height, state.width)
 				state._extentsChanged = false
-			}
+			})
 		},
 
 

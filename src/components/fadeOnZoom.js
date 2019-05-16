@@ -22,10 +22,9 @@ module.exports = function (noa) {
 		system: function fadeOnZoomProc(dt, states) {
 			var zoom = noa.rendering._currentZoom
 			var ents = noa.entities
-			for (var i = 0; i < states.length; i++) {
-				var state = states[i]
+			states.forEach(state => {
 				checkZoom(state, state.__id, zoom, ents)
-			}
+			})
 		}
 	}
 }

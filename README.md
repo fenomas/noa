@@ -3,27 +3,28 @@
 
 An experimental voxel engine.
 
-[Live demo of test app here!](https://andyhall.github.io/noa-testbed/)
+Examples:
+ * [Minecraft Classic](https://classic.minecraft.net/) - a game from Mojang(!) built on this engine
+ * [noa-testbed](https://andyhall.github.io/noa-testbed/) - An old demo, outdated but colorful
+ * [test example](https://andyhall.github.io/noa/test/) - test world from this repo, implements most of the engine's features
+ * [hello-world example](https://andyhall.github.io/noa/hello-world/) - bare minimum world, suitable for using as a base to build something out of
 
-### Usage
 
-Under active development, best way to try it is to clone and hack on it:
+## Usage
+
+Under active development, best way to try it is to clone and hack on the `develop` branch:
 
 ```sh
 (clone this repo)
 cd noa
 npm install
-npm start       # runs /docs/hello-world
-npm test        # runs /docs/test
+git checkout develop   # newest version is in develop
+npm test               # runs demo world in /docs/test
 ```
 
-The `start` and `test` scripts assume that `webpack` and `webpack-dev-server` are installed globally via npm or yarn.
+The `start` and `test` scripts run the minimal demo projects locally, via `webpack` and `webpack-dev-server` (which will be installed as dev dependencies). The `build` script rebuilds static bundles for both demos.
 
-Live versions of the test content: 
- * [hello-world example](https://andyhall.github.io/noa/hello-world/)
- * [test example](https://andyhall.github.io/noa/test/)
-
-To build a new world app, use `noa` as a dependency:
+To build a new world, use `noa` as a dependency:
 
 ```sh
 npm install --save noa-engine
@@ -37,27 +38,37 @@ var noa = engine({
 })
 ```
 
-### Status, contributing, etc.
+----
+
+## Status, contributing, etc.
 
 This library attempts to be something you can build a voxel game on top of. 
 It's not a fully-featured game engine; it just tries to manage the painful parts 
 of using voxels (e.g. chunking, meshing), and certain things that are 
-tightly coupled to voxel implementation (e.g. physics), 
-and otherwise stay out of your way.
+tightly coupled to voxel implementation (physics, raycasting, collisions..), 
+but otherwise stay out of your way.
 
 Contributions are welcome! But please open an issue before building any 
-nontrivial new features. I want to keep this library lean if I can, 
-so if your idea could be done as a separate module then that's probably what I'll suggest.
+nontrivial new features. I'd like to keep this library lean, 
+so if a given feature could be done as a separate module then that's probably what I'll suggest.
 
-### Docs
+> Please note I do all dev work on the `develop` branch; please send any PRs against that branch!
 
-The source is pretty fully commented. There is a partial API reference 
-at the end of this file, but I haven't been able to find a good way of 
-generating JSDocs that I can live with, so for now it's best to consult 
-the source.
 
-### Recent changes:
+## Docs
 
+The source is pretty fully commented, mostly with JSDoc-style comments, 
+but I don't currently have a good docgen tool, so for now it's best to 
+consult the source.
+
+----
+
+## Recent changes:
+
+ * 0.25.0
+   * Adds `debug` option: populates `window` with useful references, binds `Z` to BJS inspector
+   * Now current with Babylon.js 4.0
+   * Updates many dependencies, many small bug fixes.
  * 0.24.0
    * Terrain materials can specify a renderMaterial (see `registry.registerMaterial()`)
    * Targeting and `noa.pick` can take a function for which block IDs to target - #36
@@ -101,9 +112,8 @@ the source.
 
 ----
 
-## Partial API reference:
+## Credits
 
-
-(docs currently broken by some weird npm+markdox issue..)
+Made by [@fenomas](https://twitter.com/fenomas), license is MIT.
 
 

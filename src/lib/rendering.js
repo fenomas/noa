@@ -1,7 +1,5 @@
 'use strict'
 
-
-var extend = require('extend')
 var glvec3 = require('gl-vec3')
 var aabb = require('aabb-3d')
 var sweep = require('voxel-aabb-sweep')
@@ -19,7 +17,7 @@ module.exports = function (noa, opts, canvas) {
 
 var vec3 = BABYLON.Vector3 // not a gl-vec3, in this module only!!
 var col3 = BABYLON.Color3
-window.BABYLON = BABYLON
+
 
 
 // profiling flags
@@ -42,15 +40,16 @@ var defaults = {
     AOmultipliers: [0.93, 0.8, 0.5],
     reverseAOmultiplier: 1.0,
     useOctreesForDynamicMeshes: true,
+    preserveDrawingBuffer: true,
 }
 
 
 
 
 
-function Rendering(noa, _opts, canvas) {
+function Rendering(noa, opts, canvas) {
     this.noa = noa
-    var opts = extend({}, defaults, _opts)
+    opts = Object.assign({}, defaults, opts)
     this.zoomDistance = opts.initialCameraZoom      // zoom setting
     this._currentZoom = this.zoomDistance       // current actual zoom level
     this._cameraZoomSpeed = opts.cameraZoomSpeed
@@ -63,12 +62,12 @@ function Rendering(noa, _opts, canvas) {
     this.revAoVal = opts.reverseAOmultiplier
     this.meshingCutoffTime = 6 // ms
     this._dynamicMeshOctrees = opts.useOctreesForDynamicMeshes
+    this._resizeDebounce = 250 // ms
 
     // set up babylon scene
     initScene(this, canvas, opts)
 
     // for debugging
-    window.scene = this._scene
     if (opts.showFPS) setUpFPS()
 }
 
@@ -78,14 +77,16 @@ function initScene(self, canvas, opts) {
     if (!BABYLON) throw new Error('BABYLON.js engine not found!')
 
     // init internal properties
-    self._engine = new BABYLON.Engine(canvas, opts.antiAlias)
+    self._engine = new BABYLON.Engine(canvas, opts.antiAlias, {
+        preserveDrawingBuffer: opts.preserveDrawingBuffer,
+    })
     self._scene = new BABYLON.Scene(self._engine)
     var scene = self._scene
     // remove built-in listeners
     scene.detachControl()
 
     // octree setup
-    self._octree = new BABYLON.Octree()
+    self._octree = new BABYLON.Octree($ => { })
     self._octree.blocks = []
     scene._selectionOctree = self._octree
 
@@ -166,9 +167,20 @@ Rendering.prototype.render = function (dt) {
     profile_hook('end')
 }
 
+
+
 Rendering.prototype.resize = function (e) {
-    this._engine.resize()
+    if (!pendingResize) {
+        pendingResize = true
+        setTimeout(() => {
+            this._engine.resize()
+            pendingResize = false
+        }, this._resizeDebounce)
+    }
 }
+var pendingResize = false
+
+
 
 Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
     var m = getHighlightMesh(this)
@@ -302,8 +314,6 @@ Rendering.prototype.makeStandardMaterial = function (name) {
     mat.specularColor.copyFromFloats(0, 0, 0)
     mat.ambientColor.copyFromFloats(1, 1, 1)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
-    // not 100% sure this helps but it should..
-    setTimeout(function () { mat.freeze() }, 10)
     return mat
 }
 
@@ -325,7 +335,7 @@ Rendering.prototype.prepareChunkForRendering = function (chunk) {
     var cs = chunk.size
     var min = new vec3(chunk.x, chunk.y, chunk.z)
     var max = new vec3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
-    chunk.octreeBlock = new BABYLON.OctreeBlock(min, max)
+    chunk.octreeBlock = new BABYLON.OctreeBlock(min, max, undefined, undefined, undefined, $ => { })
     this._octree.blocks.push(chunk.octreeBlock)
 }
 

@@ -3,7 +3,6 @@
 
 
 
-var mesher
 module.exports = new TerrainMesher()
 
 
@@ -51,7 +50,7 @@ function TerrainMesher() {
 
         // builds the babylon mesh that will be added to the scene
         var mesh
-        if (subMeshes.length) {
+        if (Object.keys(subMeshes).length) {
             mesh = meshBuilder.build(chunk, subMeshes, ignoreMaterials)
             profile_hook('built terrain')
         }
@@ -268,8 +267,8 @@ function MeshBuilder() {
             // else we need to make a multimaterial and define (babylon) submeshes
             var multiMat = new BABYLON.MultiMaterial('multimat ' + name, scene)
             mesh.subMeshes = []
-            var totalVerts = vdat.positions.length
-            var totalInds = vdat.indices.length
+            // var totalVerts = vdat.positions.length
+            // var totalInds = vdat.indices.length
             var vertStart = 0
             var indStart = 0
             for (var i = 0; i < mats.length; i++) {
@@ -387,7 +386,7 @@ function GreedyMesher() {
     this.mesh = function (arr, getMaterial, getColor, doAO, aoValues, revAoVal) {
 
         // return object, holder for Submeshes
-        var subMeshes = []
+        var subMeshes = {}
 
         // precalc how to apply AO packing in first masking function
         var skipReverseAO = (doAO && (revAoVal === aoValues[0]))
@@ -483,62 +482,15 @@ function GreedyMesher() {
                         // this got so big I rolled it into a function
                         aomask[n] = aoPackFcn(arrT, ipos, ineg, j, k)
                     }
+                } else {
+                    // unneeded, mesher zeroes out mask as it goes
+                    // mask[n] = 0
                 }
 
             }
         }
     }
 
-    function constructMeshMasksB(i, d, arrT, getMaterial, aoPackFcn) {
-        var len = arrT.shape[1]
-        var mask = maskCache
-        var aomask = aomaskCache
-
-        // traversal
-        var n = 0
-        var data = arrT.data
-        var dbase = arrT.index(i - 1, 0, 0)
-        var istride = arrT.stride[0]
-        var jstride = arrT.stride[1]
-        var kstride = arrT.stride[2]
-
-        for (var k = 0; k < len; ++k) {
-            var d0 = dbase
-            dbase += kstride
-            for (var j = 0; j < len; ++j) {
-
-                // mask[n] will represent the face needed between i-1,j,k and i,j,k
-                // for now, assume we never have two faces in both directions
-                // So mask value is face material id, sign is direction
-
-                // IDs at i-1,j,k  and  i,j,k
-                var id0 = data[d0]
-                var id1 = data[d0 + istride]
-
-                var faceDir = getFaceDir(id0, id1)
-                if (faceDir) {
-                    // set regular mask value to material ID, sign indicating direction
-                    mask[n] = (faceDir > 0) ?
-                        getMaterial(id0 & ID_MASK, d * 2) :
-                        -getMaterial(id1 & ID_MASK, d * 2 + 1)
-
-                    // if doing AO, precalculate AO level for each face into second mask
-                    if (aoPackFcn) {
-                        // i values in direction face is/isn't pointing
-                        var ipos = (faceDir > 0) ? i : i - 1
-                        var ineg = (faceDir > 0) ? i - 1 : i
-
-                        // this got so big I rolled it into a function
-                        aomask[n] = aoPackFcn(arrT, ipos, ineg, j, k)
-                    }
-                }
-
-                // done, move to next mask index
-                d0 += jstride
-                n++
-            }
-        }
-    }
 
 
     function getFaceDir(id0, id1) {

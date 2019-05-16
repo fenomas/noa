@@ -10,6 +10,7 @@
 var noaEngine = require('../..')
 
 var opts = {
+	debug: true,
 	showFPS: true,
 	inverseY: true,
 	chunkSize: 32,
@@ -30,7 +31,6 @@ var opts = {
 
 // create engine
 var noa = noaEngine(opts)
-
 
 
 //		World generation
@@ -175,16 +175,16 @@ var h = dat.height
 
 // make a Babylon.js mesh and scale it, etc.
 var scene = noa.rendering.getScene()  // Babylon's "Scene" object
-var mesh = BABYLON.Mesh.CreateBox('player', 1, scene)
-mesh.scaling.x = mesh.scaling.z = w
-mesh.scaling.y = h
+var playerMesh = BABYLON.Mesh.CreateBox('player', 1, scene)
+playerMesh.scaling.x = playerMesh.scaling.z = w
+playerMesh.scaling.y = h
 
 // offset of mesh relative to the entity's "position" (center of its feet)
 var offset = [0, h / 2, 0]
 
 // a "mesh" component to the player entity
 noa.entities.addComponent(eid, noa.entities.names.mesh, {
-	mesh: mesh,
+	mesh: playerMesh,
 	offset: offset
 })
 

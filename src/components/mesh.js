@@ -45,8 +45,7 @@ module.exports = function (noa) {
 			// before render move each mesh to its render position, 
 			// set by the physics engine or driving logic
 
-			for (var i = 0; i < states.length; ++i) {
-				var state = states[i]
+			states.forEach(state => {
 				var id = state.__id
 
 				var rpos = noa.ents.getPositionData(id).renderPosition
@@ -55,7 +54,7 @@ module.exports = function (noa) {
 				var z = rpos[2] + state.offset[2]
 
 				state.mesh.position.copyFromFloats(x, y, z)
-			}
+			})
 		}
 
 

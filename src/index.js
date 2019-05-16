@@ -1,8 +1,13 @@
 'use strict'
 
-var aabb = require('aabb-3d')
+/*!
+ * noa: an experimental voxel game engine.
+ * @url      github.com/andyhall/noa
+ * @author   Andy Hall <andy@fenomas.com>
+ * @license  MIT
+*/
+
 var vec3 = require('gl-vec3')
-var extend = require('extend')
 var ndarray = require('ndarray')
 var EventEmitter = require('events').EventEmitter
 var createContainer = require('./lib/container')
@@ -23,16 +28,18 @@ module.exports = Engine
 // profiling flag
 var PROFILE = 0
 var PROFILE_RENDER = 0
+var DEBUG_QUEUES = 0
 
 
 
 
 var defaults = {
+    debug: false,
     playerHeight: 1.8,
     playerWidth: 0.6,
     playerStart: [0, 10, 0],
     playerAutoStep: false,
-    tickRate: 30,
+    tickRate: 33,  // ms per tick - not ticks per second
     blockTestDistance: 10,
     stickyPointerLock: true,
     dragCameraOutsidePointerLock: true,
@@ -53,7 +60,10 @@ var defaults = {
 
 function Engine(opts) {
     if (!(this instanceof Engine)) return new Engine(opts)
-    opts = extend(defaults, opts)
+
+    this.version = require('../package.json').version
+
+    opts = Object.assign({}, defaults, opts)
     this._tickRate = opts.tickRate
     this._paused = false
     this._dragOutsideLock = opts.dragCameraOutsidePointerLock
@@ -128,7 +138,7 @@ function Engine(opts) {
 
 
     // set up block targeting
-    this.blockTestDistance = opts.blockTestDistance || 10
+    this.blockTestDistance = opts.blockTestDistance
 
     /** function for which block IDs are targetable. 
      * Defaults to a solidity check, but can be overridden */
@@ -153,18 +163,22 @@ function Engine(opts) {
     // init rendering stuff that needed to wait for engine internals
     this.rendering.initScene()
 
+    // expose constants, for HACKING™
+    this._constants = require('./lib/constants')
 
     // temp hacks for development
-
-    window.noa = this
-    window.ndarray = ndarray
-    window.vec3 = vec3
-    var debug = false
-    this.inputs.bind('debug', 'Z')
-    this.inputs.down.on('debug', function onDebug() {
-        debug = !debug
-        if (debug) window.scene.debugLayer.show(); else window.scene.debugLayer.hide();
-    })
+    if (opts.debug) {
+        window.noa = this
+        window.scene = this.rendering._scene
+        window.ndarray = ndarray
+        window.vec3 = vec3
+        var debug = false
+        this.inputs.bind('debug', 'Z')
+        this.inputs.down.on('debug', function onDebug() {
+            debug = !debug
+            if (debug) window.scene.debugLayer.show(); else window.scene.debugLayer.hide();
+        })
+    }
 
 
 
@@ -206,7 +220,7 @@ Engine.prototype.tick = function () {
     profile_hook('tick event')
     profile_hook('end')
     this.inputs.tick()            // clears accumulated tick/mouseMove data
-    // debugQueues(this)
+    if (DEBUG_QUEUES) debugQueues(this)
 }
 
 
@@ -309,9 +323,11 @@ Engine.prototype.addBlock = function (id, x, y, z) {
     if (x.length) {
         if (this.entities.isTerrainBlocked(x[0], x[1], x[2])) return
         this.world.setBlockID(id, x[0], x[1], x[2])
+        return id
     } else {
         if (this.entities.isTerrainBlocked(x, y, z)) return
         this.world.setBlockID(id, x, y, z)
+        return id
     }
 }
 

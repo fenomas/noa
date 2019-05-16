@@ -1,6 +1,5 @@
 'use strict'
 
-var extend = require('extend')
 var aabb = require('aabb-3d')
 var vec3 = require('gl-vec3')
 var EntComp = require('ent-comp')
@@ -32,7 +31,7 @@ function Entities(noa, opts) {
 	EntComp.call(this)
 
 	this.noa = noa
-	opts = extend(defaults, opts)
+	opts = Object.assign({}, defaults, opts)
 
 	// properties
 	/**
@@ -71,6 +70,7 @@ function Entities(noa, opts) {
 	this.setPosition = function (id, x, y, z) {
 		var pdat = this.getPositionData(id)
 		vec3.set(pdat.position, x, y, z)
+		vec3.set(pdat.renderPosition, x, y, z)
 		pdat._extentsChanged = true
 		if (this.hasPhysics(id)) {
 			setAABBFromPosition(this.getPhysicsBody(id).aabb, pdat)
@@ -95,8 +95,6 @@ function Entities(noa, opts) {
 	noa.on('tick', function (dt) { self.tick(dt) })
 	noa.on('beforeRender', function (dt) { self.render(dt) })
 
-	// this burns entity ID=0, so later code can do (if(entityID)) checks
-	this.createEntity()
 }
 
 // inherit from EntComp

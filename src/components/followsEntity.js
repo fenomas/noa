@@ -31,17 +31,17 @@ module.exports = function (noa) {
 
 		// on tick, copy over regular positions
 		system: function followEntity(dt, states) {
-			for (var i = 0; i < states.length; i++) {
-				updatePosition(states[i])
-			}
+			states.forEach(state => {
+				updatePosition(state)
+			})
 		},
 
 
 		// on render, copy over render positions
 		renderSystem: function followEntityMesh(dt, states) {
-			for (var i = 0; i < states.length; i++) {
-				updateRenderPosition(states[i])
-			}
+			states.forEach(state => {
+				updateRenderPosition(state)
+			})
 		}
 	}
 
@@ -53,6 +53,7 @@ module.exports = function (noa) {
 		var other = noa.ents.getPositionData(state.entity)
 		if (other) {
 			vec3.add(self.position, other.position, state.offset)
+			self._extentsChanged = true
 		} else {
 			noa.ents.removeComponent(id, noa.ents.names.followsEntity)
 		}

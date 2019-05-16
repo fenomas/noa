@@ -1,7 +1,6 @@
 'use strict'
 
 var createInputs = require('game-inputs')
-var extend = require('extend')
 
 
 module.exports = function (noa, opts, element) {
@@ -26,7 +25,7 @@ var defaultBindings = {
 
 
 function makeInputs(noa, opts, element) {
-    opts = extend({}, defaultBindings, opts)
+    opts = Object.assign({}, defaultBindings, opts)
     var inputs = createInputs(element, opts)
     var b = opts.bindings
     for (var name in b) {

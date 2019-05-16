@@ -1,7 +1,5 @@
 'use strict'
 
-var extend = require('extend')
-var ndarray = require('ndarray')
 var ndHash = require('ndarray-hash')
 var EventEmitter = require('events').EventEmitter
 var Chunk = require('./chunk')
@@ -33,9 +31,9 @@ var defaultOptions = {
  *  * chunkBeingRemoved (id, ndarray, userData)
  */
 
-function World(noa, _opts) {
+function World(noa, opts) {
     this.noa = noa
-    var opts = extend(defaultOptions, _opts)
+    opts = Object.assign({}, defaultOptions, opts)
 
     this.userData = null
     this.playerChunkLoaded = false
@@ -198,8 +196,10 @@ World.prototype.tick = function () {
     var cutoff = performance.now() + this._maxProcessingPerTick
     var done = false
     while (!done && (performance.now() < cutoff)) {
-        done = processMeshingQueues(this, false)
-        done &= processChunkQueues(this)
+        var d1 = processMeshingQueues(this, false)
+        var d2 = processChunkQueues(this)
+        if (!d2) d2 = processChunkQueues(this)
+        done = d1 && d2
     }
     profile_queues(this, 'end')
 
@@ -219,10 +219,8 @@ function beforeRender(self) {
     // to help avoid flashes of background while neighboring chunks update
     var cutoff = performance.now() + self._maxProcessingPerRender
     var done = false
-    var ct = 0
     while (!done && (performance.now() < cutoff)) {
         done = processMeshingQueues(self, true)
-        if (!done) ct++
     }
 }
 
@@ -281,7 +279,7 @@ World.prototype.report = function () {
     _report(this, '  to remove: ', this._chunkIDsToRemove)
     _report(this, '  in memory: ', this._chunkIDsInMemory, true)
     _report(this, '  creating:  ', this._chunkIDsToCreate)
-    _report(this, '  meshing:   ', this._chunkIDsToMesh)
+    _report(this, '  meshing:   ', this._chunkIDsToMesh.concat(this._chunkIDsToMeshFirst))
 }
 function _report(world, name, arr, ext) {
     var ct = 0, full = 0, empty = 0
@@ -367,7 +365,7 @@ function processChunkQueues(self) {
         done = false
     }
     if (self._chunkIDsToCreate.length >= self._maxChunksPendingCreation) return done
-    if (self._chunkIDsToMesh.length >= self._maxChunksPendingMeshing) return done
+    // if (self._chunkIDsToMesh.length >= self._maxChunksPendingMeshing) return done
     if (self._chunkIDsToAdd.length) {
         var id = self._chunkIDsToAdd.shift()
         requestNewChunk(self, id)
@@ -384,13 +382,20 @@ function processMeshingQueues(self, firstOnly) {
     var id
     if (self._chunkIDsToMeshFirst.length) {
         id = self._chunkIDsToMeshFirst.pop()
-    } else if (!firstOnly && self._chunkIDsToMesh.length) {
+    } else if (firstOnly) {
+        return true
+    } else if (self._chunkIDsToMesh.length) {
         id = self._chunkIDsToMesh.pop()
     } else return true
 
     var arr = parseChunkID(id)
     var chunk = getChunk(self, arr[0], arr[1], arr[2])
     if (chunk.isInvalid) return
+    if (!chunk.isGenerated) {
+        // client code triggered a remesh too early, requeue it
+        self._chunkIDsToMesh.unshift(id)
+        return
+    }
     chunk.updateMeshes()
 
     profile_queues(self, 'meshed')
@@ -574,14 +579,13 @@ if (PROFILE_QUEUES) (function () {
     var every = 100
     var iter = 0
     var t, nrem, nreq, totalrec, nmesh
-    var temprem, tempreq
     var reqcts, remcts, meshcts
-    var qadd, qrem, qmem, qpend, qmesh
+    var qadd, qrem, qmem, qgen, qmesh
     profile_queues = function (world, state) {
         if (state === 'start') {
             if (iter === 0) {
                 t = performance.now()
-                qadd = qrem = qmem = qpend = qmesh = 0
+                qadd = qrem = qmem = qgen = qmesh = 0
                 totalrec = 0
                 remcts = []
                 reqcts = []
@@ -606,29 +610,30 @@ if (PROFILE_QUEUES) (function () {
             qadd += world._chunkIDsToAdd.length
             qrem += world._chunkIDsToRemove.length
             qmem += world._chunkIDsInMemory.length
-            qpend += world._chunkIDsToCreate.length
-            qmesh += world._chunkIDsToMesh.length
+            qgen += world._chunkIDsToCreate.length
+            qmesh += world._chunkIDsToMesh.length + world._chunkIDsToMeshFirst.length
             // on end
             if (iter === every) {
                 var dt = (performance.now() - t) / 1000
                 console.log('world chunk queues:',
-                    'made', Math.round(totalrec / dt), 'cps',
+                    'made', rnd(totalrec / dt), 'cps',
                     '- avg queuelen: ',
                     'add', qadd / every,
                     'rem', qrem / every,
                     'mem', qmem / every,
-                    'pend', qpend / every,
+                    'gen', qgen / every,
                     'mesh', qmesh / every,
                     '- work/frame: ',
-                    'req', Math.round(reqcts.reduce(sum, 0) / reqcts.length * 10) / 10,
-                    'rem', Math.round(remcts.reduce(sum, 0) / remcts.length * 10) / 10,
-                    'mesh', Math.round(meshcts.reduce(sum, 0) / meshcts.length * 10) / 10
+                    'req', rnd(reqcts.reduce(sum, 0) / reqcts.length),
+                    'rem', rnd(remcts.reduce(sum, 0) / remcts.length),
+                    'mesh', rnd(meshcts.reduce(sum, 0) / meshcts.length)
                 )
                 iter = 0
             }
         }
     }
     var sum = function (num, prev) { return num + prev }
+    var rnd = function (n) { return Math.round(n * 10) / 10 }
 })()
 
 
