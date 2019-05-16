@@ -3,7 +3,12 @@
 
 An experimental voxel engine.
 
-[Live demo of test app here!](https://andyhall.github.io/noa-testbed/)
+Examples:
+ * [Minecraft Classic](https://classic.minecraft.net/) - a game from Mojang(!) built on this engine
+ * [noa-testbed](https://andyhall.github.io/noa-testbed/) - An old demo, outdated but colorful
+ * [test example](https://andyhall.github.io/noa/test/) - test world from this repo, implements most of the engine's features
+ * [hello-world example](https://andyhall.github.io/noa/hello-world/) - bare minimum world, suitable for using as a base to build something out of
+
 
 ## Usage
 
@@ -12,18 +17,12 @@ Under active development, best way to try it is to clone and hack on the `develo
 ```sh
 (clone this repo)
 cd noa
-git checkout develop
 npm install
-npm start       # runs demo in /docs/hello-world
-npm test        # runs demo in /docs/test
-npm run build   # rebuilds both demos
+git checkout develop   # newest version is in develop
+npm test               # runs demo world in /docs/test
 ```
 
-The `start` and `test` scripts run the minimal demo projects locally, via `webpack` and `webpack-dev-server` (which will be installed as dev dependencies).
-
-Live versions of the test content: 
- * [hello-world example](https://andyhall.github.io/noa/hello-world/)
- * [test example](https://andyhall.github.io/noa/test/)
+The `start` and `test` scripts run the minimal demo projects locally, via `webpack` and `webpack-dev-server` (which will be installed as dev dependencies). The `build` script rebuilds static bundles for both demos.
 
 To build a new world, use `noa` as a dependency:
 
@@ -46,12 +45,12 @@ var noa = engine({
 This library attempts to be something you can build a voxel game on top of. 
 It's not a fully-featured game engine; it just tries to manage the painful parts 
 of using voxels (e.g. chunking, meshing), and certain things that are 
-tightly coupled to voxel implementation (e.g. physics), 
-and otherwise stay out of your way.
+tightly coupled to voxel implementation (physics, raycasting, collisions..), 
+but otherwise stay out of your way.
 
 Contributions are welcome! But please open an issue before building any 
-nontrivial new features. I want to keep this library lean if I can, 
-so if your idea could be done as a separate module then that's probably what I'll suggest.
+nontrivial new features. I'd like to keep this library lean, 
+so if a given feature could be done as a separate module then that's probably what I'll suggest.
 
 > Please note I do all dev work on the `develop` branch; please send any PRs against that branch!
 
