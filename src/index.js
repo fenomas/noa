@@ -35,6 +35,7 @@ var DEBUG_QUEUES = 0
 
 var defaults = {
     debug: false,
+    silent: false,
     playerHeight: 1.8,
     playerWidth: 0.6,
     playerStart: [0, 10, 0],
@@ -62,6 +63,10 @@ function Engine(opts) {
     if (!(this instanceof Engine)) return new Engine(opts)
 
     this.version = require('../package.json').version
+    if (!opts.silent) {
+        var debugstr = (opts.debug) ? ' (debug)' : ''
+        console.log(`noa-engine v${this.version}${debugstr}`)
+    }
 
     opts = Object.assign({}, defaults, opts)
     this._tickRate = opts.tickRate
