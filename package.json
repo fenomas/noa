@@ -4,8 +4,6 @@
   "description": "Experimental voxel game engine",
   "main": "src/index.js",
   "scripts": {
-    "precommit": "lint-staged",
-    "postcommit": "git update-index --again",
     "start": "cd docs/hello-world && webpack-dev-server",
     "test": "cd docs/test && webpack-dev-server",
     "build": "cd docs/hello-world && webpack && cd ../test && webpack"
@@ -47,5 +45,11 @@
       "prettier --write",
       "git add"
     ]
+  },
+  "husky": {
+    "hooks": {
+      "post-commit": "git update-index --again",
+      "pre-commit": "lint-staged"
+    }
   }
 }
