@@ -1,8 +1,8 @@
-"use strict";
+'use strict'
 
 module.exports = function(noa, opts) {
-  return new Registry(noa, opts);
-};
+  return new Registry(noa, opts)
+}
 
 /**
  * This is where clients register block types and their materials & properties.
@@ -24,21 +24,21 @@ module.exports = function(noa, opts) {
  */
 
 var defaults = {
-  texturePath: ""
-};
+  texturePath: ''
+}
 
 var blockDefaults = {
   solid: true,
   opaque: true,
   fluidDensity: 1.0,
   viscosity: 0.5
-};
+}
 
-var MAX_BLOCK_IDS = 255; // currently stored in chunks as int8
+var MAX_BLOCK_IDS = 255 // currently stored in chunks as int8
 
 function Registry(noa, opts) {
-  this.noa = noa;
-  opts = Object.assign({}, defaults, opts);
+  this.noa = noa
+  opts = Object.assign({}, defaults, opts)
 
   /*
    *
@@ -48,20 +48,20 @@ function Registry(noa, opts) {
 
   // lookup arrays for block props and flags - all keyed by blockID
   // fill in first value for id=0, empty space
-  var blockSolidity = [false];
-  var blockOpacity = [false];
-  var blockIsFluid = [false];
-  var blockMats = [0, 0, 0, 0, 0, 0];
-  var blockProps = [null];
-  var blockMeshes = [null];
-  var blockHandlers = [null];
+  var blockSolidity = [false]
+  var blockOpacity = [false]
+  var blockIsFluid = [false]
+  var blockMats = [0, 0, 0, 0, 0, 0]
+  var blockProps = [null]
+  var blockMeshes = [null]
+  var blockHandlers = [null]
 
   // material data structs
-  var matIDs = {}; // mat name -> id
-  var matData = [null]; // mat id -> { color, alpha, texture, textureAlpha }
+  var matIDs = {} // mat name -> id
+  var matData = [null] // mat id -> { color, alpha, texture, textureAlpha }
 
   // option data to save
-  var texturePath = opts.texturePath;
+  var texturePath = opts.texturePath
 
   /*
    *
@@ -97,60 +97,60 @@ function Registry(noa, opts) {
    */
 
   this.registerBlock = function(id, _options) {
-    _options = _options || {};
-    blockDefaults.solid = !_options.fluid;
-    blockDefaults.opaque = !_options.fluid;
-    var opts = Object.assign({}, blockDefaults, _options);
+    _options = _options || {}
+    blockDefaults.solid = !_options.fluid
+    blockDefaults.opaque = !_options.fluid
+    var opts = Object.assign({}, blockDefaults, _options)
 
     // console.log('register block: ', id, opts)
-    if (id < 1 || id > MAX_BLOCK_IDS) throw "Block id exceeds max: " + id;
+    if (id < 1 || id > MAX_BLOCK_IDS) throw 'Block id exceeds max: ' + id
 
     // if block ID is greater than current highest ID,
     // register fake blocks to avoid holes in lookup arrays
     while (id > blockSolidity.length) {
-      this.registerBlock(blockSolidity.length, {});
+      this.registerBlock(blockSolidity.length, {})
     }
 
     // flags default to solid, opaque, nonfluid
-    blockSolidity[id] = !!opts.solid;
-    blockOpacity[id] = !!opts.opaque;
-    blockIsFluid[id] = !!opts.fluid;
+    blockSolidity[id] = !!opts.solid
+    blockOpacity[id] = !!opts.opaque
+    blockIsFluid[id] = !!opts.fluid
 
     // store any custom mesh, and if one is present assume no material
-    blockMeshes[id] = opts.blockMesh || null;
-    if (blockMeshes[id]) opts.material = null;
+    blockMeshes[id] = opts.blockMesh || null
+    if (blockMeshes[id]) opts.material = null
 
     // parse out material parameter
     // always store 6 material IDs per blockID, so material lookup is monomorphic
-    var mat = opts.material || null;
-    var mats;
+    var mat = opts.material || null
+    var mats
     if (!mat) {
-      mats = [null, null, null, null, null, null];
-    } else if (typeof mat == "string") {
-      mats = [mat, mat, mat, mat, mat, mat];
+      mats = [null, null, null, null, null, null]
+    } else if (typeof mat == 'string') {
+      mats = [mat, mat, mat, mat, mat, mat]
     } else if (mat.length && mat.length == 2) {
       // interpret as [top/bottom, sides]
-      mats = [mat[1], mat[1], mat[0], mat[0], mat[1], mat[1]];
+      mats = [mat[1], mat[1], mat[0], mat[0], mat[1], mat[1]]
     } else if (mat.length && mat.length == 3) {
       // interpret as [top, bottom, sides]
-      mats = [mat[2], mat[2], mat[0], mat[1], mat[2], mat[2]];
+      mats = [mat[2], mat[2], mat[0], mat[1], mat[2], mat[2]]
     } else if (mat.length && mat.length == 6) {
       // interpret as [-x, +x, -y, +y, -z, +z]
-      mats = mat;
-    } else throw "Invalid material parameter: " + mat;
+      mats = mat
+    } else throw 'Invalid material parameter: ' + mat
 
     // argument is material name, but store as material id, allocating one if needed
     for (var i = 0; i < 6; ++i) {
-      blockMats[id * 6 + i] = getMaterialId(this, matIDs, mats[i], true);
+      blockMats[id * 6 + i] = getMaterialId(this, matIDs, mats[i], true)
     }
 
     // props data object - currently only used for fluid properties
-    blockProps[id] = {};
+    blockProps[id] = {}
 
     // if block is fluid, initialize properties if needed
     if (blockIsFluid[id]) {
-      blockProps[id].fluidDensity = opts.fluidDensity;
-      blockProps[id].viscosity = opts.viscosity;
+      blockProps[id].fluidDensity = opts.fluidDensity
+      blockProps[id].viscosity = opts.viscosity
     }
 
     // event callbacks
@@ -159,11 +159,11 @@ function Registry(noa, opts) {
       opts.onUnload ||
       opts.onSet ||
       opts.onUnset ||
-      opts.onCustomMeshCreate;
-    blockHandlers[id] = hasHandler ? new BlockCallbackHolder(opts) : null;
+      opts.onCustomMeshCreate
+    blockHandlers[id] = hasHandler ? new BlockCallbackHolder(opts) : null
 
-    return id;
-  };
+    return id
+  }
 
   /*
    * Register (by name) a material and its parameters.
@@ -180,21 +180,21 @@ function Registry(noa, opts) {
     renderMaterial
   ) {
     // console.log('register mat: ', name, color, textureURL)
-    var id = matIDs[name] || matData.length;
-    matIDs[name] = id;
-    var alpha = 1;
+    var id = matIDs[name] || matData.length
+    matIDs[name] = id
+    var alpha = 1
     if (color && color.length == 4) {
-      alpha = color.pop();
+      alpha = color.pop()
     }
     matData[id] = {
       color: color || [1, 1, 1],
       alpha: alpha,
-      texture: textureURL ? texturePath + textureURL : "",
+      texture: textureURL ? texturePath + textureURL : '',
       textureAlpha: !!texHasAlpha,
       renderMat: renderMaterial || null
-    };
-    return id;
-  };
+    }
+    return id
+  }
 
   /*
    *      quick accessors for querying block ID stuff
@@ -202,45 +202,45 @@ function Registry(noa, opts) {
 
   // block solidity (as in physics)
   this.getBlockSolidity = function(id) {
-    return blockSolidity[id];
-  };
+    return blockSolidity[id]
+  }
 
   // block opacity - whether it obscures the whole voxel (dirt) or
   // can be partially seen through (like a fencepost, etc)
   this.getBlockOpacity = function(id) {
-    return blockOpacity[id];
-  };
+    return blockOpacity[id]
+  }
 
   // block is fluid or not
   this.getBlockFluidity = function(id) {
-    return blockIsFluid[id];
-  };
+    return blockIsFluid[id]
+  }
 
   // Get block property object passed in at registration
   this.getBlockProps = function(id) {
-    return blockProps[id];
-  };
+    return blockProps[id]
+  }
 
   // look up a block ID's face material
   // dir is a value 0..5: [ +x, -x, +y, -y, +z, -z ]
   this.getBlockFaceMaterial = function(blockId, dir) {
-    return blockMats[blockId * 6 + dir];
-  };
+    return blockMats[blockId * 6 + dir]
+  }
 
   // look up material color given ID
   this.getMaterialColor = function(matID) {
-    return matData[matID].color;
-  };
+    return matData[matID].color
+  }
 
   // look up material texture given ID
   this.getMaterialTexture = function(matID) {
-    return matData[matID].texture;
-  };
+    return matData[matID].texture
+  }
 
   // look up material's properties: color, alpha, texture, textureAlpha
   this.getMaterialData = function(matID) {
-    return matData[matID];
-  };
+    return matData[matID]
+  }
 
   /*
    *
@@ -249,18 +249,18 @@ function Registry(noa, opts) {
    */
 
   // internal access to lookup arrays
-  this._solidityLookup = blockSolidity;
-  this._opacityLookup = blockOpacity;
-  this._blockMeshLookup = blockMeshes;
-  this._blockHandlerLookup = blockHandlers;
+  this._solidityLookup = blockSolidity
+  this._opacityLookup = blockOpacity
+  this._blockMeshLookup = blockMeshes
+  this._blockHandlerLookup = blockHandlers
 
   // look up color used for vertices of blocks of given material
   // - i.e. white if it has a texture, color otherwise
   this._getMaterialVertexColor = function(matID) {
-    if (matData[matID].texture) return white;
-    return matData[matID].color;
-  };
-  var white = [1, 1, 1];
+    if (matData[matID].texture) return white
+    return matData[matID].color
+  }
+  var white = [1, 1, 1]
 
   /*
    *
@@ -270,8 +270,8 @@ function Registry(noa, opts) {
 
   // add a default material and set ID=1 to it
   // note that registering new block data overwrites the old
-  this.registerMaterial("dirt", [0.4, 0.3, 0], null);
-  this.registerBlock(1, { material: "dirt" });
+  this.registerMaterial('dirt', [0.4, 0.3, 0], null)
+  this.registerBlock(1, { material: 'dirt' })
 }
 
 /*
@@ -283,17 +283,17 @@ function Registry(noa, opts) {
 // look up material ID given its name
 // if lazy is set, pre-register the name and return an ID
 function getMaterialId(reg, matIDs, name, lazyInit) {
-  if (!name) return 0;
-  var id = matIDs[name];
-  if (id === undefined && lazyInit) id = reg.registerMaterial(name);
-  return id;
+  if (!name) return 0
+  var id = matIDs[name]
+  if (id === undefined && lazyInit) id = reg.registerMaterial(name)
+  return id
 }
 
 // data class for holding block callback references
 function BlockCallbackHolder(opts) {
-  this.onLoad = opts.onLoad || null;
-  this.onUnload = opts.onUnload || null;
-  this.onSet = opts.onSet || null;
-  this.onUnset = opts.onUnset || null;
-  this.onCustomMeshCreate = opts.onCustomMeshCreate || null;
+  this.onLoad = opts.onLoad || null
+  this.onUnload = opts.onUnload || null
+  this.onSet = opts.onSet || null
+  this.onUnset = opts.onUnset || null
+  this.onCustomMeshCreate = opts.onCustomMeshCreate || null
 }

@@ -7,5 +7,7 @@
       }
     }
   ],
-  "proseWrap": "never"
+  "proseWrap": "never",
+  "semi": false,
+  "singleQuote": true
 }

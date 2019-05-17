@@ -1,7 +1,7 @@
-"use strict";
+'use strict'
 
-var boxIntersect = require("box-intersect");
-var vec3 = require("gl-vec3");
+var boxIntersect = require('box-intersect')
+var vec3 = require('gl-vec3')
 
 /*
  * 	Every frame, entities with this component will get mutually checked for colliions
@@ -22,7 +22,7 @@ var vec3 = require("gl-vec3");
 
 module.exports = function(noa) {
   return {
-    name: "collideEntities",
+    name: 'collideEntities',
 
     state: {
       cylinder: false,
@@ -36,29 +36,29 @@ module.exports = function(noa) {
     onRemove: null,
 
     system: function entityCollider(dt, states) {
-      var ents = noa.ents;
+      var ents = noa.ents
 
       // data struct that boxIntersect looks for
       // - array of [lo, lo, lo, hi, hi, hi] extents
-      var intervals = [];
+      var intervals = []
       for (var i = 0; i < states.length; i++) {
-        var id = states[i].__id;
-        var dat = ents.getPositionData(id);
-        intervals[i] = dat._extents;
+        var id = states[i].__id
+        var dat = ents.getPositionData(id)
+        intervals[i] = dat._extents
       }
 
       // run the intersect library
       boxIntersect(intervals, function(a, b) {
-        var stateA = states[a];
-        var stateB = states[b];
-        var intervalA = intervals[a];
-        var intervalB = intervals[b];
+        var stateA = states[a]
+        var stateB = states[b]
+        var intervalA = intervals[a]
+        var intervalB = intervals[b]
         if (cylindricalHitTest(stateA, stateB, intervalA, intervalB)) {
-          handleCollision(noa, stateA, stateB);
+          handleCollision(noa, stateA, stateB)
         }
-      });
+      })
     }
-  };
+  }
 
   /*
    *
@@ -67,19 +67,19 @@ module.exports = function(noa) {
    */
 
   function handleCollision(noa, stateA, stateB) {
-    var idA = stateA.__id;
-    var idB = stateB.__id;
+    var idA = stateA.__id
+    var idB = stateB.__id
 
     // entities really do overlap, so check masks and call event handlers
     if (stateA.collideMask & stateB.collideBits) {
-      if (stateA.callback) stateA.callback(idB);
+      if (stateA.callback) stateA.callback(idB)
     }
     if (stateB.collideMask & stateA.collideBits) {
-      if (stateB.callback) stateB.callback(idA);
+      if (stateB.callback) stateB.callback(idA)
     }
 
     // general pairwise handler
-    noa.ents.onPairwiseEntityCollision(idA, idB);
+    noa.ents.onPairwiseEntityCollision(idA, idB)
   }
 
   // For entities whose extents overlap,
@@ -88,14 +88,14 @@ module.exports = function(noa) {
   function cylindricalHitTest(stateA, stateB, intervalA, intervalB) {
     if (stateA.cylinder) {
       if (stateB.cylinder) {
-        return cylinderCylinderTest(intervalA, intervalB);
+        return cylinderCylinderTest(intervalA, intervalB)
       } else {
-        return cylinderBoxTest(intervalA, intervalB);
+        return cylinderBoxTest(intervalA, intervalB)
       }
     } else if (stateB.cylinder) {
-      return cylinderBoxTest(intervalB, intervalA);
+      return cylinderBoxTest(intervalB, intervalA)
     }
-    return true;
+    return true
   }
 
   // Cylinder-cylinder hit test (AABBs are known to overlap)
@@ -103,14 +103,14 @@ module.exports = function(noa) {
 
   function cylinderCylinderTest(a, b) {
     // distance between cylinder centers
-    var rada = (a[3] - a[0]) / 2;
-    var radb = (b[3] - b[0]) / 2;
-    var dx = a[0] + rada - (b[0] + radb);
-    var dz = a[2] + rada - (b[2] + radb);
+    var rada = (a[3] - a[0]) / 2
+    var radb = (b[3] - b[0]) / 2
+    var dx = a[0] + rada - (b[0] + radb)
+    var dz = a[2] + rada - (b[2] + radb)
     // collide if dist <= sum of radii
-    var distsq = dx * dx + dz * dz;
-    var radsum = rada + radb;
-    return distsq <= radsum * radsum;
+    var distsq = dx * dx + dz * dz
+    var radsum = rada + radb
+    return distsq <= radsum * radsum
   }
 
   // Cylinder-Box hit test (AABBs are known to overlap)
@@ -118,20 +118,20 @@ module.exports = function(noa) {
 
   function cylinderBoxTest(cyl, cube) {
     // X-z center of cylinder
-    var rad = (cyl[3] - cyl[0]) / 2;
-    var cx = cyl[0] + rad;
-    var cz = cyl[2] + rad;
+    var rad = (cyl[3] - cyl[0]) / 2
+    var cx = cyl[0] + rad
+    var cz = cyl[2] + rad
     // point in X-Z square closest to cylinder
-    var px = clamp(cx, cube[0], cube[3]);
-    var pz = clamp(cz, cube[2], cube[5]);
+    var px = clamp(cx, cube[0], cube[3])
+    var pz = clamp(cz, cube[2], cube[5])
     // collision if distance from that point to circle <= cylinder radius
-    var dx = px - cx;
-    var dz = pz - cz;
-    var distsq = dx * dx + dz * dz;
-    return distsq <= rad * rad;
+    var dx = px - cx
+    var dz = pz - cz
+    var distsq = dx * dx + dz * dz
+    return distsq <= rad * rad
   }
 
   function clamp(val, lo, hi) {
-    return val < lo ? lo : val > hi ? hi : val;
+    return val < lo ? lo : val > hi ? hi : val
   }
-};
+}

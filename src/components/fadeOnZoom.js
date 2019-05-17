@@ -1,4 +1,4 @@
-"use strict";
+'use strict'
 
 /**
  * Component for the player entity, when active hides the player's mesh
@@ -7,7 +7,7 @@
 
 module.exports = function(noa) {
   return {
-    name: "fadeOnZoom",
+    name: 'fadeOnZoom',
 
     state: {
       cutoff: 1.5,
@@ -19,23 +19,23 @@ module.exports = function(noa) {
     onRemove: null,
 
     system: function fadeOnZoomProc(dt, states) {
-      var zoom = noa.rendering._currentZoom;
-      var ents = noa.entities;
+      var zoom = noa.rendering._currentZoom
+      var ents = noa.entities
       states.forEach(state => {
-        checkZoom(state, state.__id, zoom, ents);
-      });
+        checkZoom(state, state.__id, zoom, ents)
+      })
     }
-  };
-};
+  }
+}
 
 function checkZoom(state, id, zoom, ents) {
-  if (!ents.hasMesh(id)) return;
+  if (!ents.hasMesh(id)) return
 
   if (
     (state._showing && zoom < state.cutoff) ||
     (!state._showing && zoom > state.cutoff)
   ) {
-    var mesh = ents.getMeshData(id).mesh;
-    mesh.visibility = state._showing = zoom > state.cutoff;
+    var mesh = ents.getMeshData(id).mesh
+    mesh.visibility = state._showing = zoom > state.cutoff
   }
 }
