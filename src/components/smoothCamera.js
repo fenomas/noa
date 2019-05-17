@@ -1,29 +1,24 @@
-'use strict'
+"use strict";
 
+module.exports = function(noa) {
+  return {
+    name: "smooth-camera",
 
-module.exports = function (noa) {
-	return {
+    state: {
+      time: 100.1
+    },
 
-		name: 'smooth-camera',
+    onAdd: null,
 
-		state: {
-			time: 100.1
-		},
+    onRemove: null,
 
-		onAdd: null,
-
-		onRemove: null,
-
-		system: function (dt, states) {
-			// remove self after time elapses
-			states.forEach(state => {
-				state.time -= dt
-				if (state.time < 0) noa.ents.removeComponent(state.__id, 'smooth-camera')
-			})
-		},
-
-
-
-	}
-}
-
+    system: function(dt, states) {
+      // remove self after time elapses
+      states.forEach(state => {
+        state.time -= dt;
+        if (state.time < 0)
+          noa.ents.removeComponent(state.__id, "smooth-camera");
+      });
+    }
+  };
+};

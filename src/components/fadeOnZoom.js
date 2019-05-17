@@ -1,42 +1,41 @@
-'use strict'
+"use strict";
 
 /**
- * Component for the player entity, when active hides the player's mesh 
+ * Component for the player entity, when active hides the player's mesh
  * when camera zoom is less than a certain amount
  */
 
-module.exports = function (noa) {
-	return {
+module.exports = function(noa) {
+  return {
+    name: "fadeOnZoom",
 
-		name: 'fadeOnZoom',
+    state: {
+      cutoff: 1.5,
+      _showing: true
+    },
 
-		state: {
-			cutoff: 1.5,
-			_showing: true
-		},
+    onAdd: null,
 
-		onAdd: null,
+    onRemove: null,
 
-		onRemove: null,
-
-		system: function fadeOnZoomProc(dt, states) {
-			var zoom = noa.rendering._currentZoom
-			var ents = noa.entities
-			states.forEach(state => {
-				checkZoom(state, state.__id, zoom, ents)
-			})
-		}
-	}
-}
-
+    system: function fadeOnZoomProc(dt, states) {
+      var zoom = noa.rendering._currentZoom;
+      var ents = noa.entities;
+      states.forEach(state => {
+        checkZoom(state, state.__id, zoom, ents);
+      });
+    }
+  };
+};
 
 function checkZoom(state, id, zoom, ents) {
-	if (!ents.hasMesh(id)) return
+  if (!ents.hasMesh(id)) return;
 
-	if (state._showing && zoom < state.cutoff || !state._showing && zoom > state.cutoff) {
-		var mesh = ents.getMeshData(id).mesh
-		mesh.visibility = state._showing = (zoom > state.cutoff)
-	}
+  if (
+    (state._showing && zoom < state.cutoff) ||
+    (!state._showing && zoom > state.cutoff)
+  ) {
+    var mesh = ents.getMeshData(id).mesh;
+    mesh.visibility = state._showing = zoom > state.cutoff;
+  }
 }
-
-

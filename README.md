@@ -5,6 +5,10 @@ An experimental voxel engine.
 Examples:
 
 - [Minecraft Classic](https://classic.minecraft.net/) - a game from Mojang(!) built on this engine
+- [Minecraft Classic](https://classic.minecraft.net/) - a game from Mojang(!) built on this engine
+- [noa-testbed](https://andyhall.github.io/noa-testbed/) - An old demo, outdated but colorful
+- [test example](https://andyhall.github.io/noa/test/) - test world from this repo, implements most of the engine's features
+- [hello-world example](https://andyhall.github.io/noa/hello-world/) - bare minimum world, suitable for using as a base to build something out of
 - [noa-testbed](https://andyhall.github.io/noa-testbed/) - An old demo, outdated but colorful
 - [test example](https://andyhall.github.io/noa/test/) - test world from this repo, implements most of the engine's features
 - [hello-world example](https://andyhall.github.io/noa/hello-world/) - bare minimum world, suitable for using as a base to build something out of
