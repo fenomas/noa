@@ -53,7 +53,7 @@ Contributions are welcome! But please open an issue before building any nontrivi
 
 ## Editors
 
-If using VS Code, install the [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) extension. This will automatically use the Prettier settings from the repo to consistently format all files.
+If using VS Code, install the [EditorConfig for VS Code](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig) and [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) extensions. These will automatically use the EditorConfig and Prettier settings from the repo to consistently format files.
 
 ## Docs
 
