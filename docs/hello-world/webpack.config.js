@@ -16,7 +16,3 @@ module.exports = {
         stats: "minimal",
     },
 }
-
-
-
-

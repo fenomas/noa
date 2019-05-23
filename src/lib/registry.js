@@ -23,7 +23,7 @@ module.exports = function (noa, opts) {
  *      blockHandlers      id -> instance of `BlockCallbackHolder` or null 
  *      matIDs             matName -> matID (int)
  *      matData            matID -> { color, alpha, texture, textureAlpha }
-*/
+ */
 
 
 var defaults = {
@@ -49,7 +49,7 @@ function Registry(noa, opts) {
      * 
      *      data structures
      * 
-    */
+     */
 
     // lookup arrays for block props and flags - all keyed by blockID
     // fill in first value for id=0, empty space
@@ -62,8 +62,8 @@ function Registry(noa, opts) {
     var blockHandlers = [null]
 
     // material data structs
-    var matIDs = {}             // mat name -> id
-    var matData = [null]        // mat id -> { color, alpha, texture, textureAlpha }
+    var matIDs = {} // mat name -> id
+    var matData = [null] // mat id -> { color, alpha, texture, textureAlpha }
 
     // option data to save
     var texturePath = opts.texturePath
@@ -74,7 +74,7 @@ function Registry(noa, opts) {
      * 
      *      Block registration methods
      * 
-    */
+     */
 
 
 
@@ -103,7 +103,7 @@ function Registry(noa, opts) {
      *  * onSet(): block event handler
      *  * onUnset(): block event handler
      *  * onCustomMeshCreate(): block event handler
-    */
+     */
 
 
     this.registerBlock = function (id, _options) {
@@ -178,7 +178,7 @@ function Registry(noa, opts) {
      * 
      * @param name,color,textureURL,texHasAlpha
      * @param renderMaterial an optional BABYLON material to be used for block faces with this block material
-    */
+     */
 
     this.registerMaterial = function (name, color, textureURL, texHasAlpha, renderMaterial) {
         // console.log('register mat: ', name, color, textureURL)
@@ -202,7 +202,7 @@ function Registry(noa, opts) {
 
     /*
      *      quick accessors for querying block ID stuff
-    */
+     */
 
     // block solidity (as in physics)
     this.getBlockSolidity = function (id) {
@@ -258,7 +258,7 @@ function Registry(noa, opts) {
      * 
      *   Meant for internal use within the engine
      * 
-    */
+     */
 
 
     // internal access to lookup arrays
@@ -288,7 +288,7 @@ function Registry(noa, opts) {
      * 
      *      default initialization
      * 
-    */
+     */
 
     // add a default material and set ID=1 to it
     // note that registering new block data overwrites the old
@@ -305,7 +305,7 @@ function Registry(noa, opts) {
  * 
  *          helpers
  * 
-*/
+ */
 
 
 
@@ -328,11 +328,3 @@ function BlockCallbackHolder(opts) {
     this.onUnset = opts.onUnset || null
     this.onCustomMeshCreate = opts.onCustomMeshCreate || null
 }
-
-
-
-
-
-
-
-

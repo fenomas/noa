@@ -16,7 +16,7 @@ module.exports = constants
  *     1 bit solidity (i.e. physics-wise)
  *     1 bit opacity (whether voxel obscures neighboring faces)
  *     1 bit object marker (marks non-terrain blocks with custom meshes)
-*/
+ */
 
 
 var ID_BITS = 9
@@ -35,8 +35,6 @@ var OBJECT_BIT = 1 << n++
 
 constants.ID_MASK = ID_MASK
 constants.VAR_MASK = VAR_MASK
-constants.SOLID_BIT =  SOLID_BIT
+constants.SOLID_BIT = SOLID_BIT
 constants.OPAQUE_BIT = OPAQUE_BIT
 constants.OBJECT_BIT = OBJECT_BIT
-
-

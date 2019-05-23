@@ -34,7 +34,7 @@ function ObjMeshDat(id, x, y, z) {
  *  Per-chunk handling of the creation/disposal of voxels with static meshes
  * 
  * 
-*/
+ */
 
 
 function ObjectMesher() {
@@ -83,7 +83,7 @@ function ObjectMesher() {
      * 
      *    main implementation - re-creates all needed object mesh instances
      * 
-    */
+     */
 
     this.buildObjectMesh = function (chunk) {
         profile_hook('start')
@@ -201,13 +201,12 @@ function ObjectMesher() {
 
 
 var profile_hook = (function () {
-    if (!PROFILE) return function () { }
+    if (!PROFILE) return function () {}
     var every = 50
-    var timer = new (require('./util').Timer)(every, 'Object meshing')
+    var timer = new(require('./util').Timer)(every, 'Object meshing')
     return function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
         else timer.add(state)
     }
 })()
-

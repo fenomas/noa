@@ -3,9 +3,9 @@
 
 An experimental voxel engine.
 
-Examples:
+Example games:
  * [Minecraft Classic](https://classic.minecraft.net/) - a game from Mojang(!) built on this engine
- * [noa-testbed](https://andyhall.github.io/noa-testbed/) - An old demo, outdated but colorful
+ * [noa-testbed](https://andyhall.github.io/noa-testbed/) - It's an older demo sir, but it checks out. Outdated but colorful
  * [test example](https://andyhall.github.io/noa/test/) - test world from this repo, implements most of the engine's features
  * [hello-world example](https://andyhall.github.io/noa/hello-world/) - bare minimum world, suitable for using as a base to build something out of
 
@@ -18,8 +18,8 @@ Under active development, best way to try it is to clone and hack on the `develo
 (clone this repo)
 cd noa
 npm install
-git checkout develop   # newest version is in develop
-npm test               # runs demo world in /docs/test
+git checkout develop   # latest code is in the develop branch
+npm test               # run the demo world in /docs/test
 ```
 
 The `start` and `test` scripts run the minimal demo projects locally, via `webpack` and `webpack-dev-server` (which will be installed as dev dependencies). The `build` script rebuilds static bundles for both demos.
@@ -53,6 +53,8 @@ nontrivial new features. I'd like to keep this library lean,
 so if a given feature could be done as a separate module then that's probably what I'll suggest.
 
 > Please note I do all dev work on the `develop` branch; please send any PRs against that branch!
+
+For code style/formatting, the repo includes config files for [eslint](https://eslint.org/) and [js-beautify](https://github.com/beautify-web/js-beautify), which are both dev dependencies. If you use VSCode for editing, here are the extensions I used to run them automatically: [beautify](https://marketplace.visualstudio.com/items?itemName=HookyQR.beautify), [eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint).
 
 
 ## Docs

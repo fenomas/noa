@@ -1,0 +1,13 @@
+{
+    "search.exclude": {
+        "**/node_modules": true,
+        "docs/**/bundle.js": true,
+        "docs/**/babylon.js": true
+    },
+    "editor.detectIndentation": true,
+
+    "eslint.enable": true,
+    "html.format.enable": false,
+    "javascript.format.enable": false,
+    "json.format.enable": false,
+}

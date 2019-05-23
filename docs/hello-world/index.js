@@ -1,5 +1,4 @@
-/* globals BABYLON */
-'use strict';
+'use strict'
 
 
 /** 
@@ -20,31 +19,31 @@
  * Should serve & open the demo at `localhost:8080/hello-world.html`.
  * 
  * Source is self-explanatory!
-*/
+ */
 
 
 var noaEngine = require('../..')
 
 var opts = {
-	// 
-	// 		Random sampling of some possible options:
-	// 
-	debug: true,
-	showFPS: true,
-	// silent: false,
-	// inverseY: true,
-	// chunkSize: 32,
-	// chunkAddDistance: 1,
-	// chunkRemoveDistance: 3,
-	// blockTestDistance: 20,
-	// texturePath: 'textures/',
-	// playerStart: [0.5,15,0.5],
-	// playerHeight: 1.4,
-	// playerWidth: 1.0,
-	// playerAutoStep: true,
-	// useAO: true,
-	// AOmultipliers: [ 0.93, 0.8, 0.5 ],
-	// reverseAOmultiplier: 1.0,
+    // 
+    // 		Random sampling of some possible options:
+    // 
+    debug: true,
+    showFPS: true,
+    // silent: false,
+    // inverseY: true,
+    // chunkSize: 32,
+    // chunkAddDistance: 1,
+    // chunkRemoveDistance: 3,
+    // blockTestDistance: 20,
+    // texturePath: 'textures/',
+    // playerStart: [0.5,15,0.5],
+    // playerHeight: 1.4,
+    // playerWidth: 1.0,
+    // playerAutoStep: true,
+    // useAO: true,
+    // AOmultipliers: [ 0.93, 0.8, 0.5 ],
+    // reverseAOmultiplier: 1.0,
 }
 
 
@@ -72,27 +71,27 @@ var grassID = noa.registry.registerBlock(2, { material: 'grass' })
 // add a listener for when the engine requests a new world chunk
 // `data` is an ndarray - see https://github.com/scijs/ndarray
 noa.world.on('worldDataNeeded', function (id, data, x, y, z) {
-	// populate ndarray with world data (block IDs or 0 for air)
-	for (var i = 0; i < data.shape[0]; ++i) {
-		for (var k = 0; k < data.shape[2]; ++k) {
-			var height = getHeightMap(x + i, z + k)
-			for (var j = 0; j < data.shape[1]; ++j) {
-				if (y + j < height) {
-					if (y + j < 0) data.set(i, j, k, dirtID)
-					else data.set(i, j, k, grassID);
-				}
-			}
-		}
-	}
-	// pass the finished data back to the game engine
-	noa.world.setChunkData(id, data)
+    // populate ndarray with world data (block IDs or 0 for air)
+    for (var i = 0; i < data.shape[0]; ++i) {
+        for (var k = 0; k < data.shape[2]; ++k) {
+            var height = getHeightMap(x + i, z + k)
+            for (var j = 0; j < data.shape[1]; ++j) {
+                if (y + j < height) {
+                    if (y + j < 0) data.set(i, j, k, dirtID)
+                    else data.set(i, j, k, grassID)
+                }
+            }
+        }
+    }
+    // pass the finished data back to the game engine
+    noa.world.setChunkData(id, data)
 })
 
 // worldgen - return a heightmap for a given [x,z]
 function getHeightMap(x, z) {
-	var xs = 0.8 + Math.sin(x / 10)
-	var zs = 0.4 + Math.sin(z / 15 + x / 30)
-	return xs + zs
+    var xs = 0.8 + Math.sin(x / 10)
+    var zs = 0.4 + Math.sin(z / 15 + x / 30)
+    return xs + zs
 }
 
 
@@ -108,7 +107,7 @@ var w = dat.width
 var h = dat.height
 
 // make a Babylon.js mesh and scale it, etc.
-var scene = noa.rendering.getScene()  // Babylon's "Scene" object
+var scene = noa.rendering.getScene()
 var mesh = BABYLON.Mesh.CreateBox('player', 1, scene)
 mesh.scaling.x = mesh.scaling.z = w
 mesh.scaling.y = h
@@ -118,8 +117,8 @@ var offset = [0, h / 2, 0]
 
 // a "mesh" component to the player entity
 noa.entities.addComponent(eid, noa.entities.names.mesh, {
-	mesh: mesh,
-	offset: offset
+    mesh: mesh,
+    offset: offset
 })
 
 
@@ -130,12 +129,12 @@ noa.entities.addComponent(eid, noa.entities.names.mesh, {
 
 // on left mouse, set targeted block to be air
 noa.inputs.down.on('fire', function () {
-	if (noa.targetedBlock) noa.setBlock(0, noa.targetedBlock.position);
+    if (noa.targetedBlock) noa.setBlock(0, noa.targetedBlock.position)
 })
 
 // on right mouse, place some grass
 noa.inputs.down.on('alt-fire', function () {
-	if (noa.targetedBlock) noa.addBlock(grassID, noa.targetedBlock.adjacent)
+    if (noa.targetedBlock) noa.addBlock(grassID, noa.targetedBlock.adjacent)
 })
 
 // add a key binding for "E" to do the same as alt-fire
@@ -145,15 +144,12 @@ noa.inputs.bind('alt-fire', 'E')
 // each tick, consume any scroll events and use them to zoom camera
 var zoom = 0
 noa.on('tick', function (dt) {
-	var scroll = noa.inputs.state.scrolly
-	if (scroll === 0) return
+    var scroll = noa.inputs.state.scrolly
+    if (scroll === 0) return
 
-	// handle zoom controls
-	zoom += (scroll > 0) ? 1 : -1
-	if (zoom < 0) zoom = 0
-	if (zoom > 10) zoom = 10
-	noa.rendering.zoomDistance = zoom
+    // handle zoom controls
+    zoom += (scroll > 0) ? 1 : -1
+    if (zoom < 0) zoom = 0
+    if (zoom > 10) zoom = 10
+    noa.rendering.zoomDistance = zoom
 })
-
-
-

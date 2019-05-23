@@ -64,6 +64,3 @@ function Timer(_every, _title) {
         }
     }
 }
-
-
-

@@ -22,13 +22,13 @@ var objectMesher = require('./objectMesher')
  *  Stores and manages voxel ids and flags for each voxel within chunk
  *  See constants.js for internal data representation
  * 
-*/
+ */
 
 
 
 // data representation
 var ID_MASK = constants.ID_MASK
-var VAR_MASK = constants.VAR_MASK
+// var VAR_MASK = constants.VAR_MASK // NYI
 var SOLID_BIT = constants.SOLID_BIT
 var OPAQUE_BIT = constants.OPAQUE_BIT
 var OBJECT_BIT = constants.OBJECT_BIT
@@ -40,7 +40,7 @@ var OBJECT_BIT = constants.OBJECT_BIT
  *
  *    Chunk constructor
  *
-*/
+ */
 
 function Chunk(noa, id, i, j, k, size) {
     this.id = id
@@ -104,7 +104,7 @@ function setBlockLookups(noa) {
  *
  *    Chunk API
  *
-*/
+ */
 
 // get/set deal with block IDs, so that this class acts like an ndarray
 
@@ -220,7 +220,7 @@ function packID(id) {
  *      Init
  * 
  *  Gets called right after client filled the voxel ID data array
-*/
+ */
 
 
 
@@ -344,7 +344,3 @@ function callAllBlockHandlers(chunk, type) {
         d0 += si
     }
 }
-
-
-
-

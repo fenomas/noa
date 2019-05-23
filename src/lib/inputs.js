@@ -35,8 +35,3 @@ function makeInputs(noa, opts, element) {
     }
     return inputs
 }
-
-
-
-
-

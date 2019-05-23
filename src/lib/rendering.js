@@ -50,8 +50,8 @@ var defaults = {
 function Rendering(noa, opts, canvas) {
     this.noa = noa
     opts = Object.assign({}, defaults, opts)
-    this.zoomDistance = opts.initialCameraZoom      // zoom setting
-    this._currentZoom = this.zoomDistance       // current actual zoom level
+    this.zoomDistance = opts.initialCameraZoom // zoom setting
+    this._currentZoom = this.zoomDistance // current actual zoom level
     this._cameraZoomSpeed = opts.cameraZoomSpeed
     this._maxCamAngle = opts.cameraMaxAngle
 
@@ -86,7 +86,7 @@ function initScene(self, canvas, opts) {
     scene.detachControl()
 
     // octree setup
-    self._octree = new BABYLON.Octree($ => { })
+    self._octree = new BABYLON.Octree($ => {})
     self._octree.blocks = []
     scene._selectionOctree = self._octree
 
@@ -111,6 +111,7 @@ function initScene(self, canvas, opts) {
 
     // apply some defaults
     self._light = new BABYLON.HemisphericLight('light', new vec3(0.1, 1, 0.3), scene)
+
     function arrToColor(a) { return new col3(a[0], a[1], a[2]) }
     scene.clearColor = arrToColor(opts.clearColor)
     scene.ambientColor = arrToColor(opts.ambientColor)
@@ -127,7 +128,7 @@ function initScene(self, canvas, opts) {
 
 /*
  *   PUBLIC API 
-*/
+ */
 
 // Init anything about scene that needs to wait for engine internals
 Rendering.prototype.initScene = function () {
@@ -329,13 +330,13 @@ Rendering.prototype.makeStandardMaterial = function (name) {
  *   ACCESSORS FOR CHUNK ADD/REMOVAL/MESHING
  *
  * 
-*/
+ */
 
 Rendering.prototype.prepareChunkForRendering = function (chunk) {
     var cs = chunk.size
     var min = new vec3(chunk.x, chunk.y, chunk.z)
     var max = new vec3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
-    chunk.octreeBlock = new BABYLON.OctreeBlock(min, max, undefined, undefined, undefined, $ => { })
+    chunk.octreeBlock = new BABYLON.OctreeBlock(min, max, undefined, undefined, undefined, $ => {})
     this._octree.blocks.push(chunk.octreeBlock)
 }
 
@@ -366,12 +367,11 @@ Rendering.prototype.removeTerrainMesh = function (chunk) {
 
 
 
-
 /*
  *
  *   INTERNALS
  *
-*/
+ */
 
 
 
@@ -380,7 +380,7 @@ Rendering.prototype.removeTerrainMesh = function (chunk) {
  *
  *  zoom/camera related internals
  *
-*/
+ */
 
 
 // check if obstructions are behind camera by sweeping back an AABB
@@ -506,22 +506,11 @@ function getHighlightMesh(rendering) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 /*
  * 
  *      sanity checks:
  * 
-*/
+ */
 
 Rendering.prototype.debug_SceneCheck = function () {
     var meshes = this._scene.meshes
@@ -569,8 +558,11 @@ Rendering.prototype.debug_SceneCheck = function () {
     var avgPerOct = Math.round(10 * octs.length / numOcts) / 10
     console.log('meshes - octree:', octs.length, '  dynamic:', dyns.length,
         '   avg meshes/octreeBlock:', avgPerOct)
+
     function warn(obj, msg) { console.warn(obj.name + ' --- ' + msg) }
+
     function empty(mesh) { return (mesh.getIndices().length === 0) }
+
     function missing(obj, list1, list2) {
         if (!obj) return false
         if (list1.includes(obj)) return false
@@ -601,9 +593,9 @@ Rendering.prototype.debug_MeshCount = function () {
 
 
 var profile_hook = (function () {
-    if (!PROFILE) return function () { }
+    if (!PROFILE) return function () {}
     var every = 200
-    var timer = new (require('./util').Timer)(every, 'render internals')
+    var timer = new(require('./util').Timer)(every, 'render internals')
     return function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
@@ -613,7 +605,8 @@ var profile_hook = (function () {
 
 
 
-var fps_hook = function () { }
+var fps_hook = function () {}
+
 function setUpFPS() {
     var div = document.createElement('div')
     div.id = 'noa_fps'
@@ -642,5 +635,3 @@ function setUpFPS() {
         start = nt
     }
 }
-
-

@@ -89,7 +89,7 @@ var worldCoordToChunkIndex
 
 /*
  *   PUBLIC API 
-*/
+ */
 
 
 
@@ -258,7 +258,7 @@ World.prototype.setChunkData = function (id, array, userData) {
  * Calling this causes all world chunks to get unloaded and recreated 
  * (after receiving new world data from the client). This is useful when
  * you're teleporting the player to a new world, e.g.
-*/
+ */
 World.prototype.invalidateAllChunks = function () {
     var toInval = this._chunkIDsInMemory.concat(this._chunkIDsToCreate)
     for (var id of toInval) {
@@ -281,8 +281,11 @@ World.prototype.report = function () {
     _report(this, '  creating:  ', this._chunkIDsToCreate)
     _report(this, '  meshing:   ', this._chunkIDsToMesh.concat(this._chunkIDsToMeshFirst))
 }
+
 function _report(world, name, arr, ext) {
-    var ct = 0, full = 0, empty = 0
+    var ct = 0,
+        full = 0,
+        empty = 0
     for (var id of arr) {
         if (id.size) {
             if (id.isInvalid) ct++
@@ -303,14 +306,19 @@ function _report(world, name, arr, ext) {
 
 
 /*
- *    INTERNALS
-*/
+ *
+ *
+ *            INTERNALS
+ *
+ *
+ */
 
 
 // canonical string ID handling for the i,j,k-th chunk
 function getChunkID(i, j, k) {
     return i + '|' + j + '|' + k
 }
+
 function parseChunkID(id) {
     var arr = id.split('|')
     return [parseInt(arr[0]), parseInt(arr[1]), parseInt(arr[2])]
@@ -402,7 +410,6 @@ function processMeshingQueues(self, firstOnly) {
     profile_hook('meshed')
     return false
 }
-
 
 
 
@@ -574,8 +581,8 @@ function unenqueueID(id, queue) {
 
 
 
-var profile_queues = function (w, s) { }
-if (PROFILE_QUEUES) (function () {
+var profile_queues = function (w, s) {}
+if (PROFILE_QUEUES)(function () {
     var every = 100
     var iter = 0
     var t, nrem, nreq, totalrec, nmesh
@@ -637,15 +644,13 @@ if (PROFILE_QUEUES) (function () {
 })()
 
 
-var profile_hook = function (s) { }
-if (PROFILE) (function () {
+var profile_hook = function (s) {}
+if (PROFILE)(function () {
     var every = 200
-    var timer = new (require('./util').Timer)(every, 'world ticks')
+    var timer = new(require('./util').Timer)(every, 'world ticks')
     profile_hook = function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
         else timer.add(state)
     }
 })()
-
-

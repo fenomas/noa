@@ -5,7 +5,7 @@
  * @url      github.com/andyhall/noa
  * @author   Andy Hall <andy@fenomas.com>
  * @license  MIT
-*/
+ */
 
 var vec3 = require('gl-vec3')
 var ndarray = require('ndarray')
@@ -40,7 +40,7 @@ var defaults = {
     playerWidth: 0.6,
     playerStart: [0, 10, 0],
     playerAutoStep: false,
-    tickRate: 33,  // ms per tick - not ticks per second
+    tickRate: 33, // ms per tick - not ticks per second
     blockTestDistance: 10,
     stickyPointerLock: true,
     dragCameraOutsidePointerLock: true,
@@ -57,7 +57,7 @@ var defaults = {
  * ```
  * 
  * @class noa
-*/
+ */
 
 function Engine(opts) {
     if (!(this instanceof Engine)) return new Engine(opts)
@@ -105,9 +105,9 @@ function Engine(opts) {
 
     /** Entity id for the player entity */
     this.playerEntity = ents.add(
-        opts.playerStart,    // starting location- TODO: get from options
+        opts.playerStart, // starting location
         opts.playerWidth, opts.playerHeight,
-        null, null,          // no mesh for now, no meshOffset, 
+        null, null, // no mesh for now, no meshOffset, 
         true, true
     )
 
@@ -181,7 +181,8 @@ function Engine(opts) {
         this.inputs.bind('debug', 'Z')
         this.inputs.down.on('debug', function onDebug() {
             debug = !debug
-            if (debug) window.scene.debugLayer.show(); else window.scene.debugLayer.hide();
+            if (debug) window.scene.debugLayer.show()
+            else window.scene.debugLayer.hide()
         })
     }
 
@@ -194,7 +195,7 @@ Engine.prototype = Object.create(EventEmitter.prototype)
 
 /*
  *   Core Engine API
-*/
+ */
 
 
 
@@ -202,34 +203,36 @@ Engine.prototype = Object.create(EventEmitter.prototype)
 /*
  * Tick function, called by container module at a fixed timestep. Emits #tick(dt),
  * where dt is the tick rate in ms (default 16.6)
-*/
+ */
 
 Engine.prototype.tick = function () {
     if (this._paused) return
     profile_hook('start')
-    var dt = this._tickRate       // fixed timesteps!
-    this.world.tick(dt)           // chunk creation/removal
+    var dt = this._tickRate // fixed timesteps!
+    this.world.tick(dt) // chunk creation/removal
     profile_hook('world')
     if (!this.world.playerChunkLoaded) {
         // when waiting on worldgen, just tick the meshing queue and exit
         this.rendering.tick(dt)
         return
     }
-    this.physics.tick(dt)         // iterates physics
+    this.physics.tick(dt) // iterates physics
     profile_hook('physics')
-    this.rendering.tick(dt)       // zooms camera, does deferred chunk meshing
+    this.rendering.tick(dt) // zooms camera, does deferred chunk meshing
     profile_hook('rendering')
-    updateBlockTargets(this)      // finds targeted blocks, and highlights one if needed
+    updateBlockTargets(this) // finds targeted blocks, and highlights one if needed
     profile_hook('targets')
     this.emit('tick', dt)
     profile_hook('tick event')
     profile_hook('end')
-    this.inputs.tick()            // clears accumulated tick/mouseMove data
+    this.inputs.tick() // clears accumulated tick/mouseMove data
     if (DEBUG_QUEUES) debugQueues(this)
 }
 
 
-var __qwasDone = true, __qstart
+var __qwasDone = true,
+    __qstart
+
 function debugQueues(self) {
     var a = self.world._chunkIDsToAdd.length
     var b = self.world._chunkIDsToCreate.length
@@ -259,7 +262,7 @@ function debugQueues(self) {
 /*
  * Render function, called every animation frame. Emits #beforeRender(dt), #afterRender(dt) 
  * where dt is the time in ms *since the last tick*.
-*/
+ */
 
 Engine.prototype.render = function (framePart) {
     if (this._paused) return
@@ -287,12 +290,12 @@ Engine.prototype.render = function (framePart) {
 
 /*
  *   Utility APIs
-*/
+ */
 
 /** 
  * Pausing the engine will also stop render/tick events, etc.
  * @param paused
-*/
+ */
 Engine.prototype.setPaused = function (paused) {
     this._paused = !!paused
     // when unpausing, clear any built-up mouse inputs
@@ -458,26 +461,21 @@ var _prevTargetHash = ''
 
 
 
-
-var profile_hook = function (s) { }
-var profile_hook_render = function (s) { }
-if (PROFILE) (function () {
-    var timer = new (require('./lib/util').Timer)(200, 'tick   ')
+var profile_hook = function (s) {}
+var profile_hook_render = function (s) {}
+if (PROFILE)(function () {
+    var timer = new(require('./lib/util').Timer)(200, 'tick   ')
     profile_hook = function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
         else timer.add(state)
     }
 })()
-if (PROFILE_RENDER) (function () {
-    var timer = new (require('./lib/util').Timer)(200, 'render ')
+if (PROFILE_RENDER)(function () {
+    var timer = new(require('./lib/util').Timer)(200, 'render ')
     profile_hook_render = function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()
         else timer.add(state)
     }
 })()
-
-
-
-
