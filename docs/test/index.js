@@ -237,16 +237,15 @@ var paused = false
 
 
 // world swapping test
-
-function setWorld(switched) {
-    dirtID = (switched) ? 2 : 1
-    grassID = (switched) ? 1 : 2
-}
-
 noa.inputs.bind('swap-world', 'O')
 noa.inputs.down.on('swap-world', function () {
     swapped = !swapped
-    setWorld(swapped)
+    var tmp = dirtID
+    dirtID = grassID
+    grassID = tmp
     noa.world.invalidateAllChunks()
+    setTimeout(function () {
+        addWorldFeatures()
+    }, 500)
 })
 var swapped = false
