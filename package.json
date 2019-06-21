@@ -3,6 +3,9 @@
     "version": "0.25.2",
     "description": "Experimental voxel game engine",
     "main": "src/index.js",
+    "files": [
+        "/src"
+    ],
     "scripts": {
         "start": "cd docs/hello-world && webpack-dev-server",
         "test": "cd docs/test && webpack-dev-server",
