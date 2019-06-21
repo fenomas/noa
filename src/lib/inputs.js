@@ -1,6 +1,7 @@
 'use strict'
 
 var createInputs = require('game-inputs')
+// var createInputs = require('../../../../npm-modules/game-inputs')
 
 
 module.exports = function (noa, opts, element) {
