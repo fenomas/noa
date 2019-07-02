@@ -94,6 +94,9 @@ function Engine(opts) {
     // convenience
     this.ents = this.entities
 
+    // how far engine is into the current tick. Updated each render.
+    this.positionInCurrentTick = 0
+
     // physics engine - solves collisions, properties, etc.
     this.physics = createPhysics(this, opts)
 
@@ -266,8 +269,13 @@ function debugQueues(self) {
 
 Engine.prototype.render = function (framePart) {
     if (this._paused) return
+    // update frame position property and calc dt
+    var framesAdvanced = framePart - this.positionInCurrentTick
+    if (framesAdvanced<0) framesAdvanced += 1
+    this.positionInCurrentTick = framePart
+    var dt = framesAdvanced * this._tickRate // ms since last tick
+    // core render:
     profile_hook_render('start')
-    var dt = framePart * this._tickRate // ms since last tick
     // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
     if (this.container.hasPointerLock ||
         !this.container.supportsPointerLock ||

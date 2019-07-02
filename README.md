@@ -67,6 +67,9 @@ consult the source.
 
 ## Recent changes:
 
+ * 0.26.0
+   * Render events now pass correct `dt` argument - see issue #53
+   * Bug fix to physics, workaround for bug in current mac/chrome
  * 0.25.0
    * Adds `debug` option: populates `window` with useful references, binds `Z` to BJS inspector
    * Now current with Babylon.js 4.0
