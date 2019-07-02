@@ -1,6 +1,6 @@
 {
     "name": "noa-engine",
-    "version": "0.25.3",
+    "version": "0.25.4",
     "description": "Experimental voxel game engine",
     "main": "src/index.js",
     "files": [
