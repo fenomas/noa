@@ -9,10 +9,12 @@ module.exports = function (noa, opts) {
     return new Container(noa, opts)
 }
 
-/*
- *  Container module
- *    Wraps game-shell module and manages HTML container, canvas, etc.
- *    Emits: DOMready
+/**
+ * @class
+ * @typicalname noa.container
+ * @emits DOMready
+ * @classdesc Wraps `game-shell` module 
+ * and manages HTML container, canvas, etc.
  */
 
 function Container(noa, opts) {

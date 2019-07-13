@@ -9,10 +9,11 @@ module.exports = function (noa, opts) {
 }
 
 
-/*
- *
- *    Simple wrapper module for the physics library
- *
+/**
+ * @class Physics
+ * @typicalname noa.physics
+ * @classdesc Wrapper module for the 
+ * [physics engine](https://github.com/andyhall/voxel-physics-engine)
  */
 
 

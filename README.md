@@ -4,10 +4,10 @@
 An experimental voxel engine.
 
 Example games:
- * [Minecraft Classic](https://classic.minecraft.net/) - a game from Mojang(!) built on this engine
- * [noa-testbed](https://andyhall.github.io/noa-testbed/) - It's an older demo sir, but it checks out. Outdated but colorful
- * [test example](https://andyhall.github.io/noa/test/) - test world from this repo, implements most of the engine's features
- * [hello-world example](https://andyhall.github.io/noa/hello-world/) - bare minimum world, suitable for using as a base to build something out of
+ * [Minecraft Classic](https://classic.minecraft.net/) - made by Mojang *(!!)*
+ * [noa-testbed](https://andyhall.github.io/noa-testbed/) - It's an older demo sir, but it checks out. Outdated but colorful.
+ * [test example](https://andyhall.github.io/noa/test/) - sample world implementing most of the engine's features ([source](/docs/test))
+ * [hello-world example](https://andyhall.github.io/noa/hello-world/) - bare minimum world, suitable as a starting point to build something out of ([source](/docs/hello-world))
 
 
 ## Usage
@@ -38,30 +38,29 @@ var noa = engine({
 })
 ```
 
-----
+## Docs
+
+See the [API reference](API.md) for an overview of engine classes and methods.
+Docs are evolving though, some details are only documented in source comments.
+Doc/usage PRs welcome!
+
 
 ## Status, contributing, etc.
 
-This library attempts to be something you can build a voxel game on top of. 
-It's not a fully-featured game engine; it just tries to manage the painful parts 
-of using voxels (e.g. chunking, meshing), and certain things that are 
+This library is under active development. 
+It sets out to manage only the painful parts of making a voxel game 
+(e.g. chunking, meshing), and certain things that are 
 tightly coupled to voxel implementation (physics, raycasting, collisions..), 
 but otherwise stay out of your way.
 
-Contributions are welcome! But please open an issue before building any 
-nontrivial new features. I'd like to keep this library lean, 
-so if a given feature could be done as a separate module then that's probably what I'll suggest.
+Contributions are welcome! If you have a nontrivial new feature in mind, 
+please open an issue first so we can discuss where it should go, 
+whether it should be a plugin, etc.
 
 > Please note I do all dev work on the `develop` branch; please send any PRs against that branch!
 
 For code style/formatting, the repo includes config files for [eslint](https://eslint.org/) and [js-beautify](https://github.com/beautify-web/js-beautify), which are both dev dependencies. If you use VSCode for editing, here are the extensions I used to run them automatically: [beautify](https://marketplace.visualstudio.com/items?itemName=HookyQR.beautify), [eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint).
 
-
-## Docs
-
-The source is pretty fully commented, mostly with JSDoc-style comments, 
-but I don't currently have a good docgen tool, so for now it's best to 
-consult the source.
 
 ----
 

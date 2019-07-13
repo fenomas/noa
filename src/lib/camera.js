@@ -6,11 +6,6 @@ module.exports = function (noa, opts) {
 
 
 
-/*
- *    Controller for the camera
- *
- */
-
 
 var defaults = {
     rotationScaleX: 0.0025,
@@ -19,13 +14,27 @@ var defaults = {
 }
 
 
+/** 
+ * @class
+ * @typicalname noa.cameraControls
+ * @classdesc Manages the camera,
+ * exposes settings for mouse sensitivity.
+ */
+
+
 function CameraController(noa, opts) {
     this.noa = noa
 
     // options
     opts = Object.assign({}, defaults, opts)
+
+    /** Horizontal sensitivity */
     this.rotationScaleX = opts.rotationScaleX
+
+    /** Vertical sensitivity */
     this.rotationScaleY = opts.rotationScaleY
+
+    /** Mouse look inverse setting */
     this.inverseY = opts.inverseY
 }
 
@@ -33,8 +42,10 @@ function CameraController(noa, opts) {
 
 
 
-/**
+/*
+ *
  * On render, move/rotate the camera based on target and mouse inputs
+ *
  */
 
 CameraController.prototype.updateForRender = function () {

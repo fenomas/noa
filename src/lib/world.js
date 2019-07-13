@@ -21,14 +21,15 @@ var defaultOptions = {
 }
 
 /**
- * Module for managing the world, and its chunks
- * @class noa.world
+ * @class
+ * @typicalname noa.world
+ * @emits worldDataNeeded(id, ndarray, x, y, z)
+ * @emits chunkAdded(chunk)
+ * @emits chunkChanged(chunk)
+ * @emits chunkBeingRemoved(id, ndarray, userData)
+ * @classdesc Manages the world and its chunks
  * 
- * Emits:
- *  * worldDataNeeded  (id, ndarray, x, y, z)
- *  * chunkAdded (chunk)
- *  * chunkChanged (chunk)
- *  * chunkBeingRemoved (id, ndarray, userData)
+ * Extends `EventEmitter`
  */
 
 function World(noa, opts) {

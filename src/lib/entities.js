@@ -16,14 +16,15 @@ var defaults = {
 
 
 /**
- * Wrangles entities. 
+ * @class Entities
+ * @typicalname noa.ents
+ * @classdesc Wrangles entities. Aliased as `noa.ents`.
+ * 
  * This class is an instance of [ECS](https://github.com/andyhall/ent-comp), 
  * and as such implements the usual ECS methods.
  * It's also decorated with helpers and accessor functions for getting component existence/state.
  * 
  * Expects entity definitions in a specific format - see source `components` folder for examples.
- * 
- * @class noa.entities
  */
 
 function Entities(noa, opts) {
@@ -34,10 +35,7 @@ function Entities(noa, opts) {
     opts = Object.assign({}, defaults, opts)
 
     // properties
-    /**
-     * Hash containing the component names of built-in components.
-     * @name names
-     */
+    // Hash containing the component names of built-in components.
     this.names = {}
 
     // options

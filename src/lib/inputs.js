@@ -9,6 +9,14 @@ module.exports = function (noa, opts, element) {
 }
 
 
+/**
+ * @class Inputs
+ * @typicalname noa.inputs
+ * @classdesc Abstracts key/mouse input. 
+ * For docs see [andyhall/game-inputs](https://github.com/andyhall/game-inputs)
+ */
+
+
 var defaultBindings = {
     bindings: {
         "forward": ["W", "<up>"],

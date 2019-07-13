@@ -47,22 +47,47 @@ var defaults = {
     skipDefaultHighlighting: false,
 }
 
+
 /**
- * Main engine object.  
- * Emits: *tick, beforeRender, afterRender, targetBlockChanged*
+ * Main engine object.
+ * Takes a big options object full of flags and settings as a parameter.
  * 
  * ```js
- * var noaEngine = require('noa-engine')
- * var noa = noaEngine(opts)
+ * var opts = {
+ *     debug: false,
+ *     silent: false,
+ *     playerHeight: 1.8,
+ *     playerWidth: 0.6,
+ *     playerStart: [0, 10, 0],
+ *     playerAutoStep: false,
+ *     tickRate: 33, // ms per tick - not ticks per second
+ *     blockTestDistance: 10,
+ *     stickyPointerLock: true,
+ *     dragCameraOutsidePointerLock: true,
+ *     skipDefaultHighlighting: false,
+ * }
+ * var NoaEngine = require('noa-engine')
+ * var noa = NoaEngine(opts)
  * ```
  * 
- * @class noa
+ * @class
+ * @alias Noa
+ * @typicalname noa
+ * @emits tick(dt)
+ * @emits beforeRender(dt)
+ * @emits afterRender(dt)
+ * @emits targetBlockChanged(blockDesc)
+ * @classdesc Root class of the noa engine
+ * 
+ * Extends: `EventEmitter`
  */
 
 function Engine(opts) {
     if (!(this instanceof Engine)) return new Engine(opts)
 
+    /**  version string, e.g. `"0.25.4"` */
     this.version = require('../package.json').version
+
     if (!opts.silent) {
         var debugstr = (opts.debug) ? ' (debug)' : ''
         console.log(`noa-engine v${this.version}${debugstr}`)
@@ -74,33 +99,56 @@ function Engine(opts) {
     this._dragOutsideLock = opts.dragCameraOutsidePointerLock
     var self = this
 
-    // container (html/div) manager
+    /**
+     * container (html/div) manager
+     * @type {Container}
+     */
     this.container = createContainer(this, opts)
 
-    // inputs manager - abstracts key/mouse input
+    /**
+     * inputs manager - abstracts key/mouse input
+     * @type {Inputs}
+     */
     this.inputs = createInputs(this, opts, this.container.element)
 
-    // create block/item property registry
+    /**
+     * block/item property registry
+     * @type {Registry}
+     */  
     this.registry = createRegistry(this, opts)
 
-    // create world manager
+    /**
+     * world manager
+     * @type {World}
+     */  
     this.world = createWorld(this, opts)
 
-    // rendering manager - abstracts all draws to 3D context
+    /**
+     * Rendering manager
+     * @type {Rendering}
+     */
     this.rendering = createRendering(this, opts, this.container.canvas)
 
-    // Entity manager / Entity Component System (ECS)
+    /** Entity manager / Entity Component System (ECS) 
+     * Aliased to `noa.ents` for convenience.
+     * @type {Entities}
+     */
     this.entities = createEntities(this, opts)
-    // convenience
     this.ents = this.entities
 
     // how far engine is into the current tick. Updated each render.
     this.positionInCurrentTick = 0
 
-    // physics engine - solves collisions, properties, etc.
+    /**
+     * physics engine - solves collisions, properties, etc.
+     * @type {Physics}
+     */
     this.physics = createPhysics(this, opts)
-
-    // camera controller
+    
+    /**
+     * Manages camera, view angle, etc.
+     * @type {CameraController}
+     */
     this.cameraControls = createCamControls(this, opts)
 
 
@@ -123,7 +171,9 @@ function Engine(opts) {
     body.gravityMultiplier = 2 // less floaty
     body.autoStep = opts.playerAutoStep // auto step onto blocks
 
-    /** reference to player entity's physics body */
+    /** Reference to player entity's physics body
+     * Equivalent to: `noa.ents.getPhysicsBody(noa.playerEntity)`
+     */
     this.playerBody = body
 
     // input component - sets entity's movement state from key inputs
@@ -271,7 +321,7 @@ Engine.prototype.render = function (framePart) {
     if (this._paused) return
     // update frame position property and calc dt
     var framesAdvanced = framePart - this.positionInCurrentTick
-    if (framesAdvanced<0) framesAdvanced += 1
+    if (framesAdvanced < 0) framesAdvanced += 1
     this.positionInCurrentTick = framePart
     var dt = framesAdvanced * this._tickRate // ms since last tick
     // core render:

@@ -45,7 +45,11 @@ var defaults = {
 
 
 
-
+/**
+ * @class
+ * @typicalname noa.rendering
+ * @classdesc Manages all rendering.
+*/
 
 function Rendering(noa, opts, canvas) {
     this.noa = noa
@@ -140,7 +144,10 @@ Rendering.prototype.initScene = function () {
     })
 }
 
-// accessor for client app to build meshes and register materials
+/**
+ * The Babylon `scene` object representing the game world.
+ * @member
+ */
 Rendering.prototype.getScene = function () {
     return this._scene
 }
@@ -201,14 +208,16 @@ Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
 }
 var _highlightPos = glvec3.create()
 
-
+/** @method */
 Rendering.prototype.getCameraVector = function () {
     return vec3.TransformCoordinates(BABYLON.Axis.Z, this._rotationHolder.getWorldMatrix())
 }
 var zero = vec3.Zero()
+/** @method */
 Rendering.prototype.getCameraPosition = function () {
     return vec3.TransformCoordinates(zero, this._camera.getWorldMatrix())
 }
+/** @method */
 Rendering.prototype.getCameraRotation = function () {
     var rot = this._rotationHolder.rotation
     return [rot.x, rot.y]
@@ -221,9 +230,11 @@ Rendering.prototype.setCameraRotation = function (x, y) {
 
 
 
-
-// add a mesh to the scene's octree setup so that it renders
-// pass in isStatic=true if the mesh won't move (i.e. change octree blocks)
+/**
+ * add a mesh to the scene's octree setup so that it renders
+ * pass in isStatic=true if the mesh won't move (i.e. change octree blocks)
+ * @method
+ */
 Rendering.prototype.addMeshToScene = function (mesh, isStatic) {
     // exit silently if mesh has already been added and not removed
     if (mesh._currentNoaChunk || this._octree.dynamicContent.includes(mesh)) {
@@ -246,7 +257,9 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic) {
     mesh.onDisposeObservable.add(remover)
 }
 
-// undo the above
+/**  Undoes everything `addMeshToScene` does
+ * @method
+ */
 Rendering.prototype.removeMeshFromScene = function (mesh) {
     if (mesh._currentNoaChunk && mesh._currentNoaChunk.octreeBlock) {
         removeUnorderedListItem(mesh._currentNoaChunk.octreeBlock.entries, mesh)
