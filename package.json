@@ -9,7 +9,8 @@
     "scripts": {
         "start": "cd docs/hello-world && webpack-dev-server",
         "test": "cd docs/test && webpack-dev-server",
-        "build": "cd docs/hello-world && webpack && cd ../test && webpack"
+        "build": "cd docs/hello-world && webpack && cd ../test && webpack",
+        "doc": "jsdoc2md -f src/* src/**/* -g table -p list --partial doc-templates/* > API.md"
     },
     "author": "Andy Hall",
     "keywords": [
@@ -38,6 +39,7 @@
     "devDependencies": {
         "eslint": "^5.16.0",
         "js-beautify": "^1.10.0",
+        "jsdoc-to-markdown": "^5.0.0",
         "webpack": "^4.32.0",
         "webpack-cli": "^3.3.2",
         "webpack-dev-server": "^3.4.1"
