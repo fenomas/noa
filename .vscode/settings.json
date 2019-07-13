@@ -6,8 +6,8 @@
     },
     "editor.detectIndentation": true,
 
+    "editor.defaultFormatter": "HookyQR.beautify",
+
     "eslint.enable": true,
-    "html.format.enable": false,
     "javascript.format.enable": false,
-    "json.format.enable": false,
 }
