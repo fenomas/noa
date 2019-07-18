@@ -10,6 +10,8 @@ module.exports = function (noa) {
 
         name: 'fadeOnZoom',
 
+        order: 99,
+
         state: {
             cutoff: 1.5,
             _showing: true

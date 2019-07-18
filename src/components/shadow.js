@@ -25,6 +25,8 @@ module.exports = function (noa, dist) {
 
         name: 'shadow',
 
+        order: 80,
+
         state: {
             size: 0.5,
             _mesh: null,

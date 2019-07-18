@@ -19,6 +19,8 @@ module.exports = function (noa) {
 
         name: 'position',
 
+        order: 60,
+
         state: {
             position: null,
             renderPosition: null,

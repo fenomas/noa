@@ -16,6 +16,8 @@ module.exports = function (noa) {
 
         name: 'movement',
 
+        order: 30,
+
         state: {
             // current state
             heading: 0, // radians

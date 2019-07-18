@@ -14,6 +14,8 @@ module.exports = function (noa) {
 
         name: 'followsEntity',
 
+        order: 50,
+
         state: {
             entity: 0 | 0,
             offset: null,

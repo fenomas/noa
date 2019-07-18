@@ -13,6 +13,8 @@ module.exports = function (noa) {
 
         name: 'receivesInputs',
 
+        order: 20,
+
         state: {},
 
         onAdd: null,

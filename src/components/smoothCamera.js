@@ -6,6 +6,8 @@ module.exports = function (noa) {
 
         name: 'smooth-camera',
 
+        order: 99,
+
         state: {
             time: 100.1
         },

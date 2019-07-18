@@ -7,6 +7,8 @@ module.exports = function (noa) {
 
         name: 'mesh',
 
+        order: 100,
+
         state: {
             mesh: null,
             offset: null
@@ -35,9 +37,6 @@ module.exports = function (noa) {
         onRemove: function (eid, state) {
             state.mesh.dispose()
         },
-
-
-        system: null,
 
 
 

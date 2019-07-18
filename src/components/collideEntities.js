@@ -28,6 +28,8 @@ module.exports = function (noa) {
 
         name: 'collideEntities',
 
+        order: 70,
+
         state: {
             cylinder: false,
             collideBits: 1 | 0,

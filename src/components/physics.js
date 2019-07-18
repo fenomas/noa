@@ -10,6 +10,7 @@ module.exports = function (noa) {
 
         name: 'physics',
 
+        order: 40,
 
         state: {
             body: null,

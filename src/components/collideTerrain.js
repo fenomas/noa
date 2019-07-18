@@ -30,8 +30,6 @@ module.exports = function (noa) {
         },
 
 
-        system: null
-
 
     }
 }
