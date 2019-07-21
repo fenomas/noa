@@ -14,9 +14,8 @@
 </td>
     </tr>
 <tr>
-    <td><a href="#CameraController">CameraController</a></td>
-    <td><p>Manages the camera,
-exposes settings for mouse sensitivity.</p>
+    <td><a href="#Camera">Camera</a></td>
+    <td><p>Manages the camera, exposes camera position, direction, mouse sensitivity.</p>
 </td>
     </tr>
 <tr>
@@ -42,8 +41,8 @@ For docs see <a href="https://github.com/andyhall/game-inputs">andyhall/game-inp
     </tr>
 <tr>
     <td><a href="#Physics">Physics</a></td>
-    <td><p>Wrapper module for the 
-<a href="https://github.com/andyhall/voxel-physics-engine">physics engine</a></p>
+    <td><p>Wrapper module for the physics engine. For docs see 
+<a href="https://github.com/andyhall/voxel-physics-engine">andyhall/voxel-physics-engine</a></p>
 </td>
     </tr>
 <tr>
@@ -53,7 +52,7 @@ For docs see <a href="https://github.com/andyhall/game-inputs">andyhall/game-inp
     </tr>
 <tr>
     <td><a href="#Rendering">Rendering</a></td>
-    <td><p>Manages all rendering.</p>
+    <td><p>Manages all rendering, and the BABYLON scene, materials, etc.</p>
 </td>
     </tr>
 <tr>
@@ -86,22 +85,16 @@ Extends: `EventEmitter`
     * [.registry](#Noa+registry) : [<code>Registry</code>](#Registry)
     * [.world](#Noa+world) : [<code>World</code>](#World)
     * [.rendering](#Noa+rendering) : [<code>Rendering</code>](#Rendering)
-    * [.entities](#Noa+entities) : [<code>Entities</code>](#Entities)
     * [.physics](#Noa+physics) : [<code>Physics</code>](#Physics)
-    * [.cameraControls](#Noa+cameraControls) : [<code>CameraController</code>](#CameraController)
+    * [.entities](#Noa+entities) : [<code>Entities</code>](#Entities)
     * [.playerEntity](#Noa+playerEntity)
-    * [.playerBody](#Noa+playerBody)
+    * [.camera](#Noa+camera) : [<code>Camera</code>](#Camera)
     * [.blockTargetIdCheck](#Noa+blockTargetIdCheck)
     * [.targetedBlock](#Noa+targetedBlock)
     * [.setPaused(paused)](#Noa+setPaused)
     * [.getBlock(x,y,z)](#Noa+getBlock)
     * [.setBlock(x,y,z)](#Noa+setBlock)
     * [.addBlock(id,x,y,z)](#Noa+addBlock)
-    * [.getPlayerPosition()](#Noa+getPlayerPosition)
-    * [.getPlayerMesh()](#Noa+getPlayerMesh)
-    * [.setPlayerEyeOffset()](#Noa+setPlayerEyeOffset)
-    * [.getPlayerEyePosition()](#Noa+getPlayerEyePosition)
-    * [.getCameraVector()](#Noa+getCameraVector)
     * [.pick(pos, vec, dist)](#Noa+pick)
 
 
@@ -130,6 +123,9 @@ var opts = {
 var NoaEngine = require('noa-engine')
 var noa = NoaEngine(opts)
 ```
+
+Note that the root `opts` parameter object is also passed to noa's child modules 
+(e.g. `noa.rendering`) - see those modules for which options they use.
 
 
 ----
@@ -182,15 +178,6 @@ Rendering manager
 
 ----
 
-<a name="Noa+entities"></a>
-
-## noa.entities : [<code>Entities</code>](#Entities)
-Entity manager / Entity Component System (ECS) 
-Aliased to `noa.ents` for convenience.
-
-
-----
-
 <a name="Noa+physics"></a>
 
 ## noa.physics : [<code>Physics</code>](#Physics)
@@ -199,10 +186,11 @@ physics engine - solves collisions, properties, etc.
 
 ----
 
-<a name="Noa+cameraControls"></a>
+<a name="Noa+entities"></a>
 
-## noa.cameraControls : [<code>CameraController</code>](#CameraController)
-Manages camera, view angle, etc.
+## noa.entities : [<code>Entities</code>](#Entities)
+Entity manager / Entity Component System (ECS) 
+Aliased to `noa.ents` for convenience.
 
 
 ----
@@ -215,11 +203,10 @@ Entity id for the player entity
 
 ----
 
-<a name="Noa+playerBody"></a>
+<a name="Noa+camera"></a>
 
-## noa.playerBody
-Reference to player entity's physics body
-Equivalent to: `noa.ents.getPhysicsBody(noa.playerEntity)`
+## noa.camera : [<code>Camera</code>](#Camera)
+Manages camera, view angle, etc.
 
 
 ----
@@ -285,36 +272,6 @@ Adds a block unless obstructed by entities
 
 ----
 
-<a name="Noa+getPlayerPosition"></a>
-
-## noa.getPlayerPosition()
-
-----
-
-<a name="Noa+getPlayerMesh"></a>
-
-## noa.getPlayerMesh()
-
-----
-
-<a name="Noa+setPlayerEyeOffset"></a>
-
-## noa.setPlayerEyeOffset()
-
-----
-
-<a name="Noa+getPlayerEyePosition"></a>
-
-## noa.getPlayerEyePosition()
-
-----
-
-<a name="Noa+getCameraVector"></a>
-
-## noa.getCameraVector()
-
-----
-
 <a name="Noa+pick"></a>
 
 ## noa.pick(pos, vec, dist)
@@ -329,41 +286,182 @@ Raycast through the world, returning a result object for any non-air block
 
 ----
 
-<a name="CameraController"></a>
+<a name="Camera"></a>
 
-## CameraController
-Manages the camera,
-exposes settings for mouse sensitivity.
-
-
-* [CameraController](#CameraController)
-    * [.rotationScaleX](#CameraController+rotationScaleX)
-    * [.rotationScaleY](#CameraController+rotationScaleY)
-    * [.inverseY](#CameraController+inverseY)
+## Camera
+Manages the camera, exposes camera position, direction, mouse sensitivity.
 
 
-----
-
-<a name="CameraController+rotationScaleX"></a>
-
-## noa.cameraControls.rotationScaleX
-Horizontal sensitivity
-
-
-----
-
-<a name="CameraController+rotationScaleY"></a>
-
-## noa.cameraControls.rotationScaleY
-Vertical sensitivity
+* [Camera](#Camera)
+    * _instance_
+        * [.sensitivityX](#Camera+sensitivityX)
+        * [.sensitivityY](#Camera+sensitivityY)
+        * [.inverseX](#Camera+inverseX)
+        * [.inverseY](#Camera+inverseY)
+        * [.heading](#Camera+heading)
+        * [.pitch](#Camera+pitch)
+        * [.cameraTarget](#Camera+cameraTarget)
+        * [.zoomDistance](#Camera+zoomDistance)
+        * [.zoomSpeed](#Camera+zoomSpeed)
+        * [.currentZoom](#Camera+currentZoom)
+        * [.getTargetPosition()](#Camera+getTargetPosition)
+        * [.getPosition()](#Camera+getPosition)
+        * [.getDirection()](#Camera+getDirection)
+    * _inner_
+        * [~opts](#Camera..opts)
 
 
 ----
 
-<a name="CameraController+inverseY"></a>
+<a name="Camera+sensitivityX"></a>
 
-## noa.cameraControls.inverseY
-Mouse look inverse setting
+## noa.camera.sensitivityX
+Horizontal mouse sensitivity. 
+Same scale as Overwatch (typical values around `5..10`)
+
+
+----
+
+<a name="Camera+sensitivityY"></a>
+
+## noa.camera.sensitivityY
+Vertical mouse sensitivity.
+Same scale as Overwatch (typical values around `5..10`)
+
+
+----
+
+<a name="Camera+inverseX"></a>
+
+## noa.camera.inverseX
+Mouse look inverse (horizontal)
+
+
+----
+
+<a name="Camera+inverseY"></a>
+
+## noa.camera.inverseY
+Mouse look inverse (vertical)
+
+
+----
+
+<a name="Camera+heading"></a>
+
+## noa.camera.heading
+Camera yaw angle (read only) 
+
+Returns the camera's rotation angle around the vertical axis. Range: `0..2π`
+
+
+----
+
+<a name="Camera+pitch"></a>
+
+## noa.camera.pitch
+Camera pitch angle (read only)
+
+Returns the camera's up/down rotation angle. Range: `-π/2..π/2`. 
+(The pitch angle is clamped by a small epsilon, such that 
+the camera never quite points perfectly up or down.
+
+
+----
+
+<a name="Camera+cameraTarget"></a>
+
+## noa.camera.cameraTarget
+Entity ID of a special entity that exists for the camera to point at.
+
+By default this entity follows the player entity, so you can 
+change the player's eye height by changing the `follow` component's offset:
+```js
+var followState = noa.ents.getState(noa.camera.cameraTarget, 'followsEntity')
+followState.offset[1] = 0.9 * myPlayerHeight
+```
+
+For customized camera controls you can change the follow 
+target to some other entity, or override the behavior entirely:
+```js
+// make cameraTarget stop following the player
+noa.ents.removeComponent(noa.camera.cameraTarget, 'followsEntity')
+// control cameraTarget position directly (or whatever..)
+noa.on('beforeRender', () => {
+    noa.ents.setPosition(noa.camera.cameraTarget, x, y, z)
+})
+```
+
+
+----
+
+<a name="Camera+zoomDistance"></a>
+
+## noa.camera.zoomDistance
+How far back the camera is zoomed from the camera target
+
+
+----
+
+<a name="Camera+zoomSpeed"></a>
+
+## noa.camera.zoomSpeed
+How quickly the camera moves to its `zoomDistance` (0..1)
+
+
+----
+
+<a name="Camera+currentZoom"></a>
+
+## noa.camera.currentZoom
+Current actual zoom distance. This differs from `zoomDistance` when
+the camera is in the process of moving towards the desired distance, 
+or when it's obstructed by solid terrain behind the player.
+
+
+----
+
+<a name="Camera+getTargetPosition"></a>
+
+## noa.camera.getTargetPosition()
+Camera target position (read only)
+
+This returns the point the camera looks at when zoomed out - i.e. the player's eye position.
+When the camera is zoomed all the way in, this is equivalent to `camera.getPosition()`.
+
+
+----
+
+<a name="Camera+getPosition"></a>
+
+## noa.camera.getPosition()
+Returns the camera position (read only)
+
+
+----
+
+<a name="Camera+getDirection"></a>
+
+## noa.camera.getDirection()
+Returns the camera direction vector (read only)
+
+
+----
+
+<a name="Camera..opts"></a>
+
+## Camera~opts
+`noa.camera` uses the following options (from the root `noa(opts)` options):
+```js
+{
+  inverseX: false,
+  inverseY: false,
+  sensitivityX: 15,
+  sensitivityY: 15,
+  initialZoom: 0,
+  zoomSpeed: 0.2,
+}
+```
 
 
 ----
@@ -470,8 +568,8 @@ For docs see [andyhall/game-inputs](https://github.com/andyhall/game-inputs)
 <a name="Physics"></a>
 
 ## Physics
-Wrapper module for the 
-[physics engine](https://github.com/andyhall/voxel-physics-engine)
+Wrapper module for the physics engine. For docs see 
+[andyhall/voxel-physics-engine](https://github.com/andyhall/voxel-physics-engine)
 
 
 ----
@@ -592,16 +690,16 @@ Get block property object passed in at registration
 <a name="Rendering"></a>
 
 ## Rendering
-Manages all rendering.
+Manages all rendering, and the BABYLON scene, materials, etc.
 
 
 * [Rendering](#Rendering)
-    * [.getScene](#Rendering+getScene)
-    * [.getCameraVector()](#Rendering+getCameraVector)
-    * [.getCameraPosition()](#Rendering+getCameraPosition)
-    * [.getCameraRotation()](#Rendering+getCameraRotation)
-    * [.addMeshToScene()](#Rendering+addMeshToScene)
-    * [.removeMeshFromScene()](#Rendering+removeMeshFromScene)
+    * _instance_
+        * [.getScene](#Rendering+getScene)
+        * [.addMeshToScene()](#Rendering+addMeshToScene)
+        * [.removeMeshFromScene()](#Rendering+removeMeshFromScene)
+    * _inner_
+        * [~opts](#Rendering..opts)
 
 
 ----
@@ -611,24 +709,6 @@ Manages all rendering.
 ## noa.rendering.getScene
 The Babylon `scene` object representing the game world.
 
-
-----
-
-<a name="Rendering+getCameraVector"></a>
-
-## noa.rendering.getCameraVector()
-
-----
-
-<a name="Rendering+getCameraPosition"></a>
-
-## noa.rendering.getCameraPosition()
-
-----
-
-<a name="Rendering+getCameraRotation"></a>
-
-## noa.rendering.getCameraRotation()
 
 ----
 
@@ -645,6 +725,30 @@ pass in isStatic=true if the mesh won't move (i.e. change octree blocks)
 
 ## noa.rendering.removeMeshFromScene()
 Undoes everything `addMeshToScene` does
+
+
+----
+
+<a name="Rendering..opts"></a>
+
+## Rendering~opts
+`noa.rendering` uses the following options (from the root `noa(opts)` options):
+```js
+{
+  showFPS: false,
+  antiAlias: true,
+  clearColor: [0.8, 0.9, 1],
+  ambientColor: [1, 1, 1],
+  lightDiffuse: [1, 1, 1],
+  lightSpecular: [1, 1, 1],
+  groundLightColor: [0.5, 0.5, 0.5],
+  useAO: true,
+  AOmultipliers: [0.93, 0.8, 0.5],
+  reverseAOmultiplier: 1.0,
+  useOctreesForDynamicMeshes: true,
+  preserveDrawingBuffer: true,
+}
+```
 
 
 ----

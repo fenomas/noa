@@ -66,6 +66,10 @@ For code style/formatting, the repo includes config files for [eslint](https://e
 
 ## Recent changes:
 
+ * 0.27.0
+   * Now possible to specify the order of component systems, see [components.md](components.md)
+   * Moves all camera-related APIs to `noa.camera`, removes several redundant APIs
+   * Fixes order of various render logic, fixing various temporal-aliasing type bugs
  * 0.26.0
    * Render events now pass correct `dt` argument - see issue #53
    * Bug fix to physics, workaround for bug in current mac/chrome

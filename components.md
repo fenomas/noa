@@ -3,6 +3,11 @@
 
 Reference list of components, what they do, and order in which they're called.
 
+Order for systems on custom components can be specified with an `order` property 
+in the component definition. For example, if you define a component with a 
+`renderSystem` that depends on the current camera target position, it will want an 
+`order` greater than `50` (when `followsEntity` moves the camera target before each render).
+
 ----
 
 ## Overview
@@ -44,7 +49,7 @@ Reference list of components, what they do, and order in which they're called.
 | name | order | render system
 | ---- | ----- | ------
 | `physics`         | `40` | backtrack entity `renderPosition` towards physics position
-| `followsEntity`   | `50` | moves `renderPosition` to match target
+| `followsEntity`   | `50` | moves entity's `renderPosition` to match its follow target
 | `shadow`          | `80` | update shadow's `x/z` position
 | `mesh`            | `100`| moves rendering mesh to entity `renderPosition`
 
