@@ -409,7 +409,6 @@ function checkCameraEffect(self, id) {
                 self._camScreenMat.ambientColor.set(col[0], col[1], col[2])
                 self._camScreenMat.alpha = alpha
                 self._camScreen.setEnabled(true)
-                window.scr = self._camScreen
             }
         }
     }
