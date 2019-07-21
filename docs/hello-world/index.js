@@ -32,6 +32,7 @@ var opts = {
     showFPS: true,
     // silent: false,
     // inverseY: true,
+    // inverseX: false,
     // chunkSize: 32,
     // chunkAddDistance: 1,
     // chunkRemoveDistance: 3,
@@ -151,5 +152,5 @@ noa.on('tick', function (dt) {
     zoom += (scroll > 0) ? 1 : -1
     if (zoom < 0) zoom = 0
     if (zoom > 10) zoom = 10
-    noa.rendering.zoomDistance = zoom
+    noa.camera.zoomDistance = zoom
 })

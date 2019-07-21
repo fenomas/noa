@@ -1,8 +1,6 @@
 'use strict'
 
 var glvec3 = require('gl-vec3')
-var aabb = require('aabb-3d')
-var sweep = require('voxel-aabb-sweep')
 var removeUnorderedListItem = require('./util').removeUnorderedListItem
 
 
@@ -33,9 +31,6 @@ var defaults = {
     lightDiffuse: [1, 1, 1],
     lightSpecular: [1, 1, 1],
     groundLightColor: [0.5, 0.5, 0.5],
-    initialCameraZoom: 0,
-    cameraZoomSpeed: .2,
-    cameraMaxAngle: (Math.PI / 2) - 0.01,
     useAO: true,
     AOmultipliers: [0.93, 0.8, 0.5],
     reverseAOmultiplier: 1.0,
@@ -48,16 +43,32 @@ var defaults = {
 /**
  * @class
  * @typicalname noa.rendering
- * @classdesc Manages all rendering.
-*/
+ * @classdesc Manages all rendering, and the BABYLON scene, materials, etc.
+ */
 
 function Rendering(noa, opts, canvas) {
     this.noa = noa
+
+    /**
+     * `noa.rendering` uses the following options (from the root `noa(opts)` options):
+     * ```js
+     * {
+     *   showFPS: false,
+     *   antiAlias: true,
+     *   clearColor: [0.8, 0.9, 1],
+     *   ambientColor: [1, 1, 1],
+     *   lightDiffuse: [1, 1, 1],
+     *   lightSpecular: [1, 1, 1],
+     *   groundLightColor: [0.5, 0.5, 0.5],
+     *   useAO: true,
+     *   AOmultipliers: [0.93, 0.8, 0.5],
+     *   reverseAOmultiplier: 1.0,
+     *   useOctreesForDynamicMeshes: true,
+     *   preserveDrawingBuffer: true,
+     * }
+     * ```
+     */
     opts = Object.assign({}, defaults, opts)
-    this.zoomDistance = opts.initialCameraZoom // zoom setting
-    this._currentZoom = this.zoomDistance // current actual zoom level
-    this._cameraZoomSpeed = opts.cameraZoomSpeed
-    this._maxCamAngle = opts.cameraMaxAngle
 
     // internals
     this._dynamicMeshes = []
@@ -95,13 +106,11 @@ function initScene(self, canvas, opts) {
     scene._selectionOctree = self._octree
 
     // camera, and empty mesh to hold it, and one to accumulate rotations
-    self._rotationHolder = new BABYLON.Mesh('rotHolder', scene)
     self._cameraHolder = new BABYLON.Mesh('camHolder', scene)
     self._camera = new BABYLON.FreeCamera('camera', new vec3(0, 0, 0), scene)
     self._camera.parent = self._cameraHolder
     self._camera.minZ = .01
     self._cameraHolder.visibility = false
-    self._rotationHolder.visibility = false
 
     // plane obscuring the camera - for overlaying an effect on the whole view
     self._camScreen = BABYLON.Mesh.CreatePlane('camScreen', 10, scene)
@@ -134,15 +143,6 @@ function initScene(self, canvas, opts) {
  *   PUBLIC API 
  */
 
-// Init anything about scene that needs to wait for engine internals
-Rendering.prototype.initScene = function () {
-    // engine entity to follow the player and act as camera target
-    this.cameraTarget = this.noa.ents.createEntity(['position'])
-    this.noa.ents.addComponent(this.cameraTarget, 'followsEntity', {
-        entity: this.noa.playerEntity,
-        offset: [0, this.noa.playerEyeOffset, 0],
-    })
-}
 
 /**
  * The Babylon `scene` object representing the game world.
@@ -163,7 +163,7 @@ Rendering.prototype.tick = function (dt) {
 
 Rendering.prototype.render = function (dt) {
     profile_hook('start')
-    updateCamera(this)
+    updateCameraForRender(this)
     profile_hook('updateCamera')
     this._engine.beginFrame()
     profile_hook('beginFrame')
@@ -193,9 +193,9 @@ var pendingResize = false
 Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
     var m = getHighlightMesh(this)
     if (show) {
-        // bigger slop when zoomed out
-        var dist = this._currentZoom + glvec3.distance(this.noa.getPlayerEyePosition(), posArr)
-        var slop = 0.001 + 0.001 * dist
+        // bigger slop when camera is far from highlight
+        var dist = glvec3.dist(this.noa.camera.getPosition(), posArr)
+        var slop = 0.0005 * dist
         var pos = _highlightPos
         for (var i = 0; i < 3; ++i) {
             pos[i] = Math.floor(posArr[i]) + .5 + ((0.5 + slop) * normArr[i])
@@ -208,25 +208,7 @@ Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
 }
 var _highlightPos = glvec3.create()
 
-/** @method */
-Rendering.prototype.getCameraVector = function () {
-    return vec3.TransformCoordinates(BABYLON.Axis.Z, this._rotationHolder.getWorldMatrix())
-}
-var zero = vec3.Zero()
-/** @method */
-Rendering.prototype.getCameraPosition = function () {
-    return vec3.TransformCoordinates(zero, this._camera.getWorldMatrix())
-}
-/** @method */
-Rendering.prototype.getCameraRotation = function () {
-    var rot = this._rotationHolder.rotation
-    return [rot.x, rot.y]
-}
-Rendering.prototype.setCameraRotation = function (x, y) {
-    var rot = this._rotationHolder.rotation
-    rot.x = Math.max(-this._maxCamAngle, Math.min(this._maxCamAngle, x))
-    rot.y = y
-}
+
 
 
 
@@ -256,6 +238,8 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic) {
     var remover = this.removeMeshFromScene.bind(this, mesh)
     mesh.onDisposeObservable.add(remover)
 }
+
+
 
 /**  Undoes everything `addMeshToScene` does
  * @method
@@ -389,67 +373,20 @@ Rendering.prototype.removeTerrainMesh = function (chunk) {
 
 
 
-/*
- *
- *  zoom/camera related internals
- *
- */
 
 
-// check if obstructions are behind camera by sweeping back an AABB
-// along the negative camera vector
+// updates camera position/rotation to match settings from noa.camera
 
-function cameraObstructionDistance(self) {
-    var size = 0.2
-    if (!_camBox) {
-        _camBox = new aabb([0, 0, 0], [size * 2, size * 2, size * 2])
-        _getVoxel = function (x, y, z) {
-            return self.noa.world.getBlockSolidity(x, y, z)
-        }
-    }
+function updateCameraForRender(self) {
+    var cam = self.noa.camera
+    var tgt = cam.getTargetPosition()
+    self._cameraHolder.position.copyFromFloats(tgt[0], tgt[1], tgt[2])
+    self._cameraHolder.rotation.x = cam.pitch
+    self._cameraHolder.rotation.y = cam.heading
+    self._camera.position.z = -cam.currentZoom
 
-    var pos = self._cameraHolder.position
-    glvec3.set(_posVec, pos.x - size, pos.y - size, pos.z - size)
-    _camBox.setPosition(_posVec)
-
-    var dist = -self.zoomDistance
-    var cam = self.getCameraVector()
-    glvec3.set(_camVec, dist * cam.x, dist * cam.y, dist * cam.z)
-
-    return sweep(_getVoxel, _camBox, _camVec, function (dist, axis, dir, vec) {
-        return true
-    }, true)
-}
-
-var _posVec = glvec3.create()
-var _camVec = glvec3.create()
-var _camBox
-var _getVoxel
-
-
-
-
-// Various updates to camera position/zoom, called every render
-
-function updateCamera(self) {
-    // update cameraHolder pos/rot from rotation holder and target entity
-    self._cameraHolder.rotation.copyFrom(self._rotationHolder.rotation)
-    var cpos = self.noa.ents.getPositionData(self.cameraTarget).renderPosition
-    self._cameraHolder.position.copyFromFloats(cpos[0], cpos[1], cpos[2])
-
-    // check obstructions and tween camera towards clipped position
-    var dist = self.zoomDistance
-    var speed = self._cameraZoomSpeed
-    if (dist > 0) {
-        dist = cameraObstructionDistance(self)
-        if (dist < self._currentZoom) self._currentZoom = dist
-    }
-    self._currentZoom += speed * (dist - self._currentZoom)
-    self._camera.position.z = -self._currentZoom
-
-    // check id of block camera is in for overlay effects (e.g. being in water) 
-    var cam = self.getCameraPosition()
-    var id = self.noa.world.getBlockID(Math.floor(cam.x), Math.floor(cam.y), Math.floor(cam.z))
+    // applies screen effect when camera is inside a transparent voxel
+    var id = self.noa.getBlock(self.noa.camera.getPosition())
     checkCameraEffect(self, id)
 }
 
@@ -468,9 +405,11 @@ function checkCameraEffect(self, id) {
             var col = matData.color
             var alpha = matData.alpha
             if (col && alpha && alpha < 1) {
-                self._camScreenMat.diffuseColor = new col3(col[0], col[1], col[2])
+                self._camScreenMat.diffuseColor.set(0, 0, 0)
+                self._camScreenMat.ambientColor.set(col[0], col[1], col[2])
                 self._camScreenMat.alpha = alpha
                 self._camScreen.setEnabled(true)
+                window.scr = self._camScreen
             }
         }
     }

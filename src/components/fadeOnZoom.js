@@ -22,7 +22,7 @@ module.exports = function (noa) {
         onRemove: null,
 
         system: function fadeOnZoomProc(dt, states) {
-            var zoom = noa.rendering._currentZoom
+            var zoom = noa.camera.currentZoom
             var ents = noa.entities
             states.forEach(state => {
                 checkZoom(state, state.__id, zoom, ents)

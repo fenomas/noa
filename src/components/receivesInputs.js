@@ -24,7 +24,7 @@ module.exports = function (noa) {
         system: function inputProcessor(dt, states) {
             var ents = noa.entities
             var inputState = noa.inputs.state
-            var camHeading = noa.rendering.getCameraRotation()[1]
+            var camHeading = noa.camera.heading
 
             states.forEach(state => {
                 var moveState = ents.getMovement(state.__id)

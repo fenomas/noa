@@ -343,7 +343,7 @@ function setChunk(world, i, j, k, value) {
 
 
 function getPlayerChunkCoords(world) {
-    var pos = world.noa.getPlayerPosition()
+    var pos = world.noa.entities.getPosition(world.noa.playerEntity)
     var i = worldCoordToChunkCoord(pos[0])
     var j = worldCoordToChunkCoord(pos[1])
     var k = worldCoordToChunkCoord(pos[2])

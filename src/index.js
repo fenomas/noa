@@ -15,7 +15,7 @@ var createRendering = require('./lib/rendering')
 var createWorld = require('./lib/world')
 var createInputs = require('./lib/inputs')
 var createPhysics = require('./lib/physics')
-var createCamControls = require('./lib/camera')
+var createCamera = require('./lib/camera')
 var createRegistry = require('./lib/registry')
 var createEntities = require('./lib/entities')
 var raycast = require('fast-voxel-raycast')
@@ -70,6 +70,9 @@ var defaults = {
  * var noa = NoaEngine(opts)
  * ```
  * 
+ * Note that the root `opts` parameter object is also passed to noa's child modules 
+ * (e.g. `noa.rendering`) - see those modules for which options they use.
+ * 
  * @class
  * @alias Noa
  * @typicalname noa
@@ -99,6 +102,9 @@ function Engine(opts) {
     this._dragOutsideLock = opts.dragCameraOutsidePointerLock
     var self = this
 
+    // how far engine is into the current tick. Updated each render.
+    this.positionInCurrentTick = 0
+
     /**
      * container (html/div) manager
      * @type {Container}
@@ -114,13 +120,13 @@ function Engine(opts) {
     /**
      * block/item property registry
      * @type {Registry}
-     */  
+     */
     this.registry = createRegistry(this, opts)
 
     /**
      * world manager
      * @type {World}
-     */  
+     */
     this.world = createWorld(this, opts)
 
     /**
@@ -129,29 +135,18 @@ function Engine(opts) {
      */
     this.rendering = createRendering(this, opts, this.container.canvas)
 
+    /**
+     * physics engine - solves collisions, properties, etc.
+     * @type {Physics}
+     */
+    this.physics = createPhysics(this, opts)
+
     /** Entity manager / Entity Component System (ECS) 
      * Aliased to `noa.ents` for convenience.
      * @type {Entities}
      */
     this.entities = createEntities(this, opts)
     this.ents = this.entities
-
-    // how far engine is into the current tick. Updated each render.
-    this.positionInCurrentTick = 0
-
-    /**
-     * physics engine - solves collisions, properties, etc.
-     * @type {Physics}
-     */
-    this.physics = createPhysics(this, opts)
-    
-    /**
-     * Manages camera, view angle, etc.
-     * @type {CameraController}
-     */
-    this.cameraControls = createCamControls(this, opts)
-
-
     var ents = this.ents
 
     /** Entity id for the player entity */
@@ -171,11 +166,6 @@ function Engine(opts) {
     body.gravityMultiplier = 2 // less floaty
     body.autoStep = opts.playerAutoStep // auto step onto blocks
 
-    /** Reference to player entity's physics body
-     * Equivalent to: `noa.ents.getPhysicsBody(noa.playerEntity)`
-     */
-    this.playerBody = body
-
     // input component - sets entity's movement state from key inputs
     ents.addComponent(this.playerEntity, ents.names.receivesInputs)
 
@@ -189,10 +179,12 @@ function Engine(opts) {
     }
     ents.addComponent(this.playerEntity, ents.names.movement, moveOpts)
 
-    // how high above the player's position the eye is (for picking, camera tracking)  
-    this.playerEyeOffset = 0.9 * opts.playerHeight
 
-
+    /**
+     * Manages camera, view angle, etc.
+     * @type {Camera}
+     */
+    this.camera = createCamera(this, opts)
 
 
     // set up block targeting
@@ -218,8 +210,6 @@ function Engine(opts) {
         this.on('targetBlockChanged', this.defaultBlockHighlightFunction)
     }
 
-    // init rendering stuff that needed to wait for engine internals
-    this.rendering.initScene()
 
     // expose constants, for HACKING™
     this._constants = require('./lib/constants')
@@ -239,18 +229,23 @@ function Engine(opts) {
         })
     }
 
-
-
+    // add hooks to throw helpful errors when using deprecated methods
+    deprecateStuff(this)
 }
 
 Engine.prototype = Object.create(EventEmitter.prototype)
 
 
+
+
+
 /*
+ *
+ *
  *   Core Engine API
+ *
+ *
  */
-
-
 
 
 /*
@@ -271,7 +266,7 @@ Engine.prototype.tick = function () {
     }
     this.physics.tick(dt) // iterates physics
     profile_hook('physics')
-    this.rendering.tick(dt) // zooms camera, does deferred chunk meshing
+    this.rendering.tick(dt) // does deferred chunk meshing
     profile_hook('rendering')
     updateBlockTargets(this) // finds targeted blocks, and highlights one if needed
     profile_hook('targets')
@@ -319,26 +314,30 @@ function debugQueues(self) {
 
 Engine.prototype.render = function (framePart) {
     if (this._paused) return
+    profile_hook_render('start')
     // update frame position property and calc dt
     var framesAdvanced = framePart - this.positionInCurrentTick
     if (framesAdvanced < 0) framesAdvanced += 1
     this.positionInCurrentTick = framePart
     var dt = framesAdvanced * this._tickRate // ms since last tick
-    // core render:
-    profile_hook_render('start')
     // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
     if (this.container.hasPointerLock ||
         !this.container.supportsPointerLock ||
         (this._dragOutsideLock && this.inputs.state.fire)) {
-        this.cameraControls.updateForRender()
+        this.camera.applyInputsToCamera()
     }
     // clear cumulative mouse inputs
     this.inputs.state.dx = this.inputs.state.dy = 0
+
     // events and render
+    this.camera.updateBeforeEntityRenderSystems()
     this.emit('beforeRender', dt)
+    this.camera.updateAfterEntityRenderSystems()
     profile_hook_render('before render')
+
     this.rendering.render(dt)
     profile_hook_render('render')
+
     this.emit('afterRender', dt)
     profile_hook_render('after render')
     profile_hook_render('end')
@@ -399,40 +398,8 @@ Engine.prototype.addBlock = function (id, x, y, z) {
 
 
 
-/** */
-Engine.prototype.getPlayerPosition = function () {
-    return this.entities.getPosition(this.playerEntity)
-}
 
-/** */
-Engine.prototype.getPlayerMesh = function () {
-    return this.entities.getMeshData(this.playerEntity).mesh
-}
 
-/** */
-Engine.prototype.setPlayerEyeOffset = function (y) {
-    this.playerEyeOffset = y
-    var state = this.ents.getState(this.rendering.cameraTarget, this.ents.names.followsEntity)
-    state.offset[1] = y
-}
-
-/** */
-Engine.prototype.getPlayerEyePosition = function () {
-    var pos = this.entities.getPosition(this.playerEntity)
-    vec3.copy(_eyeLoc, pos)
-    _eyeLoc[1] += this.playerEyeOffset
-    return _eyeLoc
-}
-var _eyeLoc = vec3.create()
-
-/** */
-Engine.prototype.getCameraVector = function () {
-    // rendering works with babylon's xyz vectors
-    var v = this.rendering.getCameraVector()
-    vec3.set(_camVec, v.x, v.y, v.z)
-    return _camVec
-}
-var _camVec = vec3.create()
 
 
 
@@ -451,8 +418,8 @@ Engine.prototype.pick = function (pos, vec, dist, blockIdTestFunction) {
         var id = world.getBlockID(x, y, z)
         return testFn(id)
     }
-    pos = pos || this.getPlayerEyePosition()
-    vec = vec || this.getCameraVector()
+    pos = pos || this.camera.getTargetPosition()
+    vec = vec || this.camera.getDirection()
     dist = dist || this.blockTestDistance
     var rpos = _hitResult.position
     var rnorm = _hitResult.normal
@@ -514,6 +481,32 @@ var _prevTargetHash = ''
 
 
 
+/*
+ * 
+ *  add some hooks for guidance on removed APIs
+ * 
+ */
+
+function deprecateStuff(noa) {
+    var ver = `0.27`
+    var dep = (loc, name, msg) => {
+        var throwFn = () => { throw `This method was removed in ${ver} - ${msg}` }
+        Object.defineProperty(loc, name, { get: throwFn, set: throwFn })
+    }
+    dep(noa, 'getPlayerEyePosition', 'to get the camera/player offset see API docs for `noa.camera.cameraTarget`')
+    dep(noa, 'setPlayerEyePosition', 'to set the camera/player offset see API docs for `noa.camera.cameraTarget`')
+    dep(noa, 'getPlayerPosition', 'use `noa.ents.getPosition(noa.playerEntity)` or similar')
+    dep(noa, 'getCameraVector', 'use `noa.camera.getDirection`')
+    dep(noa, 'getPlayerMesh', 'use `noa.ents.getMeshData(noa.playerEntity).mesh` or similar')
+    dep(noa, 'playerBody', 'use `noa.ents.getPhysicsBody(noa.playerEntity)`')
+    dep(noa.rendering, 'zoomDistance', 'use `noa.camera.zoomDistance`')
+    dep(noa.rendering, '_currentZoom', 'use `noa.camera.currentZoom`')
+    dep(noa.rendering, '_cameraZoomSpeed', 'use `noa.camera.zoomSpeed`')
+    dep(noa.rendering, 'getCameraVector', 'use `noa.camera.getDirection`')
+    dep(noa.rendering, 'getCameraPosition', 'use `noa.camera.getPosition`')
+    dep(noa.rendering, 'getCameraRotation', 'use `noa.camera.heading` and `noa.camera.pitch`')
+    dep(noa.rendering, 'setCameraRotation', 'to customize camera behavior see API docs for `noa.camera`')
+}
 
 
 

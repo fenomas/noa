@@ -44,11 +44,10 @@ module.exports = function (noa, dist) {
 
 
         system: function shadowSystem(dt, states) {
-            var cpos = noa.rendering.getCameraPosition()
-            vec3.set(camPos, cpos.x, cpos.y, cpos.z)
+            var cpos = noa.camera.getPosition()
             var dist = shadowDist
             states.forEach(state => {
-                updateShadowHeight(state.__id, state._mesh, state.size, dist, noa)
+                updateShadowHeight(state.__id, state._mesh, state.size, dist, cpos, noa)
             })
         },
 
@@ -70,10 +69,9 @@ module.exports = function (noa, dist) {
 }
 
 var down = vec3.fromValues(0, -1, 0)
-var camPos = vec3.fromValues(0, 0, 0)
 var shadowPos = vec3.fromValues(0, 0, 0)
 
-function updateShadowHeight(id, mesh, size, shadowDist, noa) {
+function updateShadowHeight(id, mesh, size, shadowDist, camPos, noa) {
     var ents = noa.entities
     var dat = ents.getPositionData(id)
     var loc = dat.position
