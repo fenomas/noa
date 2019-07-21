@@ -25,6 +25,7 @@
 var noaEngine = require('../..')
 
 var opts = {
+    babylon: require('./babylon'),
     // 
     // 		Random sampling of some possible options:
     // 
@@ -109,7 +110,7 @@ var h = dat.height
 
 // make a Babylon.js mesh and scale it, etc.
 var scene = noa.rendering.getScene()
-var mesh = BABYLON.Mesh.CreateBox('player', 1, scene)
+var mesh = noa.BABYLON.Mesh.CreateBox('player', 1, scene)
 mesh.scaling.x = mesh.scaling.z = w
 mesh.scaling.y = h
 

@@ -106,11 +106,13 @@ Submesh.prototype.dispose = function () {
 function MeshBuilder() {
 
     var noa
+    var BABYLON
 
 
     // core
     this.build = function (chunk, meshdata, ignoreMaterials) {
         noa = chunk.noa
+        BABYLON = noa.BABYLON
 
         // preprocess meshdata entries to merge those that will use default terrain material
         var mergeCriteria = function (mdat) {
@@ -246,7 +248,7 @@ function MeshBuilder() {
 
 
     function buildMeshFromSubmesh(submesh, name, mats, verts, inds) {
-
+        
         // base mesh and vertexData object
         var scene = noa.rendering.getScene()
         var mesh = new BABYLON.Mesh(name, scene)

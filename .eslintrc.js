@@ -5,9 +5,6 @@ module.exports = {
         "es6": true,
         "commonjs": true,
     },
-    "globals": {
-        "BABYLON": "readonly",
-    },
     "rules": {
         "strict": ["error", "global"],
 

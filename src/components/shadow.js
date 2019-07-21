@@ -9,11 +9,11 @@ module.exports = function (noa, dist) {
 
     // create a mesh to re-use for shadows
     var scene = noa.rendering.getScene()
-    var disc = BABYLON.Mesh.CreateDisc('shadow', 0.75, 30, scene)
+    var disc = noa.BABYLON.Mesh.CreateDisc('shadow', 0.75, 30, scene)
     disc.rotation.x = Math.PI / 2
     disc.material = noa.rendering.makeStandardMaterial('shadowMat')
-    disc.material.diffuseColor = BABYLON.Color3.Black()
-    disc.material.ambientColor = BABYLON.Color3.Black()
+    disc.material.diffuseColor = noa.BABYLON.Color3.Black()
+    disc.material.ambientColor = noa.BABYLON.Color3.Black()
     disc.material.alpha = 0.5
     disc.setEnabled(false)
 

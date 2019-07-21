@@ -4,17 +4,9 @@ var glvec3 = require('gl-vec3')
 var removeUnorderedListItem = require('./util').removeUnorderedListItem
 
 
-// For now, assume Babylon.js has been imported into the global space already
-if (!BABYLON) {
-    throw new Error('Babylon.js reference not found! Abort! Abort!')
-}
-
 module.exports = function (noa, opts, canvas) {
     return new Rendering(noa, opts, canvas)
 }
-
-var vec3 = BABYLON.Vector3 // not a gl-vec3, in this module only!!
-var col3 = BABYLON.Color3
 
 
 
@@ -89,7 +81,7 @@ function Rendering(noa, opts, canvas) {
 
 // Constructor helper - set up the Babylon.js scene and basic components
 function initScene(self, canvas, opts) {
-    if (!BABYLON) throw new Error('BABYLON.js engine not found!')
+    var BABYLON = self.noa.BABYLON
 
     // init internal properties
     self._engine = new BABYLON.Engine(canvas, opts.antiAlias, {
@@ -107,7 +99,7 @@ function initScene(self, canvas, opts) {
 
     // camera, and empty mesh to hold it, and one to accumulate rotations
     self._cameraHolder = new BABYLON.Mesh('camHolder', scene)
-    self._camera = new BABYLON.FreeCamera('camera', new vec3(0, 0, 0), scene)
+    self._camera = new BABYLON.FreeCamera('camera', new BABYLON.Vector3(0, 0, 0), scene)
     self._camera.parent = self._cameraHolder
     self._camera.minZ = .01
     self._cameraHolder.visibility = false
@@ -123,9 +115,10 @@ function initScene(self, canvas, opts) {
     self._camLocBlock = 0
 
     // apply some defaults
-    self._light = new BABYLON.HemisphericLight('light', new vec3(0.1, 1, 0.3), scene)
+    var lightVec = new BABYLON.Vector3(0.1, 1, 0.3)
+    self._light = new BABYLON.HemisphericLight('light', lightVec, scene)
 
-    function arrToColor(a) { return new col3(a[0], a[1], a[2]) }
+    function arrToColor(a) { return new BABYLON.Color3(a[0], a[1], a[2]) }
     scene.clearColor = arrToColor(opts.clearColor)
     scene.ambientColor = arrToColor(opts.ambientColor)
     self._light.diffuse = arrToColor(opts.lightDiffuse)
@@ -308,7 +301,8 @@ Rendering.prototype.makeMeshInstance = function (mesh, isStatic) {
 // Create a default standardMaterial:
 //      flat, nonspecular, fully reflects diffuse and ambient light
 Rendering.prototype.makeStandardMaterial = function (name) {
-    var mat = new BABYLON.StandardMaterial(name, this._scene)
+    var StdMat = this.noa.BABYLON.StandardMaterial
+    var mat = new StdMat(name, this._scene)
     mat.specularColor.copyFromFloats(0, 0, 0)
     mat.ambientColor.copyFromFloats(1, 1, 1)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
@@ -330,9 +324,10 @@ Rendering.prototype.makeStandardMaterial = function (name) {
  */
 
 Rendering.prototype.prepareChunkForRendering = function (chunk) {
+    var BABYLON = this.noa.BABYLON
     var cs = chunk.size
-    var min = new vec3(chunk.x, chunk.y, chunk.z)
-    var max = new vec3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
+    var min = new BABYLON.Vector3(chunk.x, chunk.y, chunk.z)
+    var max = new BABYLON.Vector3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
     chunk.octreeBlock = new BABYLON.OctreeBlock(min, max, undefined, undefined, undefined, $ => {})
     this._octree.blocks.push(chunk.octreeBlock)
 }
@@ -422,25 +417,26 @@ function checkCameraEffect(self, id) {
 
 // make or get a mesh for highlighting active voxel
 function getHighlightMesh(rendering) {
+    var BABYLON = rendering.noa.BABYLON
     var m = rendering._highlightMesh
     if (!m) {
         var mesh = BABYLON.Mesh.CreatePlane("highlight", 1.0, rendering._scene)
         var hlm = rendering.makeStandardMaterial('highlightMat')
         hlm.backFaceCulling = false
-        hlm.emissiveColor = new col3(1, 1, 1)
+        hlm.emissiveColor = new BABYLON.Color3(1, 1, 1)
         hlm.alpha = 0.2
         mesh.material = hlm
         m = rendering._highlightMesh = mesh
         // outline
         var s = 0.5
         var lines = BABYLON.Mesh.CreateLines("hightlightLines", [
-            new vec3(s, s, 0),
-            new vec3(s, -s, 0),
-            new vec3(-s, -s, 0),
-            new vec3(-s, s, 0),
-            new vec3(s, s, 0)
+            new BABYLON.Vector3(s, s, 0),
+            new BABYLON.Vector3(s, -s, 0),
+            new BABYLON.Vector3(-s, -s, 0),
+            new BABYLON.Vector3(-s, s, 0),
+            new BABYLON.Vector3(s, s, 0)
         ], rendering._scene)
-        lines.color = new col3(1, 1, 1)
+        lines.color = new BABYLON.Color3(1, 1, 1)
         lines.parent = mesh
 
         rendering.addMeshToScene(m)

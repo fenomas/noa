@@ -34,6 +34,7 @@ var DEBUG_QUEUES = 0
 
 
 var defaults = {
+    babylon: null,
     debug: false,
     silent: false,
     playerHeight: 1.8,
@@ -54,6 +55,7 @@ var defaults = {
  * 
  * ```js
  * var opts = {
+ *     babylon: require('babylon'), // import your preferred version of bablyon.js here!
  *     debug: false,
  *     silent: false,
  *     playerHeight: 1.8,
@@ -69,6 +71,10 @@ var defaults = {
  * var NoaEngine = require('noa-engine')
  * var noa = NoaEngine(opts)
  * ```
+ * The only required option is `babylon`, which should be a reference to 
+ * a [Babylon.js](https://www.babylonjs.com) engine. 
+ * If none is specified, `noa` will use `window.BABYLON`,
+ * or failing that, throw an error.
  * 
  * Note that the root `opts` parameter object is also passed to noa's child modules 
  * (e.g. `noa.rendering`) - see those modules for which options they use.
@@ -91,16 +97,22 @@ function Engine(opts) {
     /**  version string, e.g. `"0.25.4"` */
     this.version = require('../package.json').version
 
-    if (!opts.silent) {
-        var debugstr = (opts.debug) ? ' (debug)' : ''
-        console.log(`noa-engine v${this.version}${debugstr}`)
-    }
-
     opts = Object.assign({}, defaults, opts)
     this._tickRate = opts.tickRate
     this._paused = false
     this._dragOutsideLock = opts.dragCameraOutsidePointerLock
     var self = this
+
+    if (!opts.silent) {
+        var debugstr = (opts.debug) ? ' (debug)' : ''
+        console.log(`noa-engine v${this.version}${debugstr}`)
+    }
+
+    /** Reference to the Babylon.js engine, either passed in or from `window.BABYLON` */
+    this.BABYLON = opts.babylon || window.BABYLON
+    if (!this.BABYLON || !this.BABYLON.Engine) {
+        throw new Error('Babylon.js engine reference not found! Abort! Abort!')
+    }
 
     // how far engine is into the current tick. Updated each render.
     this.positionInCurrentTick = 0
