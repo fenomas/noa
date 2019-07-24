@@ -14,8 +14,8 @@ module.exports = function (noa, opts) {
 var defaults = {
     inverseX: false,
     inverseY: false,
-    sensitivityX: 15,
-    sensitivityY: 15,
+    sensitivityX: 10,
+    sensitivityY: 10,
     initialZoom: 0,
     zoomSpeed: 0.2,
 }

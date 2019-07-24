@@ -285,8 +285,10 @@ Engine.prototype.tick = function () {
     this.emit('tick', dt)
     profile_hook('tick event')
     profile_hook('end')
-    this.inputs.tick() // clears accumulated tick/mouseMove data
     if (DEBUG_QUEUES) debugQueues(this)
+    // clear accumulated scroll inputs (mouseMove is cleared on render)
+    var st = this.inputs.state
+    st.scrollx = st.scrolly = st.scrollz = 0
 }
 
 
@@ -338,8 +340,6 @@ Engine.prototype.render = function (framePart) {
         (this._dragOutsideLock && this.inputs.state.fire)) {
         this.camera.applyInputsToCamera()
     }
-    // clear cumulative mouse inputs
-    this.inputs.state.dx = this.inputs.state.dy = 0
 
     // events and render
     this.camera.updateBeforeEntityRenderSystems()
@@ -353,6 +353,9 @@ Engine.prototype.render = function (framePart) {
     this.emit('afterRender', dt)
     profile_hook_render('after render')
     profile_hook_render('end')
+
+    // clear accumulated mouseMove inputs (scroll inputs cleared on render)
+    this.inputs.state.dx = this.inputs.state.dy = 0
 }
 
 
