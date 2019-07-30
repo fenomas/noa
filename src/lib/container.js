@@ -5,7 +5,7 @@ var createGameShell = require('game-shell')
 var EventEmitter = require('events').EventEmitter
 
 
-module.exports = function (noa, opts) {
+export default function (noa, opts) {
     return new Container(noa, opts)
 }
 

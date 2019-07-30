@@ -5,14 +5,18 @@ var vec3 = require('gl-vec3')
 var EntComp = require('ent-comp')
 // var EntComp = require('../../../../npm-modules/ent-comp')
 
-module.exports = function (noa, opts) {
+
+
+
+export default function (noa, opts) {
     return new Entities(noa, opts)
 }
+
+
 
 var defaults = {
     shadowDistance: 10,
 }
-
 
 
 /**
@@ -38,21 +42,25 @@ function Entities(noa, opts) {
     // Hash containing the component names of built-in components.
     this.names = {}
 
-    // options
-    var shadowDist = opts.shadowDistance
+    // optional arguments to supply to component creation functions
+    var componentArgs = {
+        'shadow': opts.shadowDistance,
+    }
 
-    // register components with the ECS
-    this.names.position = this.createComponent(require('../components/position')(noa))
-    this.names.physics = this.createComponent(require('../components/physics')(noa))
-    this.names.followsEntity = this.createComponent(require('../components/followsEntity')(noa))
-    this.names.mesh = this.createComponent(require('../components/mesh')(noa))
-    this.names.shadow = this.createComponent(require('../components/shadow')(noa, shadowDist))
-    this.names.collideTerrain = this.createComponent(require('../components/collideTerrain')(noa))
-    this.names.collideEntities = this.createComponent(require('../components/collideEntities')(noa))
-    this.names.smoothCamera = this.createComponent(require('../components/smoothCamera')(noa))
-    this.names.movement = this.createComponent(require('../components/movement')(noa))
-    this.names.receivesInputs = this.createComponent(require('../components/receivesInputs')(noa))
-    this.names.fadeOnZoom = this.createComponent(require('../components/fadeOnZoom')(noa))
+    // Bundler magic to import everything in the ../components directory
+    // each component module exports a default function: (noa) => compDefinition
+    var reqContext = require.context('../components/', false, /\.js$/)
+    reqContext.keys().forEach(name => {
+        // convert name ('./foo.js') to bare name ('foo')
+        var bareName = /\.\/(.*)\.js/.exec(name)[1]
+        var arg = componentArgs[bareName] || undefined
+        var compFn = reqContext(name)
+        if (compFn.default) compFn = compFn.default
+        var compDef = compFn(noa, arg)
+        var comp = this.createComponent(compDef)
+        this.names[bareName] = comp
+    })
+
 
     // decorate the entities object with accessor functions
     this.isPlayer = function (id) { return id === noa.playerEntity }

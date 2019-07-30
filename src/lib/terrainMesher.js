@@ -1,9 +1,16 @@
 'use strict'
 
+import { Mesh } from '@babylonjs/core/Meshes/mesh'
+import { SubMesh } from '@babylonjs/core/Meshes/subMesh'
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData'
+import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial'
+import { Texture } from '@babylonjs/core/Materials/Textures/texture'
+import '@babylonjs/core/Meshes/meshBuilder'
 
+import { constants } from './constants'
+import { Timer } from './util'
 
-
-module.exports = new TerrainMesher()
+export default new TerrainMesher()
 
 
 
@@ -106,13 +113,10 @@ Submesh.prototype.dispose = function () {
 function MeshBuilder() {
 
     var noa
-    var BABYLON
-
 
     // core
     this.build = function (chunk, meshdata, ignoreMaterials) {
         noa = chunk.noa
-        BABYLON = noa.BABYLON
 
         // preprocess meshdata entries to merge those that will use default terrain material
         var mergeCriteria = function (mdat) {
@@ -248,11 +252,11 @@ function MeshBuilder() {
 
 
     function buildMeshFromSubmesh(submesh, name, mats, verts, inds) {
-        
+
         // base mesh and vertexData object
         var scene = noa.rendering.getScene()
-        var mesh = new BABYLON.Mesh(name, scene)
-        var vdat = new BABYLON.VertexData()
+        var mesh = new Mesh(name, scene)
+        var vdat = new VertexData()
         vdat.positions = submesh.positions
         vdat.indices = submesh.indices
         vdat.normals = submesh.normals
@@ -267,7 +271,7 @@ function MeshBuilder() {
 
         } else {
             // else we need to make a multimaterial and define (babylon) submeshes
-            var multiMat = new BABYLON.MultiMaterial('multimat ' + name, scene)
+            var multiMat = new MultiMaterial('multimat ' + name, scene)
             mesh.subMeshes = []
             // var totalVerts = vdat.positions.length
             // var totalInds = vdat.indices.length
@@ -275,7 +279,7 @@ function MeshBuilder() {
             var indStart = 0
             for (var i = 0; i < mats.length; i++) {
                 multiMat.subMaterials[i] = mats[i]
-                var sub = new BABYLON.SubMesh(i, vertStart, verts[i], indStart, inds[i], mesh)
+                var sub = new SubMesh(i, vertStart, verts[i], indStart, inds[i], mesh)
                 mesh.subMeshes[i] = sub
                 vertStart += verts[i]
                 indStart += inds[i]
@@ -318,7 +322,7 @@ function MeshBuilder() {
         var mat = noa.rendering.flatMaterial.clone('terrain' + id)
         if (url) {
             var scene = noa.rendering.getScene()
-            var tex = new BABYLON.Texture(url, scene, true, false, BABYLON.Texture.NEAREST_SAMPLINGMODE)
+            var tex = new Texture(url, scene, true, false, Texture.NEAREST_SAMPLINGMODE)
             if (matData.textureAlpha) tex.hasAlpha = true
             mat.diffuseTexture = tex
         }
@@ -368,9 +372,6 @@ function MeshBuilder() {
  */
 
 function GreedyMesher() {
-
-    // data representation constants
-    var constants = require('./constants')
 
     var ID_MASK = constants.ID_MASK
     // var VAR_MASK = constants.VAR_MASK // NYI
@@ -853,7 +854,7 @@ function GreedyMesher() {
 var profile_hook = (function () {
     if (!PROFILE) return function () {}
     var every = 50
-    var timer = new(require('./util').Timer)(every, 'Terrain meshing')
+    var timer = Timer(every, 'Terrain meshing')
     return function (state) {
         if (state === 'start') timer.start()
         else if (state === 'end') timer.report()

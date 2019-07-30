@@ -1,8 +1,5 @@
 'use strict'
 
-var constants = {}
-module.exports = constants
-
 
 /* 
  *  Internal voxel data representation
@@ -33,8 +30,11 @@ var OBJECT_BIT = 1 << n++
 
 // exports
 
+export var constants = {}
+
 constants.ID_MASK = ID_MASK
 constants.VAR_MASK = VAR_MASK
 constants.SOLID_BIT = SOLID_BIT
 constants.OPAQUE_BIT = OPAQUE_BIT
 constants.OBJECT_BIT = OBJECT_BIT
+

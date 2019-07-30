@@ -1,19 +1,21 @@
 'use strict'
 
+import { Mesh } from '@babylonjs/core/Meshes/mesh'
+import { Color3 } from '@babylonjs/core/Maths/math'
 var vec3 = require('gl-vec3')
-var shadowDist
 
-module.exports = function (noa, dist) {
 
-    shadowDist = dist
+export default function (noa, dist) {
+
+    var shadowDist = dist
 
     // create a mesh to re-use for shadows
     var scene = noa.rendering.getScene()
-    var disc = noa.BABYLON.Mesh.CreateDisc('shadow', 0.75, 30, scene)
+    var disc = Mesh.CreateDisc('shadow', 0.75, 30, scene)
     disc.rotation.x = Math.PI / 2
     disc.material = noa.rendering.makeStandardMaterial('shadowMat')
-    disc.material.diffuseColor = noa.BABYLON.Color3.Black()
-    disc.material.ambientColor = noa.BABYLON.Color3.Black()
+    disc.material.diffuseColor = Color3.Black()
+    disc.material.ambientColor = Color3.Black()
     disc.material.alpha = 0.5
     disc.setEnabled(false)
 

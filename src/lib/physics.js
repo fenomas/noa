@@ -4,7 +4,7 @@ var createPhysics = require('voxel-physics-engine')
 // var createPhysics = require('../../../../npm-modules/voxel-physics-engine')
 
 
-module.exports = function (noa, opts) {
+export default function (noa, opts) {
     return makePhysics(noa, opts)
 }
 

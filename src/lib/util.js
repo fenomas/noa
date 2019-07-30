@@ -1,16 +1,10 @@
 'use strict'
 
 
-module.exports = {
-    Timer: Timer,
-    removeUnorderedListItem: removeUnorderedListItem,
-}
-
-
 
 
 // helper to swap item to end and pop(), instead of splice()ing
-function removeUnorderedListItem(list, item) {
+export function removeUnorderedListItem(list, item) {
     var i = list.indexOf(item)
     if (i < 0) { return }
     if (i === list.length - 1) {
@@ -24,7 +18,7 @@ function removeUnorderedListItem(list, item) {
 
 
 // simple thing for reporting time split up between several activities
-function Timer(_every, _title) {
+export function Timer(_every, _title) {
     var title = _title || ''
     var every = _every || 1
     var times = []

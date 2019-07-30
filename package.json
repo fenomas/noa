@@ -7,9 +7,6 @@
         "/src"
     ],
     "scripts": {
-        "start": "cd docs/hello-world && webpack-dev-server",
-        "test": "cd docs/test && webpack-dev-server",
-        "build": "cd docs/hello-world && webpack && cd ../test && webpack",
         "doc": "jsdoc2md -f src/* src/**/* -g table -p list --partial doc-templates/* > API.md"
     },
     "author": "Andy Hall",
@@ -32,6 +29,9 @@
         "voxel-aabb-sweep": "^0.5.0",
         "voxel-physics-engine": "^0.10.0"
     },
+    "peerDependencies": {
+        "@babylonjs/core": "^4.0.0"
+    },
     "repository": "https://github.com/andyhall/noa",
     "bugs": {
         "url": "https://github.com/andyhall/noa/issues"
@@ -39,9 +39,6 @@
     "devDependencies": {
         "eslint": "^5.16.0",
         "js-beautify": "^1.10.0",
-        "jsdoc-to-markdown": "^5.0.0",
-        "webpack": "^4.35.3",
-        "webpack-cli": "^3.3.5",
-        "webpack-dev-server": "^3.7.2"
+        "jsdoc-to-markdown": "^5.0.0"
     }
 }
