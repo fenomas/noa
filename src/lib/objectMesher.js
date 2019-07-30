@@ -1,6 +1,6 @@
 'use strict'
 
-import { Timer, removeUnorderedListItem } from './util'
+import { removeUnorderedListItem } from './util'
 import { SolidParticleSystem } from '@babylonjs/core/Particles/solidParticleSystem'
 
 
@@ -198,15 +198,9 @@ function ObjectMesher() {
 
 
 
+import { makeProfileHook } from './util'
+var profile_hook = (PROFILE) ?
+    makeProfileHook(50, 'Object meshing') : () => {}
 
 
-var profile_hook = (function () {
-    if (!PROFILE) return function () {}
-    var every = 50
-    var timer = Timer(every, 'Object meshing')
-    return function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
+    

@@ -8,7 +8,6 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture'
 import '@babylonjs/core/Meshes/meshBuilder'
 
 import { constants } from './constants'
-import { Timer } from './util'
 
 export default new TerrainMesher()
 
@@ -849,15 +848,7 @@ function GreedyMesher() {
 
 
 
+import { makeProfileHook } from './util'
+var profile_hook = (PROFILE) ?
+    makeProfileHook(50, 'Terrain meshing') : () => {}
 
-
-var profile_hook = (function () {
-    if (!PROFILE) return function () {}
-    var every = 50
-    var timer = Timer(every, 'Terrain meshing')
-    return function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()

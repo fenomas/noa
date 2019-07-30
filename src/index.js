@@ -21,17 +21,16 @@ import createCamera from './lib/camera'
 import createRegistry from './lib/registry'
 import createEntities from './lib/entities'
 import { constants } from './lib/constants'
-import { Timer } from './lib/util'
+
 
 
 
 export default Engine
 
 
-// profiling flag
+// profiling flags
 var PROFILE = 0
 var PROFILE_RENDER = 0
-var DEBUG_QUEUES = 0
 
 
 
@@ -278,35 +277,9 @@ Engine.prototype.tick = function () {
     this.emit('tick', dt)
     profile_hook('tick event')
     profile_hook('end')
-    if (DEBUG_QUEUES) debugQueues(this)
     // clear accumulated scroll inputs (mouseMove is cleared on render)
     var st = this.inputs.state
     st.scrollx = st.scrolly = st.scrollz = 0
-}
-
-
-var __qwasDone = true,
-    __qstart
-
-function debugQueues(self) {
-    var a = self.world._chunkIDsToAdd.length
-    var b = self.world._chunkIDsToCreate.length
-    var c = self.rendering._chunksToMesh.length
-    var d = self.rendering._numMeshedChunks
-    if (a + b + c > 0) console.log([
-        'Chunks:', 'unmade', a,
-        'pending creation', b,
-        'to mesh', c,
-        'meshed', d,
-    ].join('   \t'))
-    if (__qwasDone && a + b + c > 0) {
-        __qwasDone = false
-        __qstart = performance.now()
-    }
-    if (!__qwasDone && a + b + c === 0) {
-        __qwasDone = true
-        console.log('Queue empty after ' + Math.round(performance.now() - __qstart) + 'ms')
-    }
 }
 
 
@@ -520,21 +493,11 @@ function deprecateStuff(noa) {
 
 
 
-var profile_hook = (s) => {}
-var profile_hook_render = (s) => {}
-if (PROFILE)(() => {
-    var timer = new Timer(200, 'tick   ')
-    profile_hook = function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
-if (PROFILE_RENDER)(() => {
-    var timer = new Timer(200, 'render ')
-    profile_hook_render = function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
+
+
+import { makeProfileHook } from './lib/util'
+var profile_hook = (PROFILE) ?
+    makeProfileHook(200, 'tick   ') : () => {}
+var profile_hook_render = (PROFILE_RENDER) ?
+    makeProfileHook(200, 'render ') : () => {}
+

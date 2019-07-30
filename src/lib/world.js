@@ -3,7 +3,6 @@
 var ndHash = require('ndarray-hash')
 var EventEmitter = require('events').EventEmitter
 import Chunk from './chunk'
-import { Timer } from './util'
 
 
 
@@ -650,13 +649,12 @@ if (PROFILE_QUEUES)(function () {
 })()
 
 
-var profile_hook = function (s) {}
-if (PROFILE)(function () {
-    var every = 200
-    var timer = Timer(every, 'world ticks')
-    profile_hook = function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
+
+
+
+
+import { makeProfileHook } from './util'
+var profile_hook = (PROFILE) ?
+    makeProfileHook(200, 'world ticks') : () => {}
+
+

@@ -1,7 +1,7 @@
 'use strict'
 
 var glvec3 = require('gl-vec3')
-import { Timer, removeUnorderedListItem } from './util'
+import { removeUnorderedListItem } from './util'
 
 import { Scene } from '@babylonjs/core/scene'
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera'
@@ -22,7 +22,7 @@ export default function (noa, opts, canvas) {
 
 
 
-// profiling flags
+// profiling flag
 var PROFILE = 0
 
 
@@ -547,16 +547,9 @@ Rendering.prototype.debug_MeshCount = function () {
 
 
 
-var profile_hook = (function () {
-    if (!PROFILE) return function () {}
-    var every = 200
-    var timer = new Timer(every, 'render internals')
-    return function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
+import { makeProfileHook } from './util'
+var profile_hook = (PROFILE) ?
+    makeProfileHook(200, 'render internals') : () => {}
 
 
 

@@ -18,7 +18,7 @@ export function removeUnorderedListItem(list, item) {
 
 
 // simple thing for reporting time split up between several activities
-export function Timer(_every, _title) {
+export function makeProfileHook(_every, _title) {
     var title = _title || ''
     var every = _every || 1
     var times = []
@@ -29,7 +29,7 @@ export function Timer(_every, _title) {
     var total = 0
     var clearNext = true
 
-    this.start = function () {
+    var start = function () {
         if (clearNext) {
             times.length = names.length = 0
             clearNext = false
@@ -37,7 +37,7 @@ export function Timer(_every, _title) {
         started = last = performance.now()
         iter++
     }
-    this.add = function (name) {
+    var add = function (name) {
         var t = performance.now()
         if (names.indexOf(name) < 0) names.push(name)
         var i = names.indexOf(name)
@@ -45,7 +45,7 @@ export function Timer(_every, _title) {
         times[i] += t - last
         last = t
     }
-    this.report = function () {
+    var report = function () {
         total += performance.now() - started
         if (iter === every) {
             var head = title + ' total ' + (total / every).toFixed(2) + 'ms (avg, ' + every + ' runs)    '
@@ -56,5 +56,10 @@ export function Timer(_every, _title) {
             iter = 0
             total = 0
         }
+    }
+    return function profile_hook(state) {
+        if (state === 'start') start()
+        else if (state === 'end') report()
+        else add(state)
     }
 }
