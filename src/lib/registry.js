@@ -1,14 +1,10 @@
 'use strict'
 
-module.exports = function (noa, opts) {
+
+export default function (noa, opts) {
     return new Registry(noa, opts)
 }
 
-
-/**
- * This is where clients register block types and their materials & properties.
- * @class noa.registry
- */
 
 
 /*
@@ -23,7 +19,7 @@ module.exports = function (noa, opts) {
  *      blockHandlers      id -> instance of `BlockCallbackHolder` or null 
  *      matIDs             matName -> matID (int)
  *      matData            matID -> { color, alpha, texture, textureAlpha }
-*/
+ */
 
 
 var defaults = {
@@ -40,6 +36,14 @@ var blockDefaults = {
 var MAX_BLOCK_IDS = 255 // currently stored in chunks as int8
 
 
+
+/**
+ * @class
+ * @typicalname noa.registry
+ * @classdesc for registering block types, materials & properties
+ */
+
+
 function Registry(noa, opts) {
     this.noa = noa
     opts = Object.assign({}, defaults, opts)
@@ -49,7 +53,7 @@ function Registry(noa, opts) {
      * 
      *      data structures
      * 
-    */
+     */
 
     // lookup arrays for block props and flags - all keyed by blockID
     // fill in first value for id=0, empty space
@@ -62,8 +66,8 @@ function Registry(noa, opts) {
     var blockHandlers = [null]
 
     // material data structs
-    var matIDs = {}             // mat name -> id
-    var matData = [null]        // mat id -> { color, alpha, texture, textureAlpha }
+    var matIDs = {} // mat name -> id
+    var matData = [null] // mat id -> { color, alpha, texture, textureAlpha }
 
     // option data to save
     var texturePath = opts.texturePath
@@ -74,17 +78,17 @@ function Registry(noa, opts) {
      * 
      *      Block registration methods
      * 
-    */
+     */
 
 
 
     /**
      * Register (by integer ID) a block type and its parameters.
      * 
-     *  @param id: integer, currently 1..255. This needs to be passed in by the 
+     *  `id` param: integer, currently 1..255. This needs to be passed in by the 
      *    client because it goes into the chunk data, which someday will get serialized.
      * 
-     *  @param options: Recognized fields for the options object:
+     *  `options` param: Recognized fields for the options object:
      * 
      *  * material: can be:
      *      * one (String) material name
@@ -103,8 +107,7 @@ function Registry(noa, opts) {
      *  * onSet(): block event handler
      *  * onUnset(): block event handler
      *  * onCustomMeshCreate(): block event handler
-    */
-
+     */
 
     this.registerBlock = function (id, _options) {
         _options = _options || {}
@@ -173,12 +176,15 @@ function Registry(noa, opts) {
 
 
 
-    /*
+    /**
      * Register (by name) a material and its parameters.
      * 
-     * @param name,color,textureURL,texHasAlpha
+     * @param name
+     * @param color
+     * @param textureURL
+     * @param texHasAlpha
      * @param renderMaterial an optional BABYLON material to be used for block faces with this block material
-    */
+     */
 
     this.registerMaterial = function (name, color, textureURL, texHasAlpha, renderMaterial) {
         // console.log('register mat: ', name, color, textureURL)
@@ -202,25 +208,37 @@ function Registry(noa, opts) {
 
     /*
      *      quick accessors for querying block ID stuff
-    */
+     */
 
-    // block solidity (as in physics)
+    /** 
+     * block solidity (as in physics) 
+     * @param id
+     */
     this.getBlockSolidity = function (id) {
         return blockSolidity[id]
     }
 
-    // block opacity - whether it obscures the whole voxel (dirt) or 
-    // can be partially seen through (like a fencepost, etc)
+    /**
+     * block opacity - whether it obscures the whole voxel (dirt) or 
+     * can be partially seen through (like a fencepost, etc)
+     * @param id
+     */
     this.getBlockOpacity = function (id) {
         return blockOpacity[id]
     }
 
-    // block is fluid or not
+    /** 
+     * block is fluid or not
+     * @param id
+     */
     this.getBlockFluidity = function (id) {
         return blockIsFluid[id]
     }
 
-    // Get block property object passed in at registration
+    /** 
+     * Get block property object passed in at registration
+     * @param id
+     */
     this.getBlockProps = function (id) {
         return blockProps[id]
     }
@@ -258,7 +276,7 @@ function Registry(noa, opts) {
      * 
      *   Meant for internal use within the engine
      * 
-    */
+     */
 
 
     // internal access to lookup arrays
@@ -288,7 +306,7 @@ function Registry(noa, opts) {
      * 
      *      default initialization
      * 
-    */
+     */
 
     // add a default material and set ID=1 to it
     // note that registering new block data overwrites the old
@@ -305,7 +323,7 @@ function Registry(noa, opts) {
  * 
  *          helpers
  * 
-*/
+ */
 
 
 
@@ -328,11 +346,3 @@ function BlockCallbackHolder(opts) {
     this.onUnset = opts.onUnset || null
     this.onCustomMeshCreate = opts.onCustomMeshCreate || null
 }
-
-
-
-
-
-
-
-

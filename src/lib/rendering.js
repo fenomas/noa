@@ -1,26 +1,28 @@
 'use strict'
 
 var glvec3 = require('gl-vec3')
-var aabb = require('aabb-3d')
-var sweep = require('voxel-aabb-sweep')
-var removeUnorderedListItem = require('./util').removeUnorderedListItem
+import { removeUnorderedListItem } from './util'
+
+import { Scene } from '@babylonjs/core/scene'
+import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera'
+import { Octree } from '@babylonjs/core/Culling/Octrees/octree'
+import { OctreeBlock } from '@babylonjs/core/Culling/Octrees/octreeBlock'
+import { Engine } from '@babylonjs/core/Engines/engine'
+import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight'
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
+import { Vector3, Color3 } from '@babylonjs/core/Maths/math'
+import { Mesh } from '@babylonjs/core/Meshes/mesh'
+import '@babylonjs/core/Meshes/meshBuilder'
 
 
-// For now, assume Babylon.js has been imported into the global space already
-if (!BABYLON) {
-    throw new Error('Babylon.js reference not found! Abort! Abort!')
-}
 
-module.exports = function (noa, opts, canvas) {
+export default function (noa, opts, canvas) {
     return new Rendering(noa, opts, canvas)
 }
 
-var vec3 = BABYLON.Vector3 // not a gl-vec3, in this module only!!
-var col3 = BABYLON.Color3
 
 
-
-// profiling flags
+// profiling flag
 var PROFILE = 0
 
 
@@ -33,9 +35,6 @@ var defaults = {
     lightDiffuse: [1, 1, 1],
     lightSpecular: [1, 1, 1],
     groundLightColor: [0.5, 0.5, 0.5],
-    initialCameraZoom: 0,
-    cameraZoomSpeed: .2,
-    cameraMaxAngle: (Math.PI / 2) - 0.01,
     useAO: true,
     AOmultipliers: [0.93, 0.8, 0.5],
     reverseAOmultiplier: 1.0,
@@ -45,15 +44,35 @@ var defaults = {
 
 
 
-
+/**
+ * @class
+ * @typicalname noa.rendering
+ * @classdesc Manages all rendering, and the BABYLON scene, materials, etc.
+ */
 
 function Rendering(noa, opts, canvas) {
     this.noa = noa
+
+    /**
+     * `noa.rendering` uses the following options (from the root `noa(opts)` options):
+     * ```js
+     * {
+     *   showFPS: false,
+     *   antiAlias: true,
+     *   clearColor: [0.8, 0.9, 1],
+     *   ambientColor: [1, 1, 1],
+     *   lightDiffuse: [1, 1, 1],
+     *   lightSpecular: [1, 1, 1],
+     *   groundLightColor: [0.5, 0.5, 0.5],
+     *   useAO: true,
+     *   AOmultipliers: [0.93, 0.8, 0.5],
+     *   reverseAOmultiplier: 1.0,
+     *   useOctreesForDynamicMeshes: true,
+     *   preserveDrawingBuffer: true,
+     * }
+     * ```
+     */
     opts = Object.assign({}, defaults, opts)
-    this.zoomDistance = opts.initialCameraZoom      // zoom setting
-    this._currentZoom = this.zoomDistance       // current actual zoom level
-    this._cameraZoomSpeed = opts.cameraZoomSpeed
-    this._maxCamAngle = opts.cameraMaxAngle
 
     // internals
     this._dynamicMeshes = []
@@ -74,33 +93,30 @@ function Rendering(noa, opts, canvas) {
 
 // Constructor helper - set up the Babylon.js scene and basic components
 function initScene(self, canvas, opts) {
-    if (!BABYLON) throw new Error('BABYLON.js engine not found!')
 
     // init internal properties
-    self._engine = new BABYLON.Engine(canvas, opts.antiAlias, {
+    self._engine = new Engine(canvas, opts.antiAlias, {
         preserveDrawingBuffer: opts.preserveDrawingBuffer,
     })
-    self._scene = new BABYLON.Scene(self._engine)
+    self._scene = new Scene(self._engine)
     var scene = self._scene
     // remove built-in listeners
     scene.detachControl()
 
     // octree setup
-    self._octree = new BABYLON.Octree($ => { })
+    self._octree = new Octree($ => {})
     self._octree.blocks = []
     scene._selectionOctree = self._octree
 
     // camera, and empty mesh to hold it, and one to accumulate rotations
-    self._rotationHolder = new BABYLON.Mesh('rotHolder', scene)
-    self._cameraHolder = new BABYLON.Mesh('camHolder', scene)
-    self._camera = new BABYLON.FreeCamera('camera', new vec3(0, 0, 0), scene)
+    self._cameraHolder = new Mesh('camHolder', scene)
+    self._camera = new FreeCamera('camera', new Vector3(0, 0, 0), scene)
     self._camera.parent = self._cameraHolder
     self._camera.minZ = .01
     self._cameraHolder.visibility = false
-    self._rotationHolder.visibility = false
 
     // plane obscuring the camera - for overlaying an effect on the whole view
-    self._camScreen = BABYLON.Mesh.CreatePlane('camScreen', 10, scene)
+    self._camScreen = Mesh.CreatePlane('camScreen', 10, scene)
     self.addMeshToScene(self._camScreen)
     self._camScreen.position.z = .1
     self._camScreen.parent = self._camera
@@ -110,8 +126,10 @@ function initScene(self, canvas, opts) {
     self._camLocBlock = 0
 
     // apply some defaults
-    self._light = new BABYLON.HemisphericLight('light', new vec3(0.1, 1, 0.3), scene)
-    function arrToColor(a) { return new col3(a[0], a[1], a[2]) }
+    var lightVec = new Vector3(0.1, 1, 0.3)
+    self._light = new HemisphericLight('light', lightVec, scene)
+
+    function arrToColor(a) { return new Color3(a[0], a[1], a[2]) }
     scene.clearColor = arrToColor(opts.clearColor)
     scene.ambientColor = arrToColor(opts.ambientColor)
     self._light.diffuse = arrToColor(opts.lightDiffuse)
@@ -127,19 +145,13 @@ function initScene(self, canvas, opts) {
 
 /*
  *   PUBLIC API 
-*/
+ */
 
-// Init anything about scene that needs to wait for engine internals
-Rendering.prototype.initScene = function () {
-    // engine entity to follow the player and act as camera target
-    this.cameraTarget = this.noa.ents.createEntity(['position'])
-    this.noa.ents.addComponent(this.cameraTarget, 'followsEntity', {
-        entity: this.noa.playerEntity,
-        offset: [0, this.noa.playerEyeOffset, 0],
-    })
-}
 
-// accessor for client app to build meshes and register materials
+/**
+ * The Babylon `scene` object representing the game world.
+ * @member
+ */
 Rendering.prototype.getScene = function () {
     return this._scene
 }
@@ -155,7 +167,7 @@ Rendering.prototype.tick = function (dt) {
 
 Rendering.prototype.render = function (dt) {
     profile_hook('start')
-    updateCamera(this)
+    updateCameraForRender(this)
     profile_hook('updateCamera')
     this._engine.beginFrame()
     profile_hook('beginFrame')
@@ -185,9 +197,9 @@ var pendingResize = false
 Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
     var m = getHighlightMesh(this)
     if (show) {
-        // bigger slop when zoomed out
-        var dist = this._currentZoom + glvec3.distance(this.noa.getPlayerEyePosition(), posArr)
-        var slop = 0.001 + 0.001 * dist
+        // bigger slop when camera is far from highlight
+        var dist = glvec3.dist(this.noa.camera.getPosition(), posArr)
+        var slop = 0.0005 * dist
         var pos = _highlightPos
         for (var i = 0; i < 3; ++i) {
             pos[i] = Math.floor(posArr[i]) + .5 + ((0.5 + slop) * normArr[i])
@@ -201,28 +213,14 @@ Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
 var _highlightPos = glvec3.create()
 
 
-Rendering.prototype.getCameraVector = function () {
-    return vec3.TransformCoordinates(BABYLON.Axis.Z, this._rotationHolder.getWorldMatrix())
-}
-var zero = vec3.Zero()
-Rendering.prototype.getCameraPosition = function () {
-    return vec3.TransformCoordinates(zero, this._camera.getWorldMatrix())
-}
-Rendering.prototype.getCameraRotation = function () {
-    var rot = this._rotationHolder.rotation
-    return [rot.x, rot.y]
-}
-Rendering.prototype.setCameraRotation = function (x, y) {
-    var rot = this._rotationHolder.rotation
-    rot.x = Math.max(-this._maxCamAngle, Math.min(this._maxCamAngle, x))
-    rot.y = y
-}
 
 
 
-
-// add a mesh to the scene's octree setup so that it renders
-// pass in isStatic=true if the mesh won't move (i.e. change octree blocks)
+/**
+ * add a mesh to the scene's octree setup so that it renders
+ * pass in isStatic=true if the mesh won't move (i.e. change octree blocks)
+ * @method
+ */
 Rendering.prototype.addMeshToScene = function (mesh, isStatic) {
     // exit silently if mesh has already been added and not removed
     if (mesh._currentNoaChunk || this._octree.dynamicContent.includes(mesh)) {
@@ -245,7 +243,11 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic) {
     mesh.onDisposeObservable.add(remover)
 }
 
-// undo the above
+
+
+/**  Undoes everything `addMeshToScene` does
+ * @method
+ */
 Rendering.prototype.removeMeshFromScene = function (mesh) {
     if (mesh._currentNoaChunk && mesh._currentNoaChunk.octreeBlock) {
         removeUnorderedListItem(mesh._currentNoaChunk.octreeBlock.entries, mesh)
@@ -310,7 +312,7 @@ Rendering.prototype.makeMeshInstance = function (mesh, isStatic) {
 // Create a default standardMaterial:
 //      flat, nonspecular, fully reflects diffuse and ambient light
 Rendering.prototype.makeStandardMaterial = function (name) {
-    var mat = new BABYLON.StandardMaterial(name, this._scene)
+    var mat = new StandardMaterial(name, this._scene)
     mat.specularColor.copyFromFloats(0, 0, 0)
     mat.ambientColor.copyFromFloats(1, 1, 1)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
@@ -329,13 +331,13 @@ Rendering.prototype.makeStandardMaterial = function (name) {
  *   ACCESSORS FOR CHUNK ADD/REMOVAL/MESHING
  *
  * 
-*/
+ */
 
 Rendering.prototype.prepareChunkForRendering = function (chunk) {
     var cs = chunk.size
-    var min = new vec3(chunk.x, chunk.y, chunk.z)
-    var max = new vec3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
-    chunk.octreeBlock = new BABYLON.OctreeBlock(min, max, undefined, undefined, undefined, $ => { })
+    var min = new Vector3(chunk.x, chunk.y, chunk.z)
+    var max = new Vector3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
+    chunk.octreeBlock = new OctreeBlock(min, max, undefined, undefined, undefined, $ => {})
     this._octree.blocks.push(chunk.octreeBlock)
 }
 
@@ -366,77 +368,29 @@ Rendering.prototype.removeTerrainMesh = function (chunk) {
 
 
 
-
 /*
  *
  *   INTERNALS
  *
-*/
+ */
 
 
 
 
-/*
- *
- *  zoom/camera related internals
- *
-*/
 
 
-// check if obstructions are behind camera by sweeping back an AABB
-// along the negative camera vector
+// updates camera position/rotation to match settings from noa.camera
 
-function cameraObstructionDistance(self) {
-    var size = 0.2
-    if (!_camBox) {
-        _camBox = new aabb([0, 0, 0], [size * 2, size * 2, size * 2])
-        _getVoxel = function (x, y, z) {
-            return self.noa.world.getBlockSolidity(x, y, z)
-        }
-    }
+function updateCameraForRender(self) {
+    var cam = self.noa.camera
+    var tgt = cam.getTargetPosition()
+    self._cameraHolder.position.copyFromFloats(tgt[0], tgt[1], tgt[2])
+    self._cameraHolder.rotation.x = cam.pitch
+    self._cameraHolder.rotation.y = cam.heading
+    self._camera.position.z = -cam.currentZoom
 
-    var pos = self._cameraHolder.position
-    glvec3.set(_posVec, pos.x - size, pos.y - size, pos.z - size)
-    _camBox.setPosition(_posVec)
-
-    var dist = -self.zoomDistance
-    var cam = self.getCameraVector()
-    glvec3.set(_camVec, dist * cam.x, dist * cam.y, dist * cam.z)
-
-    return sweep(_getVoxel, _camBox, _camVec, function (dist, axis, dir, vec) {
-        return true
-    }, true)
-}
-
-var _posVec = glvec3.create()
-var _camVec = glvec3.create()
-var _camBox
-var _getVoxel
-
-
-
-
-// Various updates to camera position/zoom, called every render
-
-function updateCamera(self) {
-    // update cameraHolder pos/rot from rotation holder and target entity
-    self._cameraHolder.rotation.copyFrom(self._rotationHolder.rotation)
-    var cpos = self.noa.ents.getPositionData(self.cameraTarget).renderPosition
-    self._cameraHolder.position.copyFromFloats(cpos[0], cpos[1], cpos[2])
-
-    // check obstructions and tween camera towards clipped position
-    var dist = self.zoomDistance
-    var speed = self._cameraZoomSpeed
-    if (dist > 0) {
-        dist = cameraObstructionDistance(self)
-        if (dist < self._currentZoom) self._currentZoom = dist
-    }
-    self._currentZoom += speed * (dist - self._currentZoom)
-    self._camera.position.z = -self._currentZoom
-
-    // check id of block camera is in for overlay effects (e.g. being in water) 
-    var cam = self.getCameraPosition()
-    var id = self.noa.world.getBlockID(Math.floor(cam.x), Math.floor(cam.y), Math.floor(cam.z))
+    // applies screen effect when camera is inside a transparent voxel
+    var id = self.noa.getBlock(self.noa.camera.getPosition())
     checkCameraEffect(self, id)
 }
 
@@ -455,7 +409,8 @@ function checkCameraEffect(self, id) {
             var col = matData.color
             var alpha = matData.alpha
             if (col && alpha && alpha < 1) {
-                self._camScreenMat.diffuseColor = new col3(col[0], col[1], col[2])
+                self._camScreenMat.diffuseColor.set(0, 0, 0)
+                self._camScreenMat.ambientColor.set(col[0], col[1], col[2])
                 self._camScreenMat.alpha = alpha
                 self._camScreen.setEnabled(true)
             }
@@ -473,23 +428,23 @@ function checkCameraEffect(self, id) {
 function getHighlightMesh(rendering) {
     var m = rendering._highlightMesh
     if (!m) {
-        var mesh = BABYLON.Mesh.CreatePlane("highlight", 1.0, rendering._scene)
+        var mesh = Mesh.CreatePlane("highlight", 1.0, rendering._scene)
         var hlm = rendering.makeStandardMaterial('highlightMat')
         hlm.backFaceCulling = false
-        hlm.emissiveColor = new col3(1, 1, 1)
+        hlm.emissiveColor = new Color3(1, 1, 1)
         hlm.alpha = 0.2
         mesh.material = hlm
         m = rendering._highlightMesh = mesh
         // outline
         var s = 0.5
-        var lines = BABYLON.Mesh.CreateLines("hightlightLines", [
-            new vec3(s, s, 0),
-            new vec3(s, -s, 0),
-            new vec3(-s, -s, 0),
-            new vec3(-s, s, 0),
-            new vec3(s, s, 0)
+        var lines = Mesh.CreateLines("hightlightLines", [
+            new Vector3(s, s, 0),
+            new Vector3(s, -s, 0),
+            new Vector3(-s, -s, 0),
+            new Vector3(-s, s, 0),
+            new Vector3(s, s, 0)
         ], rendering._scene)
-        lines.color = new col3(1, 1, 1)
+        lines.color = new Color3(1, 1, 1)
         lines.parent = mesh
 
         rendering.addMeshToScene(m)
@@ -506,22 +461,11 @@ function getHighlightMesh(rendering) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 /*
  * 
  *      sanity checks:
  * 
-*/
+ */
 
 Rendering.prototype.debug_SceneCheck = function () {
     var meshes = this._scene.meshes
@@ -569,8 +513,11 @@ Rendering.prototype.debug_SceneCheck = function () {
     var avgPerOct = Math.round(10 * octs.length / numOcts) / 10
     console.log('meshes - octree:', octs.length, '  dynamic:', dyns.length,
         '   avg meshes/octreeBlock:', avgPerOct)
+
     function warn(obj, msg) { console.warn(obj.name + ' --- ' + msg) }
+
     function empty(mesh) { return (mesh.getIndices().length === 0) }
+
     function missing(obj, list1, list2) {
         if (!obj) return false
         if (list1.includes(obj)) return false
@@ -600,20 +547,14 @@ Rendering.prototype.debug_MeshCount = function () {
 
 
 
-var profile_hook = (function () {
-    if (!PROFILE) return function () { }
-    var every = 200
-    var timer = new (require('./util').Timer)(every, 'render internals')
-    return function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
+import { makeProfileHook } from './util'
+var profile_hook = (PROFILE) ?
+    makeProfileHook(200, 'render internals') : () => {}
 
 
 
-var fps_hook = function () { }
+var fps_hook = function () {}
+
 function setUpFPS() {
     var div = document.createElement('div')
     div.id = 'noa_fps'
@@ -642,5 +583,3 @@ function setUpFPS() {
         start = nt
     }
 }
-
-

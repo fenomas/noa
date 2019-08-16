@@ -8,55 +8,54 @@
  * 
  */
 
-module.exports = function (noa) {
-	return {
+export default function (noa) {
+    return {
 
-		name: 'receivesInputs',
+        name: 'receivesInputs',
 
-		state: {},
+        order: 20,
 
-		onAdd: null,
+        state: {},
 
-		onRemove: null,
+        onAdd: null,
 
-		system: function inputProcessor(dt, states) {
-			var ents = noa.entities
-			var inputState = noa.inputs.state
-			var camHeading = noa.rendering.getCameraRotation()[1]
+        onRemove: null,
 
-			states.forEach(state => {
-				var moveState = ents.getMovement(state.__id)
-				setMovementState(moveState, inputState, camHeading)
-			})
-		}
+        system: function inputProcessor(dt, states) {
+            var ents = noa.entities
+            var inputState = noa.inputs.state
+            var camHeading = noa.camera.heading
 
-	}
+            states.forEach(state => {
+                var moveState = ents.getMovement(state.__id)
+                setMovementState(moveState, inputState, camHeading)
+            })
+        }
+
+    }
 }
 
 
 
 function setMovementState(state, inputs, camHeading) {
-	state.jumping = !!inputs.jump
+    state.jumping = !!inputs.jump
 
-	var fb = inputs.forward ? (inputs.backward ? 0 : 1) : (inputs.backward ? -1 : 0)
-	var rl = inputs.right ? (inputs.left ? 0 : 1) : (inputs.left ? -1 : 0)
+    var fb = inputs.forward ? (inputs.backward ? 0 : 1) : (inputs.backward ? -1 : 0)
+    var rl = inputs.right ? (inputs.left ? 0 : 1) : (inputs.left ? -1 : 0)
 
-	if ((fb | rl) === 0) {
-		state.running = false
-	} else {
-		state.running = true
-		if (fb) {
-			if (fb == -1) camHeading += Math.PI
-			if (rl) {
-				camHeading += Math.PI / 4 * fb * rl // didn't plan this but it works!
-			}
-		} else {
-			camHeading += rl * Math.PI / 2
-		}
-		state.heading = camHeading
-	}
+    if ((fb | rl) === 0) {
+        state.running = false
+    } else {
+        state.running = true
+        if (fb) {
+            if (fb == -1) camHeading += Math.PI
+            if (rl) {
+                camHeading += Math.PI / 4 * fb * rl // didn't plan this but it works!
+            }
+        } else {
+            camHeading += rl * Math.PI / 2
+        }
+        state.heading = camHeading
+    }
 
 }
-
-
-

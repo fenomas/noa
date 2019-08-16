@@ -1,0 +1,13 @@
+{
+    "search.exclude": {
+        "**/node_modules": true,
+        "docs/**/bundle.js": true,
+        "docs/**/babylon.js": true
+    },
+    "editor.detectIndentation": true,
+
+    "editor.defaultFormatter": "HookyQR.beautify",
+
+    "eslint.enable": true,
+    "javascript.format.enable": false,
+}

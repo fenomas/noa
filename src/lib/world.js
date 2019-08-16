@@ -2,10 +2,11 @@
 
 var ndHash = require('ndarray-hash')
 var EventEmitter = require('events').EventEmitter
-var Chunk = require('./chunk')
+import Chunk from './chunk'
 
 
-module.exports = function (noa, opts) {
+
+export default function (noa, opts) {
     return new World(noa, opts)
 }
 
@@ -21,14 +22,15 @@ var defaultOptions = {
 }
 
 /**
- * Module for managing the world, and its chunks
- * @class noa.world
+ * @class
+ * @typicalname noa.world
+ * @emits worldDataNeeded(id, ndarray, x, y, z)
+ * @emits chunkAdded(chunk)
+ * @emits chunkChanged(chunk)
+ * @emits chunkBeingRemoved(id, ndarray, userData)
+ * @classdesc Manages the world and its chunks
  * 
- * Emits:
- *  * worldDataNeeded  (id, ndarray, x, y, z)
- *  * chunkAdded (chunk)
- *  * chunkChanged (chunk)
- *  * chunkBeingRemoved (id, ndarray, userData)
+ * Extends `EventEmitter`
  */
 
 function World(noa, opts) {
@@ -89,7 +91,7 @@ var worldCoordToChunkIndex
 
 /*
  *   PUBLIC API 
-*/
+ */
 
 
 
@@ -258,7 +260,7 @@ World.prototype.setChunkData = function (id, array, userData) {
  * Calling this causes all world chunks to get unloaded and recreated 
  * (after receiving new world data from the client). This is useful when
  * you're teleporting the player to a new world, e.g.
-*/
+ */
 World.prototype.invalidateAllChunks = function () {
     var toInval = this._chunkIDsInMemory.concat(this._chunkIDsToCreate)
     for (var id of toInval) {
@@ -281,8 +283,11 @@ World.prototype.report = function () {
     _report(this, '  creating:  ', this._chunkIDsToCreate)
     _report(this, '  meshing:   ', this._chunkIDsToMesh.concat(this._chunkIDsToMeshFirst))
 }
+
 function _report(world, name, arr, ext) {
-    var ct = 0, full = 0, empty = 0
+    var ct = 0,
+        full = 0,
+        empty = 0
     for (var id of arr) {
         if (id.size) {
             if (id.isInvalid) ct++
@@ -303,14 +308,19 @@ function _report(world, name, arr, ext) {
 
 
 /*
- *    INTERNALS
-*/
+ *
+ *
+ *            INTERNALS
+ *
+ *
+ */
 
 
 // canonical string ID handling for the i,j,k-th chunk
 function getChunkID(i, j, k) {
     return i + '|' + j + '|' + k
 }
+
 function parseChunkID(id) {
     var arr = id.split('|')
     return [parseInt(arr[0]), parseInt(arr[1]), parseInt(arr[2])]
@@ -334,7 +344,7 @@ function setChunk(world, i, j, k, value) {
 
 
 function getPlayerChunkCoords(world) {
-    var pos = world.noa.getPlayerPosition()
+    var pos = world.noa.entities.getPosition(world.noa.playerEntity)
     var i = worldCoordToChunkCoord(pos[0])
     var j = worldCoordToChunkCoord(pos[1])
     var k = worldCoordToChunkCoord(pos[2])
@@ -402,7 +412,6 @@ function processMeshingQueues(self, firstOnly) {
     profile_hook('meshed')
     return false
 }
-
 
 
 
@@ -492,6 +501,9 @@ function _modifyBlockData(world, i, j, k, x, y, z, val) {
 
 // rebuild queue of chunks to be added around (ci,cj,ck)
 function buildChunkAddQueue(world, ci, cj, ck) {
+
+    // TODO: make this more sane
+
     var add = Math.ceil(world.chunkAddDistance)
     var pending = world._chunkIDsToCreate
     var queue = []
@@ -574,8 +586,8 @@ function unenqueueID(id, queue) {
 
 
 
-var profile_queues = function (w, s) { }
-if (PROFILE_QUEUES) (function () {
+var profile_queues = function (w, s) {}
+if (PROFILE_QUEUES)(function () {
     var every = 100
     var iter = 0
     var t, nrem, nreq, totalrec, nmesh
@@ -637,15 +649,12 @@ if (PROFILE_QUEUES) (function () {
 })()
 
 
-var profile_hook = function (s) { }
-if (PROFILE) (function () {
-    var every = 200
-    var timer = new (require('./util').Timer)(every, 'world ticks')
-    profile_hook = function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
+
+
+
+
+import { makeProfileHook } from './util'
+var profile_hook = (PROFILE) ?
+    makeProfileHook(200, 'world ticks') : () => {}
 
 

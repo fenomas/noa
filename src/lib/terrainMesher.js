@@ -1,9 +1,15 @@
 'use strict'
 
+import { Mesh } from '@babylonjs/core/Meshes/mesh'
+import { SubMesh } from '@babylonjs/core/Meshes/subMesh'
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData'
+import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial'
+import { Texture } from '@babylonjs/core/Materials/Textures/texture'
+import '@babylonjs/core/Meshes/meshBuilder'
 
+import { constants } from './constants'
 
-
-module.exports = new TerrainMesher()
+export default new TerrainMesher()
 
 
 
@@ -18,7 +24,7 @@ var PROFILE = 0
  * 
  *          TERRAIN MESHER!!
  * 
-*/
+ */
 
 
 function TerrainMesher() {
@@ -31,7 +37,7 @@ function TerrainMesher() {
      * 
      * Entry point and high-level flow
      * 
-    */
+     */
 
     this.meshChunk = function (chunk, matGetter, colGetter, ignoreMaterials, useAO, aoVals, revAoVal) {
         profile_hook('start')
@@ -70,7 +76,7 @@ function TerrainMesher() {
  * 
  *  Basically, the greedy mesher builds these and the mesh builder consumes them
  * 
-*/
+ */
 
 function Submesh(id) {
     this.id = id | 0
@@ -101,12 +107,11 @@ Submesh.prototype.dispose = function () {
  *  Mesh Builder - turns an array of Submesh data into a 
  *  Babylon.js mesh/submeshes, ready to be added to the scene
  * 
-*/
+ */
 
 function MeshBuilder() {
 
     var noa
-
 
     // core
     this.build = function (chunk, meshdata, ignoreMaterials) {
@@ -249,8 +254,8 @@ function MeshBuilder() {
 
         // base mesh and vertexData object
         var scene = noa.rendering.getScene()
-        var mesh = new BABYLON.Mesh(name, scene)
-        var vdat = new BABYLON.VertexData()
+        var mesh = new Mesh(name, scene)
+        var vdat = new VertexData()
         vdat.positions = submesh.positions
         vdat.indices = submesh.indices
         vdat.normals = submesh.normals
@@ -265,7 +270,7 @@ function MeshBuilder() {
 
         } else {
             // else we need to make a multimaterial and define (babylon) submeshes
-            var multiMat = new BABYLON.MultiMaterial('multimat ' + name, scene)
+            var multiMat = new MultiMaterial('multimat ' + name, scene)
             mesh.subMeshes = []
             // var totalVerts = vdat.positions.length
             // var totalInds = vdat.indices.length
@@ -273,7 +278,7 @@ function MeshBuilder() {
             var indStart = 0
             for (var i = 0; i < mats.length; i++) {
                 multiMat.subMaterials[i] = mats[i]
-                var sub = new BABYLON.SubMesh(i, vertStart, verts[i], indStart, inds[i], mesh)
+                var sub = new SubMesh(i, vertStart, verts[i], indStart, inds[i], mesh)
                 mesh.subMeshes[i] = sub
                 vertStart += verts[i]
                 indStart += inds[i]
@@ -316,7 +321,7 @@ function MeshBuilder() {
         var mat = noa.rendering.flatMaterial.clone('terrain' + id)
         if (url) {
             var scene = noa.rendering.getScene()
-            var tex = new BABYLON.Texture(url, scene, true, false, BABYLON.Texture.NEAREST_SAMPLINGMODE)
+            var tex = new Texture(url, scene, true, false, Texture.NEAREST_SAMPLINGMODE)
             if (matData.textureAlpha) tex.hasAlpha = true
             mat.diffuseTexture = tex
         }
@@ -363,15 +368,12 @@ function MeshBuilder() {
  *          colors:   floats,  0 .. 1
  *          uvs:      floats,  0 .. X/Y/Z
  *        }
-*/
+ */
 
 function GreedyMesher() {
 
-    // data representation constants
-    var constants = require('./constants')
-
     var ID_MASK = constants.ID_MASK
-    var VAR_MASK = constants.VAR_MASK
+    // var VAR_MASK = constants.VAR_MASK // NYI
     var SOLID_BIT = constants.SOLID_BIT
     var OPAQUE_BIT = constants.OPAQUE_BIT
     var OBJECT_BIT = constants.OBJECT_BIT
@@ -457,7 +459,7 @@ function GreedyMesher() {
         for (var k = 0; k < len; ++k) {
             var d0 = dbase
             dbase += kstride
-            for (var j = 0; j < len; j++ , n++ , d0 += jstride) {
+            for (var j = 0; j < len; j++, n++, d0 += jstride) {
 
                 // mask[n] will represent the face needed between i-1,j,k and i,j,k
                 // for now, assume we never have two faces in both directions
@@ -549,12 +551,12 @@ function GreedyMesher() {
                 }
 
                 OUTER:
-                for (h = 1; h < len2 - k; ++h) {
-                    for (var m = 0; m < w; ++m) {
-                        var ix = n + m + h * len1
-                        if (!maskCompareFcn(ix, mask, maskVal, aomask, ao)) break OUTER
+                    for (h = 1; h < len2 - k; ++h) {
+                        for (var m = 0; m < w; ++m) {
+                            var ix = n + m + h * len1
+                            if (!maskCompareFcn(ix, mask, maskVal, aomask, ao)) break OUTER
+                        }
                     }
-                }
 
                 // for testing: doing the following will disable greediness
                 //w=h=1
@@ -577,8 +579,10 @@ function GreedyMesher() {
                 x[d] = i
                 x[u] = j
                 x[v] = k
-                var du = [0, 0, 0]; du[u] = w;
-                var dv = [0, 0, 0]; dv[v] = h;
+                var du = [0, 0, 0]
+                var dv = [0, 0, 0]
+                du[u] = w
+                dv[v] = h
 
                 var pos = mesh.positions
                 pos.push(
@@ -710,7 +714,7 @@ function GreedyMesher() {
      *      a01(2)  -   a11(6)   ^  K
      *        -     -            +> J
      *      a00(0)  -   a10(4)
-    */
+     */
 
     // when skipping reverse AO, uses this simpler version of the function:
 
@@ -725,10 +729,10 @@ function GreedyMesher() {
         var facingSolid = (solidBit & data.get(ipos, j, k))
 
         // inc occlusion of vertex next to obstructed side
-        if (data.get(ipos, j + 1, k) & solidBit) { ++a10; ++a11 }
-        if (data.get(ipos, j - 1, k) & solidBit) { ++a00; ++a01 }
-        if (data.get(ipos, j, k + 1) & solidBit) { ++a01; ++a11 }
-        if (data.get(ipos, j, k - 1) & solidBit) { ++a00; ++a10 }
+        if (data.get(ipos, j + 1, k) & solidBit) {++a10;++a11 }
+        if (data.get(ipos, j - 1, k) & solidBit) {++a00;++a01 }
+        if (data.get(ipos, j, k + 1) & solidBit) {++a01;++a11 }
+        if (data.get(ipos, j, k - 1) & solidBit) {++a00;++a10 }
 
         // treat corners differently based when facing a solid block
         if (facingSolid) {
@@ -761,10 +765,10 @@ function GreedyMesher() {
         var facingSolid = (solidBit & data.get(ipos, j, k))
 
         // inc occlusion of vertex next to obstructed side
-        if (data.get(ipos, j + 1, k) & solidBit) { ++a10; ++a11 }
-        if (data.get(ipos, j - 1, k) & solidBit) { ++a00; ++a01 }
-        if (data.get(ipos, j, k + 1) & solidBit) { ++a01; ++a11 }
-        if (data.get(ipos, j, k - 1) & solidBit) { ++a00; ++a10 }
+        if (data.get(ipos, j + 1, k) & solidBit) {++a10;++a11 }
+        if (data.get(ipos, j - 1, k) & solidBit) {++a00;++a01 }
+        if (data.get(ipos, j, k + 1) & solidBit) {++a01;++a11 }
+        if (data.get(ipos, j, k - 1) & solidBit) {++a00;++a10 }
 
         if (facingSolid) {
             // always 2, or 3 in corners
@@ -776,8 +780,9 @@ function GreedyMesher() {
 
             // check each corner, and if not present do reverse AO
             if (a11 === 1) {
-                if (data.get(ipos, j + 1, k + 1) & solidBit) { a11 = 2 }
-                else if (!(data.get(ineg, j, k + 1) & solidBit) ||
+                if (data.get(ipos, j + 1, k + 1) & solidBit) {
+                    a11 = 2
+                } else if (!(data.get(ineg, j, k + 1) & solidBit) ||
                     !(data.get(ineg, j + 1, k) & solidBit) ||
                     !(data.get(ineg, j + 1, k + 1) & solidBit)) {
                     a11 = 0
@@ -785,8 +790,9 @@ function GreedyMesher() {
             }
 
             if (a10 === 1) {
-                if (data.get(ipos, j + 1, k - 1) & solidBit) { a10 = 2 }
-                else if (!(data.get(ineg, j, k - 1) & solidBit) ||
+                if (data.get(ipos, j + 1, k - 1) & solidBit) {
+                    a10 = 2
+                } else if (!(data.get(ineg, j, k - 1) & solidBit) ||
                     !(data.get(ineg, j + 1, k) & solidBit) ||
                     !(data.get(ineg, j + 1, k - 1) & solidBit)) {
                     a10 = 0
@@ -794,8 +800,9 @@ function GreedyMesher() {
             }
 
             if (a01 === 1) {
-                if (data.get(ipos, j - 1, k + 1) & solidBit) { a01 = 2 }
-                else if (!(data.get(ineg, j, k + 1) & solidBit) ||
+                if (data.get(ipos, j - 1, k + 1) & solidBit) {
+                    a01 = 2
+                } else if (!(data.get(ineg, j, k + 1) & solidBit) ||
                     !(data.get(ineg, j - 1, k) & solidBit) ||
                     !(data.get(ineg, j - 1, k + 1) & solidBit)) {
                     a01 = 0
@@ -803,8 +810,9 @@ function GreedyMesher() {
             }
 
             if (a00 === 1) {
-                if (data.get(ipos, j - 1, k - 1) & solidBit) { a00 = 2 }
-                else if (!(data.get(ineg, j, k - 1) & solidBit) ||
+                if (data.get(ipos, j - 1, k - 1) & solidBit) {
+                    a00 = 2
+                } else if (!(data.get(ineg, j, k - 1) & solidBit) ||
                     !(data.get(ineg, j - 1, k) & solidBit) ||
                     !(data.get(ineg, j - 1, k - 1) & solidBit)) {
                     a00 = 0
@@ -840,22 +848,7 @@ function GreedyMesher() {
 
 
 
-
-
-
-
-
-
-
-
-var profile_hook = (function () {
-    if (!PROFILE) return function () { }
-    var every = 50
-    var timer = new (require('./util').Timer)(every, 'Terrain meshing')
-    return function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
+import { makeProfileHook } from './util'
+var profile_hook = (PROFILE) ?
+    makeProfileHook(50, 'Terrain meshing') : () => {}
 

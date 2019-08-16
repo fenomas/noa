@@ -1,11 +1,20 @@
 'use strict'
 
 var createInputs = require('game-inputs')
+// var createInputs = require('../../../../npm-modules/game-inputs')
 
 
-module.exports = function (noa, opts, element) {
+export default function (noa, opts, element) {
     return makeInputs(noa, opts, element)
 }
+
+
+/**
+ * @class Inputs
+ * @typicalname noa.inputs
+ * @classdesc Abstracts key/mouse input. 
+ * For docs see [andyhall/game-inputs](https://github.com/andyhall/game-inputs)
+ */
 
 
 var defaultBindings = {
@@ -35,8 +44,3 @@ function makeInputs(noa, opts, element) {
     }
     return inputs
 }
-
-
-
-
-

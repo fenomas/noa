@@ -1,10 +1,10 @@
 'use strict'
 
+import { removeUnorderedListItem } from './util'
+import { SolidParticleSystem } from '@babylonjs/core/Particles/solidParticleSystem'
 
-var removeUnorderedListItem = require('./util').removeUnorderedListItem
 
-
-module.exports = new ObjectMesher()
+export default new ObjectMesher()
 
 
 // enable for profiling..
@@ -34,7 +34,7 @@ function ObjMeshDat(id, x, y, z) {
  *  Per-chunk handling of the creation/disposal of voxels with static meshes
  * 
  * 
-*/
+ */
 
 
 function ObjectMesher() {
@@ -83,7 +83,7 @@ function ObjectMesher() {
      * 
      *    main implementation - re-creates all needed object mesh instances
      * 
-    */
+     */
 
     this.buildObjectMesh = function (chunk) {
         profile_hook('start')
@@ -152,7 +152,7 @@ function ObjectMesher() {
     function buildSPSforMaterialIndex(chunk, scene, meshHash, x0, y0, z0) {
         var blockHash = chunk._objectBlocks
         // base sps
-        var sps = new BABYLON.SolidParticleSystem('object_sps_' + chunk.id, scene, {
+        var sps = new SolidParticleSystem('object_sps_' + chunk.id, scene, {
             updatable: false,
         })
 
@@ -198,16 +198,9 @@ function ObjectMesher() {
 
 
 
+import { makeProfileHook } from './util'
+var profile_hook = (PROFILE) ?
+    makeProfileHook(50, 'Object meshing') : () => {}
 
 
-var profile_hook = (function () {
-    if (!PROFILE) return function () { }
-    var every = 50
-    var timer = new (require('./util').Timer)(every, 'Object meshing')
-    return function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
-
+    
