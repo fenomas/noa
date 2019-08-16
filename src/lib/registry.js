@@ -1,9 +1,9 @@
 'use strict'
 
-module.exports = function (noa, opts) {
+
+export default function (noa, opts) {
     return new Registry(noa, opts)
 }
-
 
 
 

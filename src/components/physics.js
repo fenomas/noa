@@ -3,7 +3,7 @@
 var vec3 = require('gl-vec3')
 
 
-module.exports = function (noa) {
+export default function (noa) {
 
 
     return {

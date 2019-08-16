@@ -1,16 +1,28 @@
 'use strict'
 
 var glvec3 = require('gl-vec3')
-var removeUnorderedListItem = require('./util').removeUnorderedListItem
+import { removeUnorderedListItem } from './util'
+
+import { Scene } from '@babylonjs/core/scene'
+import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera'
+import { Octree } from '@babylonjs/core/Culling/Octrees/octree'
+import { OctreeBlock } from '@babylonjs/core/Culling/Octrees/octreeBlock'
+import { Engine } from '@babylonjs/core/Engines/engine'
+import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight'
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
+import { Vector3, Color3 } from '@babylonjs/core/Maths/math'
+import { Mesh } from '@babylonjs/core/Meshes/mesh'
+import '@babylonjs/core/Meshes/meshBuilder'
 
 
-module.exports = function (noa, opts, canvas) {
+
+export default function (noa, opts, canvas) {
     return new Rendering(noa, opts, canvas)
 }
 
 
 
-// profiling flags
+// profiling flag
 var PROFILE = 0
 
 
@@ -81,31 +93,30 @@ function Rendering(noa, opts, canvas) {
 
 // Constructor helper - set up the Babylon.js scene and basic components
 function initScene(self, canvas, opts) {
-    var BABYLON = self.noa.BABYLON
 
     // init internal properties
-    self._engine = new BABYLON.Engine(canvas, opts.antiAlias, {
+    self._engine = new Engine(canvas, opts.antiAlias, {
         preserveDrawingBuffer: opts.preserveDrawingBuffer,
     })
-    self._scene = new BABYLON.Scene(self._engine)
+    self._scene = new Scene(self._engine)
     var scene = self._scene
     // remove built-in listeners
     scene.detachControl()
 
     // octree setup
-    self._octree = new BABYLON.Octree($ => {})
+    self._octree = new Octree($ => {})
     self._octree.blocks = []
     scene._selectionOctree = self._octree
 
     // camera, and empty mesh to hold it, and one to accumulate rotations
-    self._cameraHolder = new BABYLON.Mesh('camHolder', scene)
-    self._camera = new BABYLON.FreeCamera('camera', new BABYLON.Vector3(0, 0, 0), scene)
+    self._cameraHolder = new Mesh('camHolder', scene)
+    self._camera = new FreeCamera('camera', new Vector3(0, 0, 0), scene)
     self._camera.parent = self._cameraHolder
     self._camera.minZ = .01
     self._cameraHolder.visibility = false
 
     // plane obscuring the camera - for overlaying an effect on the whole view
-    self._camScreen = BABYLON.Mesh.CreatePlane('camScreen', 10, scene)
+    self._camScreen = Mesh.CreatePlane('camScreen', 10, scene)
     self.addMeshToScene(self._camScreen)
     self._camScreen.position.z = .1
     self._camScreen.parent = self._camera
@@ -115,10 +126,10 @@ function initScene(self, canvas, opts) {
     self._camLocBlock = 0
 
     // apply some defaults
-    var lightVec = new BABYLON.Vector3(0.1, 1, 0.3)
-    self._light = new BABYLON.HemisphericLight('light', lightVec, scene)
+    var lightVec = new Vector3(0.1, 1, 0.3)
+    self._light = new HemisphericLight('light', lightVec, scene)
 
-    function arrToColor(a) { return new BABYLON.Color3(a[0], a[1], a[2]) }
+    function arrToColor(a) { return new Color3(a[0], a[1], a[2]) }
     scene.clearColor = arrToColor(opts.clearColor)
     scene.ambientColor = arrToColor(opts.ambientColor)
     self._light.diffuse = arrToColor(opts.lightDiffuse)
@@ -301,8 +312,7 @@ Rendering.prototype.makeMeshInstance = function (mesh, isStatic) {
 // Create a default standardMaterial:
 //      flat, nonspecular, fully reflects diffuse and ambient light
 Rendering.prototype.makeStandardMaterial = function (name) {
-    var StdMat = this.noa.BABYLON.StandardMaterial
-    var mat = new StdMat(name, this._scene)
+    var mat = new StandardMaterial(name, this._scene)
     mat.specularColor.copyFromFloats(0, 0, 0)
     mat.ambientColor.copyFromFloats(1, 1, 1)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
@@ -324,11 +334,10 @@ Rendering.prototype.makeStandardMaterial = function (name) {
  */
 
 Rendering.prototype.prepareChunkForRendering = function (chunk) {
-    var BABYLON = this.noa.BABYLON
     var cs = chunk.size
-    var min = new BABYLON.Vector3(chunk.x, chunk.y, chunk.z)
-    var max = new BABYLON.Vector3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
-    chunk.octreeBlock = new BABYLON.OctreeBlock(min, max, undefined, undefined, undefined, $ => {})
+    var min = new Vector3(chunk.x, chunk.y, chunk.z)
+    var max = new Vector3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
+    chunk.octreeBlock = new OctreeBlock(min, max, undefined, undefined, undefined, $ => {})
     this._octree.blocks.push(chunk.octreeBlock)
 }
 
@@ -417,26 +426,25 @@ function checkCameraEffect(self, id) {
 
 // make or get a mesh for highlighting active voxel
 function getHighlightMesh(rendering) {
-    var BABYLON = rendering.noa.BABYLON
     var m = rendering._highlightMesh
     if (!m) {
-        var mesh = BABYLON.Mesh.CreatePlane("highlight", 1.0, rendering._scene)
+        var mesh = Mesh.CreatePlane("highlight", 1.0, rendering._scene)
         var hlm = rendering.makeStandardMaterial('highlightMat')
         hlm.backFaceCulling = false
-        hlm.emissiveColor = new BABYLON.Color3(1, 1, 1)
+        hlm.emissiveColor = new Color3(1, 1, 1)
         hlm.alpha = 0.2
         mesh.material = hlm
         m = rendering._highlightMesh = mesh
         // outline
         var s = 0.5
-        var lines = BABYLON.Mesh.CreateLines("hightlightLines", [
-            new BABYLON.Vector3(s, s, 0),
-            new BABYLON.Vector3(s, -s, 0),
-            new BABYLON.Vector3(-s, -s, 0),
-            new BABYLON.Vector3(-s, s, 0),
-            new BABYLON.Vector3(s, s, 0)
+        var lines = Mesh.CreateLines("hightlightLines", [
+            new Vector3(s, s, 0),
+            new Vector3(s, -s, 0),
+            new Vector3(-s, -s, 0),
+            new Vector3(-s, s, 0),
+            new Vector3(s, s, 0)
         ], rendering._scene)
-        lines.color = new BABYLON.Color3(1, 1, 1)
+        lines.color = new Color3(1, 1, 1)
         lines.parent = mesh
 
         rendering.addMeshToScene(m)
@@ -539,16 +547,9 @@ Rendering.prototype.debug_MeshCount = function () {
 
 
 
-var profile_hook = (function () {
-    if (!PROFILE) return function () {}
-    var every = 200
-    var timer = new(require('./util').Timer)(every, 'render internals')
-    return function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
+import { makeProfileHook } from './util'
+var profile_hook = (PROFILE) ?
+    makeProfileHook(200, 'render internals') : () => {}
 
 
 

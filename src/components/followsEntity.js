@@ -8,7 +8,7 @@ var vec3 = require('gl-vec3')
  * possibly by a fixed offset, and the same for renderPositions each render
  */
 
-module.exports = function (noa) {
+export default function (noa) {
 
     return {
 

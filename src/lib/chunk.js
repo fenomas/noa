@@ -1,18 +1,15 @@
 'use strict'
 
-var constants = require('./constants')
+
 var ndarray = require('ndarray')
 
-
-
-module.exports = Chunk
-
-
 // shared references to terrain/object meshers
-var terrainMesher = require('./terrainMesher')
-var objectMesher = require('./objectMesher')
+import terrainMesher from './terrainMesher'
+import objectMesher from './objectMesher'
+import { constants } from './constants'
 
 
+export default Chunk
 
 
 /* 

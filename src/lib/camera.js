@@ -4,7 +4,8 @@ var vec3 = require('gl-vec3')
 var aabb = require('aabb-3d')
 var sweep = require('voxel-aabb-sweep')
 
-module.exports = function (noa, opts) {
+
+export default function(noa, opts) {
     return new Camera(noa, opts)
 }
 

@@ -4,7 +4,7 @@ var createInputs = require('game-inputs')
 // var createInputs = require('../../../../npm-modules/game-inputs')
 
 
-module.exports = function (noa, opts, element) {
+export default function (noa, opts, element) {
     return makeInputs(noa, opts, element)
 }
 

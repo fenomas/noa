@@ -2,10 +2,11 @@
 
 var ndHash = require('ndarray-hash')
 var EventEmitter = require('events').EventEmitter
-var Chunk = require('./chunk')
+import Chunk from './chunk'
 
 
-module.exports = function (noa, opts) {
+
+export default function (noa, opts) {
     return new World(noa, opts)
 }
 
@@ -500,6 +501,9 @@ function _modifyBlockData(world, i, j, k, x, y, z, val) {
 
 // rebuild queue of chunks to be added around (ci,cj,ck)
 function buildChunkAddQueue(world, ci, cj, ck) {
+
+    // TODO: make this more sane
+
     var add = Math.ceil(world.chunkAddDistance)
     var pending = world._chunkIDsToCreate
     var queue = []
@@ -645,13 +649,12 @@ if (PROFILE_QUEUES)(function () {
 })()
 
 
-var profile_hook = function (s) {}
-if (PROFILE)(function () {
-    var every = 200
-    var timer = new(require('./util').Timer)(every, 'world ticks')
-    profile_hook = function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
+
+
+
+
+import { makeProfileHook } from './util'
+var profile_hook = (PROFILE) ?
+    makeProfileHook(200, 'world ticks') : () => {}
+
+

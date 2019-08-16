@@ -5,7 +5,7 @@
  * when camera zoom is less than a certain amount
  */
 
-module.exports = function (noa) {
+export default function (noa) {
     return {
 
         name: 'fadeOnZoom',

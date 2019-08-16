@@ -3,7 +3,9 @@ module.exports = {
     "env": {
         "browser": true,
         "es6": true,
-        "commonjs": true,
+    },
+    "parserOptions": {
+        "sourceType": "module",
     },
     "rules": {
         "strict": ["error", "global"],

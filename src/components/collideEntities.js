@@ -22,7 +22,7 @@ var boxIntersect = require('box-intersect')
 
 
 
-module.exports = function (noa) {
+export default function (noa) {
 
     return {
 

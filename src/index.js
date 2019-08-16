@@ -9,32 +9,33 @@
 
 var vec3 = require('gl-vec3')
 var ndarray = require('ndarray')
-var EventEmitter = require('events').EventEmitter
-var createContainer = require('./lib/container')
-var createRendering = require('./lib/rendering')
-var createWorld = require('./lib/world')
-var createInputs = require('./lib/inputs')
-var createPhysics = require('./lib/physics')
-var createCamera = require('./lib/camera')
-var createRegistry = require('./lib/registry')
-var createEntities = require('./lib/entities')
 var raycast = require('fast-voxel-raycast')
+var EventEmitter = require('events').EventEmitter
+
+import createContainer from './lib/container'
+import createRendering from './lib/rendering'
+import createWorld from './lib/world'
+import createInputs from './lib/inputs'
+import createPhysics from './lib/physics'
+import createCamera from './lib/camera'
+import createRegistry from './lib/registry'
+import createEntities from './lib/entities'
+import { constants } from './lib/constants'
 
 
-module.exports = Engine
 
 
+export default Engine
 
-// profiling flag
+
+// profiling flags
 var PROFILE = 0
 var PROFILE_RENDER = 0
-var DEBUG_QUEUES = 0
 
 
 
 
 var defaults = {
-    babylon: null,
     debug: false,
     silent: false,
     playerHeight: 1.8,
@@ -55,7 +56,6 @@ var defaults = {
  * 
  * ```js
  * var opts = {
- *     babylon: require('babylon'), // import your preferred version of bablyon.js here!
  *     debug: false,
  *     silent: false,
  *     playerHeight: 1.8,
@@ -71,13 +71,11 @@ var defaults = {
  * var NoaEngine = require('noa-engine')
  * var noa = NoaEngine(opts)
  * ```
- * The only required option is `babylon`, which should be a reference to 
- * a [Babylon.js](https://www.babylonjs.com) engine. 
- * If none is specified, `noa` will use `window.BABYLON`,
- * or failing that, throw an error.
  * 
- * Note that the root `opts` parameter object is also passed to noa's child modules 
- * (e.g. `noa.rendering`) - see those modules for which options they use.
+ * All option parameters are, well, optional. Note that 
+ * the root `opts` parameter object is also passed to 
+ * noa's child modules (rendering, camera, etc). 
+ * See docs for each module for which options they use.
  * 
  * @class
  * @alias Noa
@@ -106,12 +104,6 @@ function Engine(opts) {
     if (!opts.silent) {
         var debugstr = (opts.debug) ? ' (debug)' : ''
         console.log(`noa-engine v${this.version}${debugstr}`)
-    }
-
-    /** Reference to the Babylon.js engine, either passed in or from `window.BABYLON` */
-    this.BABYLON = opts.babylon || window.BABYLON
-    if (!this.BABYLON || !this.BABYLON.Engine) {
-        throw new Error('Babylon.js engine reference not found! Abort! Abort!')
     }
 
     // how far engine is into the current tick. Updated each render.
@@ -224,7 +216,7 @@ function Engine(opts) {
 
 
     // expose constants, for HACKING™
-    this._constants = require('./lib/constants')
+    this._constants = constants
 
     // temp hacks for development
     if (opts.debug) {
@@ -285,35 +277,9 @@ Engine.prototype.tick = function () {
     this.emit('tick', dt)
     profile_hook('tick event')
     profile_hook('end')
-    if (DEBUG_QUEUES) debugQueues(this)
     // clear accumulated scroll inputs (mouseMove is cleared on render)
     var st = this.inputs.state
     st.scrollx = st.scrolly = st.scrollz = 0
-}
-
-
-var __qwasDone = true,
-    __qstart
-
-function debugQueues(self) {
-    var a = self.world._chunkIDsToAdd.length
-    var b = self.world._chunkIDsToCreate.length
-    var c = self.rendering._chunksToMesh.length
-    var d = self.rendering._numMeshedChunks
-    if (a + b + c > 0) console.log([
-        'Chunks:', 'unmade', a,
-        'pending creation', b,
-        'to mesh', c,
-        'meshed', d,
-    ].join('   \t'))
-    if (__qwasDone && a + b + c > 0) {
-        __qwasDone = false
-        __qstart = performance.now()
-    }
-    if (!__qwasDone && a + b + c === 0) {
-        __qwasDone = true
-        console.log('Queue empty after ' + Math.round(performance.now() - __qstart) + 'ms')
-    }
 }
 
 
@@ -527,21 +493,11 @@ function deprecateStuff(noa) {
 
 
 
-var profile_hook = function (s) {}
-var profile_hook_render = function (s) {}
-if (PROFILE)(function () {
-    var timer = new(require('./lib/util').Timer)(200, 'tick   ')
-    profile_hook = function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
-if (PROFILE_RENDER)(function () {
-    var timer = new(require('./lib/util').Timer)(200, 'render ')
-    profile_hook_render = function (state) {
-        if (state === 'start') timer.start()
-        else if (state === 'end') timer.report()
-        else timer.add(state)
-    }
-})()
+
+
+import { makeProfileHook } from './lib/util'
+var profile_hook = (PROFILE) ?
+    makeProfileHook(200, 'tick   ') : () => {}
+var profile_hook_render = (PROFILE_RENDER) ?
+    makeProfileHook(200, 'render ') : () => {}
+

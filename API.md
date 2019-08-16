@@ -80,7 +80,6 @@ Extends: `EventEmitter`
 * [Noa](#Noa)
     * [new Engine()](#new_Noa_new)
     * [.version](#Noa+version)
-    * [.BABYLON](#Noa+BABYLON)
     * [.container](#Noa+container) : [<code>Container</code>](#Container)
     * [.inputs](#Noa+inputs) : [<code>Inputs</code>](#Inputs)
     * [.registry](#Noa+registry) : [<code>Registry</code>](#Registry)
@@ -109,7 +108,6 @@ Takes a big options object full of flags and settings as a parameter.
 
 ```js
 var opts = {
-    babylon: require('babylon'), // import your preferred version of bablyon.js here!
     debug: false,
     silent: false,
     playerHeight: 1.8,
@@ -125,13 +123,11 @@ var opts = {
 var NoaEngine = require('noa-engine')
 var noa = NoaEngine(opts)
 ```
-The only required option is `babylon`, which should be a reference to 
-a [Babylon.js](https://www.babylonjs.com) engine. 
-If none is specified, `noa` will use `window.BABYLON`,
-or failing that, throw an error.
 
-Note that the root `opts` parameter object is also passed to noa's child modules 
-(e.g. `noa.rendering`) - see those modules for which options they use.
+All option parameters are, well, optional. Note that 
+the root `opts` parameter object is also passed to 
+noa's child modules (rendering, camera, etc). 
+See docs for each module for which options they use.
 
 
 ----
@@ -140,14 +136,6 @@ Note that the root `opts` parameter object is also passed to noa's child modules
 
 ## noa.version
 version string, e.g. `"0.25.4"`
-
-
-----
-
-<a name="Noa+BABYLON"></a>
-
-## noa.BABYLON
-Reference to the Babylon.js engine, either passed in or from `window.BABYLON`
 
 
 ----
