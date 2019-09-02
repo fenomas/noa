@@ -81,7 +81,7 @@ var pos = vec3.create()
 function updatePositionFromPhysics(state, posDat) {
     offset[0] = offset[2] = posDat.width / 2
     offset[1] = 0
-    var pos = posDat.position
+    var pos = posDat.localPosition
     var base = state.body.aabb.base
     var max = state.body.aabb.max
     var ext = posDat._extents
@@ -95,7 +95,7 @@ function updatePositionFromPhysics(state, posDat) {
 
 function backtrackRenderPos(state, posDat, backtrackAmt, smoothed) {
     // pos = pos + backtrack * body.velocity
-    vec3.scaleAndAdd(pos, posDat.position, state.body.velocity, backtrackAmt)
+    vec3.scaleAndAdd(pos, posDat.localPosition, state.body.velocity, backtrackAmt)
 
     // smooth out update if component is present
     // (this is set after sudden movements like auto-stepping)

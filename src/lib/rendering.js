@@ -197,12 +197,15 @@ var pendingResize = false
 Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
     var m = getHighlightMesh(this)
     if (show) {
+        // local pos for highlight mesh
+        var lpos = []
+        this.noa.globalToLocal(posArr, null, lpos)
         // bigger slop when camera is far from highlight
-        var dist = glvec3.dist(this.noa.camera.getPosition(), posArr)
+        var dist = glvec3.dist(this.noa.camera.getLocalPosition(), lpos)
         var slop = 0.0005 * dist
         var pos = _highlightPos
         for (var i = 0; i < 3; ++i) {
-            pos[i] = Math.floor(posArr[i]) + .5 + ((0.5 + slop) * normArr[i])
+            pos[i] = Math.floor(lpos[i]) + .5 + ((0.5 + slop) * normArr[i])
         }
         m.position.copyFromFloats(pos[0], pos[1], pos[2])
         m.rotation.x = (normArr[1]) ? Math.PI / 2 : 0
@@ -219,26 +222,41 @@ var _highlightPos = glvec3.create()
 /**
  * add a mesh to the scene's octree setup so that it renders
  * pass in isStatic=true if the mesh won't move (i.e. change octree blocks)
+ * pass in chunk if the mesh is statically bound to that chunk
  * @method
  */
-Rendering.prototype.addMeshToScene = function (mesh, isStatic) {
+Rendering.prototype.addMeshToScene = function (mesh, isStatic, _containingChunk) {
     // exit silently if mesh has already been added and not removed
-    if (mesh._currentNoaChunk || this._octree.dynamicContent.includes(mesh)) {
-        return
-    }
+    if (mesh._currentNoaChunk) return
+    if (this._octree.dynamicContent.includes(mesh)) return
+
     var pos = mesh.position
-    var chunk = this.noa.world._getChunkByCoords(pos.x, pos.y, pos.z)
+    var chunk = _containingChunk || this.noa.world._getChunkByCoords(pos.x, pos.y, pos.z)
+
+    // add to the object's current octree, or else treat as dynamic
     if (this._dynamicMeshOctrees && chunk && chunk.octreeBlock) {
-        // add to an octree
         chunk.octreeBlock.entries.push(mesh)
         mesh._currentNoaChunk = chunk
     } else {
-        // mesh added outside an active chunk - so treat as scene-dynamic
         this._octree.dynamicContent.push(mesh)
     }
-    // remember for updates if it's not static
-    if (!isStatic) this._dynamicMeshes.push(mesh)
-    // handle remover when mesh gets disposed
+
+    // if it's a terrain mesh, set a local position
+    if (isStatic && chunk) {
+        mesh._chunkLocation = [chunk.x, chunk.y, chunk.z]
+        var loc = []
+        this.noa.globalToLocal(mesh._chunkLocation, null, loc)
+        mesh.position.copyFromFloats(loc[0], loc[1], loc[2])
+    }
+
+    if (isStatic) {
+        mesh.freezeWorldMatrix()
+        mesh.freezeNormals()
+    } else {
+        // keep a list of all dynamic meshes
+        this._dynamicMeshes.push(mesh)
+    }
+    // add dispose event to undo everything done here
     var remover = this.removeMeshFromScene.bind(this, mesh)
     mesh.onDisposeObservable.add(remover)
 }
@@ -335,29 +353,18 @@ Rendering.prototype.makeStandardMaterial = function (name) {
 
 Rendering.prototype.prepareChunkForRendering = function (chunk) {
     var cs = chunk.size
-    var min = new Vector3(chunk.x, chunk.y, chunk.z)
-    var max = new Vector3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
+    var loc = []
+    this.noa.globalToLocal([chunk.x, chunk.y, chunk.z], null, loc)
+    var min = new Vector3(loc[0]+1000, loc[1], loc[2])
+    var max = new Vector3(loc[0]+1000 + cs, loc[1] + cs, loc[2] + cs)
     chunk.octreeBlock = new OctreeBlock(min, max, undefined, undefined, undefined, $ => {})
     this._octree.blocks.push(chunk.octreeBlock)
 }
 
 Rendering.prototype.disposeChunkForRendering = function (chunk) {
-    this.removeTerrainMesh(chunk)
     removeUnorderedListItem(this._octree.blocks, chunk.octreeBlock)
     chunk.octreeBlock.entries.length = 0
     chunk.octreeBlock = null
-}
-
-Rendering.prototype.addTerrainMesh = function (chunk, mesh) {
-    this.removeTerrainMesh(chunk)
-    if (mesh.getIndices().length) this.addMeshToScene(mesh, true)
-    chunk._terrainMesh = mesh
-}
-
-Rendering.prototype.removeTerrainMesh = function (chunk) {
-    if (!chunk._terrainMesh) return
-    chunk._terrainMesh.dispose()
-    chunk._terrainMesh = null
 }
 
 
@@ -376,6 +383,47 @@ Rendering.prototype.removeTerrainMesh = function (chunk) {
 
 
 
+// change world origin offset, and rebase everything with a position
+
+Rendering.prototype._rebaseOrigin = function (delta) {
+    var dvec = new Vector3(delta[0], delta[1], delta[2])
+
+
+    // TODO: change this to set static elements from their chunk's position
+    //      i.e. the stuff in chunk._terrainMesh and chunk._objectMeshes or whatever
+    // can maybe skip dynamic elements since they typically have a component?
+
+
+    // move unparented meshes
+    this._scene.meshes.forEach(mesh => {
+        var loc = []
+        if (mesh.parent) return
+
+        if (mesh._chunkLocation) {
+            // reposition chunk-static meshes - terrain or object meshes
+            this.noa.globalToLocal(mesh._chunkLocation, null, loc)
+            mesh.position.copyFromFloats(loc[0], loc[1], loc[2])
+        } else {
+            // move dynamic meshes by delta (even though most are managed by components)
+            mesh.position.subtractInPlace(dvec)
+        }
+
+        if (mesh._isWorldMatrixFrozen) mesh.markAsDirty()
+    })
+
+
+
+    // TODO: try setting these wrong to see if they're culling
+
+    // update octree block extents
+    this._octree.blocks.forEach(octreeBlock => {
+        octreeBlock.minPoint.subtractInPlace(dvec)
+        octreeBlock.maxPoint.subtractInPlace(dvec)
+    })
+}
+
+
+
 
 
 
@@ -383,14 +431,17 @@ Rendering.prototype.removeTerrainMesh = function (chunk) {
 
 function updateCameraForRender(self) {
     var cam = self.noa.camera
-    var tgt = cam.getTargetPosition()
+    var tgt = cam.getTargetLocalPosition()
+
     self._cameraHolder.position.copyFromFloats(tgt[0], tgt[1], tgt[2])
     self._cameraHolder.rotation.x = cam.pitch
     self._cameraHolder.rotation.y = cam.heading
     self._camera.position.z = -cam.currentZoom
 
     // applies screen effect when camera is inside a transparent voxel
-    var id = self.noa.getBlock(self.noa.camera.getPosition())
+    var cloc = self.noa.camera.getLocalPosition()
+    var off = self.noa.worldOriginOffset
+    var id = self.noa.getBlock(cloc[0] + off[0], cloc[1] + off[1], cloc[2] + off[2])
     checkCameraEffect(self, id)
 }
 
@@ -426,15 +477,15 @@ function checkCameraEffect(self, id) {
 
 // make or get a mesh for highlighting active voxel
 function getHighlightMesh(rendering) {
-    var m = rendering._highlightMesh
-    if (!m) {
-        var mesh = Mesh.CreatePlane("highlight", 1.0, rendering._scene)
+    var mesh = rendering._highlightMesh
+    if (!mesh) {
+        mesh = Mesh.CreatePlane("highlight", 1.0, rendering._scene)
         var hlm = rendering.makeStandardMaterial('highlightMat')
         hlm.backFaceCulling = false
         hlm.emissiveColor = new Color3(1, 1, 1)
         hlm.alpha = 0.2
         mesh.material = hlm
-        m = rendering._highlightMesh = mesh
+
         // outline
         var s = 0.5
         var lines = Mesh.CreateLines("hightlightLines", [
@@ -447,10 +498,11 @@ function getHighlightMesh(rendering) {
         lines.color = new Color3(1, 1, 1)
         lines.parent = mesh
 
-        rendering.addMeshToScene(m)
+        rendering.addMeshToScene(mesh)
         rendering.addMeshToScene(lines)
+        rendering._highlightMesh = mesh
     }
-    return m
+    return mesh
 }
 
 

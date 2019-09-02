@@ -20,7 +20,7 @@ To hack on the `noa` engine itself, you'll want to clone this repo alongside you
 
 ## Docs
 
-See the [API reference](API.md) for an overview of engine classes and methods.
+See the [API reference](wiki/API.md) for an overview of engine classes and methods.
 Docs are evolving though, some details are only documented in source comments.
 Documentation PRs are welcome!
 
@@ -40,7 +40,7 @@ For code style/formatting, the repo includes config files for [eslint](https://e
 
 ## Change logs
 
-See [HISTORY.md](HISTORY.md) for changes and migration info from each version.
+See [HISTORY.md](wiki/HISTORY.md) for changes and migration info from each version.
 
  * **migration note**: From noa `v0.26`, game clients should declare a dependency on `@babylon/core`, rather than manually loading babylon.js and leaving it in global scope. This allows tree-shaking to happen, greatly reducing (production) bundle sizes for typical games. For sample code and configs see [noa-examples](https://github.com/andyhall/noa-examples).
 

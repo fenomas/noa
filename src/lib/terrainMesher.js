@@ -136,16 +136,7 @@ function MeshBuilder() {
         var mats = results.matIDs.map(id => getTerrainMaterial(id, ignoreMaterials))
         var mesh = buildMeshFromSubmesh(mdat, name, mats, results.vertices, results.indices)
 
-        // position, freeze and exit
-        var x = chunk.i * chunk.size
-        var y = chunk.j * chunk.size
-        var z = chunk.k * chunk.size
-        mesh.position.x = x
-        mesh.position.y = y
-        mesh.position.z = z
-
-        mesh.freezeWorldMatrix()
-        mesh.freezeNormals()
+        // done, mesh will be positioned later when added to the scene
         return mesh
     }
 
@@ -851,4 +842,3 @@ function GreedyMesher() {
 import { makeProfileHook } from './util'
 var profile_hook = (PROFILE) ?
     makeProfileHook(50, 'Terrain meshing') : () => {}
-

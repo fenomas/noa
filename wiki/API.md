@@ -91,11 +91,13 @@ Extends: `EventEmitter`
     * [.camera](#Noa+camera) : [<code>Camera</code>](#Camera)
     * [.blockTargetIdCheck](#Noa+blockTargetIdCheck)
     * [.targetedBlock](#Noa+targetedBlock)
+    * [.globalToLocal()](#Noa+globalToLocal)
+    * [.localToGlobal()](#Noa+localToGlobal)
     * [.setPaused(paused)](#Noa+setPaused)
     * [.getBlock(x,y,z)](#Noa+getBlock)
     * [.setBlock(x,y,z)](#Noa+setBlock)
     * [.addBlock(id,x,y,z)](#Noa+addBlock)
-    * [.pick(pos, vec, dist)](#Noa+pick)
+    * [.localPick(pos, vec, dist)](#Noa+localPick)
 
 
 ----
@@ -230,6 +232,28 @@ Dynamically updated object describing the currently targeted block
 
 ----
 
+<a name="Noa+globalToLocal"></a>
+
+## noa.globalToLocal()
+Convert a world position to noa's current local frame of reference.
+See [positions.md](positions.md) for more info.
+
+
+----
+
+<a name="Noa+localToGlobal"></a>
+
+## noa.localToGlobal()
+Convert from noa's current local frame of reference to global coords.
+See [positions.md](positions.md) for more info.
+
+If `globalPrecis` is not provided, the whole (int+fraction) result 
+will be placed into `global`, but precision errors may result when
+far from the world origin.
+
+
+----
+
 <a name="Noa+setPaused"></a>
 
 ## noa.setPaused(paused)
@@ -274,9 +298,9 @@ Adds a block unless obstructed by entities
 
 ----
 
-<a name="Noa+pick"></a>
+<a name="Noa+localPick"></a>
 
-## noa.pick(pos, vec, dist)
+## noa.localPick(pos, vec, dist)
 Raycast through the world, returning a result object for any non-air block
 
 **Params**
@@ -306,8 +330,8 @@ Manages the camera, exposes camera position, direction, mouse sensitivity.
         * [.zoomDistance](#Camera+zoomDistance)
         * [.zoomSpeed](#Camera+zoomSpeed)
         * [.currentZoom](#Camera+currentZoom)
-        * [.getTargetPosition()](#Camera+getTargetPosition)
-        * [.getPosition()](#Camera+getPosition)
+        * [.getTargetLocalPosition()](#Camera+getTargetLocalPosition)
+        * [.getLocalPosition()](#Camera+getLocalPosition)
         * [.getDirection()](#Camera+getDirection)
     * _inner_
         * [~opts](#Camera..opts)
@@ -423,20 +447,20 @@ or when it's obstructed by solid terrain behind the player.
 
 ----
 
-<a name="Camera+getTargetPosition"></a>
+<a name="Camera+getTargetLocalPosition"></a>
 
-## noa.camera.getTargetPosition()
+## noa.camera.getTargetLocalPosition()
 Camera target position (read only)
 
 This returns the point the camera looks at when zoomed out - i.e. the player's eye position.
-When the camera is zoomed all the way in, this is equivalent to `camera.getPosition()`.
+When the camera is zoomed all the way in, this is equivalent to `camera.getLocalPosition()`.
 
 
 ----
 
-<a name="Camera+getPosition"></a>
+<a name="Camera+getLocalPosition"></a>
 
-## noa.camera.getPosition()
+## noa.camera.getLocalPosition()
 Returns the camera position (read only)
 
 
@@ -719,6 +743,7 @@ The Babylon `scene` object representing the game world.
 ## noa.rendering.addMeshToScene()
 add a mesh to the scene's octree setup so that it renders
 pass in isStatic=true if the mesh won't move (i.e. change octree blocks)
+pass in chunk if the mesh is statically bound to that chunk
 
 
 ----

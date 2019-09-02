@@ -72,16 +72,25 @@ function Entities(noa, opts) {
     this.hasPosition = this.getComponentAccessor(this.names.position)
     var getPos = this.getStateAccessor(this.names.position)
     this.getPositionData = getPos
-    this.getPosition = function (id) { return getPos(id).position }
-    this.setPosition = function (id, x, y, z) {
+    this.getLocalPosition = function (id) { return getPos(id).localPosition }
+    this.setLocalPosition = function (id, pos) {
         var pdat = this.getPositionData(id)
-        vec3.set(pdat.position, x, y, z)
-        vec3.set(pdat.renderPosition, x, y, z)
+        vec3.copy(pdat.localPosition, pos)
+        vec3.copy(pdat.renderPosition, pos)
         pdat._extentsChanged = true
-        if (this.hasPhysics(id)) {
-            setAABBFromPosition(this.getPhysicsBody(id).aabb, pdat)
-        }
+        var physState = getPhys(id)
+        if (physState) setAABBFromPosition(physState.body.aabb, pdat)
     }
+
+    // called when engine rebases its local coords
+    this._rebaseOrigin = delta => {
+        var loc = vec3.create()
+        this.getStatesList(this.names.position).forEach(state => {
+            vec3.subtract(loc, state.localPosition, delta)
+            this.setLocalPosition(state.__id, loc)
+        })
+    }
+
 
     // physics
     var getPhys = this.getStateAccessor(this.names.physics)
@@ -154,7 +163,7 @@ Entities.prototype.setEntitySize = function (id, xs, ys, zs) {
 
 function setAABBFromPosition(box, posData) {
     var w = posData.width
-    var pos = posData.position
+    var pos = posData.localPosition
     var hw = w / 2
     vec3.set(box.base, pos[0] - hw, pos[1], pos[2] - hw)
     vec3.set(box.vec, w, posData.height, w)
@@ -204,7 +213,7 @@ Entities.prototype.add = function (position, width, height, // required
     var pos = vec3.create()
     vec3.copy(pos, position)
     this.addComponent(eid, this.names.position, {
-        position: pos,
+        localPosition: pos,
         width: width,
         height: height
     })

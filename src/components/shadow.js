@@ -46,7 +46,7 @@ export default function (noa, dist) {
 
 
         system: function shadowSystem(dt, states) {
-            var cpos = noa.camera.getPosition()
+            var cpos = noa.camera.getLocalPosition()
             var dist = shadowDist
             states.forEach(state => {
                 updateShadowHeight(state.__id, state._mesh, state.size, dist, cpos, noa)
@@ -70,26 +70,30 @@ export default function (noa, dist) {
     }
 }
 
-var down = vec3.fromValues(0, -1, 0)
 var shadowPos = vec3.fromValues(0, 0, 0)
 
 function updateShadowHeight(id, mesh, size, shadowDist, camPos, noa) {
     var ents = noa.entities
     var dat = ents.getPositionData(id)
-    var loc = dat.position
+    var loc = dat.localPosition
     var y
 
-    // find Y location, from physics if on ground, otherwise by raycast
+    // find Y location, from physics if on ground, otherwise by testing voxels
     if (ents.hasPhysics(id) && ents.getPhysicsBody(id).resting[1] < 0) {
         y = dat.renderPosition[1]
     } else {
-        var pick = noa.pick(loc, down, shadowDist)
-        if (pick) {
-            y = pick.position[1]
-        } else {
+        var gloc = []
+        noa.localToGlobal(loc, gloc)
+        for (var i = 0; i < shadowDist; i++) {
+            gloc[1] -= 1
+            var solid = noa.world.getBlockSolidity(gloc[0], gloc[1], gloc[2])
+            if (solid) break
+        }
+        if (i >= shadowDist) {
             mesh.setEnabled(false)
             return
         }
+        y = Math.floor(loc[1] - i)
     }
 
     y = Math.round(y) // pick results get slightly countersunk

@@ -7,7 +7,7 @@
         "/src"
     ],
     "scripts": {
-        "doc": "jsdoc2md -f src/* src/**/* -g table -p list --partial doc-templates/* > API.md"
+        "doc": "jsdoc2md -f src/* src/**/* -g table -p list --partial doc-templates/* > wiki/API.md"
     },
     "author": "Andy Hall",
     "keywords": [

@@ -1,6 +1,3 @@
-'use strict'
-
-import { removeUnorderedListItem } from './util'
 import { SolidParticleSystem } from '@babylonjs/core/Particles/solidParticleSystem'
 
 
@@ -43,25 +40,14 @@ function ObjectMesher() {
     // adds properties to the new chunk that will be used when processing
     this.initChunk = function (chunk) {
         chunk._objectBlocks = {}
-        chunk._mergedObjectSystems = []
+        chunk._objectSystems = []
     }
 
     this.disposeChunk = function (chunk) {
-        removeCurrentSystems(chunk)
+        this.removeObjectMeshes(chunk)
         chunk._objectBlocks = null
     }
 
-    function removeCurrentSystems(chunk) {
-        var systems = chunk._mergedObjectSystems
-        while (systems.length) {
-            var sps = systems.pop()
-            if (sps.mesh && chunk.octreeBlock && chunk.octreeBlock.entries) {
-                removeUnorderedListItem(chunk.octreeBlock.entries, sps.mesh)
-            }
-            if (sps.mesh) sps.mesh.dispose()
-            sps.dispose()
-        }
-    }
 
 
 
@@ -81,14 +67,22 @@ function ObjectMesher() {
 
     /*
      * 
-     *    main implementation - re-creates all needed object mesh instances
+     *    main implementation - remove / rebuild all needed object mesh instances
      * 
      */
 
-    this.buildObjectMesh = function (chunk) {
-        profile_hook('start')
+    this.removeObjectMeshes = function (chunk) {
         // remove the current (if any) sps/mesh
-        removeCurrentSystems(chunk)
+        var systems = chunk._objectSystems || []
+        while (systems.length) {
+            var sps = systems.pop()
+            if (sps.mesh) sps.mesh.dispose()
+            sps.dispose()
+        }
+    }
+
+    this.buildObjectMeshes = function (chunk) {
+        profile_hook('start')
 
         var scene = chunk.noa.rendering.getScene()
         var objectMeshLookup = chunk.noa.registry._blockMeshLookup
@@ -120,7 +114,8 @@ function ObjectMesher() {
         var y0 = chunk.j * chunk.size
         var z0 = chunk.k * chunk.size
 
-        // build one SPS for each material
+        // build one SPS mesh for each material
+        var meshes = []
         for (var ix in matIndexes) {
 
             var meshHash = matIndexes[ix]
@@ -133,17 +128,12 @@ function ObjectMesher() {
 
             // finish up
             merged.material = (ix > -1) ? scene.materials[ix] : null
-            merged.position.x = x0
-            merged.position.y = y0
-            merged.position.z = z0
-            merged.freezeWorldMatrix()
-            merged.freezeNormals()
-
-            chunk.octreeBlock.entries.push(merged)
-            chunk._mergedObjectSystems.push(sps)
+            meshes.push(merged)
+            chunk._objectSystems.push(sps)
         }
 
         profile_hook('end')
+        return meshes
     }
 
 
@@ -168,17 +158,13 @@ function ObjectMesher() {
             var handlerFn
             var handlers = blockHandlerLookup[blockID]
             if (handlers) handlerFn = handlers.onCustomMeshCreate
-            // jshint -W083
             var setShape = function (particle, partIndex, shapeIndex) {
                 var key = blockArr[shapeIndex]
                 var dat = blockHash[key]
-                // set global positions for the custom handler, if any
-                particle.position.set(x0 + dat.x + 0.5, y0 + dat.y, z0 + dat.z + 0.5)
+
+                // set (local) pos and call handler (with global coords)
+                particle.position.set(dat.x + 0.5, dat.y, dat.z + 0.5)
                 if (handlerFn) handlerFn(particle, x0 + dat.x, y0 + dat.y, z0 + dat.z)
-                // revert to local positions
-                particle.position.x -= x0
-                particle.position.y -= y0
-                particle.position.z -= z0
             }
             sps.addShape(mesh, count, { positionFunction: setShape })
             blockArr.length = 0
@@ -201,6 +187,3 @@ function ObjectMesher() {
 import { makeProfileHook } from './util'
 var profile_hook = (PROFILE) ?
     makeProfileHook(50, 'Object meshing') : () => {}
-
-
-    

@@ -54,7 +54,7 @@ export default function (noa) {
         var self = noa.ents.getPositionData(id)
         var other = noa.ents.getPositionData(state.entity)
         if (other) {
-            vec3.add(self.position, other.position, state.offset)
+            vec3.add(self.localPosition, other.localPosition, state.offset)
             self._extentsChanged = true
         } else {
             noa.ents.removeComponent(id, noa.ents.names.followsEntity)

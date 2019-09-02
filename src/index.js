@@ -106,6 +106,12 @@ function Engine(opts) {
         console.log(`noa-engine v${this.version}${debugstr}`)
     }
 
+    // world origin offset, used throughout engine for origin rebasing
+    this.worldOriginOffset = [0, 0, 0]
+
+    // vec3 library used throughout the engine
+    this.vec3 = vec3
+
     // how far engine is into the current tick. Updated each render.
     this.positionInCurrentTick = 0
 
@@ -231,6 +237,13 @@ function Engine(opts) {
             if (debug) window.scene.debugLayer.show()
             else window.scene.debugLayer.hide()
         })
+        ents.getMovement(1).airJumps = 999
+        this.setViewDistance = function (dist) {
+            var cs = this.world.chunkSize
+            this.world.chunkAddDistance = dist / cs
+            this.world.chunkRemoveDistance = dist / cs + 1
+            this.world._lastPlayerChunkID = '' // pings noa's chunk queues
+        }
     }
 
     // add hooks to throw helpful errors when using deprecated methods
@@ -260,6 +273,7 @@ Engine.prototype = Object.create(EventEmitter.prototype)
 Engine.prototype.tick = function () {
     if (this._paused) return
     profile_hook('start')
+    checkWorldOffset(this)
     var dt = this._tickRate // fixed timesteps!
     this.world.tick(dt) // chunk creation/removal
     profile_hook('world')
@@ -323,6 +337,66 @@ Engine.prototype.render = function (framePart) {
     // clear accumulated mouseMove inputs (scroll inputs cleared on render)
     this.inputs.state.dx = this.inputs.state.dy = 0
 }
+
+
+/*
+ *   Rebasing local <-> global coords
+ */
+
+
+/** 
+ * Convert a world position to noa's current local frame of reference.
+ * See [positions.md](positions.md) for more info.
+ */
+Engine.prototype.globalToLocal = function (global, globalPrecis, local) {
+    var off = this.worldOriginOffset
+    for (var i = 0; i < 3; i++) {
+        var coord = global[i] - off[i]
+        if (globalPrecis) coord += globalPrecis[i]
+        local[i] = coord
+    }
+}
+
+/** 
+ * Convert from noa's current local frame of reference to global coords.
+ * See [positions.md](positions.md) for more info.
+ * 
+ * If `globalPrecis` is not provided, the whole (int+fraction) result 
+ * will be placed into `global`, but precision errors may result when
+ * far from the world origin.
+ */
+Engine.prototype.localToGlobal = function (local, global, globalPrecis) {
+    var off = this.worldOriginOffset
+    if (globalPrecis) {
+        for (var i = 0; i < 3; i++) {
+            var floored = Math.floor(local[i])
+            global[i] = floored + off[i]
+            globalPrecis[i] = local[i] - floored
+        }
+    } else {
+        for (var j = 0; j < 3; j++) {
+            global[j] = local[j] + off[j]
+        }
+    }
+}
+
+function checkWorldOffset(noa) {
+    var lpos = noa.ents.getLocalPosition(noa.playerEntity)
+    var cutoff = 10
+    if (vec3.length(lpos) < cutoff) return
+    var delta = [
+        Math.floor(lpos[0]),
+        Math.floor(lpos[1]),
+        Math.floor(lpos[2]),
+    ]
+    for (var i = 0; i < 3; i++) noa.worldOriginOffset[i] += delta[i]
+    noa.rendering._rebaseOrigin(delta)
+    noa.entities._rebaseOrigin(delta)
+    console.log('rebased origin', noa.worldOriginOffset)
+}
+
+
+
 
 
 
@@ -390,16 +464,17 @@ Engine.prototype.addBlock = function (id, x, y, z) {
  * @param vec
  * @param dist
  */
-Engine.prototype.pick = function (pos, vec, dist, blockIdTestFunction) {
+Engine.prototype.localPick = function (pos, vec, dist, blockIdTestFunction) {
     if (dist === 0) return null
     // if no block ID function is specified default to solidity check
     var testFn = blockIdTestFunction || this.registry.getBlockSolidity
     var world = this.world
+    var off = this.worldOriginOffset
     var testVoxel = function (x, y, z) {
-        var id = world.getBlockID(x, y, z)
+        var id = world.getBlockID(x + off[0], y + off[1], z + off[2])
         return testFn(id)
     }
-    pos = pos || this.camera.getTargetPosition()
+    pos = pos || this.camera.getTargetLocalPosition()
     vec = vec || this.camera.getDirection()
     dist = dist || this.blockTestDistance
     var rpos = _hitResult.position
@@ -426,13 +501,14 @@ var _hitResult = {
 function updateBlockTargets(noa) {
     var newhash = ''
     var blockIdFn = noa.blockTargetIdCheck || noa.registry.getBlockSolidity
-    var result = noa.pick(null, null, null, blockIdFn)
+    var result = noa.localPick(null, null, null, blockIdFn)
     if (result) {
         var dat = _targetedBlockDat
+        var off = noa.worldOriginOffset
         for (var i = 0; i < 3; i++) {
             // position values are right on a border, so adjust them before flooring!
             var n = result.normal[i] | 0
-            var p = Math.floor(result.position[i])
+            var p = Math.floor(result.position[i]) + off[i]
             dat.position[i] = p
             dat.normal[i] = n
             dat.adjacent[i] = p + n
@@ -484,9 +560,15 @@ function deprecateStuff(noa) {
     dep(noa.rendering, '_currentZoom', 'use `noa.camera.currentZoom`')
     dep(noa.rendering, '_cameraZoomSpeed', 'use `noa.camera.zoomSpeed`')
     dep(noa.rendering, 'getCameraVector', 'use `noa.camera.getDirection`')
-    dep(noa.rendering, 'getCameraPosition', 'use `noa.camera.getPosition`')
+    dep(noa.rendering, 'getCameraPosition', 'use `noa.camera.getLocalPosition`')
     dep(noa.rendering, 'getCameraRotation', 'use `noa.camera.heading` and `noa.camera.pitch`')
     dep(noa.rendering, 'setCameraRotation', 'to customize camera behavior see API docs for `noa.camera`')
+    ver = '0.28'
+    dep(noa.camera, 'getPosition', 'changed to `getLocalPosition` - see wiki/positions.md')
+    dep(noa.camera, 'getTargetPosition', 'changed to `getTargetLocalPosition` - see wiki/positions.md')
+    dep(noa.entities, 'getPosition', 'changed to `getLocalPosition` - see wiki/positions.md')
+    dep(noa.entities, 'setPosition', 'changed to `setLocalPosition` - see wiki/positions.md')
+    dep(noa, 'setPosition', 'changed to `localPick`, with results in local coords - see wiki/positions.md')
 }
 
 
@@ -500,4 +582,3 @@ var profile_hook = (PROFILE) ?
     makeProfileHook(200, 'tick   ') : () => {}
 var profile_hook_render = (PROFILE_RENDER) ?
     makeProfileHook(200, 'render ') : () => {}
-

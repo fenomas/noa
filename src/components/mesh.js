@@ -27,7 +27,7 @@ export default function (noa) {
             }
 
             // initialize mesh to correct position
-            var pos = noa.ents.getPosition(eid)
+            var pos = noa.ents.getLocalPosition(eid)
             var mpos = state.mesh.position
             mpos.x = pos[0] + state.offset[0]
             mpos.y = pos[1] + state.offset[1]
