@@ -47,6 +47,7 @@ var defaults = {
     stickyPointerLock: true,
     dragCameraOutsidePointerLock: true,
     skipDefaultHighlighting: false,
+    originRebaseDistance: 5, // TODO
 }
 
 
@@ -108,6 +109,7 @@ function Engine(opts) {
 
     // world origin offset, used throughout engine for origin rebasing
     this.worldOriginOffset = [0, 0, 0]
+    this._originRebaseDistance = opts.originRebaseDistance
 
     // vec3 library used throughout the engine
     this.vec3 = vec3
@@ -381,8 +383,9 @@ Engine.prototype.localToGlobal = function (local, global, globalPrecis) {
 }
 
 function checkWorldOffset(noa) {
+    var t = performance.now()
     var lpos = noa.ents.getLocalPosition(noa.playerEntity)
-    var cutoff = 10
+    var cutoff = noa._originRebaseDistance
     if (vec3.length(lpos) < cutoff) return
     var delta = [
         Math.floor(lpos[0]),
@@ -392,7 +395,7 @@ function checkWorldOffset(noa) {
     for (var i = 0; i < 3; i++) noa.worldOriginOffset[i] += delta[i]
     noa.rendering._rebaseOrigin(delta)
     noa.entities._rebaseOrigin(delta)
-    console.log('rebased origin', noa.worldOriginOffset)
+    console.log('rebased origin in ' + (performance.now() - t).toFixed(2) + 'ms')
 }
 
 
