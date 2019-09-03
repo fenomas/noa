@@ -1,4 +1,3 @@
-'use strict'
 
 var glvec3 = require('gl-vec3')
 import { removeUnorderedListItem } from './util'
@@ -12,6 +11,7 @@ import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight'
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
 import { Vector3, Color3 } from '@babylonjs/core/Maths/math'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
+import { OctreeSceneComponent } from '@babylonjs/core/Culling/Octrees/'
 import '@babylonjs/core/Meshes/meshBuilder'
 
 
@@ -104,6 +104,7 @@ function initScene(self, canvas, opts) {
     scene.detachControl()
 
     // octree setup
+    scene._addComponent(new OctreeSceneComponent(scene))
     self._octree = new Octree($ => {})
     self._octree.blocks = []
     scene._selectionOctree = self._octree
@@ -280,13 +281,15 @@ Rendering.prototype.removeMeshFromScene = function (mesh) {
 
 // runs once per tick - move any dynamic meshes to correct chunk octree
 function updateDynamicMeshOctrees(self) {
+    var global = []
     for (var i = 0; i < self._dynamicMeshes.length; i++) {
         var mesh = self._dynamicMeshes[i]
         if (mesh._isDisposed) continue // shouldn't be possible
         var pos = mesh.position
+        self.noa.localToGlobal([pos.x, pos.y, pos.z], global)
+        var curr = self.noa.world._getChunkByCoords(global[0], global[1], global[2]) || null
         var prev = mesh._currentNoaChunk || null
-        var next = self.noa.world._getChunkByCoords(pos.x, pos.y, pos.z) || null
-        if (prev === next) continue
+        if (prev === curr) continue
         // mesh has moved chunks since last update
         // remove from previous location...
         if (prev && prev.octreeBlock) {
@@ -295,12 +298,12 @@ function updateDynamicMeshOctrees(self) {
             removeUnorderedListItem(self._octree.dynamicContent, mesh)
         }
         // ... and add to new location
-        if (next && next.octreeBlock) {
-            next.octreeBlock.entries.push(mesh)
+        if (curr && curr.octreeBlock) {
+            curr.octreeBlock.entries.push(mesh)
         } else {
             self._octree.dynamicContent.push(mesh)
         }
-        mesh._currentNoaChunk = next
+        mesh._currentNoaChunk = curr
     }
 }
 
@@ -355,8 +358,8 @@ Rendering.prototype.prepareChunkForRendering = function (chunk) {
     var cs = chunk.size
     var loc = []
     this.noa.globalToLocal([chunk.x, chunk.y, chunk.z], null, loc)
-    var min = new Vector3(loc[0]+1000, loc[1], loc[2])
-    var max = new Vector3(loc[0]+1000 + cs, loc[1] + cs, loc[2] + cs)
+    var min = new Vector3(loc[0], loc[1], loc[2])
+    var max = new Vector3(loc[0] + cs, loc[1] + cs, loc[2] + cs)
     chunk.octreeBlock = new OctreeBlock(min, max, undefined, undefined, undefined, $ => {})
     this._octree.blocks.push(chunk.octreeBlock)
 }
@@ -387,18 +390,12 @@ Rendering.prototype.disposeChunkForRendering = function (chunk) {
 
 Rendering.prototype._rebaseOrigin = function (delta) {
     var dvec = new Vector3(delta[0], delta[1], delta[2])
+    var loc = []
 
-
-    // TODO: change this to set static elements from their chunk's position
-    //      i.e. the stuff in chunk._terrainMesh and chunk._objectMeshes or whatever
-    // can maybe skip dynamic elements since they typically have a component?
-
-
-    // move unparented meshes
     this._scene.meshes.forEach(mesh => {
-        var loc = []
+        // parented meshes don't live in the world coord system
         if (mesh.parent) return
-
+        
         if (mesh._chunkLocation) {
             // reposition chunk-static meshes - terrain or object meshes
             this.noa.globalToLocal(mesh._chunkLocation, null, loc)
@@ -411,14 +408,13 @@ Rendering.prototype._rebaseOrigin = function (delta) {
         if (mesh._isWorldMatrixFrozen) mesh.markAsDirty()
     })
 
-
-
-    // TODO: try setting these wrong to see if they're culling
-
     // update octree block extents
     this._octree.blocks.forEach(octreeBlock => {
         octreeBlock.minPoint.subtractInPlace(dvec)
         octreeBlock.maxPoint.subtractInPlace(dvec)
+        octreeBlock._boundingVectors.forEach(v => {
+            v.subtractInPlace(dvec)
+        })
     })
 }
 
