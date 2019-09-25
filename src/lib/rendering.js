@@ -1,4 +1,3 @@
-
 var glvec3 = require('gl-vec3')
 import { removeUnorderedListItem } from './util'
 
@@ -38,7 +37,6 @@ var defaults = {
     useAO: true,
     AOmultipliers: [0.93, 0.8, 0.5],
     reverseAOmultiplier: 1.0,
-    useOctreesForDynamicMeshes: true,
     preserveDrawingBuffer: true,
 }
 
@@ -67,7 +65,6 @@ function Rendering(noa, opts, canvas) {
      *   useAO: true,
      *   AOmultipliers: [0.93, 0.8, 0.5],
      *   reverseAOmultiplier: 1.0,
-     *   useOctreesForDynamicMeshes: true,
      *   preserveDrawingBuffer: true,
      * }
      * ```
@@ -75,12 +72,10 @@ function Rendering(noa, opts, canvas) {
     opts = Object.assign({}, defaults, opts)
 
     // internals
-    this._dynamicMeshes = []
     this.useAO = !!opts.useAO
     this.aoVals = opts.AOmultipliers
     this.revAoVal = opts.reverseAOmultiplier
     this.meshingCutoffTime = 6 // ms
-    this._dynamicMeshOctrees = opts.useOctreesForDynamicMeshes
     this._resizeDebounce = 250 // ms
 
     // set up babylon scene
@@ -159,7 +154,7 @@ Rendering.prototype.getScene = function () {
 
 // per-tick listener for rendering-related stuff
 Rendering.prototype.tick = function (dt) {
-    if (this._dynamicMeshOctrees) updateDynamicMeshOctrees(this)
+    // nothing here at the moment
 }
 
 
@@ -198,65 +193,71 @@ var pendingResize = false
 Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
     var m = getHighlightMesh(this)
     if (show) {
-        // local pos for highlight mesh
-        var lpos = []
-        this.noa.globalToLocal(posArr, null, lpos)
-        // bigger slop when camera is far from highlight
-        var dist = glvec3.dist(this.noa.camera.getLocalPosition(), lpos)
-        var slop = 0.0005 * dist
-        var pos = _highlightPos
-        for (var i = 0; i < 3; ++i) {
-            pos[i] = Math.floor(lpos[i]) + .5 + ((0.5 + slop) * normArr[i])
+        // floored local coords for highlight mesh
+        this.noa.globalToLocal(posArr, null, hlpos)
+        // offset to avoid z-fighting, bigger when camera is far away
+        var dist = glvec3.dist(this.noa.camera._localGetPosition(), hlpos)
+        var slop = 0.001 + 0.001 * dist
+        for (var i = 0; i < 3; i++) {
+            if (normArr[i] === 0) {
+                hlpos[i] += 0.5
+            } else {
+                hlpos[i] += (normArr[i] > 0) ? 1 + slop : -slop
+            }
         }
-        m.position.copyFromFloats(pos[0], pos[1], pos[2])
+        m.position.copyFromFloats(hlpos[0], hlpos[1], hlpos[2])
         m.rotation.x = (normArr[1]) ? Math.PI / 2 : 0
         m.rotation.y = (normArr[0]) ? Math.PI / 2 : 0
     }
     m.setEnabled(show)
 }
-var _highlightPos = glvec3.create()
-
+var hlpos = []
 
 
 
 
 /**
- * add a mesh to the scene's octree setup so that it renders
- * pass in isStatic=true if the mesh won't move (i.e. change octree blocks)
- * pass in chunk if the mesh is statically bound to that chunk
+ * Add a mesh to the scene's octree setup so that it renders. 
+ * 
+ * @param mesh: the mesh to add to the scene
+ * @param isStatic: pass in true if mesh never moves (i.e. change octree blocks)
+ * @param position: (optional) global position where the mesh should be
+ * @param chunk: (optional) chunk to which the mesh is statically bound
  * @method
  */
-Rendering.prototype.addMeshToScene = function (mesh, isStatic, _containingChunk) {
+Rendering.prototype.addMeshToScene = function (mesh, isStatic, pos, _containingChunk) {
     // exit silently if mesh has already been added and not removed
-    if (mesh._currentNoaChunk) return
+    if (mesh._noaContainingChunk) return
     if (this._octree.dynamicContent.includes(mesh)) return
 
-    var pos = mesh.position
-    var chunk = _containingChunk || this.noa.world._getChunkByCoords(pos.x, pos.y, pos.z)
-
-    // add to the object's current octree, or else treat as dynamic
-    if (this._dynamicMeshOctrees && chunk && chunk.octreeBlock) {
-        chunk.octreeBlock.entries.push(mesh)
-        mesh._currentNoaChunk = chunk
-    } else {
-        this._octree.dynamicContent.push(mesh)
+    // find local position for mesh and move it there (unless it's parented)
+    if (!mesh.parent) {
+        if (!pos) pos = [mesh.position.x, mesh.position.y, mesh.position.z]
+        var lpos = []
+        this.noa.globalToLocal(pos, null, lpos)
+        mesh.position.copyFromFloats(lpos[0], lpos[1], lpos[2])
     }
 
-    // if it's a terrain mesh, set a local position
-    if (isStatic && chunk) {
-        mesh._chunkLocation = [chunk.x, chunk.y, chunk.z]
-        var loc = []
-        this.noa.globalToLocal(mesh._chunkLocation, null, loc)
-        mesh.position.copyFromFloats(loc[0], loc[1], loc[2])
+    // statically tie to a chunk's octree, or treat as dynamic?
+    var addToOctree = false
+    if (isStatic) {
+        var chunk = _containingChunk ||
+            this.noa.world._getChunkByCoords(pos[0], pos[1], pos[2])
+        addToOctree = !!(chunk && chunk.octreeBlock)
+    }
+
+    if (addToOctree) {
+        chunk.octreeBlock.entries.push(mesh)
+        mesh._noaContainingChunk = chunk
+    } else {
+        this._octree.dynamicContent.push(mesh)
     }
 
     if (isStatic) {
         mesh.freezeWorldMatrix()
         mesh.freezeNormals()
-    } else {
-        // keep a list of all dynamic meshes
-        this._dynamicMeshes.push(mesh)
     }
+
     // add dispose event to undo everything done here
     var remover = this.removeMeshFromScene.bind(this, mesh)
     mesh.onDisposeObservable.add(remover)
@@ -268,65 +269,18 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic, _containingChunk)
  * @method
  */
 Rendering.prototype.removeMeshFromScene = function (mesh) {
-    if (mesh._currentNoaChunk && mesh._currentNoaChunk.octreeBlock) {
-        removeUnorderedListItem(mesh._currentNoaChunk.octreeBlock.entries, mesh)
+    if (mesh._noaContainingChunk && mesh._noaContainingChunk.octreeBlock) {
+        removeUnorderedListItem(mesh._noaContainingChunk.octreeBlock.entries, mesh)
     }
-    mesh._currentNoaChunk = null
+    mesh._noaContainingChunk = null
     removeUnorderedListItem(this._octree.dynamicContent, mesh)
-    removeUnorderedListItem(this._dynamicMeshes, mesh)
 }
 
 
 
 
-// runs once per tick - move any dynamic meshes to correct chunk octree
-function updateDynamicMeshOctrees(self) {
-    var global = []
-    for (var i = 0; i < self._dynamicMeshes.length; i++) {
-        var mesh = self._dynamicMeshes[i]
-        if (mesh._isDisposed) continue // shouldn't be possible
-        var pos = mesh.position
-        self.noa.localToGlobal([pos.x, pos.y, pos.z], global)
-        var curr = self.noa.world._getChunkByCoords(global[0], global[1], global[2]) || null
-        var prev = mesh._currentNoaChunk || null
-        if (prev === curr) continue
-        // mesh has moved chunks since last update
-        // remove from previous location...
-        if (prev && prev.octreeBlock) {
-            removeUnorderedListItem(prev.octreeBlock.entries, mesh)
-        } else {
-            removeUnorderedListItem(self._octree.dynamicContent, mesh)
-        }
-        // ... and add to new location
-        if (curr && curr.octreeBlock) {
-            curr.octreeBlock.entries.push(mesh)
-        } else {
-            self._octree.dynamicContent.push(mesh)
-        }
-        mesh._currentNoaChunk = curr
-    }
-}
 
 
-
-Rendering.prototype.makeMeshInstance = function (mesh, isStatic) {
-    var m = mesh.createInstance(mesh.name + ' instance' || 'instance')
-    if (mesh.billboardMode) m.billboardMode = mesh.billboardMode
-    // add to scene so as to render
-    this.addMeshToScene(m, isStatic)
-
-    // testing performance tweaks
-
-    // make instance meshes skip over getLOD checks, since there may be lots of them
-    // mesh.getLOD = m.getLOD = function () { return mesh }
-    m._currentLOD = mesh
-
-    // make terrain instance meshes skip frustum checks 
-    // (they'll still get culled by octree checks)
-    // if (isStatic) m.isInFrustum = function () { return true }
-
-    return m
-}
 
 
 
@@ -390,20 +344,13 @@ Rendering.prototype.disposeChunkForRendering = function (chunk) {
 
 Rendering.prototype._rebaseOrigin = function (delta) {
     var dvec = new Vector3(delta[0], delta[1], delta[2])
-    var loc = []
 
     this._scene.meshes.forEach(mesh => {
         // parented meshes don't live in the world coord system
         if (mesh.parent) return
-        
-        if (mesh._chunkLocation) {
-            // reposition chunk-static meshes - terrain or object meshes
-            this.noa.globalToLocal(mesh._chunkLocation, null, loc)
-            mesh.position.copyFromFloats(loc[0], loc[1], loc[2])
-        } else {
-            // move dynamic meshes by delta (even though most are managed by components)
-            mesh.position.subtractInPlace(dvec)
-        }
+
+        // move each mesh by delta (even though most are managed by components)
+        mesh.position.subtractInPlace(dvec)
 
         if (mesh._isWorldMatrixFrozen) mesh.markAsDirty()
     })
@@ -422,22 +369,23 @@ Rendering.prototype._rebaseOrigin = function (delta) {
 
 
 
-
 // updates camera position/rotation to match settings from noa.camera
 
 function updateCameraForRender(self) {
     var cam = self.noa.camera
-    var tgt = cam.getTargetLocalPosition()
-
-    self._cameraHolder.position.copyFromFloats(tgt[0], tgt[1], tgt[2])
+    var tgtLoc = cam._localGetTargetPosition()
+    self._cameraHolder.position.copyFromFloats(tgtLoc[0], tgtLoc[1], tgtLoc[2])
     self._cameraHolder.rotation.x = cam.pitch
     self._cameraHolder.rotation.y = cam.heading
     self._camera.position.z = -cam.currentZoom
 
     // applies screen effect when camera is inside a transparent voxel
-    var cloc = self.noa.camera.getLocalPosition()
+    var cloc = cam._localGetPosition()
     var off = self.noa.worldOriginOffset
-    var id = self.noa.getBlock(cloc[0] + off[0], cloc[1] + off[1], cloc[2] + off[2])
+    var cx = Math.floor(cloc[0] + off[0])
+    var cy = Math.floor(cloc[1] + off[1])
+    var cz = Math.floor(cloc[2] + off[2])
+    var id = self.noa.getBlock(cx, cy, cz)
     checkCameraEffect(self, id)
 }
 

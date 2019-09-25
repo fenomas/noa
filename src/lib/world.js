@@ -344,14 +344,12 @@ function setChunk(world, i, j, k, value) {
 
 
 function getPlayerChunkCoords(world) {
-    var pos = world.noa.entities.getLocalPosition(world.noa.playerEntity)
-    world.noa.localToGlobal(pos, playerGlobalLoc)
-    var i = worldCoordToChunkCoord(playerGlobalLoc[0])
-    var j = worldCoordToChunkCoord(playerGlobalLoc[1])
-    var k = worldCoordToChunkCoord(playerGlobalLoc[2])
+    var pos = world.noa.entities.getPosition(world.noa.playerEntity)
+    var i = worldCoordToChunkCoord(pos[0])
+    var j = worldCoordToChunkCoord(pos[1])
+    var k = worldCoordToChunkCoord(pos[2])
     return [i, j, k]
 }
-var playerGlobalLoc = []
 
 
 // for internal use
@@ -523,7 +521,7 @@ function buildChunkAddQueue(world, ci, cj, ck) {
                 var id = getChunkID(i, j, k)
                 if (pending.indexOf(id) > -1) continue
                 queue.push(id)
-                distArr.push(horizDistSq)
+                distArr.push(horizDistSq + Math.abs(dj))
             }
         }
     }

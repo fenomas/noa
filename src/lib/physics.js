@@ -26,6 +26,7 @@ var defaults = {
 function makePhysics(noa, opts) {
     opts = Object.assign({}, defaults, opts)
     var world = noa.world
+    // physics engine runs in offset coords, so voxel getters need to match
     var offset = noa.worldOriginOffset
     var blockGetter = (x, y, z) => {
         return world.getBlockSolidity(x + offset[0], y + offset[1], z + offset[2])

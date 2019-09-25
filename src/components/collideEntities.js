@@ -1,4 +1,3 @@
-'use strict'
 
 var boxIntersect = require('box-intersect')
 
@@ -24,6 +23,8 @@ var boxIntersect = require('box-intersect')
 
 export default function (noa) {
 
+    var intervals = []
+
     return {
 
         name: 'collideEntities',
@@ -47,12 +48,12 @@ export default function (noa) {
 
             // data struct that boxIntersect looks for
             // - array of [lo, lo, lo, hi, hi, hi] extents
-            var intervals = []
             for (var i = 0; i < states.length; i++) {
                 var id = states[i].__id
                 var dat = ents.getPositionData(id)
                 intervals[i] = dat._extents
             }
+            intervals.length = states.length
 
             // run the intersect library
             boxIntersect(intervals, function (a, b) {

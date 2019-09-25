@@ -3,6 +3,7 @@
 
 This is a summary of new features and breaking changes in recent `noa` versions.
 
+ * [0.27.0](#0270)
  * [0.26.0](#0260)
  * [0.25.0](#0250)
  * [0.24.0](#0240)
@@ -14,6 +15,21 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 
 ----
+
+### 0.27.0
+
+   * Engine now does *world origin rebasing*, to avoid precision bugs in large worlds
+     * Entity positions are now handled internally relative to a local coordinate system, which is periodically rebased around the player entity
+     * The following systems now internally use local coordinates:
+       * rendering
+       * physics
+       * entity/entity collisions
+       * raycasting
+     * Pre-existing position properties and related APIs still work, but may be imprecise. Each such API now has a `_local` alternate
+     * Engine option `originRebaseDistance` controls how often rebasing occurs
+     * See [/doc/positions.md](positions.md) for more details
+   * foo
+   * bar
 
 
 ### 0.26.0

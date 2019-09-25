@@ -6,6 +6,8 @@ export default function (noa) {
 
         name: 'collideTerrain',
 
+        order: 0,
+
         state: {
             callback: null
         },

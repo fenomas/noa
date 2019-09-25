@@ -64,6 +64,79 @@ For docs see <a href="https://github.com/andyhall/game-inputs">andyhall/game-inp
 </tbody>
 </table>
 
+## 
+
+<table>
+  <thead>
+    <tr>
+      <th>Global</th><th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+<tr>
+    <td><a href="#names">names</a></td>
+    <td><p>Hash containing the component names of built-in components.</p>
+</td>
+    </tr>
+<tr>
+    <td><a href="#hasPhysics">hasPhysics</a></td>
+    <td></td>
+    </tr>
+<tr>
+    <td><a href="#cameraSmoothed">cameraSmoothed</a></td>
+    <td></td>
+    </tr>
+<tr>
+    <td><a href="#hasMesh">hasMesh</a></td>
+    <td></td>
+    </tr>
+<tr>
+    <td><a href="#hasPosition">hasPosition</a></td>
+    <td></td>
+    </tr>
+<tr>
+    <td><a href="#getPositionData">getPositionData</a></td>
+    <td></td>
+    </tr>
+</tbody>
+</table>
+
+## 
+
+<table>
+  <thead>
+    <tr>
+      <th>Global</th><th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+<tr>
+    <td><a href="#isPlayer">isPlayer(id)</a></td>
+    <td></td>
+    </tr>
+<tr>
+    <td><a href="#_localGetPosition">_localGetPosition(id)</a></td>
+    <td></td>
+    </tr>
+<tr>
+    <td><a href="#getPosition">getPosition(id)</a></td>
+    <td></td>
+    </tr>
+<tr>
+    <td><a href="#_localSetPosition">_localSetPosition(id)</a></td>
+    <td></td>
+    </tr>
+<tr>
+    <td><a href="#setPosition">setPosition(id,)</a></td>
+    <td></td>
+    </tr>
+<tr>
+    <td><a href="#setEntitySize">setEntitySize(id,)</a></td>
+    <td></td>
+    </tr>
+</tbody>
+</table>
+
 <a name="Noa"></a>
 
 ## Noa
@@ -97,7 +170,8 @@ Extends: `EventEmitter`
     * [.getBlock(x,y,z)](#Noa+getBlock)
     * [.setBlock(x,y,z)](#Noa+setBlock)
     * [.addBlock(id,x,y,z)](#Noa+addBlock)
-    * [.localPick(pos, vec, dist)](#Noa+localPick)
+    * [.pick(pos, vec, dist)](#Noa+pick)
+    * [._localPick()](#Noa+_localPick)
 
 
 ----
@@ -227,7 +301,16 @@ Defaults to a solidity check, but can be overridden
 <a name="Noa+targetedBlock"></a>
 
 ## noa.targetedBlock
-Dynamically updated object describing the currently targeted block
+Dynamically updated object describing the currently targeted block.
+Gets updated each tick, to `null` if not block is targeted, or 
+to an object like:
+
+    {
+       blockID,   // voxel ID
+       position,  // the (solid) block being targeted
+       adjacent,  // the (non-solid) block adjacent to the targeted one
+       normal,    // e.g. [0, 1, 0] when player is targting the top face of a voxel
+    }
 
 
 ----
@@ -235,8 +318,15 @@ Dynamically updated object describing the currently targeted block
 <a name="Noa+globalToLocal"></a>
 
 ## noa.globalToLocal()
-Convert a world position to noa's current local frame of reference.
-See [positions.md](positions.md) for more info.
+Precisely converts a world position to the current internal 
+local frame of reference.
+
+See `/doc/positions.md` for more info.
+
+Params: 
+ * `global`: input position in global coords
+ * `globalPrecise`: (optional) sub-voxel offset to the global position
+ * `local`: output array which will receive the result
 
 
 ----
@@ -244,12 +334,19 @@ See [positions.md](positions.md) for more info.
 <a name="Noa+localToGlobal"></a>
 
 ## noa.localToGlobal()
-Convert from noa's current local frame of reference to global coords.
-See [positions.md](positions.md) for more info.
+Precisely converts a world position to the current internal 
+local frame of reference.
 
-If `globalPrecis` is not provided, the whole (int+fraction) result 
-will be placed into `global`, but precision errors may result when
-far from the world origin.
+See `/doc/positions.md` for more info.
+
+Params: 
+ * `local`: input array of local coords
+ * `global`: output array which receives the result
+ * `globalPrecise`: (optional) sub-voxel offset to the output global position
+
+If both output arrays are passed in, `global` will get int values and 
+`globalPrecise` will get fractional parts. If only one array is passed in,
+`global` will get the whole output position.
 
 
 ----
@@ -298,16 +395,30 @@ Adds a block unless obstructed by entities
 
 ----
 
-<a name="Noa+localPick"></a>
+<a name="Noa+pick"></a>
 
-## noa.localPick(pos, vec, dist)
+## noa.pick(pos, vec, dist)
 Raycast through the world, returning a result object for any non-air block
 
 **Params**
 
-- pos
-- vec
-- dist
+- pos - (default: to player eye position)
+- vec - (default: to camera vector)
+- dist - (default: `noa.blockTestDistance`)
+
+Returns: `null`, or an object with array properties: `position`, 
+`normal`, `_localPosition`. 
+
+See `/doc/positions.md` for info on working with precise positions.
+
+
+----
+
+<a name="Noa+_localPick"></a>
+
+## noa.\_localPick()
+Do a raycast in local coords. 
+See `/doc/positions.md` for more info.
 
 
 ----
@@ -330,8 +441,8 @@ Manages the camera, exposes camera position, direction, mouse sensitivity.
         * [.zoomDistance](#Camera+zoomDistance)
         * [.zoomSpeed](#Camera+zoomSpeed)
         * [.currentZoom](#Camera+currentZoom)
-        * [.getTargetLocalPosition()](#Camera+getTargetLocalPosition)
-        * [.getLocalPosition()](#Camera+getLocalPosition)
+        * [.getTargetPosition()](#Camera+getTargetPosition)
+        * [.getPosition()](#Camera+getPosition)
         * [.getDirection()](#Camera+getDirection)
     * _inner_
         * [~opts](#Camera..opts)
@@ -413,9 +524,7 @@ target to some other entity, or override the behavior entirely:
 // make cameraTarget stop following the player
 noa.ents.removeComponent(noa.camera.cameraTarget, 'followsEntity')
 // control cameraTarget position directly (or whatever..)
-noa.on('beforeRender', () => {
-    noa.ents.setPosition(noa.camera.cameraTarget, x, y, z)
-})
+noa.ents.setPosition(noa.camera.cameraTarget, [x,y,z])
 ```
 
 
@@ -447,21 +556,22 @@ or when it's obstructed by solid terrain behind the player.
 
 ----
 
-<a name="Camera+getTargetLocalPosition"></a>
+<a name="Camera+getTargetPosition"></a>
 
-## noa.camera.getTargetLocalPosition()
+## noa.camera.getTargetPosition()
 Camera target position (read only)
 
-This returns the point the camera looks at when zoomed out - i.e. the player's eye position.
-When the camera is zoomed all the way in, this is equivalent to `camera.getLocalPosition()`.
+This returns the point the camera looks at - i.e. the player's 
+eye position. When the camera is zoomed 
+all the way in, this is equivalent to `camera.getPosition()`.
 
 
 ----
 
-<a name="Camera+getLocalPosition"></a>
+<a name="Camera+getPosition"></a>
 
-## noa.camera.getLocalPosition()
-Returns the camera position (read only)
+## noa.camera.getPosition()
+Returns the current camera position (read only)
 
 
 ----
@@ -518,7 +628,6 @@ Expects entity definitions in a specific format - see source `components` folder
 * [Entities](#Entities)
     * [.addComponentAgain(id,name,state)](#Entities+addComponentAgain)
     * [.isTerrainBlocked(x,y,z)](#Entities+isTerrainBlocked)
-    * [.setEntitySize(x,y,z)](#Entities+setEntitySize)
     * [.getEntitiesInAABB(box)](#Entities+getEntitiesInAABB)
     * [.add(position, width, mesh)](#Entities+add)
 
@@ -538,16 +647,6 @@ Expects entity definitions in a specific format - see source `components` folder
 <a name="Entities+isTerrainBlocked"></a>
 
 ## noa.ents.isTerrainBlocked(x,y,z)
-**Params**
-
-- x,y,z
-
-
-----
-
-<a name="Entities+setEntitySize"></a>
-
-## noa.ents.setEntitySize(x,y,z)
 **Params**
 
 - x,y,z
@@ -722,7 +821,7 @@ Manages all rendering, and the BABYLON scene, materials, etc.
 * [Rendering](#Rendering)
     * _instance_
         * [.getScene](#Rendering+getScene)
-        * [.addMeshToScene()](#Rendering+addMeshToScene)
+        * [.addMeshToScene(mesh:, isStatic:, position:, chunk:)](#Rendering+addMeshToScene)
         * [.removeMeshFromScene()](#Rendering+removeMeshFromScene)
     * _inner_
         * [~opts](#Rendering..opts)
@@ -740,10 +839,15 @@ The Babylon `scene` object representing the game world.
 
 <a name="Rendering+addMeshToScene"></a>
 
-## noa.rendering.addMeshToScene()
-add a mesh to the scene's octree setup so that it renders
-pass in isStatic=true if the mesh won't move (i.e. change octree blocks)
-pass in chunk if the mesh is statically bound to that chunk
+## noa.rendering.addMeshToScene(mesh:, isStatic:, position:, chunk:)
+Add a mesh to the scene's octree setup so that it renders.
+
+**Params**
+
+- mesh: - the mesh to add to the scene
+- isStatic: - pass in true if mesh never moves (i.e. change octree blocks)
+- position: - (optional) global position where the mesh should be
+- chunk: - (optional) chunk to which the mesh is statically bound
 
 
 ----
@@ -772,7 +876,6 @@ Undoes everything `addMeshToScene` does
   useAO: true,
   AOmultipliers: [0.93, 0.8, 0.5],
   reverseAOmultiplier: 1.0,
-  useOctreesForDynamicMeshes: true,
   preserveDrawingBuffer: true,
 }
 ```
@@ -898,6 +1001,124 @@ If userData is passed in it will be attached to the chunk
 - id
 - array
 - userData
+
+
+----
+
+<a name="names"></a>
+
+## names
+Hash containing the component names of built-in components.
+
+
+----
+
+<a name="hasPhysics"></a>
+
+## hasPhysics
+**Params**
+
+- id
+
+
+----
+
+<a name="cameraSmoothed"></a>
+
+## cameraSmoothed
+**Params**
+
+- id
+
+
+----
+
+<a name="hasMesh"></a>
+
+## hasMesh
+**Params**
+
+- id
+
+
+----
+
+<a name="hasPosition"></a>
+
+## hasPosition
+**Params**
+
+- id
+
+
+----
+
+<a name="getPositionData"></a>
+
+## getPositionData
+**Params**
+
+- id
+
+
+----
+
+<a name="isPlayer"></a>
+
+## isPlayer(id)
+**Params**
+
+- id
+
+
+----
+
+<a name="_localGetPosition"></a>
+
+## \_localGetPosition(id)
+**Params**
+
+- id
+
+
+----
+
+<a name="getPosition"></a>
+
+## getPosition(id)
+**Params**
+
+- id
+
+
+----
+
+<a name="_localSetPosition"></a>
+
+## \_localSetPosition(id)
+**Params**
+
+- id
+
+
+----
+
+<a name="setPosition"></a>
+
+## setPosition(id,)
+**Params**
+
+- id, - positionArr
+
+
+----
+
+<a name="setEntitySize"></a>
+
+## setEntitySize(id,)
+**Params**
+
+- id, - xs, ys, zs
 
 
 ----

@@ -47,7 +47,7 @@ var defaults = {
     stickyPointerLock: true,
     dragCameraOutsidePointerLock: true,
     skipDefaultHighlighting: false,
-    originRebaseDistance: 5, // TODO
+    originRebaseDistance: 25,
 }
 
 
@@ -68,6 +68,7 @@ var defaults = {
  *     stickyPointerLock: true,
  *     dragCameraOutsidePointerLock: true,
  *     skipDefaultHighlighting: false,
+ *     originRebaseDistance: 25,
  * }
  * var NoaEngine = require('noa-engine')
  * var noa = NoaEngine(opts)
@@ -206,7 +207,17 @@ function Engine(opts) {
      * Defaults to a solidity check, but can be overridden */
     this.blockTargetIdCheck = this.registry.getBlockSolidity
 
-    /** Dynamically updated object describing the currently targeted block */
+    /** Dynamically updated object describing the currently targeted block.
+     * Gets updated each tick, to `null` if not block is targeted, or 
+     * to an object like:
+     * 
+     *     {
+     *        blockID,   // voxel ID
+     *        position,  // the (solid) block being targeted
+     *        adjacent,  // the (non-solid) block adjacent to the targeted one
+     *        normal,    // e.g. [0, 1, 0] when player is targting the top face of a voxel
+     *     }
+     */
     this.targetedBlock = null
 
     // add a default block highlighting function
@@ -290,6 +301,8 @@ Engine.prototype.tick = function () {
     profile_hook('rendering')
     updateBlockTargets(this) // finds targeted blocks, and highlights one if needed
     profile_hook('targets')
+    this.entities.tick(dt) // runs all entity systems
+    profile_hook('entities')
     this.emit('tick', dt)
     profile_hook('tick event')
     profile_hook('end')
@@ -297,7 +310,6 @@ Engine.prototype.tick = function () {
     var st = this.inputs.state
     st.scrollx = st.scrolly = st.scrollz = 0
 }
-
 
 
 
@@ -322,11 +334,16 @@ Engine.prototype.render = function (framePart) {
         (this._dragOutsideLock && this.inputs.state.fire)) {
         this.camera.applyInputsToCamera()
     }
+    profile_hook('init')
+
+    // entity render systems
+    this.camera.updateBeforeEntityRenderSystems()
+    this.entities.render(dt)
+    this.camera.updateAfterEntityRenderSystems()
+    profile_hook('entities')
 
     // events and render
-    this.camera.updateBeforeEntityRenderSystems()
     this.emit('beforeRender', dt)
-    this.camera.updateAfterEntityRenderSystems()
     profile_hook_render('before render')
 
     this.rendering.render(dt)
@@ -341,61 +358,93 @@ Engine.prototype.render = function (framePart) {
 }
 
 
+
+
+
+
+
+
+
 /*
  *   Rebasing local <-> global coords
  */
 
 
 /** 
- * Convert a world position to noa's current local frame of reference.
- * See [positions.md](positions.md) for more info.
+ * Precisely converts a world position to the current internal 
+ * local frame of reference.
+ * 
+ * See `/doc/positions.md` for more info.
+ * 
+ * Params: 
+ *  * `global`: input position in global coords
+ *  * `globalPrecise`: (optional) sub-voxel offset to the global position
+ *  * `local`: output array which will receive the result
  */
-Engine.prototype.globalToLocal = function (global, globalPrecis, local) {
+Engine.prototype.globalToLocal = function (global, globalPrecise, local) {
     var off = this.worldOriginOffset
-    for (var i = 0; i < 3; i++) {
-        var coord = global[i] - off[i]
-        if (globalPrecis) coord += globalPrecis[i]
-        local[i] = coord
+    if (globalPrecise) {
+        for (var i = 0; i < 3; i++) {
+            var coord = global[i] - off[i]
+            coord += globalPrecise[i]
+            local[i] = coord
+        }
+        return local
+    } else {
+        return vec3.sub(local, global, off)
     }
 }
 
 /** 
- * Convert from noa's current local frame of reference to global coords.
- * See [positions.md](positions.md) for more info.
+ * Precisely converts a world position to the current internal 
+ * local frame of reference.
  * 
- * If `globalPrecis` is not provided, the whole (int+fraction) result 
- * will be placed into `global`, but precision errors may result when
- * far from the world origin.
+ * See `/doc/positions.md` for more info.
+ * 
+ * Params: 
+ *  * `local`: input array of local coords
+ *  * `global`: output array which receives the result
+ *  * `globalPrecise`: (optional) sub-voxel offset to the output global position
+ * 
+ * If both output arrays are passed in, `global` will get int values and 
+ * `globalPrecise` will get fractional parts. If only one array is passed in,
+ * `global` will get the whole output position.
  */
-Engine.prototype.localToGlobal = function (local, global, globalPrecis) {
+Engine.prototype.localToGlobal = function (local, global, globalPrecise) {
     var off = this.worldOriginOffset
-    if (globalPrecis) {
+    if (globalPrecise) {
         for (var i = 0; i < 3; i++) {
             var floored = Math.floor(local[i])
             global[i] = floored + off[i]
-            globalPrecis[i] = local[i] - floored
+            globalPrecise[i] = local[i] - floored
         }
+        return global
     } else {
-        for (var j = 0; j < 3; j++) {
-            global[j] = local[j] + off[j]
-        }
+        return vec3.add(global, local, off)
     }
 }
 
+
+
+
+/*
+ * 
+ *   rebase world origin offset around the player if necessary
+ * 
+ */
 function checkWorldOffset(noa) {
     var t = performance.now()
-    var lpos = noa.ents.getLocalPosition(noa.playerEntity)
+    var lpos = noa.ents.getPositionData(noa.playerEntity)._localPosition
     var cutoff = noa._originRebaseDistance
-    if (vec3.length(lpos) < cutoff) return
-    var delta = [
-        Math.floor(lpos[0]),
-        Math.floor(lpos[1]),
-        Math.floor(lpos[2]),
-    ]
-    for (var i = 0; i < 3; i++) noa.worldOriginOffset[i] += delta[i]
+    if (vec3.sqrLen(lpos) < cutoff * cutoff) return
+    var delta = []
+    for (var i = 0; i < 3; i++) {
+        var d = Math.floor(lpos[i])
+        delta[i] = d
+        noa.worldOriginOffset[i] += d
+    }
     noa.rendering._rebaseOrigin(delta)
     noa.entities._rebaseOrigin(delta)
-    console.log('rebased origin in ' + (performance.now() - t).toFixed(2) + 'ms')
 }
 
 
@@ -463,13 +512,41 @@ Engine.prototype.addBlock = function (id, x, y, z) {
 
 /**
  * Raycast through the world, returning a result object for any non-air block
+ * @param pos (default: to player eye position)
+ * @param vec (default: to camera vector)
+ * @param dist (default: `noa.blockTestDistance`)
+ * @param blockTestFunction (default: voxel solidity)
+ * 
+ * Returns: `null`, or an object with array properties: `position`, 
+ * `normal`, `_localPosition`. 
+ * 
+ * See `/doc/positions.md` for info on working with precise positions.
+ */
+Engine.prototype.pick = function (pos, vec, dist, blockIdTestFunction) {
+    if (dist === 0) return null
+    // input position to local coords, if any
+    if (pos) {
+        this.globalToLocal(pos, null, _pickPos)
+        pos = _pickPos
+    }
+    return this._localPick(pos, vec, dist, blockIdTestFunction)
+}
+var _pickPos = vec3.create()
+
+
+
+/**
+ * Do a raycast in local coords. 
+ * See `/doc/positions.md` for more info.
  * @param pos
  * @param vec
  * @param dist
+ * @param blockTestFunction
  */
-Engine.prototype.localPick = function (pos, vec, dist, blockIdTestFunction) {
+
+Engine.prototype._localPick = function (pos, vec, dist, blockIdTestFunction) {
+    // do a raycast in local coords - result obj will be in global coords
     if (dist === 0) return null
-    // if no block ID function is specified default to solidity check
     var testFn = blockIdTestFunction || this.registry.getBlockSolidity
     var world = this.world
     var off = this.worldOriginOffset
@@ -477,22 +554,25 @@ Engine.prototype.localPick = function (pos, vec, dist, blockIdTestFunction) {
         var id = world.getBlockID(x + off[0], y + off[1], z + off[2])
         return testFn(id)
     }
-    pos = pos || this.camera.getTargetLocalPosition()
+    if (!pos) pos = this.camera._localGetTargetPosition()
     vec = vec || this.camera.getDirection()
     dist = dist || this.blockTestDistance
-    var rpos = _hitResult.position
+    var rpos = _hitResult._localPosition
     var rnorm = _hitResult.normal
     var hit = raycast(testVoxel, pos, vec, dist, rpos, rnorm)
     if (!hit) return null
-    // position is right on a voxel border - adjust it so flooring will work as expected
-    for (var i = 0; i < 3; i++) rpos[i] -= 0.01 * rnorm[i]
+    // position is right on a voxel border - adjust it so that flooring works reliably
+    // adjust along normal direction, i.e. away from the block struck
+    vec3.scaleAndAdd(rpos, rpos, rnorm, 0.01)
+    // add global result
+    this.localToGlobal(rpos, _hitResult.position)
     return _hitResult
 }
 var _hitResult = {
-    position: vec3.create(),
-    normal: vec3.create(),
+    _localPosition: vec3.create(),
+    position: [0, 0, 0],
+    normal: [0, 0, 0],
 }
-
 
 
 
@@ -504,22 +584,16 @@ var _hitResult = {
 function updateBlockTargets(noa) {
     var newhash = ''
     var blockIdFn = noa.blockTargetIdCheck || noa.registry.getBlockSolidity
-    var result = noa.localPick(null, null, null, blockIdFn)
+    var result = noa._localPick(null, null, null, blockIdFn)
     if (result) {
         var dat = _targetedBlockDat
-        var off = noa.worldOriginOffset
-        for (var i = 0; i < 3; i++) {
-            // position values are right on a border, so adjust them before flooring!
-            var n = result.normal[i] | 0
-            var p = Math.floor(result.position[i]) + off[i]
-            dat.position[i] = p
-            dat.normal[i] = n
-            dat.adjacent[i] = p + n
-            newhash += '|' + p + '|' + n
-        }
+        // pick stops just shy of voxel boundary, so floored pos is the adjacent voxel
+        vec3.floor(dat.adjacent, result.position)
+        vec3.copy(dat.normal, result.normal)
+        vec3.sub(dat.position, dat.adjacent, dat.normal)
         dat.blockID = noa.world.getBlockID(dat.position[0], dat.position[1], dat.position[2])
-        newhash += '|' + result.blockID
         noa.targetedBlock = dat
+        newhash = dat.position.join('|') + dat.normal.join('|') + '|' + dat.blockID
     } else {
         noa.targetedBlock = null
     }
@@ -567,11 +641,7 @@ function deprecateStuff(noa) {
     dep(noa.rendering, 'getCameraRotation', 'use `noa.camera.heading` and `noa.camera.pitch`')
     dep(noa.rendering, 'setCameraRotation', 'to customize camera behavior see API docs for `noa.camera`')
     ver = '0.28'
-    dep(noa.camera, 'getPosition', 'changed to `getLocalPosition` - see wiki/positions.md')
-    dep(noa.camera, 'getTargetPosition', 'changed to `getTargetLocalPosition` - see wiki/positions.md')
-    dep(noa.entities, 'getPosition', 'changed to `getLocalPosition` - see wiki/positions.md')
-    dep(noa.entities, 'setPosition', 'changed to `setLocalPosition` - see wiki/positions.md')
-    dep(noa, 'setPosition', 'changed to `localPick`, with results in local coords - see wiki/positions.md')
+    dep(noa.rendering, 'makeMeshInstance', 'removed, use Babylon\'s `mesh.createInstance`')
 }
 
 

@@ -176,7 +176,8 @@ Chunk.prototype.updateMeshes = function () {
         if (this._terrainMesh) this._terrainMesh.dispose()
         var mesh = this.mesh()
         if (mesh && mesh.getIndices().length > 0) {
-            rendering.addMeshToScene(mesh, true, this)
+            var pos = [this.x, this.y, this.z]
+            rendering.addMeshToScene(mesh, true, pos, this)
         }
         this._terrainMesh = mesh || null
         this._terrainDirty = false
@@ -184,7 +185,8 @@ Chunk.prototype.updateMeshes = function () {
     if (this._objectsDirty) {
         objectMesher.removeObjectMeshes(this)
         var meshes = objectMesher.buildObjectMeshes(this)
-        meshes.forEach(mesh => rendering.addMeshToScene(mesh, true, this))
+        var pos2 = [this.x, this.y, this.z]
+        meshes.forEach(mesh => rendering.addMeshToScene(mesh, true, pos2, this))
         this._objectsDirty = false
     }
 }

@@ -1,5 +1,3 @@
-'use strict'
-
 var vec3 = require('gl-vec3')
 
 
@@ -33,17 +31,13 @@ export default function (noa) {
 
         // on tick, copy over regular positions
         system: function followEntity(dt, states) {
-            states.forEach(state => {
-                updatePosition(state)
-            })
+            states.forEach(state => updatePosition(state))
         },
 
 
         // on render, copy over render positions
         renderSystem: function followEntityMesh(dt, states) {
-            states.forEach(state => {
-                updateRenderPosition(state)
-            })
+            states.forEach(state => updateRenderPosition(state))
         }
     }
 
@@ -53,23 +47,20 @@ export default function (noa) {
         var id = state.__id
         var self = noa.ents.getPositionData(id)
         var other = noa.ents.getPositionData(state.entity)
-        if (other) {
-            vec3.add(self.localPosition, other.localPosition, state.offset)
-            self._extentsChanged = true
-        } else {
-            noa.ents.removeComponent(id, noa.ents.names.followsEntity)
+        if (!other) {
+            return noa.ents.removeComponent(id, noa.ents.names.followsEntity)
         }
+        vec3.add(self._localPosition, other._localPosition, state.offset)
     }
-
+    
     function updateRenderPosition(state) {
         var id = state.__id
         var self = noa.ents.getPositionData(id)
         var other = noa.ents.getPositionData(state.entity)
-        if (other) {
-            vec3.add(self.renderPosition, other.renderPosition, state.offset)
-        } else {
-            noa.ents.removeComponent(id, noa.ents.names.followsEntity)
+        if (!other) {
+            return noa.ents.removeComponent(id, noa.ents.names.followsEntity)
         }
+        vec3.add(self._renderPosition, other._renderPosition, state.offset)
     }
 
 }
