@@ -114,7 +114,7 @@ Chunk.prototype.getSolidityAt = function (x, y, z) {
     return (SOLID_BIT & this._unpaddedView.get(x, y, z)) ? true : false
 }
 
-Chunk.prototype.set = function (x, y, z, id) {
+Chunk.prototype.set = function (x, y, z, id, paddingUpdate) {
     var oldID = this._unpaddedView.get(x, y, z)
     var oldIDnum = oldID & ID_MASK
     if (id === oldIDnum) return
@@ -123,17 +123,18 @@ Chunk.prototype.set = function (x, y, z, id) {
     var newID = packID(id)
     this._unpaddedView.set(x, y, z, newID)
 
-    // handle object meshes
-    if (oldID & OBJECT_BIT) removeObjectBlock(this, x, y, z)
-    if (newID & OBJECT_BIT) addObjectBlock(this, id, x, y, z)
+    // voxel lifecycle handling - skip when voxel is in the chunks' padding area
+    if (!paddingUpdate) {
+        if (oldID & OBJECT_BIT) removeObjectBlock(this, x, y, z)
+        if (newID & OBJECT_BIT) addObjectBlock(this, id, x, y, z)
+
+        callBlockHandler(this, oldIDnum, 'onUnset', x, y, z)
+        callBlockHandler(this, id, 'onSet', x, y, z)
+    }
 
     // track full/emptyness
     if (newID !== 0) this.isEmpty = false
     if (!(newID & OPAQUE_BIT)) this.isFull = false
-
-    // call block handlers
-    callBlockHandler(this, oldIDnum, 'onUnset', x, y, z)
-    callBlockHandler(this, id, 'onSet', x, y, z)
 
     // mark terrain dirty unless neither block was terrain
     if (isTerrain(oldID) || isTerrain(newID)) this._terrainDirty = true
