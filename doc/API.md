@@ -170,8 +170,8 @@ Extends: `EventEmitter`
     * [.getBlock(x,y,z)](#Noa+getBlock)
     * [.setBlock(x,y,z)](#Noa+setBlock)
     * [.addBlock(id,x,y,z)](#Noa+addBlock)
-    * [.pick(pos, vec, dist)](#Noa+pick)
-    * [._localPick()](#Noa+_localPick)
+    * [.pick(pos, vec, dist, blockTestFunction)](#Noa+pick)
+    * [._localPick(pos, vec, dist, blockTestFunction)](#Noa+_localPick)
 
 
 ----
@@ -195,6 +195,7 @@ var opts = {
     stickyPointerLock: true,
     dragCameraOutsidePointerLock: true,
     skipDefaultHighlighting: false,
+    originRebaseDistance: 25,
 }
 var NoaEngine = require('noa-engine')
 var noa = NoaEngine(opts)
@@ -397,7 +398,7 @@ Adds a block unless obstructed by entities
 
 <a name="Noa+pick"></a>
 
-## noa.pick(pos, vec, dist)
+## noa.pick(pos, vec, dist, blockTestFunction)
 Raycast through the world, returning a result object for any non-air block
 
 **Params**
@@ -405,6 +406,7 @@ Raycast through the world, returning a result object for any non-air block
 - pos - (default: to player eye position)
 - vec - (default: to camera vector)
 - dist - (default: `noa.blockTestDistance`)
+- blockTestFunction - (default: voxel solidity)
 
 Returns: `null`, or an object with array properties: `position`, 
 `normal`, `_localPosition`. 
@@ -416,9 +418,16 @@ See `/doc/positions.md` for info on working with precise positions.
 
 <a name="Noa+_localPick"></a>
 
-## noa.\_localPick()
+## noa.\_localPick(pos, vec, dist, blockTestFunction)
 Do a raycast in local coords. 
 See `/doc/positions.md` for more info.
+
+**Params**
+
+- pos
+- vec
+- dist
+- blockTestFunction
 
 
 ----
