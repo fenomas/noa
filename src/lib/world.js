@@ -501,9 +501,6 @@ function _modifyBlockData(world, i, j, k, x, y, z, val) {
 
 // rebuild queue of chunks to be added around (ci,cj,ck)
 function buildChunkAddQueue(world, ci, cj, ck) {
-
-    // TODO: make this more sane
-
     var add = Math.ceil(world.chunkAddDistance)
     var pending = world._chunkIDsToCreate
     var queue = []
@@ -516,14 +513,15 @@ function buildChunkAddQueue(world, ci, cj, ck) {
                 var di = i - ci
                 var dj = j - cj
                 var dk = k - ck
-                var distSq = di * di + dj * dj + dk * dk
-                if (distSq > addDistSq) continue
+                var horizDistSq = di * di + dk * dk
+                var totalDistSq = horizDistSq + dj * dj
+                if (totalDistSq > addDistSq) continue
 
                 if (getChunk(world, i, j, k)) continue
                 var id = getChunkID(i, j, k)
                 if (pending.indexOf(id) > -1) continue
                 queue.push(id)
-                distArr.push(distSq)
+                distArr.push(horizDistSq + Math.abs(dj))
             }
         }
     }
@@ -656,5 +654,3 @@ if (PROFILE_QUEUES)(function () {
 import { makeProfileHook } from './util'
 var profile_hook = (PROFILE) ?
     makeProfileHook(200, 'world ticks') : () => {}
-
-

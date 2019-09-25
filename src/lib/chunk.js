@@ -47,7 +47,6 @@ function Chunk(noa, id, i, j, k, size) {
     this.isGenerated = false
     this.inInvalid = false
     this.octreeBlock = null
-    this._terrainMesh = null
 
     this.isEmpty = false
     this.isFull = false
@@ -74,9 +73,11 @@ function Chunk(noa, id, i, j, k, size) {
     // build unpadded and transposed array views for internal use
     rebuildArrayViews(this)
 
-    // adds some properties to the chunk for handling object meshes
+    // makes data for terrain / object meshing
+    this._terrainMesh = null
+    this._objectBlocks = null
+    this._objectSystems = null
     objectMesher.initChunk(this)
-
 }
 
 
@@ -170,14 +171,22 @@ Chunk.prototype.mesh = function (matGetter, colGetter, useAO, aoVals, revAoVal) 
 
 // gets called by World when this chunk has been queued for remeshing
 Chunk.prototype.updateMeshes = function () {
+    var rendering = this.noa.rendering
     if (this._terrainDirty) {
-        this.noa.rendering.removeTerrainMesh(this)
+        if (this._terrainMesh) this._terrainMesh.dispose()
         var mesh = this.mesh()
-        if (mesh) this.noa.rendering.addTerrainMesh(this, mesh)
+        if (mesh && mesh.getIndices().length > 0) {
+            var pos = [this.x, this.y, this.z]
+            rendering.addMeshToScene(mesh, true, pos, this)
+        }
+        this._terrainMesh = mesh || null
         this._terrainDirty = false
     }
     if (this._objectsDirty) {
-        objectMesher.buildObjectMesh(this)
+        objectMesher.removeObjectMeshes(this)
+        var meshes = objectMesher.buildObjectMeshes(this)
+        var pos2 = [this.x, this.y, this.z]
+        meshes.forEach(mesh => rendering.addMeshToScene(mesh, true, pos2, this))
         this._objectsDirty = false
     }
 }
@@ -306,6 +315,7 @@ Chunk.prototype.dispose = function () {
 
     // let meshers dispose their stuff
     objectMesher.disposeChunk(this)
+    if (this._terrainMesh) this._terrainMesh.dispose()
 
     // apparently there's no way to dispose typed arrays, so just null everything
     this.array.data = null

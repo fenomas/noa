@@ -1,13 +1,13 @@
 {
     "name": "noa-engine",
-    "version": "0.26.0",
+    "version": "0.27.0",
     "description": "Experimental voxel game engine",
     "main": "src/index.js",
     "files": [
         "/src"
     ],
     "scripts": {
-        "doc": "jsdoc2md -f src/* src/**/* -g table -p list --partial doc-templates/* > API.md"
+        "doc": "jsdoc2md -f src/* src/**/* -g table -p list --partial doc-templates/* > doc/API.md"
     },
     "author": "Andy Hall",
     "keywords": [

@@ -15,7 +15,7 @@ export default new TerrainMesher()
 
 
 // enable for profiling..
-var PROFILE = 0
+var PROFILE_EVERY = 0 // 100
 
 
 
@@ -58,7 +58,7 @@ function TerrainMesher() {
         var mesh
         if (Object.keys(subMeshes).length) {
             mesh = meshBuilder.build(chunk, subMeshes, ignoreMaterials)
-            profile_hook('built terrain')
+            profile_hook('terrain')
         }
 
         profile_hook('end')
@@ -136,16 +136,7 @@ function MeshBuilder() {
         var mats = results.matIDs.map(id => getTerrainMaterial(id, ignoreMaterials))
         var mesh = buildMeshFromSubmesh(mdat, name, mats, results.vertices, results.indices)
 
-        // position, freeze and exit
-        var x = chunk.i * chunk.size
-        var y = chunk.j * chunk.size
-        var z = chunk.k * chunk.size
-        mesh.position.x = x
-        mesh.position.y = y
-        mesh.position.z = z
-
-        mesh.freezeWorldMatrix()
-        mesh.freezeNormals()
+        // done, mesh will be positioned later when added to the scene
         return mesh
     }
 
@@ -420,13 +411,13 @@ function GreedyMesher() {
 
                 // fills mask and aomask arrays with values
                 constructMeshMasks(i, d, arrT, getMaterial, aoPackFcn)
-                profile_hook('built masks')
+                profile_hook('masks')
 
                 // parses the masks to do greedy meshing
                 constructMeshDataFromMasks(i, d, u, v, len1, len2,
                     doAO, subMeshes, getColor, aoValues, revAoVal)
 
-                profile_hook('build submeshes')
+                profile_hook('submeshes')
             }
         }
 
@@ -849,6 +840,5 @@ function GreedyMesher() {
 
 
 import { makeProfileHook } from './util'
-var profile_hook = (PROFILE) ?
-    makeProfileHook(50, 'Terrain meshing') : () => {}
-
+var profile_hook = (PROFILE_EVERY) ?
+    makeProfileHook(PROFILE_EVERY, 'Terrain meshing') : () => {}

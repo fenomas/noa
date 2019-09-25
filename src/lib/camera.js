@@ -5,7 +5,7 @@ var aabb = require('aabb-3d')
 var sweep = require('voxel-aabb-sweep')
 
 
-export default function(noa, opts) {
+export default function (noa, opts) {
     return new Camera(noa, opts)
 }
 
@@ -94,9 +94,7 @@ function Camera(noa, opts) {
      * // make cameraTarget stop following the player
      * noa.ents.removeComponent(noa.camera.cameraTarget, 'followsEntity')
      * // control cameraTarget position directly (or whatever..)
-     * noa.on('beforeRender', () => {
-     *     noa.ents.setPosition(noa.camera.cameraTarget, x, y, z)
-     * })
+     * noa.ents.setPosition(noa.camera.cameraTarget, [x,y,z])
      * ```
      */
     this.cameraTarget = this.noa.ents.createEntity(['position'])
@@ -124,33 +122,48 @@ function Camera(noa, opts) {
 }
 
 
+/*
+ * 
+ *  Local position functions for high precision
+ * 
+ */
+Camera.prototype._localGetTargetPosition = function () {
+    var pdat = this.noa.ents.getPositionData(this.cameraTarget)
+    return vec3.copy(_camPos, pdat._renderPosition)
+}
+
+Camera.prototype._localGetPosition = function () {
+    var loc = this._localGetTargetPosition()
+    if (this.currentZoom === 0) return loc
+    return vec3.scaleAndAdd(loc, loc, this._dirVector, -this.currentZoom)
+}
+var _camPos = vec3.create()
+
 
 
 
 /**
  * Camera target position (read only)
  * 
- * This returns the point the camera looks at when zoomed out - i.e. the player's eye position.
- * When the camera is zoomed all the way in, this is equivalent to `camera.getPosition()`.
+ * This returns the point the camera looks at - i.e. the player's 
+ * eye position. When the camera is zoomed 
+ * all the way in, this is equivalent to `camera.getPosition()`.
  */
 Camera.prototype.getTargetPosition = function () {
-    return this.noa.ents.getPositionData(this.cameraTarget).renderPosition
+    var loc = this._localGetTargetPosition()
+    return this.noa.localToGlobal(loc, globalCamPos)
 }
-
+var globalCamPos = []
 
 /**
- * Returns the camera position (read only)
+ * Returns the current camera position (read only)
  */
 Camera.prototype.getPosition = function () {
-    var tgt = this.getTargetPosition()
-    if (this.currentZoom > 0) {
-        vec3.scaleAndAdd(cpos, tgt, this._dirVector, -this.currentZoom)
-    } else {
-        vec3.copy(cpos, tgt)
-    }
-    return cpos
+    var loc = this._localGetPosition()
+    return this.noa.localToGlobal(loc, globalCamPos)
 }
-var cpos = vec3.create()
+
+
 
 /**
  * Returns the camera direction vector (read only)
@@ -231,20 +244,21 @@ Camera.prototype.updateAfterEntityRenderSystems = function () {
  */
 
 function cameraObstructionDistance(self) {
-    var size = 0.2
     if (!_camBox) {
-        _camBox = new aabb([0, 0, 0], [size * 2, size * 2, size * 2])
-        _getVoxel = (x, y, z) => self.noa.world.getBlockSolidity(x, y, z)
+        var off = self.noa.worldOriginOffset
+        _camBox = new aabb([0, 0, 0], vec3.clone(_camBoxVec))
+        _getVoxel = (x, y, z) => self.noa.world.getBlockSolidity(x + off[0], y + off[1], z + off[2])
+        vec3.scale(_camBoxVec, _camBoxVec, -0.5)
     }
-
-    _camBox.setPosition(self.getTargetPosition())
-    _camBox.translate([-size, -size, -size])
-    var dist = Math.max(self.zoomDistance, self.currentZoom) + size
-    vec3.scale(_dirVec, self.getDirection(), -dist)
-    return sweep(_getVoxel, _camBox, _dirVec, _hitFn, true)
+    _camBox.setPosition(self._localGetTargetPosition())
+    _camBox.translate(_camBoxVec)
+    var dist = Math.max(self.zoomDistance, self.currentZoom) + 0.1
+    vec3.scale(_sweepVec, self.getDirection(), -dist)
+    return sweep(_getVoxel, _camBox, _sweepVec, _hitFn, true)
 }
 
-var _dirVec = vec3.create()
+var _camBoxVec = vec3.fromValues(0.2, 0.2, 0.2)
+var _sweepVec = vec3.create()
 var _camBox
 var _getVoxel
 var _hitFn = () => true

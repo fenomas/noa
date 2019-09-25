@@ -36,7 +36,10 @@ export default function (noa, dist) {
 
 
         onAdd: function (eid, state) {
-            state._mesh = noa.rendering.makeMeshInstance(disc, false)
+            var mesh = disc.createInstance('shadow_instance')
+            noa.rendering.addMeshToScene(mesh)
+            mesh.setEnabled(false)
+            state._mesh = mesh
         },
 
 
@@ -46,10 +49,12 @@ export default function (noa, dist) {
 
 
         system: function shadowSystem(dt, states) {
-            var cpos = noa.camera.getPosition()
+            var cpos = noa.camera._localGetPosition()
             var dist = shadowDist
             states.forEach(state => {
-                updateShadowHeight(state.__id, state._mesh, state.size, dist, cpos, noa)
+                var posState = noa.ents.getPositionData(state.__id)
+                var physState = noa.ents.getPhysics(state.__id)
+                updateShadowHeight(noa, posState, physState, state._mesh, state.size, dist, cpos)
             })
         },
 
@@ -57,7 +62,7 @@ export default function (noa, dist) {
         renderSystem: function (dt, states) {
             // before render adjust shadow x/z to render positions
             states.forEach(state => {
-                var rpos = noa.ents.getPositionData(state.__id).renderPosition
+                var rpos = noa.ents.getPositionData(state.__id)._renderPosition
                 var spos = state._mesh.position
                 spos.x = rpos[0]
                 spos.z = rpos[2]
@@ -70,38 +75,35 @@ export default function (noa, dist) {
     }
 }
 
-var down = vec3.fromValues(0, -1, 0)
 var shadowPos = vec3.fromValues(0, 0, 0)
+var down = vec3.fromValues(0, -1, 0)
 
-function updateShadowHeight(id, mesh, size, shadowDist, camPos, noa) {
-    var ents = noa.entities
-    var dat = ents.getPositionData(id)
-    var loc = dat.position
-    var y
+function updateShadowHeight(noa, posDat, physDat, mesh, size, shadowDist, camPos) {
 
-    // find Y location, from physics if on ground, otherwise by raycast
-    if (ents.hasPhysics(id) && ents.getPhysicsBody(id).resting[1] < 0) {
-        y = dat.renderPosition[1]
+    // local Y ground position - from physics or raycast
+    var localY
+    if (physDat && physDat.body.resting[1] < 0) {
+        localY = posDat._localPosition[1]
     } else {
-        var pick = noa.pick(loc, down, shadowDist)
-        if (pick) {
-            y = pick.position[1]
-        } else {
+        var res = noa._localPick(posDat._localPosition, down, shadowDist)
+        if (!res) {
             mesh.setEnabled(false)
             return
         }
+        localY = res.position[1] - noa.worldOriginOffset[1]
     }
 
-    y = Math.round(y) // pick results get slightly countersunk
-    // set shadow slightly above ground to avoid z-fighting
-    vec3.set(shadowPos, mesh.position.x, y, mesh.position.z)
+    // round Y pos and offset upwards slightly to avoid z-fighting
+    localY = Math.round(localY) 
+    vec3.copy(shadowPos, posDat._localPosition)
+    shadowPos[1] = localY
     var sqdist = vec3.squaredDistance(camPos, shadowPos)
     // offset ~ 0.01 for nearby shadows, up to 0.1 at distance of ~40
     var offset = 0.01 + 0.1 * (sqdist / 1600)
     if (offset > 0.1) offset = 0.1
-    mesh.position.y = y + offset
+    mesh.position.y = localY + offset
     // set shadow scale
-    var dist = loc[1] - y
+    var dist = posDat._localPosition[1] - localY
     var scale = size * 0.7 * (1 - dist / shadowDist)
     mesh.scaling.copyFromFloats(scale, scale, scale)
     mesh.setEnabled(true)
