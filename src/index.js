@@ -433,7 +433,6 @@ Engine.prototype.localToGlobal = function (local, global, globalPrecise) {
  * 
  */
 function checkWorldOffset(noa) {
-    var t = performance.now()
     var lpos = noa.ents.getPositionData(noa.playerEntity)._localPosition
     var cutoff = noa._originRebaseDistance
     if (vec3.sqrLen(lpos) < cutoff * cutoff) return

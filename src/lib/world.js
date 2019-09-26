@@ -263,13 +263,13 @@ World.prototype.setChunkData = function (id, array, userData) {
  */
 World.prototype.invalidateAllChunks = function () {
     var toInval = this._chunkIDsInMemory.concat(this._chunkIDsToCreate)
-    for (var id of toInval) {
+    toInval.forEach(id => {
         var loc = parseChunkID(id)
         var chunk = getChunk(this, loc[0], loc[1], loc[2])
         chunk.isInvalid = true
-    }
+    })
     // this causes chunk queues to get rebuilt next tick
-    this._lastPlayerChunkID = ''
+    this._lastPlayerChunkID += '.'
 }
 
 
@@ -451,7 +451,7 @@ function removeChunk(world, i, j, k) {
     unenqueueID(chunk.id, world._chunkIDsToMesh)
     unenqueueID(chunk.id, world._chunkIDsToMeshFirst)
     // when removing a chunk because it was invalid, arrange for chunk queues to get rebuilt
-    if (chunk.isInvalid) world._lastPlayerChunkID = ''
+    if (chunk.isInvalid) world._lastPlayerChunkID += '.'
 }
 
 
