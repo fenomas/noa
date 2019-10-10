@@ -7,10 +7,10 @@
  * @license  MIT
  */
 
-var vec3 = require('gl-vec3')
-var ndarray = require('ndarray')
-var raycast = require('fast-voxel-raycast')
-var EventEmitter = require('events').EventEmitter
+const vec3 = require('gl-vec3')
+const ndarray = require('ndarray')
+const raycast = require('fast-voxel-raycast')
+const EventEmitter = require('events').EventEmitter
 
 import createContainer from './lib/container'
 import createRendering from './lib/rendering'
@@ -54,7 +54,7 @@ var defaults = {
 /**
  * Main engine object.
  * Takes a big options object full of flags and settings as a parameter.
- * 
+ *
  * ```js
  * var opts = {
  *     debug: false,
@@ -73,12 +73,12 @@ var defaults = {
  * var NoaEngine = require('noa-engine')
  * var noa = NoaEngine(opts)
  * ```
- * 
- * All option parameters are, well, optional. Note that 
- * the root `opts` parameter object is also passed to 
- * noa's child modules (rendering, camera, etc). 
+ *
+ * All option parameters are, well, optional. Note that
+ * the root `opts` parameter object is also passed to
+ * noa's child modules (rendering, camera, etc).
  * See docs for each module for which options they use.
- * 
+ *
  * @class
  * @alias Noa
  * @typicalname noa
@@ -87,7 +87,7 @@ var defaults = {
  * @emits afterRender(dt)
  * @emits targetBlockChanged(blockDesc)
  * @classdesc Root class of the noa engine
- * 
+ *
  * Extends: `EventEmitter`
  */
 
@@ -104,7 +104,7 @@ function Engine(opts) {
     var self = this
 
     if (!opts.silent) {
-        var debugstr = (opts.debug) ? ' (debug)' : ''
+        let debugstr = (opts.debug) ? ' (debug)' : ''
         console.log(`noa-engine v${this.version}${debugstr}`)
     }
 
@@ -154,7 +154,7 @@ function Engine(opts) {
      */
     this.physics = createPhysics(this, opts)
 
-    /** Entity manager / Entity Component System (ECS) 
+    /** Entity manager / Entity Component System (ECS)
      * Aliased to `noa.ents` for convenience.
      * @type {Entities}
      */
@@ -166,7 +166,7 @@ function Engine(opts) {
     this.playerEntity = ents.add(
         opts.playerStart, // starting location
         opts.playerWidth, opts.playerHeight,
-        null, null, // no mesh for now, no meshOffset, 
+        null, null, // no mesh for now, no meshOffset,
         true, true
     )
 
@@ -175,7 +175,7 @@ function Engine(opts) {
     ents.addComponent(this.playerEntity, ents.names.collideEntities)
 
     // adjust default physics parameters
-    var body = ents.getPhysicsBody(this.playerEntity)
+    let body = ents.getPhysicsBody(this.playerEntity)
     body.gravityMultiplier = 2 // less floaty
     body.autoStep = opts.playerAutoStep // auto step onto blocks
 
@@ -187,7 +187,7 @@ function Engine(opts) {
 
     // movement component - applies movement forces
     // todo: populate movement settings from options
-    var moveOpts = {
+    let moveOpts = {
         airJumps: 1
     }
     ents.addComponent(this.playerEntity, ents.names.movement, moveOpts)
@@ -203,14 +203,14 @@ function Engine(opts) {
     // set up block targeting
     this.blockTestDistance = opts.blockTestDistance
 
-    /** function for which block IDs are targetable. 
+    /** function for which block IDs are targetable.
      * Defaults to a solidity check, but can be overridden */
     this.blockTargetIdCheck = this.registry.getBlockSolidity
 
     /** Dynamically updated object describing the currently targeted block.
-     * Gets updated each tick, to `null` if not block is targeted, or 
+     * Gets updated each tick, to `null` if not block is targeted, or
      * to an object like:
-     * 
+     *
      *     {
      *        blockID,   // voxel ID
      *        position,  // the (solid) block being targeted
@@ -223,7 +223,7 @@ function Engine(opts) {
     // add a default block highlighting function
     if (!opts.skipDefaultHighlighting) {
         // the default listener, defined onto noa in case people want to remove it later
-        this.defaultBlockHighlightFunction = function (tgt) {
+        this.defaultBlockHighlightFunction = tgt => {
             if (tgt) {
                 self.rendering.highlightBlockFace(true, tgt.position, tgt.normal)
             } else {
@@ -243,7 +243,7 @@ function Engine(opts) {
         window.scene = this.rendering._scene
         window.ndarray = ndarray
         window.vec3 = vec3
-        var debug = false
+        let debug = false
         this.inputs.bind('debug', 'Z')
         this.inputs.down.on('debug', function onDebug() {
             debug = !debug
@@ -251,8 +251,8 @@ function Engine(opts) {
             else window.scene.debugLayer.hide()
         })
         ents.getMovement(1).airJumps = 999
-        this.setViewDistance = function (dist) {
-            var cs = this.world.chunkSize
+        this.setViewDistance = dist => {
+            let cs = this.world.chunkSize
             this.world.chunkAddDistance = dist / cs
             this.world.chunkRemoveDistance = dist / cs + 1
             this.world._lastPlayerChunkID = '' // pings noa's chunk queues
@@ -283,11 +283,11 @@ Engine.prototype = Object.create(EventEmitter.prototype)
  * where dt is the tick rate in ms (default 16.6)
  */
 
-Engine.prototype.tick = function () {
+Engine.prototype.tick = () => {
     if (this._paused) return
     profile_hook('start')
     checkWorldOffset(this)
-    var dt = this._tickRate // fixed timesteps!
+    let dt = this._tickRate // fixed timesteps!
     this.world.tick(dt) // chunk creation/removal
     profile_hook('world')
     if (!this.world.playerChunkLoaded) {
@@ -307,7 +307,7 @@ Engine.prototype.tick = function () {
     profile_hook('tick event')
     profile_hook('end')
     // clear accumulated scroll inputs (mouseMove is cleared on render)
-    var st = this.inputs.state
+    let st = this.inputs.state
     st.scrollx = st.scrolly = st.scrollz = 0
 }
 
@@ -316,18 +316,18 @@ Engine.prototype.tick = function () {
 
 
 /*
- * Render function, called every animation frame. Emits #beforeRender(dt), #afterRender(dt) 
+ * Render function, called every animation frame. Emits #beforeRender(dt), #afterRender(dt)
  * where dt is the time in ms *since the last tick*.
  */
 
-Engine.prototype.render = function (framePart) {
+Engine.prototype.render = framePart => {
     if (this._paused) return
     profile_hook_render('start')
     // update frame position property and calc dt
-    var framesAdvanced = framePart - this.positionInCurrentTick
+    let framesAdvanced = framePart - this.positionInCurrentTick
     if (framesAdvanced < 0) framesAdvanced += 1
     this.positionInCurrentTick = framePart
-    var dt = framesAdvanced * this._tickRate // ms since last tick
+    let dt = framesAdvanced * this._tickRate // ms since last tick
     // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
     if (this.container.hasPointerLock ||
         !this.container.supportsPointerLock ||
@@ -370,22 +370,22 @@ Engine.prototype.render = function (framePart) {
  */
 
 
-/** 
- * Precisely converts a world position to the current internal 
+/**
+ * Precisely converts a world position to the current internal
  * local frame of reference.
- * 
+ *
  * See `/doc/positions.md` for more info.
- * 
- * Params: 
+ *
+ * Params:
  *  * `global`: input position in global coords
  *  * `globalPrecise`: (optional) sub-voxel offset to the global position
  *  * `local`: output array which will receive the result
  */
-Engine.prototype.globalToLocal = function (global, globalPrecise, local) {
-    var off = this.worldOriginOffset
+Engine.prototype.globalToLocal = (global, globalPrecise, local) => {
+    let off = this.worldOriginOffset
     if (globalPrecise) {
-        for (var i = 0; i < 3; i++) {
-            var coord = global[i] - off[i]
+        for (let i = 0; i < 3; i++) {
+            let coord = global[i] - off[i]
             coord += globalPrecise[i]
             local[i] = coord
         }
@@ -395,26 +395,26 @@ Engine.prototype.globalToLocal = function (global, globalPrecise, local) {
     }
 }
 
-/** 
- * Precisely converts a world position to the current internal 
+/**
+ * Precisely converts a world position to the current internal
  * local frame of reference.
- * 
+ *
  * See `/doc/positions.md` for more info.
- * 
- * Params: 
+ *
+ * Params:
  *  * `local`: input array of local coords
  *  * `global`: output array which receives the result
  *  * `globalPrecise`: (optional) sub-voxel offset to the output global position
- * 
- * If both output arrays are passed in, `global` will get int values and 
+ *
+ * If both output arrays are passed in, `global` will get int values and
  * `globalPrecise` will get fractional parts. If only one array is passed in,
  * `global` will get the whole output position.
  */
-Engine.prototype.localToGlobal = function (local, global, globalPrecise) {
-    var off = this.worldOriginOffset
+Engine.prototype.localToGlobal = (local, global, globalPrecise) => {
+    let off = this.worldOriginOffset
     if (globalPrecise) {
-        for (var i = 0; i < 3; i++) {
-            var floored = Math.floor(local[i])
+        for (let i = 0; i < 3; i++) {
+            let floored = Math.floor(local[i])
             global[i] = floored + off[i]
             globalPrecise[i] = local[i] - floored
         }
@@ -428,17 +428,17 @@ Engine.prototype.localToGlobal = function (local, global, globalPrecise) {
 
 
 /*
- * 
+ *
  *   rebase world origin offset around the player if necessary
- * 
+ *
  */
 function checkWorldOffset(noa) {
-    var lpos = noa.ents.getPositionData(noa.playerEntity)._localPosition
-    var cutoff = noa._originRebaseDistance
+    let lpos = noa.ents.getPositionData(noa.playerEntity)._localPosition
+    let cutoff = noa._originRebaseDistance
     if (vec3.sqrLen(lpos) < cutoff * cutoff) return
-    var delta = []
-    for (var i = 0; i < 3; i++) {
-        var d = Math.floor(lpos[i])
+    let delta = []
+    for (let i = 0; i < 3; i++) {
+        let d = Math.floor(lpos[i])
         delta[i] = d
         noa.worldOriginOffset[i] += d
     }
@@ -455,11 +455,11 @@ function checkWorldOffset(noa) {
  *   Utility APIs
  */
 
-/** 
+/**
  * Pausing the engine will also stop render/tick events, etc.
  * @param paused
  */
-Engine.prototype.setPaused = function (paused) {
+Engine.prototype.setPaused = paused => {
     this._paused = !!paused
     // when unpausing, clear any built-up mouse inputs
     if (!paused) {
@@ -468,7 +468,7 @@ Engine.prototype.setPaused = function (paused) {
 }
 
 /** @param x,y,z */
-Engine.prototype.getBlock = function (x, y, z) {
+Engine.prototype.getBlock = (x, y, z) => {
     if (x.length) {
         return this.world.getBlockID(x[0], x[1], x[2])
     } else {
@@ -477,7 +477,7 @@ Engine.prototype.getBlock = function (x, y, z) {
 }
 
 /** @param x,y,z */
-Engine.prototype.setBlock = function (id, x, y, z) {
+Engine.prototype.setBlock = (id, x, y, z) => {
     // skips the entity collision check
     if (x.length) {
         return this.world.setBlockID(id, x[0], x[1], x[2])
@@ -487,9 +487,9 @@ Engine.prototype.setBlock = function (id, x, y, z) {
 }
 
 /**
- * Adds a block unless obstructed by entities 
+ * Adds a block unless obstructed by entities
  * @param id,x,y,z */
-Engine.prototype.addBlock = function (id, x, y, z) {
+Engine.prototype.addBlock = (id, x, y, z) => {
     // add a new terrain block, if nothing blocks the terrain there
     if (x.length) {
         if (this.entities.isTerrainBlocked(x[0], x[1], x[2])) return
@@ -515,13 +515,13 @@ Engine.prototype.addBlock = function (id, x, y, z) {
  * @param vec (default: to camera vector)
  * @param dist (default: `noa.blockTestDistance`)
  * @param blockTestFunction (default: voxel solidity)
- * 
- * Returns: `null`, or an object with array properties: `position`, 
- * `normal`, `_localPosition`. 
- * 
+ *
+ * Returns: `null`, or an object with array properties: `position`,
+ * `normal`, `_localPosition`.
+ *
  * See `/doc/positions.md` for info on working with precise positions.
  */
-Engine.prototype.pick = function (pos, vec, dist, blockIdTestFunction) {
+Engine.prototype.pick = (pos, vec, dist, blockIdTestFunction) => {
     if (dist === 0) return null
     // input position to local coords, if any
     if (pos) {
@@ -535,7 +535,7 @@ var _pickPos = vec3.create()
 
 
 /**
- * Do a raycast in local coords. 
+ * Do a raycast in local coords.
  * See `/doc/positions.md` for more info.
  * @param pos
  * @param vec
@@ -543,22 +543,22 @@ var _pickPos = vec3.create()
  * @param blockTestFunction
  */
 
-Engine.prototype._localPick = function (pos, vec, dist, blockIdTestFunction) {
+Engine.prototype._localPick = (pos, vec, dist, blockIdTestFunction) => {
     // do a raycast in local coords - result obj will be in global coords
     if (dist === 0) return null
-    var testFn = blockIdTestFunction || this.registry.getBlockSolidity
-    var world = this.world
-    var off = this.worldOriginOffset
-    var testVoxel = function (x, y, z) {
-        var id = world.getBlockID(x + off[0], y + off[1], z + off[2])
+    let testFn = blockIdTestFunction || this.registry.getBlockSolidity
+    let world = this.world
+    let off = this.worldOriginOffset
+    let testVoxel = (x, y, z) => {
+        let id = world.getBlockID(x + off[0], y + off[1], z + off[2])
         return testFn(id)
     }
     if (!pos) pos = this.camera._localGetTargetPosition()
     vec = vec || this.camera.getDirection()
     dist = dist || this.blockTestDistance
-    var rpos = _hitResult._localPosition
-    var rnorm = _hitResult.normal
-    var hit = raycast(testVoxel, pos, vec, dist, rpos, rnorm)
+    let rpos = _hitResult._localPosition
+    let rnorm = _hitResult.normal
+    let hit = raycast(testVoxel, pos, vec, dist, rpos, rnorm)
     if (!hit) return null
     // position is right on a voxel border - adjust it so that flooring works reliably
     // adjust along normal direction, i.e. away from the block struck
@@ -578,14 +578,14 @@ var _hitResult = {
 
 
 
-// Each frame, by default pick along the player's view vector 
+// Each frame, by default pick along the player's view vector
 // and tell rendering to highlight the struck block face
 function updateBlockTargets(noa) {
-    var newhash = ''
-    var blockIdFn = noa.blockTargetIdCheck || noa.registry.getBlockSolidity
-    var result = noa._localPick(null, null, null, blockIdFn)
+    let newhash = ''
+    let blockIdFn = noa.blockTargetIdCheck || noa.registry.getBlockSolidity
+    let result = noa._localPick(null, null, null, blockIdFn)
     if (result) {
-        var dat = _targetedBlockDat
+        let dat = _targetedBlockDat
         // pick stops just shy of voxel boundary, so floored pos is the adjacent voxel
         vec3.floor(dat.adjacent, result.position)
         vec3.copy(dat.normal, result.normal)
@@ -615,14 +615,14 @@ var _prevTargetHash = ''
 
 
 /*
- * 
+ *
  *  add some hooks for guidance on removed APIs
- * 
+ *
  */
 
 function deprecateStuff(noa) {
-    var ver = `0.27`
-    var dep = (loc, name, msg) => {
+    let ver = `0.27`
+    let dep = (loc, name, msg) => {
         var throwFn = () => { throw `This method was removed in ${ver} - ${msg}` }
         Object.defineProperty(loc, name, { get: throwFn, set: throwFn })
     }
