@@ -7,10 +7,10 @@
  * @license  MIT
  */
 
-const vec3 = require('gl-vec3')
-const ndarray = require('ndarray')
-const raycast = require('fast-voxel-raycast')
-const EventEmitter = require('events').EventEmitter
+var vec3 = require('gl-vec3')
+var ndarray = require('ndarray')
+var raycast = require('fast-voxel-raycast')
+var EventEmitter = require('events').EventEmitter
 
 import createContainer from './lib/container'
 import createRendering from './lib/rendering'
@@ -283,7 +283,7 @@ Engine.prototype = Object.create(EventEmitter.prototype)
  * where dt is the tick rate in ms (default 16.6)
  */
 
-Engine.prototype.tick = () => {
+Engine.prototype.tick = function () {
     if (this._paused) return
     profile_hook('start')
     checkWorldOffset(this)
@@ -381,7 +381,7 @@ Engine.prototype.render = framePart => {
  *  * `globalPrecise`: (optional) sub-voxel offset to the global position
  *  * `local`: output array which will receive the result
  */
-Engine.prototype.globalToLocal = (global, globalPrecise, local) => {
+Engine.prototype.globalToLocal = function (global, globalPrecise, local) {
     let off = this.worldOriginOffset
     if (globalPrecise) {
         for (let i = 0; i < 3; i++) {
@@ -410,7 +410,7 @@ Engine.prototype.globalToLocal = (global, globalPrecise, local) => {
  * `globalPrecise` will get fractional parts. If only one array is passed in,
  * `global` will get the whole output position.
  */
-Engine.prototype.localToGlobal = (local, global, globalPrecise) => {
+Engine.prototype.localToGlobal = function (local, global, globalPrecise) {
     let off = this.worldOriginOffset
     if (globalPrecise) {
         for (let i = 0; i < 3; i++) {
@@ -546,10 +546,10 @@ var _pickPos = vec3.create()
 Engine.prototype._localPick = (pos, vec, dist, blockIdTestFunction) => {
     // do a raycast in local coords - result obj will be in global coords
     if (dist === 0) return null
-    let testFn = blockIdTestFunction || this.registry.getBlockSolidity
-    let world = this.world
-    let off = this.worldOriginOffset
-    let testVoxel = (x, y, z) => {
+    var testFn = blockIdTestFunction || this.registry.getBlockSolidity
+    var world = this.world
+    var off = this.worldOriginOffset
+    var testVoxel = (x, y, z) => {
         let id = world.getBlockID(x + off[0], y + off[1], z + off[2])
         return testFn(id)
     }
@@ -581,11 +581,11 @@ var _hitResult = {
 // Each frame, by default pick along the player's view vector
 // and tell rendering to highlight the struck block face
 function updateBlockTargets(noa) {
-    let newhash = ''
-    let blockIdFn = noa.blockTargetIdCheck || noa.registry.getBlockSolidity
-    let result = noa._localPick(null, null, null, blockIdFn)
+    var newhash = ''
+    var blockIdFn = noa.blockTargetIdCheck || noa.registry.getBlockSolidity
+    var result = noa._localPick(null, null, null, blockIdFn)
     if (result) {
-        let dat = _targetedBlockDat
+        var dat = _targetedBlockDat
         // pick stops just shy of voxel boundary, so floored pos is the adjacent voxel
         vec3.floor(dat.adjacent, result.position)
         vec3.copy(dat.normal, result.normal)
