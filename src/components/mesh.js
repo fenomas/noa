@@ -1,4 +1,3 @@
-'use strict'
 
 var vec3 = require('gl-vec3')
 

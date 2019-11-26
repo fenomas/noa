@@ -1,4 +1,3 @@
-'use strict'
 
 var ndHash = require('ndarray-hash')
 var EventEmitter = require('events').EventEmitter

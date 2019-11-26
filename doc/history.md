@@ -28,8 +28,6 @@ This is a summary of new features and breaking changes in recent `noa` versions.
      * Pre-existing position properties and related APIs still work, but may be imprecise. Each such API now has a `_local` alternate
      * Engine option `originRebaseDistance` controls how often rebasing occurs
      * See [/doc/positions.md](positions.md) for more details
-   * foo
-   * bar
 
 
 ### 0.26.0

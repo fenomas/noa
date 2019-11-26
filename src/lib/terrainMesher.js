@@ -1,4 +1,3 @@
-'use strict'
 
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import { SubMesh } from '@babylonjs/core/Meshes/subMesh'

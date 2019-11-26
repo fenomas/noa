@@ -1,4 +1,4 @@
-var aabb = require('aabb-3d')
+
 var vec3 = require('gl-vec3')
 var EntComp = require('ent-comp')
 // var EntComp = require('../../../../npm-modules/ent-comp')

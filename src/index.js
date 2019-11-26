@@ -1,5 +1,3 @@
-'use strict'
-
 /*!
  * noa: an experimental voxel game engine.
  * @url      github.com/andyhall/noa

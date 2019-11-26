@@ -1,4 +1,3 @@
-'use strict'
 
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import { Color3 } from '@babylonjs/core/Maths/math'

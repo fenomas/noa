@@ -1,4 +1,3 @@
-'use strict'
 
 /**
  * Component for the player entity, when active hides the player's mesh 
