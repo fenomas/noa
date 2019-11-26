@@ -1,5 +1,3 @@
-'use strict'
-
 var vec3 = require('gl-vec3')
 
 
@@ -20,8 +18,8 @@ export default function (noa) {
         onAdd: function (entID, state) {
             state.body = noa.physics.addBody()
             // implicitly assume body has a position component, to get size
-            var dat = noa.ents.getPositionData(state.__id)
-            noa.ents.setEntitySize(state.__id, dat.width, dat.height, dat.width)
+            var posDat = noa.ents.getPositionData(state.__id)
+            setPhysicsFromPosition(state, posDat)
         },
 
 
@@ -31,7 +29,7 @@ export default function (noa) {
             // even if physics component is removed in collision handler
             if (noa.ents.hasPosition(state.__id)) {
                 var pdat = noa.ents.getPositionData(state.__id)
-                updatePositionFromPhysics(state, pdat)
+                setPositionFromPhysics(state, pdat)
                 backtrackRenderPos(state, pdat, 0, false)
             }
             noa.physics.removeBody(state.body)
@@ -41,8 +39,9 @@ export default function (noa) {
         system: function (dt, states) {
             states.forEach(state => {
                 var pdat = noa.ents.getPositionData(state.__id)
-                updatePositionFromPhysics(state, pdat)
+                setPositionFromPhysics(state, pdat)
             })
+
         },
 
 
@@ -73,34 +72,34 @@ export default function (noa) {
 
 
 
-var offset = vec3.create()
-var pos = vec3.create()
+// var offset = vec3.create()
+var local = vec3.create()
 
-
-
-function updatePositionFromPhysics(state, posDat) {
-    offset[0] = offset[2] = posDat.width / 2
-    offset[1] = 0
-    var pos = posDat.position
-    var base = state.body.aabb.base
-    var max = state.body.aabb.max
-    var ext = posDat._extents
-    for (var j = 0; j < 3; j++) {
-        pos[j] = base[j] + offset[j]
-        ext[j] = base[j]
-        ext[j + 3] = max[j]
-    }
+export function setPhysicsFromPosition(physState, posState) {
+    var box = physState.body.aabb
+    var ext = posState._extents
+    vec3.copy(box.base, ext)
+    vec3.set(box.vec, posState.width, posState.height, posState.width)
+    vec3.add(box.max, box.base, box.vec)
 }
 
 
-function backtrackRenderPos(state, posDat, backtrackAmt, smoothed) {
+function setPositionFromPhysics(physState, posState) {
+    var base = physState.body.aabb.base
+    var hw = posState.width / 2
+    vec3.set(posState._localPosition, base[0] + hw, base[1], base[2] + hw)
+}
+
+
+function backtrackRenderPos(physState, posState, backtrackAmt, smoothed) {
     // pos = pos + backtrack * body.velocity
-    vec3.scaleAndAdd(pos, posDat.position, state.body.velocity, backtrackAmt)
+    var vel = physState.body.velocity
+    vec3.scaleAndAdd(local, posState._localPosition, vel, backtrackAmt)
 
     // smooth out update if component is present
     // (this is set after sudden movements like auto-stepping)
-    if (smoothed) vec3.lerp(pos, posDat.renderPosition, pos, 0.3)
+    if (smoothed) vec3.lerp(local, posState._renderPosition, local, 0.3)
 
     // copy values over to renderPosition, 
-    vec3.copy(posDat.renderPosition, pos)
+    vec3.copy(posState._renderPosition, local)
 }

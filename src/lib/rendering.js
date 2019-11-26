@@ -1,5 +1,3 @@
-'use strict'
-
 var glvec3 = require('gl-vec3')
 import { removeUnorderedListItem } from './util'
 
@@ -12,6 +10,7 @@ import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight'
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
 import { Vector3, Color3 } from '@babylonjs/core/Maths/math'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
+import { OctreeSceneComponent } from '@babylonjs/core/Culling/Octrees/'
 import '@babylonjs/core/Meshes/meshBuilder'
 
 
@@ -38,7 +37,6 @@ var defaults = {
     useAO: true,
     AOmultipliers: [0.93, 0.8, 0.5],
     reverseAOmultiplier: 1.0,
-    useOctreesForDynamicMeshes: true,
     preserveDrawingBuffer: true,
 }
 
@@ -67,7 +65,6 @@ function Rendering(noa, opts, canvas) {
      *   useAO: true,
      *   AOmultipliers: [0.93, 0.8, 0.5],
      *   reverseAOmultiplier: 1.0,
-     *   useOctreesForDynamicMeshes: true,
      *   preserveDrawingBuffer: true,
      * }
      * ```
@@ -75,12 +72,10 @@ function Rendering(noa, opts, canvas) {
     opts = Object.assign({}, defaults, opts)
 
     // internals
-    this._dynamicMeshes = []
     this.useAO = !!opts.useAO
     this.aoVals = opts.AOmultipliers
     this.revAoVal = opts.reverseAOmultiplier
     this.meshingCutoffTime = 6 // ms
-    this._dynamicMeshOctrees = opts.useOctreesForDynamicMeshes
     this._resizeDebounce = 250 // ms
 
     // set up babylon scene
@@ -104,6 +99,7 @@ function initScene(self, canvas, opts) {
     scene.detachControl()
 
     // octree setup
+    scene._addComponent(new OctreeSceneComponent(scene))
     self._octree = new Octree($ => {})
     self._octree.blocks = []
     scene._selectionOctree = self._octree
@@ -158,7 +154,7 @@ Rendering.prototype.getScene = function () {
 
 // per-tick listener for rendering-related stuff
 Rendering.prototype.tick = function (dt) {
-    if (this._dynamicMeshOctrees) updateDynamicMeshOctrees(this)
+    // nothing here at the moment
 }
 
 
@@ -197,48 +193,72 @@ var pendingResize = false
 Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
     var m = getHighlightMesh(this)
     if (show) {
-        // bigger slop when camera is far from highlight
-        var dist = glvec3.dist(this.noa.camera.getPosition(), posArr)
-        var slop = 0.0005 * dist
-        var pos = _highlightPos
-        for (var i = 0; i < 3; ++i) {
-            pos[i] = Math.floor(posArr[i]) + .5 + ((0.5 + slop) * normArr[i])
+        // floored local coords for highlight mesh
+        this.noa.globalToLocal(posArr, null, hlpos)
+        // offset to avoid z-fighting, bigger when camera is far away
+        var dist = glvec3.dist(this.noa.camera._localGetPosition(), hlpos)
+        var slop = 0.001 + 0.001 * dist
+        for (var i = 0; i < 3; i++) {
+            if (normArr[i] === 0) {
+                hlpos[i] += 0.5
+            } else {
+                hlpos[i] += (normArr[i] > 0) ? 1 + slop : -slop
+            }
         }
-        m.position.copyFromFloats(pos[0], pos[1], pos[2])
+        m.position.copyFromFloats(hlpos[0], hlpos[1], hlpos[2])
         m.rotation.x = (normArr[1]) ? Math.PI / 2 : 0
         m.rotation.y = (normArr[0]) ? Math.PI / 2 : 0
     }
     m.setEnabled(show)
 }
-var _highlightPos = glvec3.create()
-
+var hlpos = []
 
 
 
 
 /**
- * add a mesh to the scene's octree setup so that it renders
- * pass in isStatic=true if the mesh won't move (i.e. change octree blocks)
+ * Add a mesh to the scene's octree setup so that it renders. 
+ * 
+ * @param mesh: the mesh to add to the scene
+ * @param isStatic: pass in true if mesh never moves (i.e. change octree blocks)
+ * @param position: (optional) global position where the mesh should be
+ * @param chunk: (optional) chunk to which the mesh is statically bound
  * @method
  */
-Rendering.prototype.addMeshToScene = function (mesh, isStatic) {
+Rendering.prototype.addMeshToScene = function (mesh, isStatic, pos, _containingChunk) {
     // exit silently if mesh has already been added and not removed
-    if (mesh._currentNoaChunk || this._octree.dynamicContent.includes(mesh)) {
-        return
+    if (mesh._noaContainingChunk) return
+    if (this._octree.dynamicContent.includes(mesh)) return
+
+    // find local position for mesh and move it there (unless it's parented)
+    if (!mesh.parent) {
+        if (!pos) pos = [mesh.position.x, mesh.position.y, mesh.position.z]
+        var lpos = []
+        this.noa.globalToLocal(pos, null, lpos)
+        mesh.position.copyFromFloats(lpos[0], lpos[1], lpos[2])
     }
-    var pos = mesh.position
-    var chunk = this.noa.world._getChunkByCoords(pos.x, pos.y, pos.z)
-    if (this._dynamicMeshOctrees && chunk && chunk.octreeBlock) {
-        // add to an octree
+
+    // statically tie to a chunk's octree, or treat as dynamic?
+    var addToOctree = false
+    if (isStatic) {
+        var chunk = _containingChunk ||
+            this.noa.world._getChunkByCoords(pos[0], pos[1], pos[2])
+        addToOctree = !!(chunk && chunk.octreeBlock)
+    }
+
+    if (addToOctree) {
         chunk.octreeBlock.entries.push(mesh)
-        mesh._currentNoaChunk = chunk
+        mesh._noaContainingChunk = chunk
     } else {
-        // mesh added outside an active chunk - so treat as scene-dynamic
         this._octree.dynamicContent.push(mesh)
     }
-    // remember for updates if it's not static
-    if (!isStatic) this._dynamicMeshes.push(mesh)
-    // handle remover when mesh gets disposed
+
+    if (isStatic) {
+        mesh.freezeWorldMatrix()
+        mesh.freezeNormals()
+    }
+
+    // add dispose event to undo everything done here
     var remover = this.removeMeshFromScene.bind(this, mesh)
     mesh.onDisposeObservable.add(remover)
 }
@@ -249,63 +269,18 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic) {
  * @method
  */
 Rendering.prototype.removeMeshFromScene = function (mesh) {
-    if (mesh._currentNoaChunk && mesh._currentNoaChunk.octreeBlock) {
-        removeUnorderedListItem(mesh._currentNoaChunk.octreeBlock.entries, mesh)
+    if (mesh._noaContainingChunk && mesh._noaContainingChunk.octreeBlock) {
+        removeUnorderedListItem(mesh._noaContainingChunk.octreeBlock.entries, mesh)
     }
-    mesh._currentNoaChunk = null
+    mesh._noaContainingChunk = null
     removeUnorderedListItem(this._octree.dynamicContent, mesh)
-    removeUnorderedListItem(this._dynamicMeshes, mesh)
 }
 
 
 
 
-// runs once per tick - move any dynamic meshes to correct chunk octree
-function updateDynamicMeshOctrees(self) {
-    for (var i = 0; i < self._dynamicMeshes.length; i++) {
-        var mesh = self._dynamicMeshes[i]
-        if (mesh._isDisposed) continue // shouldn't be possible
-        var pos = mesh.position
-        var prev = mesh._currentNoaChunk || null
-        var next = self.noa.world._getChunkByCoords(pos.x, pos.y, pos.z) || null
-        if (prev === next) continue
-        // mesh has moved chunks since last update
-        // remove from previous location...
-        if (prev && prev.octreeBlock) {
-            removeUnorderedListItem(prev.octreeBlock.entries, mesh)
-        } else {
-            removeUnorderedListItem(self._octree.dynamicContent, mesh)
-        }
-        // ... and add to new location
-        if (next && next.octreeBlock) {
-            next.octreeBlock.entries.push(mesh)
-        } else {
-            self._octree.dynamicContent.push(mesh)
-        }
-        mesh._currentNoaChunk = next
-    }
-}
 
 
-
-Rendering.prototype.makeMeshInstance = function (mesh, isStatic) {
-    var m = mesh.createInstance(mesh.name + ' instance' || 'instance')
-    if (mesh.billboardMode) m.billboardMode = mesh.billboardMode
-    // add to scene so as to render
-    this.addMeshToScene(m, isStatic)
-
-    // testing performance tweaks
-
-    // make instance meshes skip over getLOD checks, since there may be lots of them
-    // mesh.getLOD = m.getLOD = function () { return mesh }
-    m._currentLOD = mesh
-
-    // make terrain instance meshes skip frustum checks 
-    // (they'll still get culled by octree checks)
-    // if (isStatic) m.isInFrustum = function () { return true }
-
-    return m
-}
 
 
 
@@ -335,29 +310,18 @@ Rendering.prototype.makeStandardMaterial = function (name) {
 
 Rendering.prototype.prepareChunkForRendering = function (chunk) {
     var cs = chunk.size
-    var min = new Vector3(chunk.x, chunk.y, chunk.z)
-    var max = new Vector3(chunk.x + cs, chunk.y + cs, chunk.z + cs)
+    var loc = []
+    this.noa.globalToLocal([chunk.x, chunk.y, chunk.z], null, loc)
+    var min = new Vector3(loc[0], loc[1], loc[2])
+    var max = new Vector3(loc[0] + cs, loc[1] + cs, loc[2] + cs)
     chunk.octreeBlock = new OctreeBlock(min, max, undefined, undefined, undefined, $ => {})
     this._octree.blocks.push(chunk.octreeBlock)
 }
 
 Rendering.prototype.disposeChunkForRendering = function (chunk) {
-    this.removeTerrainMesh(chunk)
     removeUnorderedListItem(this._octree.blocks, chunk.octreeBlock)
     chunk.octreeBlock.entries.length = 0
     chunk.octreeBlock = null
-}
-
-Rendering.prototype.addTerrainMesh = function (chunk, mesh) {
-    this.removeTerrainMesh(chunk)
-    if (mesh.getIndices().length) this.addMeshToScene(mesh, true)
-    chunk._terrainMesh = mesh
-}
-
-Rendering.prototype.removeTerrainMesh = function (chunk) {
-    if (!chunk._terrainMesh) return
-    chunk._terrainMesh.dispose()
-    chunk._terrainMesh = null
 }
 
 
@@ -376,6 +340,32 @@ Rendering.prototype.removeTerrainMesh = function (chunk) {
 
 
 
+// change world origin offset, and rebase everything with a position
+
+Rendering.prototype._rebaseOrigin = function (delta) {
+    var dvec = new Vector3(delta[0], delta[1], delta[2])
+
+    this._scene.meshes.forEach(mesh => {
+        // parented meshes don't live in the world coord system
+        if (mesh.parent) return
+
+        // move each mesh by delta (even though most are managed by components)
+        mesh.position.subtractInPlace(dvec)
+
+        if (mesh._isWorldMatrixFrozen) mesh.markAsDirty()
+    })
+
+    // update octree block extents
+    this._octree.blocks.forEach(octreeBlock => {
+        octreeBlock.minPoint.subtractInPlace(dvec)
+        octreeBlock.maxPoint.subtractInPlace(dvec)
+        octreeBlock._boundingVectors.forEach(v => {
+            v.subtractInPlace(dvec)
+        })
+    })
+}
+
+
 
 
 
@@ -383,14 +373,19 @@ Rendering.prototype.removeTerrainMesh = function (chunk) {
 
 function updateCameraForRender(self) {
     var cam = self.noa.camera
-    var tgt = cam.getTargetPosition()
-    self._cameraHolder.position.copyFromFloats(tgt[0], tgt[1], tgt[2])
+    var tgtLoc = cam._localGetTargetPosition()
+    self._cameraHolder.position.copyFromFloats(tgtLoc[0], tgtLoc[1], tgtLoc[2])
     self._cameraHolder.rotation.x = cam.pitch
     self._cameraHolder.rotation.y = cam.heading
     self._camera.position.z = -cam.currentZoom
 
     // applies screen effect when camera is inside a transparent voxel
-    var id = self.noa.getBlock(self.noa.camera.getPosition())
+    var cloc = cam._localGetPosition()
+    var off = self.noa.worldOriginOffset
+    var cx = Math.floor(cloc[0] + off[0])
+    var cy = Math.floor(cloc[1] + off[1])
+    var cz = Math.floor(cloc[2] + off[2])
+    var id = self.noa.getBlock(cx, cy, cz)
     checkCameraEffect(self, id)
 }
 
@@ -426,15 +421,15 @@ function checkCameraEffect(self, id) {
 
 // make or get a mesh for highlighting active voxel
 function getHighlightMesh(rendering) {
-    var m = rendering._highlightMesh
-    if (!m) {
-        var mesh = Mesh.CreatePlane("highlight", 1.0, rendering._scene)
+    var mesh = rendering._highlightMesh
+    if (!mesh) {
+        mesh = Mesh.CreatePlane("highlight", 1.0, rendering._scene)
         var hlm = rendering.makeStandardMaterial('highlightMat')
         hlm.backFaceCulling = false
         hlm.emissiveColor = new Color3(1, 1, 1)
         hlm.alpha = 0.2
         mesh.material = hlm
-        m = rendering._highlightMesh = mesh
+
         // outline
         var s = 0.5
         var lines = Mesh.CreateLines("hightlightLines", [
@@ -447,10 +442,11 @@ function getHighlightMesh(rendering) {
         lines.color = new Color3(1, 1, 1)
         lines.parent = mesh
 
-        rendering.addMeshToScene(m)
+        rendering.addMeshToScene(mesh)
         rendering.addMeshToScene(lines)
+        rendering._highlightMesh = mesh
     }
-    return m
+    return mesh
 }
 
 

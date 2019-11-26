@@ -1,6 +1,3 @@
-'use strict'
-
-
 
 
 // helper to swap item to end and pop(), instead of splice()ing

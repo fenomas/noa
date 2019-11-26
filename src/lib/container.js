@@ -1,4 +1,3 @@
-'use strict'
 
 var createGameShell = require('game-shell')
 // var createGameShell = require('../../../../npm-modules/game-shell')

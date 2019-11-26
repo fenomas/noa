@@ -1,5 +1,3 @@
-'use strict'
-
 
 var ndarray = require('ndarray')
 
@@ -47,7 +45,6 @@ function Chunk(noa, id, i, j, k, size) {
     this.isGenerated = false
     this.inInvalid = false
     this.octreeBlock = null
-    this._terrainMesh = null
 
     this.isEmpty = false
     this.isFull = false
@@ -74,9 +71,11 @@ function Chunk(noa, id, i, j, k, size) {
     // build unpadded and transposed array views for internal use
     rebuildArrayViews(this)
 
-    // adds some properties to the chunk for handling object meshes
+    // makes data for terrain / object meshing
+    this._terrainMesh = null
+    this._objectBlocks = null
+    this._objectSystems = null
     objectMesher.initChunk(this)
-
 }
 
 
@@ -113,7 +112,7 @@ Chunk.prototype.getSolidityAt = function (x, y, z) {
     return (SOLID_BIT & this._unpaddedView.get(x, y, z)) ? true : false
 }
 
-Chunk.prototype.set = function (x, y, z, id) {
+Chunk.prototype.set = function (x, y, z, id, paddingUpdate) {
     var oldID = this._unpaddedView.get(x, y, z)
     var oldIDnum = oldID & ID_MASK
     if (id === oldIDnum) return
@@ -122,17 +121,18 @@ Chunk.prototype.set = function (x, y, z, id) {
     var newID = packID(id)
     this._unpaddedView.set(x, y, z, newID)
 
-    // handle object meshes
-    if (oldID & OBJECT_BIT) removeObjectBlock(this, x, y, z)
-    if (newID & OBJECT_BIT) addObjectBlock(this, id, x, y, z)
+    // voxel lifecycle handling - skip when voxel is in the chunks' padding area
+    if (!paddingUpdate) {
+        if (oldID & OBJECT_BIT) removeObjectBlock(this, x, y, z)
+        if (newID & OBJECT_BIT) addObjectBlock(this, id, x, y, z)
+
+        callBlockHandler(this, oldIDnum, 'onUnset', x, y, z)
+        callBlockHandler(this, id, 'onSet', x, y, z)
+    }
 
     // track full/emptyness
     if (newID !== 0) this.isEmpty = false
     if (!(newID & OPAQUE_BIT)) this.isFull = false
-
-    // call block handlers
-    callBlockHandler(this, oldIDnum, 'onUnset', x, y, z)
-    callBlockHandler(this, id, 'onSet', x, y, z)
 
     // mark terrain dirty unless neither block was terrain
     if (isTerrain(oldID) || isTerrain(newID)) this._terrainDirty = true
@@ -170,14 +170,22 @@ Chunk.prototype.mesh = function (matGetter, colGetter, useAO, aoVals, revAoVal) 
 
 // gets called by World when this chunk has been queued for remeshing
 Chunk.prototype.updateMeshes = function () {
+    var rendering = this.noa.rendering
     if (this._terrainDirty) {
-        this.noa.rendering.removeTerrainMesh(this)
+        if (this._terrainMesh) this._terrainMesh.dispose()
         var mesh = this.mesh()
-        if (mesh) this.noa.rendering.addTerrainMesh(this, mesh)
+        if (mesh && mesh.getIndices().length > 0) {
+            var pos = [this.x, this.y, this.z]
+            rendering.addMeshToScene(mesh, true, pos, this)
+        }
+        this._terrainMesh = mesh || null
         this._terrainDirty = false
     }
     if (this._objectsDirty) {
-        objectMesher.buildObjectMesh(this)
+        objectMesher.removeObjectMeshes(this)
+        var meshes = objectMesher.buildObjectMeshes(this)
+        var pos2 = [this.x, this.y, this.z]
+        meshes.forEach(mesh => rendering.addMeshToScene(mesh, true, pos2, this))
         this._objectsDirty = false
     }
 }
@@ -306,6 +314,7 @@ Chunk.prototype.dispose = function () {
 
     // let meshers dispose their stuff
     objectMesher.disposeChunk(this)
+    if (this._terrainMesh) this._terrainMesh.dispose()
 
     // apparently there's no way to dispose typed arrays, so just null everything
     this.array.data = null

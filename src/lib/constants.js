@@ -1,5 +1,3 @@
-'use strict'
-
 
 /* 
  *  Internal voxel data representation

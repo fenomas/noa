@@ -1,10 +1,11 @@
-'use strict'
 
 
 export default function (noa) {
     return {
 
         name: 'collideTerrain',
+
+        order: 0,
 
         state: {
             callback: null

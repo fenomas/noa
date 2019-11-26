@@ -10,7 +10,7 @@ in the component definition. For example, if you define a component with a
 
 ----
 
-## Overview
+## All components
 
 | name | order | desc
 | ---- | ----- | ----
@@ -21,7 +21,7 @@ in the component definition. For example, if you define a component with a
 | `mesh`            | `100`| stores a mesh associated with an entity
 | `movement`        | `30` | stores movement state (move direction, jumping, etc.)
 | `physics`         | `40` | stores an entity's physics body
-| `position`        | `60` | stores entity's position, height/weight, renderPosition
+| `position`        |      | stores entity's position, height/weight, and related data
 | `receivesInputs`  | `20` | marks an entity as being controlled by keyboard/mouse
 | `shadow`          | `80` | stores and manages a shadow mesh for an entity
 | `smoothCamera`    | `99` | marks a mesh to move smoothly to its physics position, rather than abruptly
@@ -34,9 +34,9 @@ in the component definition. For example, if you define a component with a
 | ---- | ----- | ------
 | `receivesInputs`  | `20` | update `movement` state based on key/mouse input
 | `movement`        | `30` | applies physics forces based on `movement` state
-| `physics`         | `40` | tick physics engine, update entity `position`
-| `followsEntity`   | `50` | moves `position` to match target
-| `position`        | `60` | update `extents` data based on position
+| `physics`         | `40` | update entity `_localPosition` from physics body
+| `followsEntity`   | `50` | move own `_localPosition` to match target
+| `position`        | `60` | update `position` and `extents` properties
 | `collideEntities` | `70` | runs collision test, fires onCollide events
 | `shadow`          | `80` | update shadow's `y` position
 | `fadeOnZoom`      | `99` | checks camera zoom, hides or reveals entity
@@ -48,9 +48,9 @@ in the component definition. For example, if you define a component with a
 
 | name | order | render system
 | ---- | ----- | ------
-| `physics`         | `40` | backtrack entity `renderPosition` towards physics position
-| `followsEntity`   | `50` | moves entity's `renderPosition` to match its follow target
-| `shadow`          | `80` | update shadow's `x/z` position
-| `mesh`            | `100`| moves rendering mesh to entity `renderPosition`
+| `physics`       | `40` | backtrack entity `renderPosition` towards physics position
+| `followsEntity` | `50` | moves entity's `renderPosition` to match its follow target
+| `shadow`        | `80` | update shadow's `x/z` position
+| `mesh`          | `100`| moves rendering mesh to entity `renderPosition`
 
 
