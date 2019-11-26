@@ -243,13 +243,6 @@ function Engine(opts) {
         window.scene = this.rendering._scene
         window.ndarray = ndarray
         window.vec3 = vec3
-        var debug = false
-        this.inputs.bind('debug', 'Z')
-        this.inputs.down.on('debug', function onDebug() {
-            debug = !debug
-            if (debug) window.scene.debugLayer.show()
-            else window.scene.debugLayer.hide()
-        })
         ents.getMovement(1).airJumps = 999
         this.setViewDistance = function (dist) {
             var cs = this.world.chunkSize
