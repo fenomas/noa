@@ -69,7 +69,7 @@ function World(noa, opts) {
     // instantiate coord conversion functions based on the chunk size
     // use bit twiddling if chunk size is a power of 2
     var cs = this.chunkSize
-    if (cs & cs - 1 === 0) {
+    if ((cs & cs - 1) === 0) {
         var shift = Math.log2(cs) | 0
         var mask = (cs - 1) | 0
         worldCoordToChunkCoord = coord => (coord >> shift) | 0
