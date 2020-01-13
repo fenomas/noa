@@ -153,6 +153,7 @@ Extends: `EventEmitter`
 * [Noa](#Noa)
     * [new Engine()](#new_Noa_new)
     * [.version](#Noa+version)
+    * [.worldName](#Noa+worldName)
     * [.container](#Noa+container) : [<code>Container</code>](#Container)
     * [.inputs](#Noa+inputs) : [<code>Inputs</code>](#Inputs)
     * [.registry](#Noa+registry) : [<code>Registry</code>](#Registry)
@@ -213,6 +214,15 @@ See docs for each module for which options they use.
 
 ## noa.version
 version string, e.g. `"0.25.4"`
+
+
+----
+
+<a name="Noa+worldName"></a>
+
+## noa.worldName
+String identifier for the current world. (It's safe to ignore this if
+your game doesn't need to swap between levels/worlds.)
 
 
 ----
@@ -915,6 +925,7 @@ Extends `EventEmitter`
     * [.setBlockID(x,y,z)](#World+setBlockID)
     * [.isBoxUnobstructed(x,y,z)](#World+isBoxUnobstructed)
     * [.setChunkData(id, array, userData)](#World+setChunkData)
+    * [.invalidateAllChunks()](#World+invalidateAllChunks)
 
 
 ----
@@ -1010,6 +1021,16 @@ If userData is passed in it will be attached to the chunk
 - id
 - array
 - userData
+
+
+----
+
+<a name="World+invalidateAllChunks"></a>
+
+## noa.world.invalidateAllChunks()
+Tells noa to discard all chunks in memory and request new data from client.
+Clients *probably* shouldn't need this API anymore - to change between 
+multiple sets of world data use `noa.worldName`.
 
 
 ----

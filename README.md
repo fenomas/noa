@@ -44,6 +44,7 @@ See [history.md](doc/history.md) for changes and migration info from each versio
 
 Migration notes:
 
+ * `v0.28`: improves swapping between world data sets (see `noa.worldName`)
  * `v0.27`: adds world origin rebasing. If you encounter new bugs related to entity positions, see [positions.md](doc/positions.md)
  * `v0.26`: game clients should declare a dependency on `@babylon/core`, rather than manually loading babylon.js and leaving it in global scope. This allows tree-shaking to happen, greatly reducing (production) bundle sizes for typical games. For sample code and configs see [noa-examples](https://github.com/andyhall/noa-examples).
 

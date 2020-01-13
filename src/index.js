@@ -116,6 +116,11 @@ function Engine(opts) {
     // how far engine is into the current tick. Updated each render.
     this.positionInCurrentTick = 0
 
+    /** String identifier for the current world. (It's safe to ignore this if
+     * your game doesn't need to swap between levels/worlds.)
+     */
+    this.worldName = 'default'
+
     /**
      * container (html/div) manager
      * @type {Container}
@@ -642,6 +647,6 @@ function deprecateStuff(noa) {
 
 import { makeProfileHook } from './lib/util'
 var profile_hook = (PROFILE) ?
-    makeProfileHook(200, 'tick   ') : () => {}
+    makeProfileHook(200, 'tick   ') : () => { }
 var profile_hook_render = (PROFILE_RENDER) ?
-    makeProfileHook(200, 'render ') : () => {}
+    makeProfileHook(200, 'render ') : () => { }

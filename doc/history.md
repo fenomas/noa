@@ -3,6 +3,7 @@
 
 This is a summary of new features and breaking changes in recent `noa` versions.
 
+ * [0.28.0](#0280)
  * [0.27.0](#0270)
  * [0.26.0](#0260)
  * [0.25.0](#0250)
@@ -15,6 +16,15 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 
 ----
+
+### 0.28.0
+
+   * Can now swap between world data sets
+     * Set `noa.worldName` to manage
+     * Current worldName is now sent with `worldDataNeeded` events, so that 
+       game client knows which worldgen data to provide
+   * Mostly rewrites `noa.world` internals (chunk create/update/dispose flow)
+
 
 ### 0.27.0
 

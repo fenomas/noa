@@ -37,22 +37,21 @@ var OBJECT_BIT = constants.OBJECT_BIT
  *
  */
 
-function Chunk(noa, id, i, j, k, size) {
-    this.id = id
+function Chunk(noa, id, i, j, k, size, dataArray) {
+    this.id = id            // id used by noa
+    this.requestID = ''     // id sent to game client
 
     this.noa = noa
     this.isDisposed = false
-    this.isGenerated = false
-    this.inInvalid = false
     this.octreeBlock = null
 
     this.isEmpty = false
     this.isFull = false
 
-    // packed data storage
-    var s = size + 2 // 1 block of padding on each side
-    var arr = new Uint16Array(s * s * s)
-    this.array = new ndarray(arr, [s, s, s])
+    // voxel data and unpadded view into same
+    this.array = dataArray
+    this._unpaddedView = dataArray.lo(1, 1, 1).hi(size, size, size)
+
     this.i = i
     this.j = j
     this.k = k
@@ -68,16 +67,23 @@ function Chunk(noa, id, i, j, k, size) {
     // init references shared among all chunks
     setBlockLookups(noa)
 
-    // build unpadded and transposed array views for internal use
-    rebuildArrayViews(this)
-
     // makes data for terrain / object meshing
     this._terrainMesh = null
     this._objectBlocks = null
     this._objectSystems = null
     objectMesher.initChunk(this)
+
+    // converts raw voxelID data into packed ID+solidity etc.
+    packVoxelData(this)
 }
 
+
+// expose logic internally to create the voxel data array for a chunk
+Chunk.createVoxelArray = function (size) {
+    var s = size + 2 // 1 block of padding on each side
+    var arr = new Uint16Array(s * s * s)
+    return new ndarray(arr, [s, s, s])
+}
 
 
 // Registry lookup references shared by all chunks
@@ -92,6 +98,10 @@ function setBlockLookups(noa) {
     objectMeshLookup = noa.registry._blockMeshLookup
     blockHandlerLookup = noa.registry._blockHandlerLookup
 }
+
+
+
+
 
 
 
@@ -224,20 +234,18 @@ function packID(id) {
  * 
  *      Init
  * 
- *  Gets called right after client filled the voxel ID data array
- */
+ *  Converts raw voxel ID data into packed ID + solidity etc.
+ * 
+*/
 
 
-
-Chunk.prototype.initData = function () {
-    // remake other views, assuming that data has changed
-    rebuildArrayViews(this)
+function packVoxelData(chunk) {
     // flags for tracking if chunk is entirely opaque or transparent
     var fullyOpaque = OPAQUE_BIT
     var fullyAir = true
 
     // init everything in one big scan
-    var arr = this.array
+    var arr = chunk.array
     var data = arr.data
     var len = arr.shape[0]
     var kstride = arr.stride[2]
@@ -264,29 +272,20 @@ Chunk.prototype.initData = function () {
                 var atEdge = edge2 || (k === 0 || k === len - 1)
                 if (!atEdge) {
                     if (OBJECT_BIT & packed) {
-                        addObjectBlock(this, id, i - 1, j - 1, k - 1)
+                        addObjectBlock(chunk, id, i - 1, j - 1, k - 1)
                     }
-                    callBlockHandler(this, id, 'onLoad', i - 1, j - 1, k - 1)
+                    callBlockHandler(chunk, id, 'onLoad', i - 1, j - 1, k - 1)
                 }
             }
         }
     }
 
-    this.isFull = !!(fullyOpaque & OPAQUE_BIT)
-    this.isEmpty = !!(fullyAir)
-    this._terrainDirty = !(this.isFull || this.isEmpty)
-
-    this.isGenerated = true
+    chunk.isFull = !!(fullyOpaque & OPAQUE_BIT)
+    chunk.isEmpty = !!(fullyAir)
+    chunk._terrainDirty = !(chunk.isFull || chunk.isEmpty)
 }
 
 
-// helper to rebuild several transformed views on the data array
-
-function rebuildArrayViews(chunk) {
-    var arr = chunk.array
-    var size = chunk.size
-    chunk._unpaddedView = arr.lo(1, 1, 1).hi(size, size, size)
-}
 
 
 
@@ -321,7 +320,6 @@ Chunk.prototype.dispose = function () {
     this.array = null
     this._unpaddedView = null
 
-    this.isGenerated = false
     this.isDisposed = true
 }
 
