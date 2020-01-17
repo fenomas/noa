@@ -1,6 +1,7 @@
 
 var EventEmitter = require('events').EventEmitter
 import Chunk from './chunk'
+import aabb from 'aabb-3d'
 import { sortByReferenceArray, loopForTime, numberOfVoxelsInSphere } from './util'
 
 var PROFILE = 0
@@ -23,7 +24,7 @@ var defaultOptions = {
 /**
  * @class
  * @typicalname noa.world
- * @emits worldDataNeeded(id, ndarray, x, y, z)
+ * @emits worldDataNeeded(id, ndarray, x, y, z, worldName)
  * @emits chunkAdded(chunk)
  * @emits chunkBeingRemoved(id, ndarray, userData)
  * @classdesc Manages the world and its chunks
@@ -188,12 +189,15 @@ World.prototype.setChunkData = function (id, array, userData) {
 }
 
 
-/** Tells noa to discard all chunks in memory and request new data from client.
- * Clients *probably* shouldn't need this API anymore - to change between 
- * multiple sets of world data use `noa.worldName`.
+/** Tells noa to discard voxel data within a given `AABB` (e.g. because 
+ * the game client received updated data from a server). 
+ * The engine will mark all affected chunks for disposal, and will later emit 
+ * new `worldDataNeeded` events (if the chunk is still in draw range).
+ * Note that chunks invalidated this way will not emit a `chunkBeingRemoved` event 
+ * for the client to save data from.
  */
-World.prototype.invalidateAllChunks = function () {
-    markAllChunksForRemoval(this)
+World.prototype.invalidateVoxelsInAABB = function (box) {
+    invalidateChunksInBox(this, box)
 }
 
 
@@ -220,7 +224,7 @@ World.prototype.tick = function () {
 
     // if world has changed, invalidate everything
     if (this._cachedWorldName !== this.noa.worldName) {
-        this.invalidateAllChunks()
+        markAllChunksForRemoval(this)
         this._cachedWorldName = this.noa.worldName
     }
 
@@ -426,6 +430,24 @@ function findDistantChunksToRemove(world, ci, cj, ck) {
 }
 
 
+// invalidate chunks overlapping the given AABB
+function invalidateChunksInBox(world, box) {
+    var min = box.base.map(n => Math.floor(world._worldCoordToChunkCoord(n)))
+    var max = box.max.map(n => Math.floor(world._worldCoordToChunkCoord(n)))
+    world._chunkIDsKnown.forEach(id => {
+        var pos = parseChunkID(id)
+        for (var i = 0; i < 3; i++) {
+            if (pos[i] < min[i] || pos[i] > max[i]) return
+        }
+        enqueueID(id, world._chunkIDsToRemove)
+        unenqueueID(id, world._chunkIDsToRequest)
+        unenqueueID(id, world._chunkIDsToMesh)
+        unenqueueID(id, world._chunkIDsToMeshFirst)
+        var chunk = world._chunkStorage[id]
+        if (chunk) chunk.isInvalid = true
+    })
+}
+
 // when current world changes - empty work queues and mark all for removal
 function markAllChunksForRemoval(world) {
     world._chunkIDsToRemove = world._chunkIDsKnown.slice()
@@ -564,7 +586,9 @@ function removeChunk(world, id) {
     var loc = parseChunkID(id)
     var chunk = world._getChunk(loc[0], loc[1], loc[2])
     if (chunk) {
-        world.emit('chunkBeingRemoved', chunk.requestID, chunk.voxels, chunk.userData)
+        if (!chunk.isInvalid) {
+            world.emit('chunkBeingRemoved', chunk.requestID, chunk.voxels, chunk.userData)
+        }
         world.noa.rendering.disposeChunkForRendering(chunk)
         chunk.dispose()
         profile_queues_hook('dispose')

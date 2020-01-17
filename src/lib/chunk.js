@@ -47,6 +47,7 @@ function Chunk(noa, id, i, j, k, size, dataArray) {
 
     this.isEmpty = false
     this.isFull = false
+    this.isInvalid = false
 
     // voxel data and properties
     this.voxels = dataArray
