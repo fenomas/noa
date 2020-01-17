@@ -69,6 +69,43 @@ function refSortWithObjects(array, ref) {
 
 
 
+// partly "unrolled" loops to copy contents of ndarrays
+// when there's no source, zeroes out the array instead
+export function copyNdarrayContents(src, tgt, pos, size, tgtPos) {
+    if (src) doNdarrayCopy(src, tgt, pos[0], pos[1], pos[2],
+        size[0], size[1], size[2], tgtPos[0], tgtPos[1], tgtPos[2])
+    if (!src) doNdarrayZero(tgt, tgtPos[0], tgtPos[1], tgtPos[2],
+        size[0], size[1], size[2])
+}
+function doNdarrayCopy(src, tgt, i0, j0, k0, si, sj, sk, ti, tj, tk) {
+    for (var i = 0; i < si; i++) {
+        for (var j = 0; j < sj; j++) {
+            var six = src.index(i0 + i, j0 + j, k0)
+            var tix = tgt.index(ti + i, tj + j, tk)
+            for (var k = 0; k < sk; k++) {
+                tgt.data[tix] = src.data[six]
+                six += src.stride[2]
+                tix += tgt.stride[2]
+            }
+        }
+    }
+}
+
+function doNdarrayZero(tgt, i0, j0, k0, si, sj, sk) {
+    for (var i = 0; i < si; i++) {
+        for (var j = 0; j < sj; j++) {
+            var ix = tgt.index(i0 + i, j0 + j, k0)
+            for (var k = 0; k < sk; k++) {
+                tgt.data[ix] = 0
+                ix += tgt.stride[2]
+            }
+        }
+    }
+}
+
+
+
+
 
 
 // simple thing for reporting time split up between several activities

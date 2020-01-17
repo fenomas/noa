@@ -48,10 +48,8 @@ function Chunk(noa, id, i, j, k, size, dataArray) {
     this.isEmpty = false
     this.isFull = false
 
-    // voxel data and unpadded view into same
-    this.array = dataArray
-    this._unpaddedView = dataArray.lo(1, 1, 1).hi(size, size, size)
-
+    // voxel data and properties
+    this.voxels = dataArray
     this.i = i
     this.j = j
     this.k = k
@@ -73,6 +71,14 @@ function Chunk(noa, id, i, j, k, size, dataArray) {
     this._objectSystems = null
     objectMesher.initChunk(this)
 
+    // references to neighboring chunks, if they exist (filled in by `world`)
+    var narr = Array.from(Array(27)).map(() => null)
+    this._neighbors = new ndarray(narr, [3, 3, 3]).lo(1, 1, 1)
+    this._neighbors.set(0, 0, 0, this)
+    this._neighborCount = 0
+    this._maxMeshedNeighbors = 0
+    this._timesMeshed = 0
+
     // converts raw voxelID data into packed ID+solidity etc.
     packVoxelData(this)
 }
@@ -80,9 +86,8 @@ function Chunk(noa, id, i, j, k, size, dataArray) {
 
 // expose logic internally to create the voxel data array for a chunk
 Chunk.createVoxelArray = function (size) {
-    var s = size + 2 // 1 block of padding on each side
-    var arr = new Uint16Array(s * s * s)
-    return new ndarray(arr, [s, s, s])
+    var arr = new Uint16Array(size * size * size)
+    return new ndarray(arr, [size, size, size])
 }
 
 
@@ -115,37 +120,62 @@ function setBlockLookups(noa) {
 // get/set deal with block IDs, so that this class acts like an ndarray
 
 Chunk.prototype.get = function (x, y, z) {
-    return ID_MASK & this._unpaddedView.get(x, y, z)
+    return ID_MASK & this.voxels.get(x, y, z)
 }
 
 Chunk.prototype.getSolidityAt = function (x, y, z) {
-    return (SOLID_BIT & this._unpaddedView.get(x, y, z)) ? true : false
+    return (SOLID_BIT & this.voxels.get(x, y, z)) ? true : false
 }
 
 Chunk.prototype.set = function (x, y, z, id, paddingUpdate) {
-    var oldID = this._unpaddedView.get(x, y, z)
+    var oldID = this.voxels.get(x, y, z)
     var oldIDnum = oldID & ID_MASK
     if (id === oldIDnum) return
 
     // manage data
     var newID = packID(id)
-    this._unpaddedView.set(x, y, z, newID)
+    this.voxels.set(x, y, z, newID)
 
-    // voxel lifecycle handling - skip when voxel is in the chunks' padding area
-    if (!paddingUpdate) {
-        if (oldID & OBJECT_BIT) removeObjectBlock(this, x, y, z)
-        if (newID & OBJECT_BIT) addObjectBlock(this, id, x, y, z)
-
-        callBlockHandler(this, oldIDnum, 'onUnset', x, y, z)
-        callBlockHandler(this, id, 'onSet', x, y, z)
-    }
+    // voxel lifecycle handling
+    if (oldID & OBJECT_BIT) removeObjectBlock(this, x, y, z)
+    if (newID & OBJECT_BIT) addObjectBlock(this, id, x, y, z)
+    callBlockHandler(this, oldIDnum, 'onUnset', x, y, z)
+    callBlockHandler(this, id, 'onSet', x, y, z)
 
     // track full/emptyness
     if (newID !== 0) this.isEmpty = false
     if (!(newID & OPAQUE_BIT)) this.isFull = false
 
     // mark terrain dirty unless neither block was terrain
-    if (isTerrain(oldID) || isTerrain(newID)) this._terrainDirty = true
+    if (isTerrain(oldID) || isTerrain(newID)) {
+        this._terrainDirty = true
+        this.noa.world._queueChunkForRemesh(this)
+    }
+
+    // neighbors only affected if opaqueness changed on an edge
+    if ((newID & OPAQUE_BIT) !== (oldID & OPAQUE_BIT)) {
+        var edge = this.size - 1
+
+        var iedge = (x === 0) ? -1 : (x < edge) ? 0 : 1
+        var jedge = (y === 0) ? -1 : (y < edge) ? 0 : 1
+        var kedge = (z === 0) ? -1 : (z < edge) ? 0 : 1
+        if (iedge | jedge | kedge) {
+            var is = (iedge) ? [0, iedge] : [0]
+            var js = (jedge) ? [0, jedge] : [0]
+            var ks = (kedge) ? [0, kedge] : [0]
+            is.forEach(i => {
+                js.forEach(j => {
+                    ks.forEach(k => {
+                        if ((i | j | k) === 0) return
+                        var nab = this._neighbors.get(i, j, k)
+                        if (!nab) return
+                        nab._terrainDirty = true
+                        this.noa.world._queueChunkForRemesh(nab)
+                    })
+                })
+            })
+        }
+    }
 }
 
 
@@ -154,15 +184,11 @@ Chunk.prototype.set = function (x, y, z, id, paddingUpdate) {
 
 
 // helper to call handler of a given type at a particular xyz
-
 function callBlockHandler(chunk, blockID, type, x, y, z) {
     var hobj = blockHandlerLookup[blockID]
     if (!hobj) return
     var handler = hobj[type]
     if (!handler) return
-    // ignore all handlers if block is in chunk's edge padding blocks
-    var s = chunk.size
-    if (x < 0 || y < 0 || z < 0 || x >= s || y >= s || z >= s) return
     handler(chunk.x + x, chunk.y + y, chunk.z + z)
 }
 
@@ -190,6 +216,8 @@ Chunk.prototype.updateMeshes = function () {
         }
         this._terrainMesh = mesh || null
         this._terrainDirty = false
+        this._timesMeshed++
+        this._maxMeshedNeighbors = Math.max(this._maxMeshedNeighbors, this._neighborCount)
     }
     if (this._objectsDirty) {
         objectMesher.removeObjectMeshes(this)
@@ -238,25 +266,19 @@ function packID(id) {
  * 
 */
 
-
 function packVoxelData(chunk) {
     // flags for tracking if chunk is entirely opaque or transparent
     var fullyOpaque = OPAQUE_BIT
     var fullyAir = true
 
-    // init everything in one big scan
-    var arr = chunk.array
-    var data = arr.data
+    var arr = chunk.voxels
     var len = arr.shape[0]
-    var kstride = arr.stride[2]
     for (var i = 0; i < len; ++i) {
-        var edge1 = (i === 0 || i === len - 1)
         for (var j = 0; j < len; ++j) {
-            var d0 = arr.index(i, j, 0)
-            var edge2 = edge1 || (j === 0 || j === len - 1)
-            for (var k = 0; k < len; ++k, d0 += kstride) {
+            for (var k = 0; k < len; ++k) {
                 // pull raw ID - could in principle be packed, so mask it
-                var id = data[d0] & ID_MASK
+                var index = arr.index(i, j, k)
+                var id = arr.data[index] & ID_MASK
                 // skip air blocks
                 if (id === 0) {
                     fullyOpaque = 0
@@ -264,18 +286,14 @@ function packVoxelData(chunk) {
                 }
                 // store ID as packed internal representation
                 var packed = packID(id) | 0
-                data[d0] = packed
-                // track whether chunk is entirely full or empty
+                arr.data[index] = packed
                 fullyOpaque &= packed
                 fullyAir = false
                 // within unpadded view, handle object blocks and handlers
-                var atEdge = edge2 || (k === 0 || k === len - 1)
-                if (!atEdge) {
-                    if (OBJECT_BIT & packed) {
-                        addObjectBlock(chunk, id, i - 1, j - 1, k - 1)
-                    }
-                    callBlockHandler(chunk, id, 'onLoad', i - 1, j - 1, k - 1)
+                if (OBJECT_BIT & packed) {
+                    addObjectBlock(chunk, id, i, j, k)
                 }
+                callBlockHandler(chunk, id, 'onLoad', i, j, k)
             }
         }
     }
@@ -316,35 +334,25 @@ Chunk.prototype.dispose = function () {
     if (this._terrainMesh) this._terrainMesh.dispose()
 
     // apparently there's no way to dispose typed arrays, so just null everything
-    this.array.data = null
-    this.array = null
-    this._unpaddedView = null
+    this.voxels.data = null
+    this.voxels = null
+    this._neighbors.data = null
+    this._neighbors = null
 
     this.isDisposed = true
 }
 
 
 // helper to call a given handler for all blocks in the chunk
-
 function callAllBlockHandlers(chunk, type) {
-    var view = chunk._unpaddedView
-    var data = view.data
-    var si = view.stride[0]
-    var sj = view.stride[1]
-    var sk = view.stride[2]
-    var size = view.shape[0]
-    var d0 = view.offset
+    var arr = chunk.voxels
+    var size = arr.shape[0]
     for (var i = 0; i < size; ++i) {
         for (var j = 0; j < size; ++j) {
             for (var k = 0; k < size; ++k) {
-                var id = ID_MASK & data[d0]
-                callBlockHandler(chunk, id, type, i, j, k)
-                d0 += sk
+                var id = ID_MASK & arr.get(i, j, k)
+                if (id > 0) callBlockHandler(chunk, id, type, i, j, k)
             }
-            d0 -= sk * size
-            d0 += sj
         }
-        d0 -= sj * size
-        d0 += si
     }
 }

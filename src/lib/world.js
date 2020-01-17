@@ -25,7 +25,6 @@ var defaultOptions = {
  * @typicalname noa.world
  * @emits worldDataNeeded(id, ndarray, x, y, z)
  * @emits chunkAdded(chunk)
- * @emits chunkChanged(chunk)
  * @emits chunkBeingRemoved(id, ndarray, userData)
  * @classdesc Manages the world and its chunks
  * 
@@ -46,11 +45,14 @@ function World(noa, opts) {
         this.chunkRemoveDistance = this.chunkAddDistance
     }
 
-    // settings for tuning worldgen throughput
-    this._maxChunksPendingCreation = 10
-    this._maxChunksPendingMeshing = 10
-    this._maxProcessingPerTick = 9      // ms
-    this._maxProcessingPerRender = 5    // ms
+    // set this higher to cause chunks not to mesh until they have some neighbors
+    this.minNeighborsToMesh = 6
+
+    // settings for tuning worldgen behavior and throughput
+    this.maxChunksPendingCreation = 10
+    this.maxChunksPendingMeshing = 10
+    this.maxProcessingPerTick = 9      // ms
+    this.maxProcessingPerRender = 5    // ms
 
     // set up internal state
     this._cachedWorldName = ''
@@ -153,8 +155,10 @@ World.prototype.setBlockID = function (val, x, y, z) {
     var iy = this._worldCoordToChunkIndex(y)
     var iz = this._worldCoordToChunkIndex(z)
 
-    // if update is on chunk border, update neighbor's padding data too
-    _updateChunkAndBorders(this, i, j, k, this.chunkSize, ix, iy, iz, val)
+    // logic inside the chunk will trigger a remesh for chunk and 
+    // any neighbors that need it
+    var chunk = this._getChunk(i, j, k)
+    if (chunk) chunk.set(ix, iy, iz, val)
 }
 
 
@@ -243,7 +247,7 @@ World.prototype.tick = function () {
     }
 
     // process (create or mesh) some chunks, up to max iteration time
-    loopForTime(this._maxProcessingPerTick, () => {
+    loopForTime(this.maxProcessingPerTick, () => {
         var done = processRequestQueue(this)
         profile_hook('requests')
         done = done && processRemoveQueue(this)
@@ -252,6 +256,18 @@ World.prototype.tick = function () {
         profile_hook('meshes')
         return done
     }, tickStartTime)
+
+    // when time is left over, look for low-priority extra meshing
+    var dt = performance.now() - tickStartTime
+    if (dt + 2 < this.maxProcessingPerTick) {
+        lookForChunksToMesh(this)
+        profile_hook('looking')
+        loopForTime(this.maxProcessingPerTick, () => {
+            var done = processMeshingQueue(this, false)
+            profile_hook('meshes')
+            return done
+        }, tickStartTime, true)
+    }
 
     // track whether the player's local chunk is loaded and ready or not
     var pChunk = this._getChunk(pos[0], pos[1], pos[2])
@@ -266,7 +282,7 @@ World.prototype.tick = function () {
 function beforeRender(world) {
     // on render, quickly process the high-priority meshing queue
     // to help avoid flashes of background while neighboring chunks update
-    loopForTime(world._maxProcessingPerRender, () => {
+    loopForTime(world.maxProcessingPerRender, () => {
         return processMeshingQueue(world, true)
     })
 }
@@ -355,6 +371,10 @@ function initChunkQueues(world) {
     world._chunkIDsToMesh = []      // created but not yet meshed
     world._chunkIDsToMeshFirst = [] // priority meshing queue
     world._chunkIDsToRemove = []    // chunks awaiting disposal
+    // accessor for chunks to queue themselves for remeshing
+    world._queueChunkForRemesh = (chunk) => {
+        queueChunkForRemesh(world, chunk)
+    }
 }
 
 
@@ -416,6 +436,26 @@ function markAllChunksForRemoval(world) {
 }
 
 
+// look for chunks that could stand to be re-meshed
+function lookForChunksToMesh(world) {
+    var queue = world._chunkIDsKnown
+    var ct = Math.min(50, queue.length)
+    for (var i = 0; i < ct; i++) {
+        lookIndex = (lookIndex + 1) % queue.length
+        var id = queue[lookIndex]
+        var chunk = world._chunkStorage[id]
+        if (!chunk) continue
+        var nc = chunk._neighborCount
+        if (nc < world.minNeighborsToMesh) continue
+        if (nc - chunk._maxMeshedNeighbors < 5) continue
+        queueChunkForRemesh(world, chunk)
+        if (queue.length > 10) return
+    }
+}
+var lookIndex = 0
+
+
+
 // run through chunk tracking queues looking for work to do next
 function processRequestQueue(world) {
     var queue = world._chunkIDsToRequest
@@ -423,8 +463,8 @@ function processRequestQueue(world) {
     // skip if too many outstanding requests, or if meshing queue is full
     var pending = world._chunkIDsPending.length
     var toMesh = world._chunkIDsToMesh.length
-    if (pending >= world._maxChunksPendingCreation) return true
-    if (toMesh >= world._maxChunksPendingMeshing) return true
+    if (pending >= world.maxChunksPendingCreation) return true
+    if (toMesh >= world.maxChunksPendingMeshing) return true
     var id = queue.shift()
     requestNewChunk(world, id)
     return (queue.length === 0)
@@ -480,9 +520,9 @@ function requestNewChunk(world, id) {
     var dataArr = Chunk.createVoxelArray(world.chunkSize)
     var worldName = world.noa.worldName
     var requestID = [i, j, k, worldName].join('|')
-    var x = i * size - 1
-    var y = j * size - 1
-    var z = k * size - 1
+    var x = i * size
+    var y = j * size
+    var z = k * size
     enqueueID(id, world._chunkIDsPending)
     world.emit('worldDataNeeded', requestID, dataArr, x, y, z, worldName)
     profile_queues_hook('request')
@@ -492,9 +532,9 @@ function requestNewChunk(world, id) {
 // If userData is passed in it will be attached to the chunk
 function setChunkData(world, reqID, array, userData) {
     var arr = reqID.split('|')
-    var i = arr.shift()
-    var j = arr.shift()
-    var k = arr.shift()
+    var i = parseInt(arr.shift())
+    var j = parseInt(arr.shift())
+    var k = parseInt(arr.shift())
     var worldName = arr.join('|')
     var id = getChunkID(i, j, k)
     unenqueueID(id, world._chunkIDsPending)
@@ -509,9 +549,10 @@ function setChunkData(world, reqID, array, userData) {
     world._setChunk(i, j, k, chunk)
     chunk.requestID = reqID
     chunk.userData = userData
+    updateNeighborsOfChunk(world, i, j, k, chunk)
     // chunk can now be meshed...
     world.noa.rendering.prepareChunkForRendering(chunk)
-    enqueueID(id, world._chunkIDsToMesh)
+    queueChunkForRemesh(world, chunk)
     world.emit('chunkAdded', chunk)
     profile_queues_hook('receive')
 }
@@ -523,10 +564,11 @@ function removeChunk(world, id) {
     var loc = parseChunkID(id)
     var chunk = world._getChunk(loc[0], loc[1], loc[2])
     if (chunk) {
-        world.emit('chunkBeingRemoved', chunk.requestID, chunk.array, chunk.userData)
+        world.emit('chunkBeingRemoved', chunk.requestID, chunk.voxels, chunk.userData)
         world.noa.rendering.disposeChunkForRendering(chunk)
         chunk.dispose()
         profile_queues_hook('dispose')
+        updateNeighborsOfChunk(world, loc[0], loc[1], loc[2], null)
     }
     world._setChunk(loc[0], loc[1], loc[2], null)
     unenqueueID(id, world._chunkIDsKnown)
@@ -535,44 +577,15 @@ function removeChunk(world, id) {
 }
 
 
-
-// for a given chunk (i/j/k) and local location (x/y/z), 
-// update all chunks that need it (including border chunks with the 
-// changed block in their 1-block padding)
-
-function _updateChunkAndBorders(world, i, j, k, size, x, y, z, val) {
-    // weird nested loops to update the modified chunk, and also
-    // any neighbors whose border padding was modified
-    var imin = (x === 0) ? -1 : 0
-    var imax = (x === size - 1) ? 1 : 0
-    var jmin = (y === 0) ? -1 : 0
-    var jmax = (y === size - 1) ? 1 : 0
-    var kmin = (z === 0) ? -1 : 0
-    var kmax = (z === size - 1) ? 1 : 0
-
-    for (var di = imin; di <= imax; di++) {
-        var lx = (di === 0) ? x : (di === -1) ? size : -1
-        for (var dj = jmin; dj <= jmax; dj++) {
-            var ly = (dj === 0) ? y : (dj === -1) ? size : -1
-            for (var dk = kmin; dk <= kmax; dk++) {
-                var lz = (dk === 0) ? z : (dk === -1) ? size : -1
-                var isPadding = !!(di || dj || dk)
-                _modifyBlockData(world,
-                    i + di, j + dj, k + dk,
-                    lx, ly, lz, val, isPadding)
-            }
-        }
-    }
+function queueChunkForRemesh(world, chunk) {
+    var nc = chunk._neighborCount
+    var limit = Math.min(world.minNeighborsToMesh, 26)
+    if (nc < world.limit) return
+    chunk._terrainDirty = true
+    var queue = (nc === 26) ?
+        world._chunkIDsToMeshFirst : world._chunkIDsToMesh
+    enqueueID(chunk.id, queue)
 }
-// internal function to modify a chunk's block
-function _modifyBlockData(world, i, j, k, x, y, z, val, isPadding) {
-    var chunk = world._getChunk(i, j, k)
-    if (!chunk) return
-    chunk.set(x, y, z, val, isPadding)
-    enqueueID(chunk.id, world._chunkIDsToMeshFirst)
-    if (!isPadding) world.emit('chunkChanged', chunk)
-}
-
 
 
 function doChunkRemesh(world, chunk) {
@@ -632,6 +645,33 @@ function sortChunkIDQueue(world, queue) {
 }
 
 
+// keep neighbor data updated when chunk is added or removed
+function updateNeighborsOfChunk(world, ci, cj, ck, chunk) {
+    for (var i = -1; i <= 1; i++) {
+        for (var j = -1; j <= 1; j++) {
+            for (var k = -1; k <= 1; k++) {
+                if ((i | j | k) === 0) continue
+                var nid = getChunkID(ci + i, cj + j, ck + k)
+                var neighbor = world._chunkStorage[nid]
+                if (!neighbor) continue
+                if (chunk) {
+                    chunk._neighborCount++
+                    chunk._neighbors.set(i, j, k, neighbor)
+                    neighbor._neighborCount++
+                    neighbor._neighbors.set(-i, -j, -k, chunk)
+                    // flag for remesh when chunk gets its last neighbor
+                    if (neighbor._neighborCount === 26) {
+                        queueChunkForRemesh(world, neighbor)
+                    }
+                } else {
+                    neighbor._neighborCount--
+                    neighbor._neighbors.set(-i, -j, -k, null)
+                }
+            }
+        }
+    }
+}
+
 
 
 
@@ -653,7 +693,7 @@ function sortChunkIDQueue(world, queue) {
 
 World.prototype.report = function () {
     console.log('World report - playerChunkLoaded: ', this.playerChunkLoaded)
-    _report(this, '  known:     ', this._chunkIDsKnown)
+    _report(this, '  known:     ', this._chunkIDsKnown, true)
     _report(this, '  to request:', this._chunkIDsToRequest)
     _report(this, '  to remove: ', this._chunkIDsToRemove)
     _report(this, '  creating:  ', this._chunkIDsPending)
@@ -663,17 +703,31 @@ World.prototype.report = function () {
 function _report(world, name, arr, ext) {
     var full = 0,
         empty = 0,
-        exist = 0
+        exist = 0,
+        surrounded = 0,
+        remeshes = []
     arr.forEach(id => {
         var chunk = world._chunkStorage[id]
-        if (chunk) exist++
-        if (chunk && chunk.isFull) full++
-        if (chunk && chunk.isEmpty) empty++
+        if (!chunk) return
+        exist++
+        remeshes.push(chunk._timesMeshed)
+        if (chunk.isFull) full++
+        if (chunk.isEmpty) empty++
+        if (chunk._neighborCount === 26) surrounded++
     })
     var out = arr.length.toString().padEnd(8)
     out += ('exist: ' + exist).padEnd(12)
     out += ('full: ' + full).padEnd(12)
     out += ('empty: ' + empty).padEnd(12)
+    out += ('surr: ' + surrounded).padEnd(12)
+    if (ext) {
+        var sum = remeshes.reduce((acc, val) => acc + val)
+        var max = remeshes.reduce((acc, val) => Math.max(acc, val))
+        var min = remeshes.reduce((acc, val) => Math.min(acc, val))
+        out += 'times meshed: avg ' + (sum / exist).toFixed(2)
+        out += '  max ' + max
+        out += '  min ' + min
+    }
     console.log(name, out)
 }
 

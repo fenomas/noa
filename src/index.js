@@ -619,7 +619,7 @@ var _prevTargetHash = ''
 function deprecateStuff(noa) {
     var ver = `0.27`
     var dep = (loc, name, msg) => {
-        var throwFn = () => { throw `This method was removed in ${ver} - ${msg}` }
+        var throwFn = () => { throw `This property changed in ${ver} - ${msg}` }
         Object.defineProperty(loc, name, { get: throwFn, set: throwFn })
     }
     dep(noa, 'getPlayerEyePosition', 'to get the camera/player offset see API docs for `noa.camera.cameraTarget`')
@@ -637,6 +637,10 @@ function deprecateStuff(noa) {
     dep(noa.rendering, 'setCameraRotation', 'to customize camera behavior see API docs for `noa.camera`')
     ver = '0.28'
     dep(noa.rendering, 'makeMeshInstance', 'removed, use Babylon\'s `mesh.createInstance`')
+    dep(noa.world, '_maxChunksPendingCreation', 'use `maxChunksPendingCreation` (no "_")')
+    dep(noa.world, '_maxChunksPendingMeshing', 'use `maxChunksPendingMeshing` (no "_")')
+    dep(noa.world, '_maxProcessingPerTick', 'use `maxProcessingPerTick` (no "_")')
+    dep(noa.world, '_maxProcessingPerRender', 'use `maxProcessingPerRender` (no "_")')
 }
 
 

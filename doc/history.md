@@ -19,10 +19,19 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 ### 0.28.0
 
+   * Voxel data is no longer internally duplicated at chunk borders. This means:
+     * World generation no longer necessarily needs to be deterministic. Previously, voxels on chunk borders would get tracked in several chunks, and if the data didn't match up it would cause rendering artifacts. This is no longer the case, each voxel is stored in only one place.
+     * When each chunk gets meshed for the first time, it will have have some artifacts at edges where the neighboring chunk doesn't exist yet. Such chunks will later get re-meshed once all their neighbor chunks exist.
+     * Set `noa.world.minNeighborsToMesh` (default `6`) to control how aggressively chunks first get meshed.
    * Can now swap between world data sets
      * Set `noa.worldName` to manage
      * Current worldName is now sent with `worldDataNeeded` events, so that 
        game client knows which worldgen data to provide
+   * Removed leading `_` from several property names, since they're meant to be set by the client:
+      * `noa.world.maxChunksPendingCreation` (max # of chunks to queue)
+      * `noa.world.maxChunksPendingMeshing` (max # of chunks to queue)
+      * `noa.world.maxProcessingPerTick` (time in ms)
+      * `noa.world.maxProcessingPerRender` (time in ms)
    * Mostly rewrites `noa.world` internals (chunk create/update/dispose flow)
 
 
