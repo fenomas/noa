@@ -1,7 +1,6 @@
 
 var EventEmitter = require('events').EventEmitter
 import Chunk from './chunk'
-import aabb from 'aabb-3d'
 import { sortByReferenceArray, loopForTime, numberOfVoxelsInSphere } from './util'
 
 var PROFILE = 0
@@ -222,7 +221,7 @@ World.prototype.invalidateVoxelsInAABB = function (box) {
 World.prototype.tick = function () {
     var tickStartTime = performance.now()
 
-    // if world has changed, invalidate everything
+    // if world has changed, mark everything to be removed and re-requested
     if (this._cachedWorldName !== this.noa.worldName) {
         markAllChunksForRemoval(this)
         this._cachedWorldName = this.noa.worldName
@@ -245,7 +244,7 @@ World.prototype.tick = function () {
         profile_hook('remQueue')
     }
     var numChunks = numberOfVoxelsInSphere(this.chunkAddDistance)
-    if (changedChunks || this._chunkIDsKnown.length < numChunks) {
+    if (changedChunks || (this._chunkIDsKnown.length < numChunks)) {
         findNewChunksInRange(this, pos[0], pos[1], pos[2])
         profile_hook('addQueue')
     }
@@ -439,12 +438,8 @@ function invalidateChunksInBox(world, box) {
         for (var i = 0; i < 3; i++) {
             if (pos[i] < min[i] || pos[i] > max[i]) return
         }
-        enqueueID(id, world._chunkIDsToRemove)
-        unenqueueID(id, world._chunkIDsToRequest)
-        unenqueueID(id, world._chunkIDsToMesh)
-        unenqueueID(id, world._chunkIDsToMeshFirst)
-        var chunk = world._chunkStorage[id]
-        if (chunk) chunk.isInvalid = true
+        if (world._chunkIDsToRemove.includes(id)) return
+        enqueueID(id, world._chunkIDsToRequest)
     })
 }
 
@@ -462,6 +457,7 @@ function markAllChunksForRemoval(world) {
 function lookForChunksToMesh(world) {
     var queue = world._chunkIDsKnown
     var ct = Math.min(50, queue.length)
+    var numQueued = world._chunkIDsToMesh.length + world._chunkIDsToMeshFirst.length
     for (var i = 0; i < ct; i++) {
         lookIndex = (lookIndex + 1) % queue.length
         var id = queue[lookIndex]
@@ -469,9 +465,9 @@ function lookForChunksToMesh(world) {
         if (!chunk) continue
         var nc = chunk._neighborCount
         if (nc < world.minNeighborsToMesh) continue
-        if (nc - chunk._maxMeshedNeighbors < 5) continue
+        if (nc <= chunk._maxMeshedNeighbors) continue
         queueChunkForRemesh(world, chunk)
-        if (queue.length > 10) return
+        if (++numQueued > 10) return
     }
 }
 var lookIndex = 0
@@ -539,7 +535,7 @@ function requestNewChunk(world, id) {
     var j = pos[1]
     var k = pos[2]
     var size = world.chunkSize
-    var dataArr = Chunk.createVoxelArray(world.chunkSize)
+    var dataArr = Chunk._createVoxelArray(world.chunkSize)
     var worldName = world.noa.worldName
     var requestID = [i, j, k, worldName].join('|')
     var x = i * size
@@ -565,17 +561,29 @@ function setChunkData(world, reqID, array, userData) {
     // discard if chunk is no longer needed
     if (!world._chunkIDsKnown.includes(id)) return
     if (world._chunkIDsToRemove.includes(id)) return
-    // all good, create and initialize the chunk
-    var size = world.chunkSize
-    var chunk = new Chunk(world.noa, id, i, j, k, size, array)
-    world._setChunk(i, j, k, chunk)
-    chunk.requestID = reqID
-    chunk.userData = userData
-    updateNeighborsOfChunk(world, i, j, k, chunk)
+    var chunk = world._chunkStorage[id]
+    if (!chunk) {
+        // if chunk doesn't exist, create and init
+        var size = world.chunkSize
+        chunk = new Chunk(world.noa, id, i, j, k, size, array)
+        world._setChunk(i, j, k, chunk)
+        chunk.requestID = reqID
+        chunk.userData = userData
+        updateNeighborsOfChunk(world, i, j, k, chunk)
+        world.noa.rendering.prepareChunkForRendering(chunk)
+        world.emit('chunkAdded', chunk)
+    } else {
+        // else we're updating data for an existing chunk
+        chunk._updateVoxelArray(array)
+        // assume neighbors need remeshing
+        var list = chunk._neighbors.data
+        list.forEach(nab => {
+            if (!nab || nab === chunk) return
+            if (nab._neighborCount > 20) queueChunkForRemesh(world, nab)
+        })
+    }
     // chunk can now be meshed...
-    world.noa.rendering.prepareChunkForRendering(chunk)
     queueChunkForRemesh(world, chunk)
-    world.emit('chunkAdded', chunk)
     profile_queues_hook('receive')
 }
 
@@ -586,9 +594,7 @@ function removeChunk(world, id) {
     var loc = parseChunkID(id)
     var chunk = world._getChunk(loc[0], loc[1], loc[2])
     if (chunk) {
-        if (!chunk.isInvalid) {
-            world.emit('chunkBeingRemoved', chunk.requestID, chunk.voxels, chunk.userData)
-        }
+        world.emit('chunkBeingRemoved', chunk.requestID, chunk.voxels, chunk.userData)
         world.noa.rendering.disposeChunkForRendering(chunk)
         chunk.dispose()
         profile_queues_hook('dispose')
@@ -604,7 +610,7 @@ function removeChunk(world, id) {
 function queueChunkForRemesh(world, chunk) {
     var nc = chunk._neighborCount
     var limit = Math.min(world.minNeighborsToMesh, 26)
-    if (nc < world.limit) return
+    if (nc < limit) return
     chunk._terrainDirty = true
     var queue = (nc === 26) ?
         world._chunkIDsToMeshFirst : world._chunkIDsToMesh

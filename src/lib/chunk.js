@@ -47,7 +47,6 @@ function Chunk(noa, id, i, j, k, size, dataArray) {
 
     this.isEmpty = false
     this.isFull = false
-    this.isInvalid = false
 
     // voxel data and properties
     this.voxels = dataArray
@@ -85,10 +84,21 @@ function Chunk(noa, id, i, j, k, size, dataArray) {
 }
 
 
-// expose logic internally to create the voxel data array for a chunk
-Chunk.createVoxelArray = function (size) {
+// expose logic internally to create and update the voxel data array
+Chunk._createVoxelArray = function (size) {
     var arr = new Uint16Array(size * size * size)
     return new ndarray(arr, [size, size, size])
+}
+
+Chunk.prototype._updateVoxelArray = function (dataArray) {
+    // dispose current object blocks
+    callAllBlockHandlers(this, 'onUnload')
+    objectMesher.disposeChunk(this)
+    this.voxels = dataArray
+    this._terrainDirty = true
+    this._objectsDirty = true
+    objectMesher.initChunk(this)
+    packVoxelData(this)
 }
 
 
@@ -153,8 +163,10 @@ Chunk.prototype.set = function (x, y, z, id, paddingUpdate) {
         this.noa.world._queueChunkForRemesh(this)
     }
 
-    // neighbors only affected if opaqueness changed on an edge
-    if ((newID & OPAQUE_BIT) !== (oldID & OPAQUE_BIT)) {
+    // neighbors only affected if solidity or opacity changed on an edge
+    var prevSO = oldID & (SOLID_BIT | OPAQUE_BIT)
+    var newSO = newID & (SOLID_BIT | OPAQUE_BIT)
+    if (newSO !== prevSO) {
         var edge = this.size - 1
 
         var iedge = (x === 0) ? -1 : (x < edge) ? 0 : 1

@@ -186,4 +186,4 @@ function ObjectMesher() {
 
 import { makeProfileHook } from './util'
 var profile_hook = (PROFILE) ?
-    makeProfileHook(50, 'Object meshing') : () => {}
+    makeProfileHook(50, 'Object meshing') : () => { }
