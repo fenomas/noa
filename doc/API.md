@@ -910,9 +910,8 @@ Manages the world and its chunks
 Extends `EventEmitter`
 
 **Emits**:  
-- `worldDataNeeded(id, ndarray, x, y,event: z)`
+- `worldDataNeeded(id, ndarray, x, y, z,event: worldName)`
 - `chunkAdded(chunk)`
-- `chunkChanged(chunk)`
 - `chunkBeingRemoved(id, ndarray,event: userData)`
 
 * [World](#World)
@@ -925,7 +924,7 @@ Extends `EventEmitter`
     * [.setBlockID(x,y,z)](#World+setBlockID)
     * [.isBoxUnobstructed(x,y,z)](#World+isBoxUnobstructed)
     * [.setChunkData(id, array, userData)](#World+setChunkData)
-    * [.invalidateAllChunks()](#World+invalidateAllChunks)
+    * [.invalidateVoxelsInAABB()](#World+invalidateVoxelsInAABB)
 
 
 ----
@@ -1025,12 +1024,15 @@ If userData is passed in it will be attached to the chunk
 
 ----
 
-<a name="World+invalidateAllChunks"></a>
+<a name="World+invalidateVoxelsInAABB"></a>
 
-## noa.world.invalidateAllChunks()
-Tells noa to discard all chunks in memory and request new data from client.
-Clients *probably* shouldn't need this API anymore - to change between 
-multiple sets of world data use `noa.worldName`.
+## noa.world.invalidateVoxelsInAABB()
+Tells noa to discard voxel data within a given `AABB` (e.g. because 
+the game client received updated data from a server). 
+The engine will mark all affected chunks for disposal, and will later emit 
+new `worldDataNeeded` events (if the chunk is still in draw range).
+Note that chunks invalidated this way will not emit a `chunkBeingRemoved` event 
+for the client to save data from.
 
 
 ----

@@ -4,7 +4,7 @@
 An experimental voxel engine.
 
 Example games:
- * [Minecraft Classic](https://classic.minecraft.net/) - a game built on this engine, from some company with a Swedish-sounding name
+ * [Minecraft Classic](https://classic.minecraft.net/) - official minecraft game built on this engine
  * [noa-lt](http://andyhall.github.io/noa-lt/) - game world containing "slides" for a talk I gave on voxels in JS
  * [noa-examples](https://github.com/andyhall/noa-examples) - repo with minimal hello-world and testbed game worlds
  * [old testbed](https://andyhall.github.io/noa-testbed/) - outdated, but colorful
@@ -56,4 +56,4 @@ Migration notes:
 
 Made with 🍺 by [Andy Hall](https://twitter.com/fenomas), license is MIT.
 
-
+Uses [Babylon.js](https://www.babylonjs.com/) for 3D rendering.
