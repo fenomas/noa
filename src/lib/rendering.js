@@ -100,7 +100,7 @@ function initScene(self, canvas, opts) {
 
     // octree setup
     scene._addComponent(new OctreeSceneComponent(scene))
-    self._octree = new Octree($ => {})
+    self._octree = new Octree($ => { })
     self._octree.blocks = []
     scene._selectionOctree = self._octree
 
@@ -314,11 +314,12 @@ Rendering.prototype.prepareChunkForRendering = function (chunk) {
     this.noa.globalToLocal([chunk.x, chunk.y, chunk.z], null, loc)
     var min = new Vector3(loc[0], loc[1], loc[2])
     var max = new Vector3(loc[0] + cs, loc[1] + cs, loc[2] + cs)
-    chunk.octreeBlock = new OctreeBlock(min, max, undefined, undefined, undefined, $ => {})
+    chunk.octreeBlock = new OctreeBlock(min, max, undefined, undefined, undefined, $ => { })
     this._octree.blocks.push(chunk.octreeBlock)
 }
 
 Rendering.prototype.disposeChunkForRendering = function (chunk) {
+    if (!chunk.octreeBlock) return
     removeUnorderedListItem(this._octree.blocks, chunk.octreeBlock)
     chunk.octreeBlock.entries.length = 0
     chunk.octreeBlock = null
@@ -545,11 +546,11 @@ Rendering.prototype.debug_MeshCount = function () {
 
 import { makeProfileHook } from './util'
 var profile_hook = (PROFILE) ?
-    makeProfileHook(200, 'render internals') : () => {}
+    makeProfileHook(200, 'render internals') : () => { }
 
 
 
-var fps_hook = function () {}
+var fps_hook = function () { }
 
 function setUpFPS() {
     var div = document.createElement('div')

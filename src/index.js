@@ -116,6 +116,11 @@ function Engine(opts) {
     // how far engine is into the current tick. Updated each render.
     this.positionInCurrentTick = 0
 
+    /** String identifier for the current world. (It's safe to ignore this if
+     * your game doesn't need to swap between levels/worlds.)
+     */
+    this.worldName = 'default'
+
     /**
      * container (html/div) manager
      * @type {Container}
@@ -614,7 +619,7 @@ var _prevTargetHash = ''
 function deprecateStuff(noa) {
     var ver = `0.27`
     var dep = (loc, name, msg) => {
-        var throwFn = () => { throw `This method was removed in ${ver} - ${msg}` }
+        var throwFn = () => { throw `This property changed in ${ver} - ${msg}` }
         Object.defineProperty(loc, name, { get: throwFn, set: throwFn })
     }
     dep(noa, 'getPlayerEyePosition', 'to get the camera/player offset see API docs for `noa.camera.cameraTarget`')
@@ -632,6 +637,10 @@ function deprecateStuff(noa) {
     dep(noa.rendering, 'setCameraRotation', 'to customize camera behavior see API docs for `noa.camera`')
     ver = '0.28'
     dep(noa.rendering, 'makeMeshInstance', 'removed, use Babylon\'s `mesh.createInstance`')
+    dep(noa.world, '_maxChunksPendingCreation', 'use `maxChunksPendingCreation` (no "_")')
+    dep(noa.world, '_maxChunksPendingMeshing', 'use `maxChunksPendingMeshing` (no "_")')
+    dep(noa.world, '_maxProcessingPerTick', 'use `maxProcessingPerTick` (no "_")')
+    dep(noa.world, '_maxProcessingPerRender', 'use `maxProcessingPerRender` (no "_")')
 }
 
 
@@ -642,6 +651,6 @@ function deprecateStuff(noa) {
 
 import { makeProfileHook } from './lib/util'
 var profile_hook = (PROFILE) ?
-    makeProfileHook(200, 'tick   ') : () => {}
+    makeProfileHook(200, 'tick   ') : () => { }
 var profile_hook_render = (PROFILE_RENDER) ?
-    makeProfileHook(200, 'render ') : () => {}
+    makeProfileHook(200, 'render ') : () => { }

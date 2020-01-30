@@ -153,6 +153,7 @@ Extends: `EventEmitter`
 * [Noa](#Noa)
     * [new Engine()](#new_Noa_new)
     * [.version](#Noa+version)
+    * [.worldName](#Noa+worldName)
     * [.container](#Noa+container) : [<code>Container</code>](#Container)
     * [.inputs](#Noa+inputs) : [<code>Inputs</code>](#Inputs)
     * [.registry](#Noa+registry) : [<code>Registry</code>](#Registry)
@@ -213,6 +214,15 @@ See docs for each module for which options they use.
 
 ## noa.version
 version string, e.g. `"0.25.4"`
+
+
+----
+
+<a name="Noa+worldName"></a>
+
+## noa.worldName
+String identifier for the current world. (It's safe to ignore this if
+your game doesn't need to swap between levels/worlds.)
 
 
 ----
@@ -900,9 +910,8 @@ Manages the world and its chunks
 Extends `EventEmitter`
 
 **Emits**:  
-- `worldDataNeeded(id, ndarray, x, y,event: z)`
+- `worldDataNeeded(id, ndarray, x, y, z,event: worldName)`
 - `chunkAdded(chunk)`
-- `chunkChanged(chunk)`
 - `chunkBeingRemoved(id, ndarray,event: userData)`
 
 * [World](#World)
@@ -915,6 +924,7 @@ Extends `EventEmitter`
     * [.setBlockID(x,y,z)](#World+setBlockID)
     * [.isBoxUnobstructed(x,y,z)](#World+isBoxUnobstructed)
     * [.setChunkData(id, array, userData)](#World+setChunkData)
+    * [.invalidateVoxelsInAABB()](#World+invalidateVoxelsInAABB)
 
 
 ----
@@ -1010,6 +1020,19 @@ If userData is passed in it will be attached to the chunk
 - id
 - array
 - userData
+
+
+----
+
+<a name="World+invalidateVoxelsInAABB"></a>
+
+## noa.world.invalidateVoxelsInAABB()
+Tells noa to discard voxel data within a given `AABB` (e.g. because 
+the game client received updated data from a server). 
+The engine will mark all affected chunks for disposal, and will later emit 
+new `worldDataNeeded` events (if the chunk is still in draw range).
+Note that chunks invalidated this way will not emit a `chunkBeingRemoved` event 
+for the client to save data from.
 
 
 ----

@@ -4,7 +4,7 @@
 An experimental voxel engine.
 
 Example games:
- * [Minecraft Classic](https://classic.minecraft.net/) - a game built on this engine, from some company with a Swedish-sounding name
+ * [Minecraft Classic](https://classic.minecraft.net/) - official minecraft game built on this engine
  * [noa-lt](http://andyhall.github.io/noa-lt/) - game world containing "slides" for a talk I gave on voxels in JS
  * [noa-examples](https://github.com/andyhall/noa-examples) - repo with minimal hello-world and testbed game worlds
  * [old testbed](https://andyhall.github.io/noa-testbed/) - outdated, but colorful
@@ -44,6 +44,9 @@ See [history.md](doc/history.md) for changes and migration info from each versio
 
 Migration notes:
 
+ * `v0.28`: improves swapping between world data sets (see `noa.worldName`).  
+   Removes duplicated voxel padding in each chunk (this means world generation 
+ no longer needs to be deterministic!)
  * `v0.27`: adds world origin rebasing. If you encounter new bugs related to entity positions, see [positions.md](doc/positions.md)
  * `v0.26`: game clients should declare a dependency on `@babylon/core`, rather than manually loading babylon.js and leaving it in global scope. This allows tree-shaking to happen, greatly reducing (production) bundle sizes for typical games. For sample code and configs see [noa-examples](https://github.com/andyhall/noa-examples).
 
@@ -53,4 +56,4 @@ Migration notes:
 
 Made with 🍺 by [Andy Hall](https://twitter.com/fenomas), license is MIT.
 
-
+Uses [Babylon.js](https://www.babylonjs.com/) for 3D rendering.

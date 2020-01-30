@@ -1,4 +1,5 @@
 
+import ndarray from 'ndarray'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import { SubMesh } from '@babylonjs/core/Meshes/subMesh'
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData'
@@ -7,6 +8,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture'
 import '@babylonjs/core/Meshes/meshBuilder'
 
 import { constants } from './constants'
+import { copyNdarrayContents } from './util'
 
 export default new TerrainMesher()
 
@@ -43,12 +45,15 @@ function TerrainMesher() {
         var noa = chunk.noa
 
         // args
-        var array = chunk.array
         var mats = matGetter || noa.registry.getBlockFaceMaterial
         var cols = colGetter || noa.registry._getMaterialVertexColor
         var ao = (useAO === undefined) ? noa.rendering.useAO : useAO
         var vals = aoVals || noa.rendering.aoVals
         var rev = isNaN(revAoVal) ? noa.rendering.revAoVal : revAoVal
+
+        // copy voxel data into array padded with neighbor values
+        var array = buildPaddedVoxelArray(chunk)
+        profile_hook('copy')
 
         // greedy mesher creates an array of Submesh structs
         var subMeshes = greedyMesher.mesh(array, mats, cols, ao, vals, rev)
@@ -63,8 +68,59 @@ function TerrainMesher() {
         profile_hook('end')
         return mesh || null
     }
-
 }
+
+
+
+
+
+
+
+
+
+/*
+ * 
+ *      Padded voxel data assembler
+ * 
+ * Takes the chunk of size n, and copies its data into center of an (n+2) ndarray
+ * Then copies in edge data from neighbors, or if not available zeroes it out
+ * Actual mesher will then run on the padded ndarray
+ * 
+*/
+
+function buildPaddedVoxelArray(chunk) {
+    var src = chunk.voxels
+    var cs = src.shape[0]
+    var tgt = cachedPadded
+
+    // embiggen cached target array
+    if (cs + 2 > tgt.shape[0]) {
+        var s2 = cs + 2
+        tgt = new ndarray(new Uint16Array(s2 * s2 * s2), [s2, s2, s2])
+        cachedPadded = tgt
+    }
+
+    // loop through neighbors (neighbor(0,0,0) is the chunk itself)
+    // copying or zeroing voxel body/edge data into padded target array
+    var posValues = [cs - 1, 0, 0]
+    var sizeValues = [1, cs, 1]
+    var tgtPosValues = [0, 1, cs + 1]
+    for (var i = 0; i < 3; i++) {
+        for (var j = 0; j < 3; j++) {
+            for (var k = 0; k < 3; k++) {
+                var nab = chunk._neighbors.get(i - 1, j - 1, k - 1)
+                var pos = [i, j, k].map(n => posValues[n])
+                var size = [i, j, k].map(n => sizeValues[n])
+                var tgtPos = [i, j, k].map(n => tgtPosValues[n])
+                var nsrc = (nab) ? nab.voxels : null
+                copyNdarrayContents(nsrc, tgt, pos, size, tgtPos)
+            }
+        }
+    }
+    return tgt
+}
+var cachedPadded = new ndarray(new Uint16Array(27), [3, 3, 3])
+
 
 
 
@@ -137,55 +193,6 @@ function MeshBuilder() {
 
         // done, mesh will be positioned later when added to the scene
         return mesh
-    }
-
-
-
-    // this version builds a parent mesh + child meshes, rather than
-    // one big mesh with submeshes and a multimaterial.
-    // This should be obsolete, unless the first one has problems..
-    this.buildWithoutMultimats = function (chunk, meshdata, ignoreMaterials) {
-        noa = chunk.noa
-
-        // preprocess meshdata entries to merge those that use default terrain material
-        var mergeCriteria = function (mdat) {
-            if (ignoreMaterials) return true
-            if (mdat.renderMat) return false
-            var url = noa.registry.getMaterialTexture(mdat.id)
-            var alpha = noa.registry.getMaterialData(mdat.id).alpha
-            if (url || alpha < 1) return false
-        }
-        mergeSubmeshes(meshdata, mergeCriteria)
-
-        // go through (remaining) meshdata entries and create a mesh for each
-        // call the first one the parent, and attach others to it
-        var parent = null
-        var keylist = Object.keys(meshdata)
-        for (var i = 0; i < keylist.length; ++i) {
-            var mdat = meshdata[keylist[i]]
-            var matID = mdat.id
-            var mat = getTerrainMaterial(matID, ignoreMaterials)
-            var name = 'chunk_inner_' + chunk.id + ' ' + matID
-            var mesh = buildMeshFromSubmesh(mdat, name, [mat])
-
-            if (!parent) {
-                parent = mesh
-                // position the parent globally
-                var x = chunk.i * chunk.size
-                var y = chunk.j * chunk.size
-                var z = chunk.k * chunk.size
-                parent.position.x = x
-                parent.position.y = y
-                parent.position.z = z
-            } else {
-                mesh.parent = parent
-            }
-
-            mesh.freezeWorldMatrix()
-            mesh.freezeNormals()
-        }
-
-        return parent
     }
 
 
@@ -399,7 +406,7 @@ function GreedyMesher() {
             var len1 = arrT.shape[1]
             var len2 = arrT.shape[2]
 
-            // create bigger mask arrays as needed
+            // embiggen mask arrays as needed
             if (maskCache.length < len1 * len2) {
                 maskCache = new Int16Array(len1 * len2)
                 aomaskCache = new Uint16Array(len1 * len2)
@@ -449,7 +456,7 @@ function GreedyMesher() {
         for (var k = 0; k < len; ++k) {
             var d0 = dbase
             dbase += kstride
-            for (var j = 0; j < len; j++, n++, d0 += jstride) {
+            for (var j = 0; j < len; j++ , n++ , d0 += jstride) {
 
                 // mask[n] will represent the face needed between i-1,j,k and i,j,k
                 // for now, assume we never have two faces in both directions
@@ -541,12 +548,12 @@ function GreedyMesher() {
                 }
 
                 OUTER:
-                    for (h = 1; h < len2 - k; ++h) {
-                        for (var m = 0; m < w; ++m) {
-                            var ix = n + m + h * len1
-                            if (!maskCompareFcn(ix, mask, maskVal, aomask, ao)) break OUTER
-                        }
+                for (h = 1; h < len2 - k; ++h) {
+                    for (var m = 0; m < w; ++m) {
+                        var ix = n + m + h * len1
+                        if (!maskCompareFcn(ix, mask, maskVal, aomask, ao)) break OUTER
                     }
+                }
 
                 // for testing: doing the following will disable greediness
                 //w=h=1
@@ -719,10 +726,10 @@ function GreedyMesher() {
         var facingSolid = (solidBit & data.get(ipos, j, k))
 
         // inc occlusion of vertex next to obstructed side
-        if (data.get(ipos, j + 1, k) & solidBit) {++a10;++a11 }
-        if (data.get(ipos, j - 1, k) & solidBit) {++a00;++a01 }
-        if (data.get(ipos, j, k + 1) & solidBit) {++a01;++a11 }
-        if (data.get(ipos, j, k - 1) & solidBit) {++a00;++a10 }
+        if (data.get(ipos, j + 1, k) & solidBit) { ++a10; ++a11 }
+        if (data.get(ipos, j - 1, k) & solidBit) { ++a00; ++a01 }
+        if (data.get(ipos, j, k + 1) & solidBit) { ++a01; ++a11 }
+        if (data.get(ipos, j, k - 1) & solidBit) { ++a00; ++a10 }
 
         // treat corners differently based when facing a solid block
         if (facingSolid) {
@@ -755,10 +762,10 @@ function GreedyMesher() {
         var facingSolid = (solidBit & data.get(ipos, j, k))
 
         // inc occlusion of vertex next to obstructed side
-        if (data.get(ipos, j + 1, k) & solidBit) {++a10;++a11 }
-        if (data.get(ipos, j - 1, k) & solidBit) {++a00;++a01 }
-        if (data.get(ipos, j, k + 1) & solidBit) {++a01;++a11 }
-        if (data.get(ipos, j, k - 1) & solidBit) {++a00;++a10 }
+        if (data.get(ipos, j + 1, k) & solidBit) { ++a10; ++a11 }
+        if (data.get(ipos, j - 1, k) & solidBit) { ++a00; ++a01 }
+        if (data.get(ipos, j, k + 1) & solidBit) { ++a01; ++a11 }
+        if (data.get(ipos, j, k - 1) & solidBit) { ++a00; ++a10 }
 
         if (facingSolid) {
             // always 2, or 3 in corners
@@ -840,4 +847,4 @@ function GreedyMesher() {
 
 import { makeProfileHook } from './util'
 var profile_hook = (PROFILE_EVERY) ?
-    makeProfileHook(PROFILE_EVERY, 'Terrain meshing') : () => {}
+    makeProfileHook(PROFILE_EVERY, 'Terrain meshing') : () => { }
