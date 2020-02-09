@@ -72,10 +72,13 @@ function refSortWithObjects(array, ref) {
 // partly "unrolled" loops to copy contents of ndarrays
 // when there's no source, zeroes out the array instead
 export function copyNdarrayContents(src, tgt, pos, size, tgtPos) {
-    if (src) doNdarrayCopy(src, tgt, pos[0], pos[1], pos[2],
-        size[0], size[1], size[2], tgtPos[0], tgtPos[1], tgtPos[2])
-    if (!src) doNdarrayZero(tgt, tgtPos[0], tgtPos[1], tgtPos[2],
-        size[0], size[1], size[2])
+    if (src) {
+        doNdarrayCopy(src, tgt, pos[0], pos[1], pos[2],
+            size[0], size[1], size[2], tgtPos[0], tgtPos[1], tgtPos[2])
+    } else {
+        doNdarrayZero(tgt, tgtPos[0], tgtPos[1], tgtPos[2],
+            size[0], size[1], size[2])
+    }
 }
 function doNdarrayCopy(src, tgt, i0, j0, k0, si, sj, sk, ti, tj, tk) {
     for (var i = 0; i < si; i++) {

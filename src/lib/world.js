@@ -276,7 +276,7 @@ World.prototype.tick = function () {
     var pChunk = this._getChunk(pos[0], pos[1], pos[2])
     this.playerChunkLoaded = !!pChunk
 
-    profile_queues_hook('end')
+    profile_queues_hook('end', this)
     profile_hook('end')
 }
 
@@ -369,7 +369,7 @@ function getPlayerChunkCoords(world) {
 
 function initChunkQueues(world) {
     world._chunkIDsKnown = []       // all chunks existing in any queue
-    world._chunkIDsToRequest = []   // not yet requested from client
+    world._chunkIDsToRequest = []   // needed but not yet requested from client
     world._chunkIDsPending = []     // requested, awaiting creation
     world._chunkIDsToMesh = []      // created but not yet meshed
     world._chunkIDsToMeshFirst = [] // priority meshing queue
@@ -751,9 +751,9 @@ function _report(world, name, arr, ext) {
     out += ('empty: ' + empty).padEnd(12)
     out += ('surr: ' + surrounded).padEnd(12)
     if (ext) {
-        var sum = remeshes.reduce((acc, val) => acc + val)
-        var max = remeshes.reduce((acc, val) => Math.max(acc, val))
-        var min = remeshes.reduce((acc, val) => Math.min(acc, val))
+        var sum = remeshes.reduce((acc, val) => acc + val, 0)
+        var max = remeshes.reduce((acc, val) => Math.max(acc, val), 0)
+        var min = remeshes.reduce((acc, val) => Math.min(acc, val), 0)
         out += 'times meshed: avg ' + (sum / exist).toFixed(2)
         out += '  max ' + max
         out += '  min ' + min
@@ -762,8 +762,44 @@ function _report(world, name, arr, ext) {
 }
 
 
-import { makeProfileHook, makeThroughputHook } from './util'
+import { makeProfileHook } from './util'
 var profile_hook = (PROFILE) ?
     makeProfileHook(100, 'world ticks:') : () => { }
-var profile_queues_hook = (PROFILE_QUEUES) ?
-    makeThroughputHook(100, 'chunks/sec:') : () => { }
+var profile_queues_hook = () => { }
+if (PROFILE_QUEUES) profile_queues_hook = ((every) => {
+    var iter = 0
+    var counts = {}
+    var queues = {}
+    var started = performance.now()
+    return function profile_queues_hook(state, world) {
+        if (state === 'start') return
+        if (state !== 'end') return counts[state] = (counts[state] || 0) + 1
+        queues.toreq = (queues.toreq || 0) + world._chunkIDsToRequest.length
+        queues.toget = (queues.toget || 0) + world._chunkIDsPending.length
+        queues.tomesh = (queues.tomesh || 0) + world._chunkIDsToMesh.length + world._chunkIDsToMeshFirst.length
+        queues.tomesh1 = (queues.tomesh1 || 0) + world._chunkIDsToMeshFirst.length
+        queues.torem = (queues.torem || 0) + world._chunkIDsToRemove.length
+        if (++iter < every) return
+        var t = performance.now(), dt = t - started
+        var res = {}
+        Object.keys(queues).forEach(k => {
+            var num = Math.round((queues[k] || 0) / iter)
+            res[k] = `[${num}]`.padStart(5)
+        })
+        Object.keys(counts).forEach(k => {
+            var num = Math.round((counts[k] || 0) * 1000 / dt)
+            res[k] = ('' + num).padStart(3)
+        })
+        console.log('chunk flow: ',
+            `${res.toreq}-> ${res.request} req/s  `,
+            `${res.toget}-> ${res.receive} got/s  `,
+            `${(res.tomesh)}-> ${res.mesh} mesh/s  `,
+            `${res.torem}-> ${res.dispose} rem/s  `,
+            `(meshFirst: ${res.tomesh1.trim()})`,
+        )
+        iter = 0
+        counts = {}
+        queues = {}
+        started = performance.now()
+    }
+})(100)

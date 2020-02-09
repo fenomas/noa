@@ -45,9 +45,6 @@ function Chunk(noa, id, i, j, k, size, dataArray) {
     this.isDisposed = false
     this.octreeBlock = null
 
-    this.isEmpty = false
-    this.isFull = false
-
     // voxel data and properties
     this.voxels = dataArray
     this.i = i
@@ -70,6 +67,9 @@ function Chunk(noa, id, i, j, k, size, dataArray) {
     this._objectBlocks = null
     this._objectSystems = null
     objectMesher.initChunk(this)
+
+    this.isFull = false
+    this.isEmpty = false
 
     // references to neighboring chunks, if they exist (filled in by `world`)
     var narr = Array.from(Array(27)).map(() => null)
@@ -95,8 +95,8 @@ Chunk.prototype._updateVoxelArray = function (dataArray) {
     callAllBlockHandlers(this, 'onUnload')
     objectMesher.disposeChunk(this)
     this.voxels = dataArray
-    this._terrainDirty = true
-    this._objectsDirty = true
+    this._terrainDirty = false
+    this._objectsDirty = false
     objectMesher.initChunk(this)
     packVoxelData(this)
 }
@@ -138,7 +138,7 @@ Chunk.prototype.getSolidityAt = function (x, y, z) {
     return (SOLID_BIT & this.voxels.get(x, y, z)) ? true : false
 }
 
-Chunk.prototype.set = function (x, y, z, id, paddingUpdate) {
+Chunk.prototype.set = function (x, y, z, id) {
     var oldID = this.voxels.get(x, y, z)
     var oldIDnum = oldID & ID_MASK
     if (id === oldIDnum) return
@@ -153,12 +153,10 @@ Chunk.prototype.set = function (x, y, z, id, paddingUpdate) {
     callBlockHandler(this, oldIDnum, 'onUnset', x, y, z)
     callBlockHandler(this, id, 'onSet', x, y, z)
 
-    // track full/emptyness
+    // track full/emptiness and info about terrain
+    if ((newID & OPAQUE_BIT) === 0) this.isFull = false
     if (newID !== 0) this.isEmpty = false
-    if (!(newID & OPAQUE_BIT)) this.isFull = false
-
-    // mark terrain dirty unless neither block was terrain
-    if (isTerrain(oldID) || isTerrain(newID)) {
+    if (affectsTerrain(newID) || affectsTerrain(oldID)) {
         this._terrainDirty = true
         this.noa.world._queueChunkForRemesh(this)
     }
@@ -168,7 +166,6 @@ Chunk.prototype.set = function (x, y, z, id, paddingUpdate) {
     var newSO = newID & (SOLID_BIT | OPAQUE_BIT)
     if (newSO !== prevSO) {
         var edge = this.size - 1
-
         var iedge = (x === 0) ? -1 : (x < edge) ? 0 : 1
         var jedge = (y === 0) ? -1 : (y < edge) ? 0 : 1
         var kedge = (z === 0) ? -1 : (z < edge) ? 0 : 1
@@ -247,12 +244,11 @@ Chunk.prototype.updateMeshes = function () {
 
 
 
-// helper to determine if a block counts as "terrain" (non-air, non-object)
-function isTerrain(id) {
+// helpers to determine which blocks are, or can affect, terrain meshes
+function affectsTerrain(id) {
     if (id === 0) return false
-    // treat object blocks as terrain if solid (they affect AO)
-    if (id & OBJECT_BIT) return !!(id & SOLID_BIT)
-    return true
+    if (id & SOLID_BIT) return true
+    return ((id & OBJECT_BIT) === 0)
 }
 
 // helper to pack a block ID into the internally stored form, given lookup tables
@@ -283,15 +279,16 @@ function packVoxelData(chunk) {
     // flags for tracking if chunk is entirely opaque or transparent
     var fullyOpaque = OPAQUE_BIT
     var fullyAir = true
+    var hasObj = false
 
-    var arr = chunk.voxels
-    var len = arr.shape[0]
+    var voxels = chunk.voxels
+    var len = voxels.shape[0]
     for (var i = 0; i < len; ++i) {
         for (var j = 0; j < len; ++j) {
-            for (var k = 0; k < len; ++k) {
+            var index = voxels.index(i, j, 0)
+            for (var k = 0; k < len; ++k, ++index) {
                 // pull raw ID - could in principle be packed, so mask it
-                var index = arr.index(i, j, k)
-                var id = arr.data[index] & ID_MASK
+                var id = voxels.data[index] & ID_MASK
                 // skip air blocks
                 if (id === 0) {
                     fullyOpaque = 0
@@ -299,12 +296,13 @@ function packVoxelData(chunk) {
                 }
                 // store ID as packed internal representation
                 var packed = packID(id) | 0
-                arr.data[index] = packed
+                voxels.data[index] = packed
                 fullyOpaque &= packed
                 fullyAir = false
                 // within unpadded view, handle object blocks and handlers
                 if (OBJECT_BIT & packed) {
                     addObjectBlock(chunk, id, i, j, k)
+                    hasObj = true
                 }
                 callBlockHandler(chunk, id, 'onLoad', i, j, k)
             }
@@ -313,7 +311,8 @@ function packVoxelData(chunk) {
 
     chunk.isFull = !!(fullyOpaque & OPAQUE_BIT)
     chunk.isEmpty = !!(fullyAir)
-    chunk._terrainDirty = !(chunk.isFull || chunk.isEmpty)
+    chunk._terrainDirty = !chunk.isEmpty
+    chunk._objectsDirty = hasObj
 }
 
 

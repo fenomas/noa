@@ -52,11 +52,12 @@ function TerrainMesher() {
         var rev = isNaN(revAoVal) ? noa.rendering.revAoVal : revAoVal
 
         // copy voxel data into array padded with neighbor values
-        var array = buildPaddedVoxelArray(chunk)
+        var voxels = buildPaddedVoxelArray(chunk)
         profile_hook('copy')
 
         // greedy mesher creates an array of Submesh structs
-        var subMeshes = greedyMesher.mesh(array, mats, cols, ao, vals, rev)
+        var edgesOnly = chunk.isFull || chunk.isEmpty
+        var subMeshes = greedyMesher.mesh(voxels, mats, cols, ao, vals, rev, edgesOnly)
 
         // builds the babylon mesh that will be added to the scene
         var mesh
@@ -102,16 +103,30 @@ function buildPaddedVoxelArray(chunk) {
 
     // loop through neighbors (neighbor(0,0,0) is the chunk itself)
     // copying or zeroing voxel body/edge data into padded target array
-    var posValues = [cs - 1, 0, 0]
-    var sizeValues = [1, cs, 1]
-    var tgtPosValues = [0, 1, cs + 1]
+    var loc = _vecs[0]
+    var pos = _vecs[1]
+    var size = _vecs[2]
+    var tgtPos = _vecs[3]
+    var posValues = _vecs[4]
+    var sizeValues = _vecs[5]
+    var tgtPosValues = _vecs[6]
+    if (cs !== _cachedVecSize) {
+        _cachedVecSize = cs
+        allocateVectors(cs, posValues, sizeValues, tgtPosValues)
+    }
+
     for (var i = 0; i < 3; i++) {
+        loc[0] = i
         for (var j = 0; j < 3; j++) {
+            loc[1] = j
             for (var k = 0; k < 3; k++) {
+                loc[2] = k
+                loc.forEach((coord, i) => {
+                    pos[i] = posValues[coord]
+                    size[i] = sizeValues[coord]
+                    tgtPos[i] = tgtPosValues[coord]
+                })
                 var nab = chunk._neighbors.get(i - 1, j - 1, k - 1)
-                var pos = [i, j, k].map(n => posValues[n])
-                var size = [i, j, k].map(n => sizeValues[n])
-                var tgtPos = [i, j, k].map(n => tgtPosValues[n])
                 var nsrc = (nab) ? nab.voxels : null
                 copyNdarrayContents(nsrc, tgt, pos, size, tgtPos)
             }
@@ -120,6 +135,18 @@ function buildPaddedVoxelArray(chunk) {
     return tgt
 }
 var cachedPadded = new ndarray(new Uint16Array(27), [3, 3, 3])
+var _vecs = Array.from(Array(10)).map(n => [0, 0, 0])
+var _cachedVecSize
+function allocateVectors(size, posValues, sizeValues, tgtPosValues) {
+    for (var i = 0; i < 3; i++) {
+        posValues[i] = [size - 1, 0, 0][i]
+        sizeValues[i] = [1, size, 1][i]
+        tgtPosValues[i] = [0, 1, size + 1][i]
+    }
+}
+
+
+
 
 
 
@@ -382,7 +409,7 @@ function GreedyMesher() {
 
 
 
-    this.mesh = function (arr, getMaterial, getColor, doAO, aoValues, revAoVal) {
+    this.mesh = function (voxels, getMaterial, getColor, doAO, aoValues, revAoVal, edgesOnly) {
 
         // return object, holder for Submeshes
         var subMeshes = {}
@@ -399,7 +426,8 @@ function GreedyMesher() {
             var v = (d + 2) % 3
 
             // make transposed ndarray so index i is the axis we're sweeping
-            var arrT = arr.transpose(d, u, v).lo(1, 1, 1).hi(arr.shape[d] - 2, arr.shape[u] - 2, arr.shape[v] - 2)
+            var shape = voxels.shape
+            var arrT = voxels.transpose(d, u, v).lo(1, 1, 1).hi(shape[d] - 2, shape[u] - 2, shape[v] - 2)
 
             // shorten len0 by 1 so faces at edges don't get drawn in both chunks
             var len0 = arrT.shape[0] - 1
@@ -422,6 +450,9 @@ function GreedyMesher() {
                 // parses the masks to do greedy meshing
                 constructMeshDataFromMasks(i, d, u, v, len1, len2,
                     doAO, subMeshes, getColor, aoValues, revAoVal)
+
+                // process edges only by jumping to other edge
+                if (edgesOnly) i += (len0 - 1)
 
                 profile_hook('submeshes')
             }
