@@ -5,6 +5,7 @@ An experimental voxel engine.
 
 Example games:
  * [Minecraft Classic](https://classic.minecraft.net/) - official minecraft game built on this engine
+ * [CityCraft.io](https://citycraft.io/) - multiplayer voxel cities, by [Neel Rao](https://neelmango.com/)
  * [noa-lt](http://andyhall.github.io/noa-lt/) - game world containing "slides" for a talk I gave on voxels in JS
  * [noa-examples](https://github.com/andyhall/noa-examples) - repo with minimal hello-world and testbed game worlds
  * [old testbed](https://andyhall.github.io/noa-testbed/) - outdated, but colorful
