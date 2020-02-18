@@ -95,7 +95,7 @@ function buildPaddedVoxelArray(chunk) {
     var tgt = cachedPadded
 
     // embiggen cached target array
-    if (cs + 2 > tgt.shape[0]) {
+    if (cs + 2 !== tgt.shape[0]) {
         var s2 = cs + 2
         tgt = new ndarray(new Uint16Array(s2 * s2 * s2), [s2, s2, s2])
         cachedPadded = tgt
