@@ -48,26 +48,6 @@ var prevRad = 0, prevAnswer = 0
 
 
 
-// sorts [A, B, C] and [3, 1, 2] into [B, C, A]
-export function sortByReferenceArray(array, ref) {
-    var useMaps = typeof array[0] === 'object'
-    if (useMaps) { refSortWithMaps(array, ref) }
-    else { refSortWithObjects(array, ref) }
-    return array
-}
-function refSortWithMaps(array, ref) {
-    var mapping = new Map()
-    array.forEach((val, i) => mapping.set(val, ref[i]))
-    array.sort((a, b) => mapping.get(a) - mapping.get(b))
-}
-function refSortWithObjects(array, ref) {
-    var mapping = {}
-    array.forEach((val, i) => mapping[val] = ref[i])
-    array.sort((a, b) => mapping[a] - mapping[b])
-}
-
-
-
 
 // partly "unrolled" loops to copy contents of ndarrays
 // when there's no source, zeroes out the array instead
@@ -105,6 +85,63 @@ function doNdarrayZero(tgt, i0, j0, k0, si, sj, sk) {
         }
     }
 }
+
+
+
+
+
+
+
+/*
+ * 
+ *      strList - internal data structure for lists of chunk IDs
+ * 
+*/
+
+export function StringList() {
+    this.arr = []
+    this.hash = {}
+}
+StringList.prototype.includes = function (key) {
+    return this.hash[key]
+}
+StringList.prototype.add = function (key) {
+    if (this.hash[key]) return
+    this.arr.push(key)
+    this.hash[key] = true
+}
+StringList.prototype.remove = function (key) {
+    if (!this.hash[key]) return
+    this.arr.splice(this.arr.indexOf(key), 1)
+    delete this.hash[key]
+}
+StringList.prototype.count = function () { return this.arr.length }
+StringList.prototype.forEach = function (a, b) { return this.arr.forEach(a, b) }
+StringList.prototype.slice = function (a, b) { return this.arr.slice(a, b) }
+StringList.prototype.isEmpty = function () { return (this.arr.length === 0) }
+StringList.prototype.empty = function () {
+    this.arr.length = 0
+    this.hash = {}
+}
+StringList.prototype.pop = function () {
+    var key = this.arr.pop()
+    delete this.hash[key]
+    return key
+}
+StringList.prototype.sort = function (keyToDistanceFn) {
+    var mapping = {}
+    this.arr.forEach(key => { mapping[key] = keyToDistanceFn(key) })
+    this.arr.sort((a, b) => mapping[b] - mapping[a]) // DESCENDING!
+}
+StringList.prototype.copyFrom = function (list) {
+    this.arr = list.arr.slice()
+    this.hash = Object.assign({}, list.hash)
+}
+
+
+
+
+
 
 
 
