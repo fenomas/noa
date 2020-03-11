@@ -158,6 +158,9 @@ Chunk.prototype.set = function (x, y, z, id) {
     if (newID !== 0) this.isEmpty = false
     if (affectsTerrain(newID) || affectsTerrain(oldID)) {
         this._terrainDirty = true
+    }
+
+    if (this._terrainDirty || this._objectsDirty) {
         this.noa.world._queueChunkForRemesh(this)
     }
 
