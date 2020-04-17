@@ -97,6 +97,7 @@ function Engine(opts) {
 
     opts = Object.assign({}, defaults, opts)
     this._tickRate = opts.tickRate
+    this._lastRenderTime = 0
     this._paused = false
     this._dragOutsideLock = opts.dragCameraOutsidePointerLock
     var self = this
@@ -320,13 +321,22 @@ Engine.prototype.tick = function () {
  */
 
 Engine.prototype.render = function (framePart) {
-    if (this._paused) return
-    profile_hook_render('start')
-    // update frame position property and calc dt
-    var framesAdvanced = framePart - this.positionInCurrentTick
-    if (framesAdvanced < 0) framesAdvanced += 1
+    // frame position - for rendering movement between ticks
     this.positionInCurrentTick = framePart
-    var dt = framesAdvanced * this._tickRate // ms since last tick
+    // dt - actual time difference (in ms), for animating things
+    // that aren't tied to game tick rate
+    var t = performance.now()
+    var dt = t - (this._lastRenderTime || (t - 16))
+    this._lastRenderTime = t
+
+    // when paused, just optionally ping worldgen, then exit
+    if (this._paused) {
+        if (this.world.worldGenWhilePaused) this.world.render()
+        return
+    }
+
+    profile_hook_render('start')
+
     // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
     if (this.container.hasPointerLock ||
         !this.container.supportsPointerLock ||
