@@ -18,7 +18,8 @@ export default function (noa, opts) {
 var defaultOptions = {
     chunkSize: 24,
     chunkAddDistance: 3,
-    chunkRemoveDistance: 4
+    chunkRemoveDistance: 4,
+    worldGenWhilePaused: false,
 }
 
 /**
@@ -54,6 +55,7 @@ function World(noa, opts) {
     this.maxChunksPendingMeshing = 10
     this.maxProcessingPerTick = 9      // ms
     this.maxProcessingPerRender = 5    // ms
+    this.worldGenWhilePaused = opts.worldGenWhilePaused
 
     // set up internal state
     this._cachedWorldName = ''
@@ -61,9 +63,6 @@ function World(noa, opts) {
     this._chunkStorage = {}
     initChunkQueues(this)
     initChunkStorage(this)
-
-    // triggers a short visit to the meshing queue before renders
-    noa.on('beforeRender', () => beforeRender(this))
 
     // instantiate coord conversion functions based on the chunk size
     // use bit twiddling if chunk size is a power of 2
@@ -282,12 +281,11 @@ World.prototype.tick = function () {
 }
 
 
-
-function beforeRender(world) {
+World.prototype.render = function () {
     // on render, quickly process the high-priority meshing queue
     // to help avoid flashes of background while neighboring chunks update
-    loopForTime(world.maxProcessingPerRender, () => {
-        return processMeshingQueue(world, true)
+    loopForTime(this.maxProcessingPerRender, () => {
+        return processMeshingQueue(this, true)
     })
 }
 

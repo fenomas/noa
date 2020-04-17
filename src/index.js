@@ -280,7 +280,10 @@ Engine.prototype = Object.create(EventEmitter.prototype)
  */
 
 Engine.prototype.tick = function () {
-    if (this._paused) return
+    if (this._paused) {
+        if (this.world.worldGenWhilePaused) this.world.tick(dt)
+        return
+    }
     profile_hook('start')
     checkWorldOffset(this)
     var dt = this._tickRate // fixed timesteps!
@@ -330,13 +333,17 @@ Engine.prototype.render = function (framePart) {
         (this._dragOutsideLock && this.inputs.state.fire)) {
         this.camera.applyInputsToCamera()
     }
-    profile_hook('init')
+    profile_hook_render('init')
+
+    // brief run through meshing queue
+    this.world.render(dt)
+    profile_hook_render('meshing')
 
     // entity render systems
     this.camera.updateBeforeEntityRenderSystems()
     this.entities.render(dt)
     this.camera.updateAfterEntityRenderSystems()
-    profile_hook('entities')
+    profile_hook_render('entities')
 
     // events and render
     this.emit('beforeRender', dt)
