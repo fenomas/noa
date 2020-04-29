@@ -1,4 +1,5 @@
 
+import { constants } from './constants'
 
 export default function (noa, opts) {
     return new Registry(noa, opts)
@@ -32,8 +33,9 @@ var blockDefaults = {
     viscosity: 0.5,
 }
 
-var MAX_BLOCK_IDS = 255 // currently stored in chunks as int8
 
+// highest ID that fits into the bits used for voxel IDs
+var MAX_BLOCK_ID = 0xFFFFFFFF & constants.ID_MASK
 
 
 /**
@@ -115,7 +117,7 @@ function Registry(noa, opts) {
         var opts = Object.assign({}, blockDefaults, _options)
 
         // console.log('register block: ', id, opts)
-        if (id < 1 || id > MAX_BLOCK_IDS) throw 'Block id exceeds max: ' + id
+        if (id < 1 || id > MAX_BLOCK_ID) throw 'Block id out of range: ' + id
 
         // if block ID is greater than current highest ID, 
         // register fake blocks to avoid holes in lookup arrays
