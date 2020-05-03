@@ -165,36 +165,49 @@ Submesh.prototype.dispose = function () {
  */
 
 function MeshBuilder() {
+    var noa;
 
-    var noa
+    var mergeCriteria = function (mdat) {
+        if (mdat.renderMat) return false;
+        var url = noa.registry.getMaterialTexture(mdat.id);
+        var alpha = noa.registry.getMaterialData(mdat.id).alpha;
+        if (url || alpha < 1) return false;
+    };
+
+    const noCriteria = () => true;
 
     // core
     this.build = function (chunk, meshdata, ignoreMaterials) {
-        noa = chunk.noa
+        noa = chunk.noa;
 
         // preprocess meshdata entries to merge those that will use default terrain material
-        var mergeCriteria = function (mdat) {
-            if (ignoreMaterials) return true
-            if (mdat.renderMat) return false
-            var url = noa.registry.getMaterialTexture(mdat.id)
-            var alpha = noa.registry.getMaterialData(mdat.id).alpha
-            if (url || alpha < 1) return false
-        }
-        mergeSubmeshes(meshdata, mergeCriteria)
+
+        mergeSubmeshes(meshdata, ignoreMaterials ? noCriteria : mergeCriteria);
 
         // now merge everything, keeping track of vertices/indices/materials
-        var results = mergeSubmeshes(meshdata, () => true)
+        var results = mergeSubmeshes(meshdata, noCriteria);
 
         // merge sole remaining submesh instance into a babylon mesh
-        var mdat = meshdata[results.mergedID]
-        var name = 'chunk_' + chunk.id
-        var mats = results.matIDs.map(id => getTerrainMaterial(id, ignoreMaterials))
-        var mesh = buildMeshFromSubmesh(mdat, name, mats, results.vertices, results.indices)
+        var mdat = meshdata[results.mergedID];
+        var name = "chunk_" + chunk.id;
+
+        const mats = new Array(results.matIDs.length);
+
+        for (let i = 0; i < mats.length; i++) {
+            mats[i] = getTerrainMaterial(results.matIDs[i], ignoreMaterials);
+        }
+
+        var mesh = buildMeshFromSubmesh(
+            mdat,
+            name,
+            mats,
+            results.vertices,
+            results.indices
+        );
 
         // done, mesh will be positioned later when added to the scene
-        return mesh
-    }
-
+        return mesh;
+    };
 
 
     // given a set of submesh objects, merge all those that 
