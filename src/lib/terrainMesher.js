@@ -236,10 +236,29 @@ function MeshBuilder() {
             } else {
                 var indexOffset = target.positions.length / 3
                 // merge data in "mdat" onto "target"
-                target.positions = target.positions.concat(mdat.positions)
-                target.normals = target.normals.concat(mdat.normals)
-                target.colors = target.colors.concat(mdat.colors)
-                target.uvs = target.uvs.concat(mdat.uvs)
+                let posOffset = target.positions.length;
+                target.positions.length += mdat.positions.length;
+                for (let i = 0; i < mdat.positions.length; i++) {
+                    target.positions[posOffset + i] = mdat.positions[i];
+                }
+
+                let normalsOffet = target.normals.length;
+                target.normals.length += mdat.normals.length;
+                for (let i = 0; i < mdat.normals.length; i++) {
+                    target.normals[normalsOffet + i] = mdat.normals[i];
+                }
+
+                let colorsOffset = target.colors.length;
+                target.colors.length += mdat.colors.length;
+                for (let i = 0; i < mdat.colors.length; i++) {
+                    target.colors[colorsOffset + i] = mdat.colors[i];
+                }
+
+                let uvsOffset = target.uvs.length;
+                target.uvs.length += mdat.uvs.length;
+                for (let i = 0; i < mdat.uvs.length; i++) {
+                    target.uvs[uvsOffset + i] = mdat.uvs[i];
+                }
                 // indices must be offset relative to data being merged onto
                 for (var j = 0, len = mdat.indices.length; j < len; ++j) {
                     target.indices.push(mdat.indices[j] + indexOffset)
