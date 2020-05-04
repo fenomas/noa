@@ -167,6 +167,7 @@ function Submesh(id) {
     this.normals = []
     this.colors = []
     this.uvs = []
+    this.mergeable = false      // flag used during terrain meshing
 }
 
 Submesh.prototype.dispose = function () {
@@ -199,18 +200,25 @@ function MeshBuilder() {
     this.build = function (chunk, meshdata, ignoreMaterials) {
         noa = chunk.noa
 
-        // preprocess meshdata entries to merge those that will use default terrain material
-        var mergeCriteria = function (mdat) {
-            if (ignoreMaterials) return true
-            if (mdat.renderMat) return false
-            var url = noa.registry.getMaterialTexture(mdat.id)
-            var alpha = noa.registry.getMaterialData(mdat.id).alpha
-            if (url || alpha < 1) return false
-        }
-        mergeSubmeshes(meshdata, mergeCriteria)
+        // flag and merge submesh data that can share the default terrain material
+        var numMergeable = 0
+        Object.keys(meshdata).forEach(key => {
+            var mdat = meshdata[key]
+            if (ignoreMaterials) {
+                mdat.mergeable = true
+            } else {
+                var url = noa.registry.getMaterialTexture(mdat.id)
+                var matData = noa.registry.getMaterialData(mdat.id)
+                mdat.mergeable = (!url)
+                    && (matData.alpha === 1)
+                    && (!matData.renderMat)
+            }
+            if (mdat.mergeable) numMergeable++
+        })
+        if (numMergeable > 1) mergeSubmeshes(meshdata, false)
 
         // now merge everything, keeping track of vertices/indices/materials
-        var results = mergeSubmeshes(meshdata, () => true)
+        var results = mergeSubmeshes(meshdata, true)
 
         // merge sole remaining submesh instance into a babylon mesh
         var mdat = meshdata[results.mergedID]
@@ -224,10 +232,10 @@ function MeshBuilder() {
 
 
 
-    // given a set of submesh objects, merge all those that 
-    // meet some criteria into the first such submesh
-    //      modifies meshDataList in place!
-    function mergeSubmeshes(meshDataList, criteria) {
+    // given a set of submesh objects, merge some or all of them
+    //      while tracking vertex/index offsets for each material ID
+    // Note: modifies meshDataList in place!
+    function mergeSubmeshes(meshDataList, mergeAll) {
         var vertices = []
         var indices = []
         var matIDs = []
@@ -237,7 +245,7 @@ function MeshBuilder() {
         var targetID
         for (var i = 0; i < keylist.length; ++i) {
             var mdat = meshDataList[keylist[i]]
-            if (!criteria(mdat)) continue
+            if (!(mergeAll || mdat.mergeable)) continue
 
             vertices.push(mdat.positions.length)
             indices.push(mdat.indices.length)
@@ -250,10 +258,10 @@ function MeshBuilder() {
             } else {
                 var indexOffset = target.positions.length / 3
                 // merge data in "mdat" onto "target"
-                target.positions = target.positions.concat(mdat.positions)
-                target.normals = target.normals.concat(mdat.normals)
-                target.colors = target.colors.concat(mdat.colors)
-                target.uvs = target.uvs.concat(mdat.uvs)
+                mergeArrays(target.positions, mdat.positions)
+                mergeArrays(target.normals, mdat.normals)
+                mergeArrays(target.colors, mdat.colors)
+                mergeArrays(target.uvs, mdat.uvs)
                 // indices must be offset relative to data being merged onto
                 for (var j = 0, len = mdat.indices.length; j < len; ++j) {
                     target.indices.push(mdat.indices[j] + indexOffset)
@@ -272,6 +280,9 @@ function MeshBuilder() {
         }
     }
 
+    function mergeArrays(tgt, src) {
+        for (var i = 0; i < src.length; i++) tgt.push(src[i])
+    }
 
 
     function buildMeshFromSubmesh(submesh, name, mats, verts, inds) {
@@ -487,7 +498,7 @@ function GreedyMesher() {
         for (var k = 0; k < len; ++k) {
             var d0 = dbase
             dbase += kstride
-            for (var j = 0; j < len; j++ , n++ , d0 += jstride) {
+            for (var j = 0; j < len; j++, n++, d0 += jstride) {
 
                 // mask[n] will represent the face needed between i-1,j,k and i,j,k
                 // for now, assume we never have two faces in both directions

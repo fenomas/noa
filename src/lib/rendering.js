@@ -469,6 +469,7 @@ Rendering.prototype.debug_SceneCheck = function () {
     var dyns = this._octree.dynamicContent
     var octs = []
     var numOcts = 0
+    var numSubs = 0
     var mats = this._scene.materials
     var allmats = []
     mats.forEach(mat => {
@@ -484,7 +485,9 @@ Rendering.prototype.debug_SceneCheck = function () {
         if (empty(m)) return
         if (missing(m, dyns, octs)) warn(m, 'non-empty mesh missing from octree')
         if (!m.material) { warn(m, 'non-empty scene mesh with no material'); return }
-        (m.material.subMaterials || [m.material]).forEach(function (mat) {
+        numSubs += (m.subMeshes) ? m.subMeshes.length : 1
+        var mats = m.material.subMaterials || [m.material]
+        mats.forEach(function (mat) {
             if (missing(mat, mats)) warn(mat, 'mesh material not in scene')
         })
     })
@@ -509,6 +512,7 @@ Rendering.prototype.debug_SceneCheck = function () {
     })
     var avgPerOct = Math.round(10 * octs.length / numOcts) / 10
     console.log('meshes - octree:', octs.length, '  dynamic:', dyns.length,
+        '   subMeshes:', numSubs,
         '   avg meshes/octreeBlock:', avgPerOct)
 
     function warn(obj, msg) { console.warn(obj.name + ' --- ' + msg) }
