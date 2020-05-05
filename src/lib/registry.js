@@ -100,7 +100,7 @@ function Registry(noa, opts) {
      *  * solid: (true) solidity for physics purposes
      *  * opaque: (true) fully obscures neighboring blocks
      *  * fluid: (false) whether nonsolid block is a fluid (buoyant, viscous..)
-     *  * blockMeshes: (null) if specified, noa will create an instance of the mesh instead of rendering voxel terrain
+     *  * blockMesh: (null) if specified, noa will create a copy this mesh in the voxel
      *  * fluidDensity: (1.0) for fluid blocks
      *  * viscosity: (0.5) for fluid blocks
      *  * onLoad(): block event handler
@@ -130,9 +130,8 @@ function Registry(noa, opts) {
         blockOpacity[id] = !!opts.opaque
         blockIsFluid[id] = !!opts.fluid
 
-        // store any custom mesh, and if one is present assume no material
+        // store any custom mesh
         blockMeshes[id] = opts.blockMesh || null
-        if (blockMeshes[id]) opts.material = null
 
         // parse out material parameter
         // always store 6 material IDs per blockID, so material lookup is monomorphic

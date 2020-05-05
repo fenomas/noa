@@ -408,10 +408,10 @@ function MeshBuilder() {
 function GreedyMesher() {
 
     var ID_MASK = constants.ID_MASK
-    // var VAR_MASK = constants.VAR_MASK // NYI
     var SOLID_BIT = constants.SOLID_BIT
     var OPAQUE_BIT = constants.OPAQUE_BIT
-    var OBJECT_BIT = constants.OBJECT_BIT
+    // var VAR_MASK = constants.VAR_MASK // NYI
+    // var OBJECT_BIT = constants.OBJECT_BIT // not needed here
 
 
     var maskCache = new Int16Array(16)
@@ -489,6 +489,7 @@ function GreedyMesher() {
         var aomask = aomaskCache
         // set up for quick array traversals
         var n = 0
+        var materialDir = d * 2
         var data = arrT.data
         var dbase = arrT.index(i - 1, 0, 0)
         var istride = arrT.stride[0]
@@ -503,51 +504,55 @@ function GreedyMesher() {
                 // mask[n] will represent the face needed between i-1,j,k and i,j,k
                 // for now, assume we never have two faces in both directions
 
+                // note that mesher zeroes out the mask as it goes, so there's 
+                // no need to zero it here when no face is needed
+
                 // IDs at i-1,j,k  and  i,j,k
                 var id0 = data[d0]
                 var id1 = data[d0 + istride]
 
-                var faceDir = getFaceDir(id0, id1)
+                // most common case: never a face between same voxel IDs, 
+                // so skip out early
+                if (id0 === id1) continue
+
+                var faceDir = getFaceDir(id0, id1, getMaterial, materialDir)
                 if (faceDir) {
                     // set regular mask value to material ID, sign indicating direction
                     mask[n] = (faceDir > 0) ?
-                        getMaterial(id0 & ID_MASK, d * 2) :
-                        -getMaterial(id1 & ID_MASK, d * 2 + 1)
+                        getMaterial(id0 & ID_MASK, materialDir) :
+                        -getMaterial(id1 & ID_MASK, materialDir + 1)
 
                     // if doing AO, precalculate AO level for each face into second mask
                     if (aoPackFcn) {
-                        // i values in direction face is/isn't pointing
-                        var ipos = (faceDir > 0) ? i : i - 1
-                        var ineg = (faceDir > 0) ? i - 1 : i
-
-                        // this got so big I rolled it into a function
-                        aomask[n] = aoPackFcn(arrT, ipos, ineg, j, k)
+                        // i values in direction face is/isn't pointing{
+                        aomask[n] = (faceDir > 0) ?
+                            aoPackFcn(arrT, i, i - 1, j, k) :
+                            aoPackFcn(arrT, i - 1, i, j, k)
                     }
-                } else {
-                    // unneeded, mesher zeroes out mask as it goes
-                    // mask[n] = 0
                 }
-
             }
         }
     }
 
 
 
-    function getFaceDir(id0, id1) {
-        // no face if both blocks are opaque, or if ids match
-        if (id0 === id1) return 0
+    function getFaceDir(id0, id1, getMaterial, materialDir) {
+        // no face if both blocks are opaque
         var op0 = id0 & OPAQUE_BIT
         var op1 = id1 & OPAQUE_BIT
         if (op0 && op1) return 0
         // if either block is opaque draw a face for it
         if (op0) return 1
         if (op1) return -1
-        // if one block is air or an object block draw face for the other
-        if (id1 === 0 || (id1 & OBJECT_BIT)) return 1
-        if (id0 === 0 || (id0 & OBJECT_BIT)) return -1
-        // only remaining case is two different non-opaque non-air blocks that are adjacent
-        // really we should draw both faces here; draw neither for now
+        // can't tell from block IDs, so compare block materials of each face
+        var m0 = getMaterial(id0 & ID_MASK, materialDir)
+        var m1 = getMaterial(id1 & ID_MASK, materialDir + 1)
+        // if same material, draw no face. If one is missing, draw the other
+        if (m0 === m1) { return 0 }
+        else if (m0 === 0) { return -1 }
+        else if (m1 === 0) { return 1 }
+        // remaining case is two different non-opaque block materials
+        // facing each other. for now, draw neither..
         return 0
     }
 
