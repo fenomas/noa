@@ -61,7 +61,7 @@ function TerrainMesher() {
 
         // builds the babylon mesh that will be added to the scene
         var mesh
-        if (Object.keys(subMeshes).length) {
+        if (subMeshes.length) {
             mesh = meshBuilder.build(chunk, subMeshes, ignoreMaterials)
             profile_hook('terrain')
         }
@@ -121,11 +121,12 @@ function buildPaddedVoxelArray(chunk) {
             loc[1] = j
             for (var k = 0; k < 3; k++) {
                 loc[2] = k
-                loc.forEach((coord, i) => {
-                    pos[i] = posValues[coord]
-                    size[i] = sizeValues[coord]
-                    tgtPos[i] = tgtPosValues[coord]
-                })
+                for (var n = 0; n < 3; n++) {
+                    var coord = loc[n]
+                    pos[n] = posValues[coord]
+                    size[n] = sizeValues[coord]
+                    tgtPos[n] = tgtPosValues[coord]
+                }
                 var nab = chunk._neighbors.get(i - 1, j - 1, k - 1)
                 var nsrc = (nab) ? nab.voxels : null
                 copyNdarrayContents(nsrc, tgt, pos, size, tgtPos)
@@ -197,13 +198,13 @@ function MeshBuilder() {
     var noa
 
     // core
-    this.build = function (chunk, meshdata, ignoreMaterials) {
+    this.build = function (chunk, meshDataList, ignoreMaterials) {
         noa = chunk.noa
 
         // flag and merge submesh data that can share the default terrain material
         var numMergeable = 0
-        Object.keys(meshdata).forEach(key => {
-            var mdat = meshdata[key]
+        for (var i = 0; i < meshDataList.length; i++) {
+            var mdat = meshDataList[i]
             if (ignoreMaterials) {
                 mdat.mergeable = true
             } else {
@@ -214,17 +215,17 @@ function MeshBuilder() {
                     && (!matData.renderMat)
             }
             if (mdat.mergeable) numMergeable++
-        })
-        if (numMergeable > 1) mergeSubmeshes(meshdata, false)
+        }
+        if (numMergeable > 1) mergeSubmeshes(meshDataList, false)
 
         // now merge everything, keeping track of vertices/indices/materials
-        var results = mergeSubmeshes(meshdata, true)
+        var results = mergeSubmeshes(meshDataList, true)
 
         // merge sole remaining submesh instance into a babylon mesh
-        var mdat = meshdata[results.mergedID]
+        var merged = meshDataList[0]
         var name = 'chunk_' + chunk.id
         var mats = results.matIDs.map(id => getTerrainMaterial(id, ignoreMaterials))
-        var mesh = buildMeshFromSubmesh(mdat, name, mats, results.vertices, results.indices)
+        var mesh = buildMeshFromSubmesh(merged, name, mats, results.vertices, results.indices)
 
         // done, mesh will be positioned later when added to the scene
         return mesh
@@ -240,11 +241,9 @@ function MeshBuilder() {
         var indices = []
         var matIDs = []
 
-        var keylist = Object.keys(meshDataList)
         var target = null
-        var targetID
-        for (var i = 0; i < keylist.length; ++i) {
-            var mdat = meshDataList[keylist[i]]
+        for (var i = 0; i < meshDataList.length; ++i) {
+            var mdat = meshDataList[i]
             if (!(mergeAll || mdat.mergeable)) continue
 
             vertices.push(mdat.positions.length)
@@ -253,7 +252,6 @@ function MeshBuilder() {
 
             if (!target) {
                 target = mdat
-                targetID = keylist[i]
 
             } else {
                 var indexOffset = target.positions.length / 3
@@ -267,13 +265,13 @@ function MeshBuilder() {
                     target.indices.push(mdat.indices[j] + indexOffset)
                 }
                 // get rid of entry that's been merged
+                meshDataList.splice(i, 1)
                 mdat.dispose()
-                delete meshDataList[keylist[i]]
+                i--
             }
         }
 
         return {
-            mergedID: targetID,
             vertices: vertices,
             indices: indices,
             matIDs: matIDs,
@@ -422,7 +420,7 @@ function GreedyMesher() {
 
     this.mesh = function (voxels, getMaterial, getColor, doAO, aoValues, revAoVal, edgesOnly) {
 
-        // return object, holder for Submeshes
+        // hash of Submeshes, keyed by material ID
         var subMeshes = {}
 
         // precalc how to apply AO packing in first masking function
@@ -469,8 +467,8 @@ function GreedyMesher() {
             }
         }
 
-        // done, return array of submeshes
-        return subMeshes
+        // done, return hash of subMeshes as an array
+        return Object.keys(subMeshes).map(k => subMeshes[k])
     }
 
 
