@@ -1,3 +1,5 @@
+import { Mesh } from "@babylonjs/core";
+
 export declare class Entities {
     /**
      * @class Entities
@@ -31,7 +33,7 @@ export declare class Entities {
     /** @param id */
     getPosition: (id: number) => any;
     /** @param id */
-    _localSetPosition: (id: number, pos: any) => void;
+    _localSetPosition: (id: number, pos: number[]) => void;
     /** @param id, positionArr */
     setPosition: (id: number, pos: any, _yarg: any, _zarg: any) => void;
     /** @param id, xs, ys, zs */
@@ -43,11 +45,21 @@ export declare class Entities {
     getMovement: any;
     getCollideTerrain: any;
     getCollideEntities: any;
-    onPairwiseEntityCollision: (id1: any, id2: any) => void;
-    constructor: typeof Entities;
-    addComponentAgain(id: number, name: any, state: any): void;
+    onPairwiseEntityCollision: (id1: number, id2: number) => void;
+    addComponentAgain(id: number, name: string, state?: Object): void;
+    addComponent(id: number, name: string, state?: Object): void;
     isTerrainBlocked(x: number, y: number, z: number): boolean;
     getEntitiesInAABB(box: number, withComponent: any): any[];
-    add(position: any, width: any, height: any, mesh: any, meshOffset: any, doPhysics: any, shadow: any): any;
+
+    /** Helper to set up a general entity, and populate with some common components depending on arguments. */
+    add(
+        position: number[],
+        width: number,
+        height: number,
+        mesh: Mesh,
+        meshOffset?: number[],
+        doPhysics?: boolean,
+        shadow?: boolean
+    ): any;
 }
 export {};

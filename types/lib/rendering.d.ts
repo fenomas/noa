@@ -1,10 +1,12 @@
+import { Mesh } from "@babylonjs/core";
+
 export declare class Rendering {
     /**
      * @class
      * @typicalname noa.rendering
      * @classdesc Manages all rendering, and the BABYLON scene, materials, etc.
      */
-    constructor(noa: any, opts: RenderingOptions, canvas: any);
+    constructor(noa: any, opts: RenderingOptions, canvas: HTMLCanvasElement);
     noa: any;
     useAO: boolean;
     aoVals: any;
@@ -16,14 +18,9 @@ export declare class Rendering {
     render(dt: any): void;
     resize(e: any): void;
     highlightBlockFace(show: any, posArr: any, normArr: any): void;
-    addMeshToScene(
-        mesh: any,
-        isStatic: any,
-        pos: any,
-        _containingChunk: any
-    ): void;
-    removeMeshFromScene(mesh: any): void;
-    makeStandardMaterial(name: any): any;
+    addMeshToScene(mesh: Mesh, isStatic?: boolean, pos?: number[]): void;
+    removeMeshFromScene(mesh: Mesh): void;
+    makeStandardMaterial(name: string): any;
     prepareChunkForRendering(chunk: any): void;
     disposeChunkForRendering(chunk: any): void;
     _rebaseOrigin(delta: any): void;
