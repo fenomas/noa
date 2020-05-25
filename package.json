@@ -3,8 +3,10 @@
     "version": "0.28.0",
     "description": "Experimental voxel game engine",
     "main": "src/index.js",
+    "typings": "types/index.d.ts",
     "files": [
-        "/src"
+        "/src",
+        "/types"
     ],
     "scripts": {
         "doc": "jsdoc2md -f src/* src/**/* -g table -p list --partial doc-templates/* > doc/API.md"
@@ -38,6 +40,7 @@
     "devDependencies": {
         "eslint": "^6.7.1",
         "js-beautify": "^1.10.2",
-        "jsdoc-to-markdown": "^5.0.3"
+        "jsdoc-to-markdown": "^5.0.3",
+        "typescript": "^3.9.3"
     }
 }
