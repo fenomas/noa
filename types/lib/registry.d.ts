@@ -1,3 +1,6 @@
+import { Material } from "@babylonjs/core/Materials/material";
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
+
 export declare class Registry {
     /**
      * @class
@@ -32,7 +35,29 @@ export declare class Registry {
      *  * onUnset(): block event handler
      *  * onCustomMeshCreate(): block event handler
      */
-    registerBlock: any;
+    registerBlock: (
+        id: number,
+        opts: {
+            material: string | string[];
+            // solid: (true) solidity for physics purposes
+            solid?: boolean;
+            // opaque: (true) fully obscures neighboring blocks
+            opaque?: boolean;
+            // fluid: (false) whether nonsolid block is a fluid (buoyant, viscous..)
+            fluid?: boolean;
+            // (null) if specified, noa will create a copy this mesh in the voxel
+            blockMesh?: Mesh | null;
+            // fluidDensity: (1.0) for fluid blocks
+            fluidDensity?: number;
+            // viscosity: (0.5) for fluid blocks
+            viscosity?: number;
+            onLoad?: (x: number, y: number, z: number) => void;
+            onUnload?: (x: number, y: number, z: number) => void;
+            onSet?: (x: number, y: number, z: number) => void;
+            onUnset?: (x: number, y: number, z: number) => void;
+            onCustomMeshCreate?: (x: number, y: number, z: number) => void;
+        }
+    ) => number;
     /**
      * Register (by name) a material and its parameters.
      *
@@ -43,11 +68,11 @@ export declare class Registry {
      * @param renderMaterial an optional BABYLON material to be used for block faces with this block material
      */
     registerMaterial: (
-        name: any,
-        color: any,
-        textureURL: any,
-        texHasAlpha: any,
-        renderMaterial: any
+        name: string,
+        color?: string,
+        textureURL?: string,
+        texHasAlpha?: boolean,
+        renderMaterial?: Material
     ) => any;
     /**
      * block solidity (as in physics)
