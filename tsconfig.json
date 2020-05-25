@@ -1,0 +1,25 @@
+{
+    // Change this to match your project
+    "include": ["src/**/*", "src/index.js"],
+
+    "compilerOptions": {
+        // Tells TypeScript to read JS files, as
+        // normally they are ignored as source files
+        "allowJs": true,
+        // Generate d.ts files
+        "declaration": true,
+        // This compiler run should
+        // only output d.ts files
+        "emitDeclarationOnly": true,
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "downlevelIteration": true,
+        "useDefineForClassFields": true,
+        "target": "ES2018",
+        "lib": ["DOM", "DOM.Iterable", "ES2018"],
+        // Types should go into this directory.
+        // Removing this would place the .d.ts files
+        // next to the .js files
+        "outDir": "types"
+    }
+}
