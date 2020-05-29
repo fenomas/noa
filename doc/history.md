@@ -3,6 +3,7 @@
 
 This is a summary of new features and breaking changes in recent `noa` versions.
 
+ * [0.29.0](#0290)
  * [0.28.0](#0280)
  * [0.27.0](#0270)
  * [0.26.0](#0260)
@@ -16,6 +17,12 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 
 ----
+
+### 0.29.0
+
+   * New option: `noa.world.worldGenWhilePaused`. When `true`, the engine will keep doing world generation (i.e. `worldDataNeeded` events, meshing, disposing outdated chunks, etc) even while paused.
+   * Fixed the `dt` parameter to `noa#render(dt)` events. Previously it could occasionally be wrong in such a way as to cause temporal aliasing when used for animations.     
+
 
 ### 0.28.0
 

@@ -1,14 +1,14 @@
 
 # noa-engine
 
-An experimental voxel engine.
+An experimental voxel game engine.
 
-Example games:
- * [Minecraft Classic](https://classic.minecraft.net/) - official minecraft game built on this engine
+Some projects using `noa`:
+ * [Minecraft Classic](https://classic.minecraft.net/) - by some company in Sweden or something
  * [CityCraft.io](https://citycraft.io/) - multiplayer voxel cities, by [Neel Rao](https://neelmango.com/)
- * [noa-lt](http://andyhall.github.io/noa-lt/) - game world containing "slides" for a talk I gave on voxels in JS
- * [noa-examples](https://github.com/andyhall/noa-examples) - repo with minimal hello-world and testbed game worlds
- * [old testbed](https://andyhall.github.io/noa-testbed/) - outdated, but colorful
+ * [noa-examples](https://github.com/andyhall/noa-examples) - starter repo with minimal hello-world and testbed games
+ * [noa-lt](http://andyhall.github.io/noa-lt/) - game world containing "slides" for a talk I gave a long time ago
+ * [very old test world](https://andyhall.github.io/noa-testbed/) - outdated, but colorful
 
 ----
 
@@ -29,11 +29,8 @@ Documentation PRs are welcome!
 ## Status, contributing, etc.
 
 This library is under active development and contributions are welcome!
-If you have a nontrivial feature in mind, probably best to open a discussion issue
-first though. The goal of this module is minimally only do voxel-specific things, 
-and otherwise to stay out of your way.
-
-> Please note that all feature work is in the `develop` branch; please send any PRs against that branch!
+**Please submit any PRs against the `develop` branch**, and for nontrivial new 
+features it's probably best to open a discussion issue first.
 
 For code style/formatting, the repo includes config files for [eslint](https://eslint.org/) and [js-beautify](https://github.com/beautify-web/js-beautify), which are both dev dependencies. If you use VSCode for editing, here are the extensions I use to run them automatically: [beautify](https://marketplace.visualstudio.com/items?itemName=HookyQR.beautify), [eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint).
 
@@ -43,10 +40,14 @@ For code style/formatting, the repo includes config files for [eslint](https://e
 
 See [history.md](doc/history.md) for changes and migration info from each version.
 
-Migration notes:
+Recent changes:
 
- * `v0.28`: improves swapping between world data sets (see `noa.worldName`).  
-   Removes duplicated voxel padding in each chunk (this means world generation 
+ * `v0.29`: 
+   * adds option `noa.world.worldGenWhilePaused`
+   * performance and bug fixes
+ * `v0.28`: 
+   * improves swapping between world data sets (see `noa.worldName`).
+   * Removes duplicated voxel padding in each chunk (this means world generation 
  no longer needs to be deterministic!)
  * `v0.27`: adds world origin rebasing. If you encounter new bugs related to entity positions, see [positions.md](doc/positions.md)
  * `v0.26`: game clients should declare a dependency on `@babylon/core`, rather than manually loading babylon.js and leaving it in global scope. This allows tree-shaking to happen, greatly reducing (production) bundle sizes for typical games. For sample code and configs see [noa-examples](https://github.com/andyhall/noa-examples).
