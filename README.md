@@ -5,10 +5,10 @@ An experimental voxel game engine.
 
 Some projects using `noa`:
  * [Minecraft Classic](https://classic.minecraft.net/) - by some company in Sweden or something
- * [CityCraft.io](https://citycraft.io/) - multiplayer voxel cities, by [Neel Rao](https://neelmango.com/)
+ * [CityCraft.io](https://citycraft.io/) - multiplayer voxel cities
+ * [VoxelSrv](https://github.com/Patbox/voxelsrv) - a voxel game inspired by Minecraft
  * [noa-examples](https://github.com/andyhall/noa-examples) - starter repo with minimal hello-world and testbed games
- * [noa-lt](http://andyhall.github.io/noa-lt/) - game world containing "slides" for a talk I gave a long time ago
- * [very old test world](https://andyhall.github.io/noa-testbed/) - outdated, but colorful
+
 
 ----
 
