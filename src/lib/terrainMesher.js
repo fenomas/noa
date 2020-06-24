@@ -16,7 +16,7 @@ export default new TerrainMesher()
 
 
 // enable for profiling..
-var PROFILE_EVERY = 0 // 100
+var PROFILE_EVERY = 500 // 100
 
 
 
