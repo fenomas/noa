@@ -406,7 +406,7 @@ function GreedyMesher(noa) {
 
     var solidLookup
     var opacityLookup
-    var getSolidity = id => solidLookup[id]
+    // var getSolidity = id => solidLookup[id]
     var getOpacity = id => opacityLookup[id]
 
 
@@ -762,27 +762,27 @@ function GreedyMesher(noa) {
         var a11 = 1
 
         // facing into a solid (non-opaque) block?
-        var facingSolid = getSolidity(data.get(ipos, j, k))
+        var facingSolid = solidLookup[data.get(ipos, j, k)]
 
         // inc occlusion of vertex next to obstructed side
-        if (getSolidity(data.get(ipos, j + 1, k))) { ++a10; ++a11 }
-        if (getSolidity(data.get(ipos, j - 1, k))) { ++a00; ++a01 }
-        if (getSolidity(data.get(ipos, j, k + 1))) { ++a01; ++a11 }
-        if (getSolidity(data.get(ipos, j, k - 1))) { ++a00; ++a10 }
+        if (solidLookup[data.get(ipos, j + 1, k)]) { ++a10; ++a11 }
+        if (solidLookup[data.get(ipos, j - 1, k)]) { ++a00; ++a01 }
+        if (solidLookup[data.get(ipos, j, k + 1)]) { ++a01; ++a11 }
+        if (solidLookup[data.get(ipos, j, k - 1)]) { ++a00; ++a10 }
 
         // treat corners differently based when facing a solid block
         if (facingSolid) {
             // always 2, or 3 in corners
-            a11 = (a11 === 3 || getSolidity(data.get(ipos, j + 1, k + 1))) ? 3 : 2
-            a01 = (a01 === 3 || getSolidity(data.get(ipos, j - 1, k + 1))) ? 3 : 2
-            a10 = (a10 === 3 || getSolidity(data.get(ipos, j + 1, k - 1))) ? 3 : 2
-            a00 = (a00 === 3 || getSolidity(data.get(ipos, j - 1, k - 1))) ? 3 : 2
+            a11 = (a11 === 3 || solidLookup[data.get(ipos, j + 1, k + 1)]) ? 3 : 2
+            a01 = (a01 === 3 || solidLookup[data.get(ipos, j - 1, k + 1)]) ? 3 : 2
+            a10 = (a10 === 3 || solidLookup[data.get(ipos, j + 1, k - 1)]) ? 3 : 2
+            a00 = (a00 === 3 || solidLookup[data.get(ipos, j - 1, k - 1)]) ? 3 : 2
         } else {
             // treat corner as occlusion 3 only if not occluded already
-            if (a11 === 1 && (getSolidity(data.get(ipos, j + 1, k + 1)))) { a11 = 2 }
-            if (a01 === 1 && (getSolidity(data.get(ipos, j - 1, k + 1)))) { a01 = 2 }
-            if (a10 === 1 && (getSolidity(data.get(ipos, j + 1, k - 1)))) { a10 = 2 }
-            if (a00 === 1 && (getSolidity(data.get(ipos, j - 1, k - 1)))) { a00 = 2 }
+            if (a11 === 1 && (solidLookup[data.get(ipos, j + 1, k + 1)])) { a11 = 2 }
+            if (a01 === 1 && (solidLookup[data.get(ipos, j - 1, k + 1)])) { a01 = 2 }
+            if (a10 === 1 && (solidLookup[data.get(ipos, j + 1, k - 1)])) { a10 = 2 }
+            if (a00 === 1 && (solidLookup[data.get(ipos, j - 1, k - 1)])) { a00 = 2 }
         }
 
         return a11 << 6 | a10 << 4 | a01 << 2 | a00
@@ -797,59 +797,59 @@ function GreedyMesher(noa) {
         var a11 = 1
 
         // facing into a solid (non-opaque) block?
-        var facingSolid = getSolidity(data.get(ipos, j, k))
+        var facingSolid = solidLookup[data.get(ipos, j, k)]
 
         // inc occlusion of vertex next to obstructed side
-        if (getSolidity(data.get(ipos, j + 1, k))) { ++a10; ++a11 }
-        if (getSolidity(data.get(ipos, j - 1, k))) { ++a00; ++a01 }
-        if (getSolidity(data.get(ipos, j, k + 1))) { ++a01; ++a11 }
-        if (getSolidity(data.get(ipos, j, k - 1))) { ++a00; ++a10 }
+        if (solidLookup[data.get(ipos, j + 1, k)]) { ++a10; ++a11 }
+        if (solidLookup[data.get(ipos, j - 1, k)]) { ++a00; ++a01 }
+        if (solidLookup[data.get(ipos, j, k + 1)]) { ++a01; ++a11 }
+        if (solidLookup[data.get(ipos, j, k - 1)]) { ++a00; ++a10 }
 
         if (facingSolid) {
             // always 2, or 3 in corners
-            a11 = (a11 === 3 || getSolidity(data.get(ipos, j + 1, k + 1))) ? 3 : 2
-            a01 = (a01 === 3 || getSolidity(data.get(ipos, j - 1, k + 1))) ? 3 : 2
-            a10 = (a10 === 3 || getSolidity(data.get(ipos, j + 1, k - 1))) ? 3 : 2
-            a00 = (a00 === 3 || getSolidity(data.get(ipos, j - 1, k - 1))) ? 3 : 2
+            a11 = (a11 === 3 || solidLookup[data.get(ipos, j + 1, k + 1)]) ? 3 : 2
+            a01 = (a01 === 3 || solidLookup[data.get(ipos, j - 1, k + 1)]) ? 3 : 2
+            a10 = (a10 === 3 || solidLookup[data.get(ipos, j + 1, k - 1)]) ? 3 : 2
+            a00 = (a00 === 3 || solidLookup[data.get(ipos, j - 1, k - 1)]) ? 3 : 2
         } else {
 
             // check each corner, and if not present do reverse AO
             if (a11 === 1) {
-                if (getSolidity(data.get(ipos, j + 1, k + 1))) {
+                if (solidLookup[data.get(ipos, j + 1, k + 1)]) {
                     a11 = 2
-                } else if (!(getSolidity(data.get(ineg, j, k + 1))) ||
-                    !(getSolidity(data.get(ineg, j + 1, k))) ||
-                    !(getSolidity(data.get(ineg, j + 1, k + 1)))) {
+                } else if (!(solidLookup[data.get(ineg, j, k + 1)]) ||
+                    !(solidLookup[data.get(ineg, j + 1, k)]) ||
+                    !(solidLookup[data.get(ineg, j + 1, k + 1)])) {
                     a11 = 0
                 }
             }
 
             if (a10 === 1) {
-                if (getSolidity(data.get(ipos, j + 1, k - 1))) {
+                if (solidLookup[data.get(ipos, j + 1, k - 1)]) {
                     a10 = 2
-                } else if (!(getSolidity(data.get(ineg, j, k - 1))) ||
-                    !(getSolidity(data.get(ineg, j + 1, k))) ||
-                    !(getSolidity(data.get(ineg, j + 1, k - 1)))) {
+                } else if (!(solidLookup[data.get(ineg, j, k - 1)]) ||
+                    !(solidLookup[data.get(ineg, j + 1, k)]) ||
+                    !(solidLookup[data.get(ineg, j + 1, k - 1)])) {
                     a10 = 0
                 }
             }
 
             if (a01 === 1) {
-                if (getSolidity(data.get(ipos, j - 1, k + 1))) {
+                if (solidLookup[data.get(ipos, j - 1, k + 1)]) {
                     a01 = 2
-                } else if (!(getSolidity(data.get(ineg, j, k + 1))) ||
-                    !(getSolidity(data.get(ineg, j - 1, k))) ||
-                    !(getSolidity(data.get(ineg, j - 1, k + 1)))) {
+                } else if (!(solidLookup[data.get(ineg, j, k + 1)]) ||
+                    !(solidLookup[data.get(ineg, j - 1, k)]) ||
+                    !(solidLookup[data.get(ineg, j - 1, k + 1)])) {
                     a01 = 0
                 }
             }
 
             if (a00 === 1) {
-                if (getSolidity(data.get(ipos, j - 1, k - 1))) {
+                if (solidLookup[data.get(ipos, j - 1, k - 1)]) {
                     a00 = 2
-                } else if (!(getSolidity(data.get(ineg, j, k - 1))) ||
-                    !(getSolidity(data.get(ineg, j - 1, k))) ||
-                    !(getSolidity(data.get(ineg, j - 1, k - 1)))) {
+                } else if (!(solidLookup[data.get(ineg, j, k - 1)]) ||
+                    !(solidLookup[data.get(ineg, j - 1, k)]) ||
+                    !(solidLookup[data.get(ineg, j - 1, k - 1)])) {
                     a00 = 0
                 }
             }
