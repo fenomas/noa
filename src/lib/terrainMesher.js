@@ -7,16 +7,15 @@ import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial'
 import { Texture } from '@babylonjs/core/Materials/Textures/texture'
 import '@babylonjs/core/Meshes/meshBuilder'
 
-import { constants } from './constants'
 import { copyNdarrayContents } from './util'
 
-export default new TerrainMesher()
+export default TerrainMesher
 
 
 
 
 // enable for profiling..
-var PROFILE_EVERY = 0 // 100
+var PROFILE_EVERY = 500 // 100
 
 
 
@@ -28,21 +27,20 @@ var PROFILE_EVERY = 0 // 100
  */
 
 
-function TerrainMesher() {
+function TerrainMesher(noa) {
 
-    var greedyMesher = new GreedyMesher()
-    var meshBuilder = new MeshBuilder()
+    var greedyMesher = new GreedyMesher(noa)
+    var meshBuilder = new MeshBuilder(noa)
 
 
     /*
      * 
-     * Entry point and high-level flow
+     *      Entry point and high-level flow
      * 
-     */
+    */
 
     this.meshChunk = function (chunk, matGetter, colGetter, ignoreMaterials, useAO, aoVals, revAoVal) {
         profile_hook('start')
-        var noa = chunk.noa
 
         // args
         var mats = matGetter || noa.registry.getBlockFaceMaterial
@@ -193,13 +191,11 @@ Submesh.prototype.dispose = function () {
  * 
  */
 
-function MeshBuilder() {
+function MeshBuilder(noa) {
 
-    var noa
 
     // core
     this.build = function (chunk, meshDataList, ignoreMaterials) {
-        noa = chunk.noa
 
         // flag and merge submesh data that can share the default terrain material
         var numMergeable = 0
@@ -347,7 +343,7 @@ function MeshBuilder() {
         // otherwise determine which built-in material to use
         var url = noa.registry.getMaterialTexture(id)
         var alpha = matData.alpha
-        if (!url && alpha == 1) {
+        if (!url && alpha === 1) {
             // base material is fine for non-textured case, if no alpha
             return noa.rendering.flatMaterial
         }
@@ -403,22 +399,21 @@ function MeshBuilder() {
  *        }
  */
 
-function GreedyMesher() {
-
-    var ID_MASK = constants.ID_MASK
-    var SOLID_BIT = constants.SOLID_BIT
-    var OPAQUE_BIT = constants.OPAQUE_BIT
-    // var VAR_MASK = constants.VAR_MASK // NYI
-    // var OBJECT_BIT = constants.OBJECT_BIT // not needed here
-
+function GreedyMesher(noa) {
 
     var maskCache = new Int16Array(16)
     var aomaskCache = new Uint16Array(16)
 
+    var solidLookup
+    var opacityLookup
+    var getSolidity = id => solidLookup[id]
+    var getOpacity = id => opacityLookup[id]
 
 
 
     this.mesh = function (voxels, getMaterial, getColor, doAO, aoValues, revAoVal, edgesOnly) {
+        solidLookup = noa.registry._solidityLookup
+        opacityLookup = noa.registry._opacityLookup
 
         // hash of Submeshes, keyed by material ID
         var subMeshes = {}
@@ -517,8 +512,8 @@ function GreedyMesher() {
                 if (faceDir) {
                     // set regular mask value to material ID, sign indicating direction
                     mask[n] = (faceDir > 0) ?
-                        getMaterial(id0 & ID_MASK, materialDir) :
-                        -getMaterial(id1 & ID_MASK, materialDir + 1)
+                        getMaterial(id0, materialDir) :
+                        -getMaterial(id1, materialDir + 1)
 
                     // if doing AO, precalculate AO level for each face into second mask
                     if (aoPackFcn) {
@@ -536,15 +531,15 @@ function GreedyMesher() {
 
     function getFaceDir(id0, id1, getMaterial, materialDir) {
         // no face if both blocks are opaque
-        var op0 = id0 & OPAQUE_BIT
-        var op1 = id1 & OPAQUE_BIT
+        var op0 = getOpacity(id0)
+        var op1 = getOpacity(id1)
         if (op0 && op1) return 0
         // if either block is opaque draw a face for it
         if (op0) return 1
         if (op1) return -1
         // can't tell from block IDs, so compare block materials of each face
-        var m0 = getMaterial(id0 & ID_MASK, materialDir)
-        var m1 = getMaterial(id1 & ID_MASK, materialDir + 1)
+        var m0 = getMaterial(id0, materialDir)
+        var m1 = getMaterial(id1, materialDir + 1)
         // if same material, draw no face. If one is missing, draw the other
         if (m0 === m1) { return 0 }
         else if (m0 === 0) { return -1 }
@@ -732,7 +727,7 @@ function GreedyMesher() {
         // this bit is pretty magical..
         var triDir = true
         if (ao00 === ao11) {
-            triDir = (ao01 === ao10) ? (ao01 == 2) : true
+            triDir = (ao01 === ao10) ? (ao01 === 2) : true
         } else {
             triDir = (ao01 === ao10) ? false : (ao00 + ao11 > ao01 + ao10)
         }
@@ -765,30 +760,29 @@ function GreedyMesher() {
         var a01 = 1
         var a10 = 1
         var a11 = 1
-        var solidBit = SOLID_BIT
 
         // facing into a solid (non-opaque) block?
-        var facingSolid = (solidBit & data.get(ipos, j, k))
+        var facingSolid = getSolidity(data.get(ipos, j, k))
 
         // inc occlusion of vertex next to obstructed side
-        if (data.get(ipos, j + 1, k) & solidBit) { ++a10; ++a11 }
-        if (data.get(ipos, j - 1, k) & solidBit) { ++a00; ++a01 }
-        if (data.get(ipos, j, k + 1) & solidBit) { ++a01; ++a11 }
-        if (data.get(ipos, j, k - 1) & solidBit) { ++a00; ++a10 }
+        if (getSolidity(data.get(ipos, j + 1, k))) { ++a10; ++a11 }
+        if (getSolidity(data.get(ipos, j - 1, k))) { ++a00; ++a01 }
+        if (getSolidity(data.get(ipos, j, k + 1))) { ++a01; ++a11 }
+        if (getSolidity(data.get(ipos, j, k - 1))) { ++a00; ++a10 }
 
         // treat corners differently based when facing a solid block
         if (facingSolid) {
             // always 2, or 3 in corners
-            a11 = (a11 == 3 || data.get(ipos, j + 1, k + 1) & solidBit) ? 3 : 2
-            a01 = (a01 == 3 || data.get(ipos, j - 1, k + 1) & solidBit) ? 3 : 2
-            a10 = (a10 == 3 || data.get(ipos, j + 1, k - 1) & solidBit) ? 3 : 2
-            a00 = (a00 == 3 || data.get(ipos, j - 1, k - 1) & solidBit) ? 3 : 2
+            a11 = (a11 === 3 || getSolidity(data.get(ipos, j + 1, k + 1))) ? 3 : 2
+            a01 = (a01 === 3 || getSolidity(data.get(ipos, j - 1, k + 1))) ? 3 : 2
+            a10 = (a10 === 3 || getSolidity(data.get(ipos, j + 1, k - 1))) ? 3 : 2
+            a00 = (a00 === 3 || getSolidity(data.get(ipos, j - 1, k - 1))) ? 3 : 2
         } else {
             // treat corner as occlusion 3 only if not occluded already
-            if (a11 === 1 && (data.get(ipos, j + 1, k + 1) & solidBit)) { a11 = 2 }
-            if (a01 === 1 && (data.get(ipos, j - 1, k + 1) & solidBit)) { a01 = 2 }
-            if (a10 === 1 && (data.get(ipos, j + 1, k - 1) & solidBit)) { a10 = 2 }
-            if (a00 === 1 && (data.get(ipos, j - 1, k - 1) & solidBit)) { a00 = 2 }
+            if (a11 === 1 && (getSolidity(data.get(ipos, j + 1, k + 1)))) { a11 = 2 }
+            if (a01 === 1 && (getSolidity(data.get(ipos, j - 1, k + 1)))) { a01 = 2 }
+            if (a10 === 1 && (getSolidity(data.get(ipos, j + 1, k - 1)))) { a10 = 2 }
+            if (a00 === 1 && (getSolidity(data.get(ipos, j - 1, k - 1)))) { a00 = 2 }
         }
 
         return a11 << 6 | a10 << 4 | a01 << 2 | a00
@@ -801,62 +795,61 @@ function GreedyMesher() {
         var a01 = 1
         var a10 = 1
         var a11 = 1
-        var solidBit = SOLID_BIT
 
         // facing into a solid (non-opaque) block?
-        var facingSolid = (solidBit & data.get(ipos, j, k))
+        var facingSolid = getSolidity(data.get(ipos, j, k))
 
         // inc occlusion of vertex next to obstructed side
-        if (data.get(ipos, j + 1, k) & solidBit) { ++a10; ++a11 }
-        if (data.get(ipos, j - 1, k) & solidBit) { ++a00; ++a01 }
-        if (data.get(ipos, j, k + 1) & solidBit) { ++a01; ++a11 }
-        if (data.get(ipos, j, k - 1) & solidBit) { ++a00; ++a10 }
+        if (getSolidity(data.get(ipos, j + 1, k))) { ++a10; ++a11 }
+        if (getSolidity(data.get(ipos, j - 1, k))) { ++a00; ++a01 }
+        if (getSolidity(data.get(ipos, j, k + 1))) { ++a01; ++a11 }
+        if (getSolidity(data.get(ipos, j, k - 1))) { ++a00; ++a10 }
 
         if (facingSolid) {
             // always 2, or 3 in corners
-            a11 = (a11 == 3 || data.get(ipos, j + 1, k + 1) & solidBit) ? 3 : 2
-            a01 = (a01 == 3 || data.get(ipos, j - 1, k + 1) & solidBit) ? 3 : 2
-            a10 = (a10 == 3 || data.get(ipos, j + 1, k - 1) & solidBit) ? 3 : 2
-            a00 = (a00 == 3 || data.get(ipos, j - 1, k - 1) & solidBit) ? 3 : 2
+            a11 = (a11 === 3 || getSolidity(data.get(ipos, j + 1, k + 1))) ? 3 : 2
+            a01 = (a01 === 3 || getSolidity(data.get(ipos, j - 1, k + 1))) ? 3 : 2
+            a10 = (a10 === 3 || getSolidity(data.get(ipos, j + 1, k - 1))) ? 3 : 2
+            a00 = (a00 === 3 || getSolidity(data.get(ipos, j - 1, k - 1))) ? 3 : 2
         } else {
 
             // check each corner, and if not present do reverse AO
             if (a11 === 1) {
-                if (data.get(ipos, j + 1, k + 1) & solidBit) {
+                if (getSolidity(data.get(ipos, j + 1, k + 1))) {
                     a11 = 2
-                } else if (!(data.get(ineg, j, k + 1) & solidBit) ||
-                    !(data.get(ineg, j + 1, k) & solidBit) ||
-                    !(data.get(ineg, j + 1, k + 1) & solidBit)) {
+                } else if (!(getSolidity(data.get(ineg, j, k + 1))) ||
+                    !(getSolidity(data.get(ineg, j + 1, k))) ||
+                    !(getSolidity(data.get(ineg, j + 1, k + 1)))) {
                     a11 = 0
                 }
             }
 
             if (a10 === 1) {
-                if (data.get(ipos, j + 1, k - 1) & solidBit) {
+                if (getSolidity(data.get(ipos, j + 1, k - 1))) {
                     a10 = 2
-                } else if (!(data.get(ineg, j, k - 1) & solidBit) ||
-                    !(data.get(ineg, j + 1, k) & solidBit) ||
-                    !(data.get(ineg, j + 1, k - 1) & solidBit)) {
+                } else if (!(getSolidity(data.get(ineg, j, k - 1))) ||
+                    !(getSolidity(data.get(ineg, j + 1, k))) ||
+                    !(getSolidity(data.get(ineg, j + 1, k - 1)))) {
                     a10 = 0
                 }
             }
 
             if (a01 === 1) {
-                if (data.get(ipos, j - 1, k + 1) & solidBit) {
+                if (getSolidity(data.get(ipos, j - 1, k + 1))) {
                     a01 = 2
-                } else if (!(data.get(ineg, j, k + 1) & solidBit) ||
-                    !(data.get(ineg, j - 1, k) & solidBit) ||
-                    !(data.get(ineg, j - 1, k + 1) & solidBit)) {
+                } else if (!(getSolidity(data.get(ineg, j, k + 1))) ||
+                    !(getSolidity(data.get(ineg, j - 1, k))) ||
+                    !(getSolidity(data.get(ineg, j - 1, k + 1)))) {
                     a01 = 0
                 }
             }
 
             if (a00 === 1) {
-                if (data.get(ipos, j - 1, k - 1) & solidBit) {
+                if (getSolidity(data.get(ipos, j - 1, k - 1))) {
                     a00 = 2
-                } else if (!(data.get(ineg, j, k - 1) & solidBit) ||
-                    !(data.get(ineg, j - 1, k) & solidBit) ||
-                    !(data.get(ineg, j - 1, k - 1) & solidBit)) {
+                } else if (!(getSolidity(data.get(ineg, j, k - 1))) ||
+                    !(getSolidity(data.get(ineg, j - 1, k))) ||
+                    !(getSolidity(data.get(ineg, j - 1, k - 1)))) {
                     a00 = 0
                 }
             }

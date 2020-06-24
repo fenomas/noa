@@ -2,9 +2,8 @@
 var ndarray = require('ndarray')
 
 // shared references to terrain/object meshers
-import terrainMesher from './terrainMesher'
+import TerrainMesher from './terrainMesher'
 import objectMesher from './objectMesher'
-import { constants } from './constants'
 
 
 export default Chunk
@@ -15,18 +14,9 @@ export default Chunk
  *   Chunk
  * 
  *  Stores and manages voxel ids and flags for each voxel within chunk
- *  See constants.js for internal data representation
  * 
  */
 
-
-
-// data representation
-var ID_MASK = constants.ID_MASK
-// var VAR_MASK = constants.VAR_MASK // NYI
-var SOLID_BIT = constants.SOLID_BIT
-var OPAQUE_BIT = constants.OPAQUE_BIT
-var OBJECT_BIT = constants.OBJECT_BIT
 
 
 
@@ -37,7 +27,7 @@ var OBJECT_BIT = constants.OBJECT_BIT
  *
  */
 
-function Chunk(noa, id, i, j, k, size, dataArray) {
+function Chunk(noa, id, i, j, k, size, dataArray, _overrideLookups) {
     this.id = id            // id used by noa
     this.requestID = ''     // id sent to game client
 
@@ -60,7 +50,7 @@ function Chunk(noa, id, i, j, k, size, dataArray) {
     this._objectsDirty = false
 
     // init references shared among all chunks
-    setBlockLookups(noa)
+    setBlockLookups(noa, _overrideLookups || {})
 
     // makes data for terrain / object meshing
     this._terrainMesh = null
@@ -80,7 +70,7 @@ function Chunk(noa, id, i, j, k, size, dataArray) {
     this._timesMeshed = 0
 
     // converts raw voxelID data into packed ID+solidity etc.
-    packVoxelData(this)
+    scanVoxelData(this)
 }
 
 
@@ -98,20 +88,20 @@ Chunk.prototype._updateVoxelArray = function (dataArray) {
     this._terrainDirty = false
     this._objectsDirty = false
     objectMesher.initChunk(this)
-    packVoxelData(this)
+    scanVoxelData(this)
 }
 
 
 // Registry lookup references shared by all chunks
 var solidLookup
 var opaqueLookup
-var objectMeshLookup
+var objectLookup
 var blockHandlerLookup
 
 function setBlockLookups(noa) {
     solidLookup = noa.registry._solidityLookup
     opaqueLookup = noa.registry._opacityLookup
-    objectMeshLookup = noa.registry._blockMeshLookup
+    objectLookup = noa.registry._objectLookup
     blockHandlerLookup = noa.registry._blockHandlerLookup
 }
 
@@ -131,30 +121,29 @@ function setBlockLookups(noa) {
 // get/set deal with block IDs, so that this class acts like an ndarray
 
 Chunk.prototype.get = function (x, y, z) {
-    return ID_MASK & this.voxels.get(x, y, z)
+    return this.voxels.get(x, y, z)
 }
 
 Chunk.prototype.getSolidityAt = function (x, y, z) {
-    return (SOLID_BIT & this.voxels.get(x, y, z)) ? true : false
+    return solidLookup[this.voxels.get(x, y, z)]
 }
 
-Chunk.prototype.set = function (x, y, z, id) {
+Chunk.prototype.set = function (x, y, z, newID) {
     var oldID = this.voxels.get(x, y, z)
-    var oldIDnum = oldID & ID_MASK
-    if (id === oldIDnum) return
+    var oldIDnum = oldID
+    if (newID === oldIDnum) return
 
     // manage data
-    var newID = packID(id)
     this.voxels.set(x, y, z, newID)
 
     // voxel lifecycle handling
-    if (oldID & OBJECT_BIT) removeObjectBlock(this, x, y, z)
-    if (newID & OBJECT_BIT) addObjectBlock(this, id, x, y, z)
+    if (objectLookup[oldID]) removeObjectBlock(this, x, y, z)
+    if (objectLookup[newID]) addObjectBlock(this, newID, x, y, z)
     callBlockHandler(this, oldIDnum, 'onUnset', x, y, z)
-    callBlockHandler(this, id, 'onSet', x, y, z)
+    callBlockHandler(this, newID, 'onSet', x, y, z)
 
     // track full/emptiness and info about terrain
-    if ((newID & OPAQUE_BIT) === 0) this.isFull = false
+    if (!opaqueLookup[newID]) this.isFull = false
     if (newID !== 0) this.isEmpty = false
     if (affectsTerrain(newID) || affectsTerrain(oldID)) {
         this._terrainDirty = true
@@ -165,9 +154,10 @@ Chunk.prototype.set = function (x, y, z, id) {
     }
 
     // neighbors only affected if solidity or opacity changed on an edge
-    var prevSO = oldID & (SOLID_BIT | OPAQUE_BIT)
-    var newSO = newID & (SOLID_BIT | OPAQUE_BIT)
-    if (newSO !== prevSO) {
+    var SOchanged = false
+    if (solidLookup[oldID] !== solidLookup[newID]) SOchanged = true
+    if (opaqueLookup[oldID] !== opaqueLookup[newID]) SOchanged = true
+    if (SOchanged) {
         var edge = this.size - 1
         var iedge = (x === 0) ? -1 : (x < edge) ? 0 : 1
         var jedge = (y === 0) ? -1 : (y < edge) ? 0 : 1
@@ -210,9 +200,11 @@ function callBlockHandler(chunk, blockID, type, x, y, z) {
 // Convert chunk's voxel terrain into a babylon.js mesh
 // Used internally, but needs to be public so mesh-building hacks can call it
 Chunk.prototype.mesh = function (matGetter, colGetter, useAO, aoVals, revAoVal) {
+    if (!terrainMesher) terrainMesher = new TerrainMesher(this.noa)
     return terrainMesher.meshChunk(this, matGetter, colGetter, useAO, aoVals, revAoVal)
 }
 
+var terrainMesher
 
 
 
@@ -250,18 +242,10 @@ Chunk.prototype.updateMeshes = function () {
 // helpers to determine which blocks are, or can affect, terrain meshes
 function affectsTerrain(id) {
     if (id === 0) return false
-    if (id & SOLID_BIT) return true
-    return ((id & OBJECT_BIT) === 0)
+    if (solidLookup[id]) return true
+    return !objectLookup[id]
 }
 
-// helper to pack a block ID into the internally stored form, given lookup tables
-function packID(id) {
-    var newID = id
-    if (solidLookup[id]) newID |= SOLID_BIT
-    if (opaqueLookup[id]) newID |= OPAQUE_BIT
-    if (objectMeshLookup[id]) newID |= OBJECT_BIT
-    return newID
-}
 
 
 
@@ -274,13 +258,13 @@ function packID(id) {
  * 
  *      Init
  * 
- *  Converts raw voxel ID data into packed ID + solidity etc.
+ *  Scans voxel data, processing object blocks and setting chunk flags
  * 
 */
 
-function packVoxelData(chunk) {
+function scanVoxelData(chunk) {
     // flags for tracking if chunk is entirely opaque or transparent
-    var fullyOpaque = OPAQUE_BIT
+    var fullyOpaque = true
     var fullyAir = true
     var hasObj = false
 
@@ -290,20 +274,16 @@ function packVoxelData(chunk) {
         for (var j = 0; j < len; ++j) {
             var index = voxels.index(i, j, 0)
             for (var k = 0; k < len; ++k, ++index) {
-                // pull raw ID - could in principle be packed, so mask it
-                var id = voxels.data[index] & ID_MASK
+                var id = voxels.data[index]
                 // skip air blocks
                 if (id === 0) {
-                    fullyOpaque = 0
+                    fullyOpaque = false
                     continue
                 }
-                // store ID as packed internal representation
-                var packed = packID(id) | 0
-                voxels.data[index] = packed
-                fullyOpaque &= packed
+                fullyOpaque = fullyOpaque && opaqueLookup[id]
                 fullyAir = false
-                // within unpadded view, handle object blocks and handlers
-                if (OBJECT_BIT & packed) {
+                // handle object blocks and handlers
+                if (objectLookup[id]) {
                     addObjectBlock(chunk, id, i, j, k)
                     hasObj = true
                 }
@@ -312,8 +292,8 @@ function packVoxelData(chunk) {
         }
     }
 
-    chunk.isFull = !!(fullyOpaque & OPAQUE_BIT)
-    chunk.isEmpty = !!(fullyAir)
+    chunk.isFull = fullyOpaque
+    chunk.isEmpty = fullyAir
     chunk._terrainDirty = !chunk.isEmpty
     chunk._objectsDirty = hasObj
 }
@@ -365,7 +345,7 @@ function callAllBlockHandlers(chunk, type) {
     for (var i = 0; i < size; ++i) {
         for (var j = 0; j < size; ++j) {
             for (var k = 0; k < size; ++k) {
-                var id = ID_MASK & arr.get(i, j, k)
+                var id = arr.get(i, j, k)
                 if (id > 0) callBlockHandler(chunk, id, type, i, j, k)
             }
         }

@@ -18,7 +18,6 @@ import createPhysics from './lib/physics'
 import createCamera from './lib/camera'
 import createRegistry from './lib/registry'
 import createEntities from './lib/entities'
-import { constants } from './lib/constants'
 
 
 
@@ -237,9 +236,6 @@ function Engine(opts) {
         this.on('targetBlockChanged', this.defaultBlockHighlightFunction)
     }
 
-
-    // expose constants, for HACKING™
-    this._constants = constants
 
     // temp hacks for development
     if (opts.debug) {
