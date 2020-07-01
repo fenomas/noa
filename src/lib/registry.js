@@ -33,8 +33,8 @@ var blockDefaults = {
 }
 
 
-// highest ID that fits into the bits used for voxel IDs
-var MAX_BLOCK_ID = 1 << 16 // now uses the full entry in a uint16 array
+// voxel ID now uses the whole Uint16Array element
+var MAX_BLOCK_ID = (1 << 16) - 1
 
 
 /**
