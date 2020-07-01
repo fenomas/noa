@@ -404,11 +404,10 @@ function GreedyMesher(noa) {
     var maskCache = new Int16Array(16)
     var aomaskCache = new Uint16Array(16)
 
-    var solidLookup
-    var opacityLookup
-    // var getSolidity = id => solidLookup[id]
-    var getOpacity = id => opacityLookup[id]
+    var aoPackFunction = null
 
+    var solidLookup = noa.registry._solidityLookup
+    var opacityLookup = noa.registry._opacityLookup
 
 
     this.mesh = function (voxels, getMaterial, getColor, doAO, aoValues, revAoVal, edgesOnly) {
@@ -419,10 +418,9 @@ function GreedyMesher(noa) {
         var subMeshes = {}
 
         // precalc how to apply AO packing in first masking function
-        var skipReverseAO = (doAO && (revAoVal === aoValues[0]))
-        var aoPackFcn
-        if (doAO) aoPackFcn = (skipReverseAO) ? packAOMaskNoReverse : packAOMask
-
+        var skipReverseAO = (revAoVal === aoValues[0])
+        aoPackFunction = (!doAO) ? null :
+            (skipReverseAO) ? packAOMaskNoReverse : packAOMask
 
         //Sweep over each axis, mapping axes to [d,u,v]
         for (var d = 0; d < 3; ++d) {
@@ -448,7 +446,7 @@ function GreedyMesher(noa) {
             for (var i = 0; i <= len0; ++i) {
 
                 // fills mask and aomask arrays with values
-                constructMeshMasks(i, d, arrT, getMaterial, aoPackFcn)
+                constructMeshMasks(i, d, arrT, getMaterial)
                 profile_hook('masks')
 
                 // parses the masks to do greedy meshing
@@ -476,7 +474,7 @@ function GreedyMesher(noa) {
     //
     // iterating across ith 2d plane, with n being index into masks
 
-    function constructMeshMasks(i, d, arrT, getMaterial, aoPackFcn) {
+    function constructMeshMasks(i, d, arrT, getMaterial) {
         var len = arrT.shape[1]
         var mask = maskCache
         var aomask = aomaskCache
@@ -516,11 +514,11 @@ function GreedyMesher(noa) {
                         -getMaterial(id1, materialDir + 1)
 
                     // if doing AO, precalculate AO level for each face into second mask
-                    if (aoPackFcn) {
+                    if (aoPackFunction) {
                         // i values in direction face is/isn't pointing{
                         aomask[n] = (faceDir > 0) ?
-                            aoPackFcn(arrT, i, i - 1, j, k) :
-                            aoPackFcn(arrT, i - 1, i, j, k)
+                            aoPackFunction(arrT, i, i - 1, j, k) :
+                            aoPackFunction(arrT, i - 1, i, j, k)
                     }
                 }
             }
@@ -531,8 +529,8 @@ function GreedyMesher(noa) {
 
     function getFaceDir(id0, id1, getMaterial, materialDir) {
         // no face if both blocks are opaque
-        var op0 = getOpacity(id0)
-        var op1 = getOpacity(id1)
+        var op0 = opacityLookup[id0]
+        var op1 = opacityLookup[id1]
         if (op0 && op1) return 0
         // if either block is opaque draw a face for it
         if (op0) return 1
@@ -761,16 +759,14 @@ function GreedyMesher(noa) {
         var a10 = 1
         var a11 = 1
 
-        // facing into a solid (non-opaque) block?
-        var facingSolid = solidLookup[data.get(ipos, j, k)]
-
         // inc occlusion of vertex next to obstructed side
         if (solidLookup[data.get(ipos, j + 1, k)]) { ++a10; ++a11 }
         if (solidLookup[data.get(ipos, j - 1, k)]) { ++a00; ++a01 }
         if (solidLookup[data.get(ipos, j, k + 1)]) { ++a01; ++a11 }
         if (solidLookup[data.get(ipos, j, k - 1)]) { ++a00; ++a10 }
 
-        // treat corners differently based when facing a solid block
+        // facing into a solid (non-opaque) block?
+        var facingSolid = solidLookup[data.get(ipos, j, k)]
         if (facingSolid) {
             // always 2, or 3 in corners
             a11 = (a11 === 3 || solidLookup[data.get(ipos, j + 1, k + 1)]) ? 3 : 2
@@ -796,15 +792,14 @@ function GreedyMesher(noa) {
         var a10 = 1
         var a11 = 1
 
-        // facing into a solid (non-opaque) block?
-        var facingSolid = solidLookup[data.get(ipos, j, k)]
-
         // inc occlusion of vertex next to obstructed side
         if (solidLookup[data.get(ipos, j + 1, k)]) { ++a10; ++a11 }
         if (solidLookup[data.get(ipos, j - 1, k)]) { ++a00; ++a01 }
         if (solidLookup[data.get(ipos, j, k + 1)]) { ++a01; ++a11 }
         if (solidLookup[data.get(ipos, j, k - 1)]) { ++a00; ++a10 }
 
+        // facing into a solid (non-opaque) block?
+        var facingSolid = solidLookup[data.get(ipos, j, k)]
         if (facingSolid) {
             // always 2, or 3 in corners
             a11 = (a11 === 3 || solidLookup[data.get(ipos, j + 1, k + 1)]) ? 3 : 2
