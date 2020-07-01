@@ -27,7 +27,7 @@ export default Chunk
  *
  */
 
-function Chunk(noa, id, i, j, k, size, dataArray, _overrideLookups) {
+function Chunk(noa, id, i, j, k, size, dataArray) {
     this.id = id            // id used by noa
     this.requestID = ''     // id sent to game client
 
@@ -49,8 +49,11 @@ function Chunk(noa, id, i, j, k, size, dataArray, _overrideLookups) {
     this._terrainDirty = false
     this._objectsDirty = false
 
-    // init references shared among all chunks
-    setBlockLookups(noa, _overrideLookups || {})
+    // (re) init references shared among all chunks
+    solidLookup = noa.registry._solidityLookup
+    opaqueLookup = noa.registry._opacityLookup
+    objectLookup = noa.registry._objectLookup
+    blockHandlerLookup = noa.registry._blockHandlerLookup
 
     // makes data for terrain / object meshing
     this._terrainMesh = null
@@ -69,7 +72,7 @@ function Chunk(noa, id, i, j, k, size, dataArray, _overrideLookups) {
     this._maxMeshedNeighbors = 0
     this._timesMeshed = 0
 
-    // converts raw voxelID data into packed ID+solidity etc.
+    // passes through voxel contents, calling block handlers etc.
     scanVoxelData(this)
 }
 
@@ -98,12 +101,6 @@ var opaqueLookup
 var objectLookup
 var blockHandlerLookup
 
-function setBlockLookups(noa) {
-    solidLookup = noa.registry._solidityLookup
-    opaqueLookup = noa.registry._opacityLookup
-    objectLookup = noa.registry._objectLookup
-    blockHandlerLookup = noa.registry._blockHandlerLookup
-}
 
 
 

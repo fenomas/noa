@@ -654,6 +654,8 @@ function deprecateStuff(noa) {
     dep(noa.world, '_maxChunksPendingMeshing', 'use `maxChunksPendingMeshing` (no "_")')
     dep(noa.world, '_maxProcessingPerTick', 'use `maxProcessingPerTick` (no "_")')
     dep(noa.world, '_maxProcessingPerRender', 'use `maxProcessingPerRender` (no "_")')
+    ver = '0.29'
+    dep(noa, '_constants', 'removed, voxel IDs are no longer packed with bit flags')
 }
 
 

@@ -27,6 +27,7 @@ function makePhysics(noa, opts) {
     var world = noa.world
     var solidLookup = noa.registry._solidityLookup
     var fluidLookup = noa.registry._fluidityLookup
+    
     // physics engine runs in offset coords, so voxel getters need to match
     var offset = noa.worldOriginOffset
 
