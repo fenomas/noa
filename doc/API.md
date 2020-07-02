@@ -754,7 +754,7 @@ Register (by integer ID) a block type and its parameters.
  * solid: (true) solidity for physics purposes
  * opaque: (true) fully obscures neighboring blocks
  * fluid: (false) whether nonsolid block is a fluid (buoyant, viscous..)
- * blockMeshes: (null) if specified, noa will create an instance of the mesh instead of rendering voxel terrain
+ * blockMesh: (null) if specified, noa will create a copy this mesh in the voxel
  * fluidDensity: (1.0) for fluid blocks
  * viscosity: (0.5) for fluid blocks
  * onLoad(): block event handler
@@ -925,6 +925,8 @@ Extends `EventEmitter`
     * [.isBoxUnobstructed(x,y,z)](#World+isBoxUnobstructed)
     * [.setChunkData(id, array, userData)](#World+setChunkData)
     * [.invalidateVoxelsInAABB()](#World+invalidateVoxelsInAABB)
+    * [.manuallyLoadChunk(x,)](#World+manuallyLoadChunk)
+    * [.manuallyUnloadChunk(x,)](#World+manuallyUnloadChunk)
 
 
 ----
@@ -1033,6 +1035,34 @@ The engine will mark all affected chunks for disposal, and will later emit
 new `worldDataNeeded` events (if the chunk is still in draw range).
 Note that chunks invalidated this way will not emit a `chunkBeingRemoved` event 
 for the client to save data from.
+
+
+----
+
+<a name="World+manuallyLoadChunk"></a>
+
+## noa.world.manuallyLoadChunk(x,)
+When manually controlling chunk loading, tells the engine that the 
+chunk containing the specified (x,y,z) needs to be created and loaded.
+> Note: has no effect when `noa.world.manuallyControlChunkLoading` is not set.
+
+**Params**
+
+- x, - y, z
+
+
+----
+
+<a name="World+manuallyUnloadChunk"></a>
+
+## noa.world.manuallyUnloadChunk(x,)
+When manually controlling chunk loading, tells the engine that the 
+chunk containing the specified (x,y,z) needs to be unloaded and disposed.
+> Note: has no effect when `noa.world.manuallyControlChunkLoading` is not set.
+
+**Params**
+
+- x, - y, z
 
 
 ----

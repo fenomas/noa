@@ -20,7 +20,10 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 ### 0.29.0
 
-   * New option: `noa.world.worldGenWhilePaused`. When `true`, the engine will keep doing world generation (i.e. `worldDataNeeded` events, meshing, disposing outdated chunks, etc) even while paused.
+   * Maximum allowed voxel ID is now `65535`
+   * New option `worldGenWhilePaused` added to `noa.world`. When true, the engine will keep doing world generation (requesting new chunks, disposing old ones, meshing, etc) even while paused.
+   * New option `manuallyControlChunkLoading` added to `noa.world`. When set, the engine will not automatically add or remove chunks near the player. Instead, call `noa.world.manuallyLoadChunk` and `manuallyUnloadChunk` on the coordinates you need.
+   * Voxel IDs are now stored internally as plain `Uint16Array` elements, rather packing IDs and bit flags together. Any clients that were accessing internal data arrays will probably need to be updated.
    * Fixed the `dt` parameter to `noa#render(dt)` events. Previously it could occasionally be wrong in such a way as to cause temporal aliasing when used for animations.     
 
 

@@ -20,6 +20,7 @@ var defaultOptions = {
     chunkAddDistance: 3,
     chunkRemoveDistance: 4,
     worldGenWhilePaused: false,
+    manuallyControlChunkLoading: false,
 }
 
 /**
@@ -46,6 +47,11 @@ function World(noa, opts) {
     if (this.chunkRemoveDistance < this.chunkAddDistance) {
         this.chunkRemoveDistance = this.chunkAddDistance
     }
+
+    // game clients should set this if they need to manually control 
+    // which chunks to load and unload.
+    // when set, client should call noa.world.manuallyLoadChunk / UnloadChunk
+    this.manuallyControlChunkLoading = !!opts.manuallyControlChunkLoading
 
     // set this higher to cause chunks not to mesh until they have some neighbors
     this.minNeighborsToMesh = 6
@@ -200,6 +206,37 @@ World.prototype.invalidateVoxelsInAABB = function (box) {
 }
 
 
+/** When manually controlling chunk loading, tells the engine that the 
+ * chunk containing the specified (x,y,z) needs to be created and loaded.
+ * > Note: has no effect when `noa.world.manuallyControlChunkLoading` is not set.
+ * @param x, y, z
+ */
+World.prototype.manuallyLoadChunk = function (x, y, z) {
+    if (!this.manuallyControlChunkLoading) return
+    var i = this._worldCoordToChunkCoord(x)
+    var j = this._worldCoordToChunkCoord(y)
+    var k = this._worldCoordToChunkCoord(z)
+    var id = getChunkID(i, j, k)
+    this._chunkIDsKnown.add(id)
+    this._chunkIDsToRequest.add(id)
+}
+/** When manually controlling chunk loading, tells the engine that the 
+ * chunk containing the specified (x,y,z) needs to be unloaded and disposed.
+ * > Note: has no effect when `noa.world.manuallyControlChunkLoading` is not set.
+ * @param x, y, z
+ */
+World.prototype.manuallyUnloadChunk = function (x, y, z) {
+    if (!this.manuallyControlChunkLoading) return
+    var i = this._worldCoordToChunkCoord(x)
+    var j = this._worldCoordToChunkCoord(y)
+    var k = this._worldCoordToChunkCoord(z)
+    var id = getChunkID(i, j, k)
+    this._chunkIDsToRemove.add(id)
+    this._chunkIDsToRequest.remove(id)
+    this._chunkIDsToMesh.remove(id)
+    this._chunkIDsToMeshFirst.remove(id)
+}
+
 
 
 
@@ -239,14 +276,16 @@ World.prototype.tick = function () {
     profile_queues_hook('start')
 
     // possibly scan for chunks to add/remove
-    if (changedChunks) {
-        findDistantChunksToRemove(this, pos[0], pos[1], pos[2])
-        profile_hook('remQueue')
-    }
-    var numChunks = numberOfVoxelsInSphere(this.chunkAddDistance)
-    if (changedChunks || (this._chunkIDsKnown.count() < numChunks)) {
-        findNewChunksInRange(this, pos[0], pos[1], pos[2])
-        profile_hook('addQueue')
+    if (!this.manuallyControlChunkLoading) {
+        if (changedChunks) {
+            findDistantChunksToRemove(this, pos[0], pos[1], pos[2])
+            profile_hook('remQueue')
+        }
+        var numChunks = numberOfVoxelsInSphere(this.chunkAddDistance)
+        if (changedChunks || (this._chunkIDsKnown.count() < numChunks)) {
+            findNewChunksInRange(this, pos[0], pos[1], pos[2])
+            profile_hook('addQueue')
+        }
     }
 
     // process (create or mesh) some chunks, up to max iteration time

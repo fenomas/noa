@@ -4,7 +4,7 @@
 An experimental voxel game engine.
 
 Some projects using `noa`:
- * [Minecraft Classic](https://classic.minecraft.net/) - by some company in Sweden or something
+ * [Minecraft Classic](https://classic.minecraft.net/) - official game from Mojang (I'm as surprised as you are)
  * [CityCraft.io](https://citycraft.io/) - multiplayer voxel cities
  * [VoxelSrv](https://github.com/Patbox/voxelsrv) - a voxel game inspired by Minecraft
  * [noa-examples](https://github.com/andyhall/noa-examples) - starter repo with minimal hello-world and testbed games
@@ -43,14 +43,16 @@ See [history.md](doc/history.md) for changes and migration info from each versio
 Recent changes:
 
  * `v0.29`: 
-   * adds option `noa.world.worldGenWhilePaused`
+   * maximum voxel ID is now `65535`
+   * adds option `worldGenWhilePaused`
+   * adds option `manuallyControlChunkLoading` and related APIs
    * performance and bug fixes
  * `v0.28`: 
    * improves swapping between world data sets (see `noa.worldName`).
    * Removes duplicated voxel padding in each chunk (this means world generation 
  no longer needs to be deterministic!)
- * `v0.27`: adds world origin rebasing. If you encounter new bugs related to entity positions, see [positions.md](doc/positions.md)
- * `v0.26`: game clients should declare a dependency on `@babylon/core`, rather than manually loading babylon.js and leaving it in global scope. This allows tree-shaking to happen, greatly reducing (production) bundle sizes for typical games. For sample code and configs see [noa-examples](https://github.com/andyhall/noa-examples).
+ * `v0.27`: adds world origin rebasing - see [positions.md](doc/positions.md)
+
 
 ----
 
