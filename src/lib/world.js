@@ -212,7 +212,7 @@ World.prototype.invalidateVoxelsInAABB = function (box) {
  * @param x, y, z
  */
 World.prototype.manuallyLoadChunk = function (x, y, z) {
-    if (!this.manuallyControlChunkLoading) return
+    if (!this.manuallyControlChunkLoading) throw manualErr
     var i = this._worldCoordToChunkCoord(x)
     var j = this._worldCoordToChunkCoord(y)
     var k = this._worldCoordToChunkCoord(z)
@@ -226,7 +226,7 @@ World.prototype.manuallyLoadChunk = function (x, y, z) {
  * @param x, y, z
  */
 World.prototype.manuallyUnloadChunk = function (x, y, z) {
-    if (!this.manuallyControlChunkLoading) return
+    if (!this.manuallyControlChunkLoading) throw manualErr
     var i = this._worldCoordToChunkCoord(x)
     var j = this._worldCoordToChunkCoord(y)
     var k = this._worldCoordToChunkCoord(z)
@@ -236,8 +236,7 @@ World.prototype.manuallyUnloadChunk = function (x, y, z) {
     this._chunkIDsToMesh.remove(id)
     this._chunkIDsToMeshFirst.remove(id)
 }
-
-
+var manualErr = 'Set `noa.world.manuallyControlChunkLoading` if you need this API'
 
 
 
