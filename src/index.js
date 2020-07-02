@@ -18,7 +18,6 @@ import createPhysics from './lib/physics'
 import createCamera from './lib/camera'
 import createRegistry from './lib/registry'
 import createEntities from './lib/entities'
-import { constants } from './lib/constants'
 
 
 
@@ -237,9 +236,6 @@ function Engine(opts) {
         this.on('targetBlockChanged', this.defaultBlockHighlightFunction)
     }
 
-
-    // expose constants, for HACKING™
-    this._constants = constants
 
     // temp hacks for development
     if (opts.debug) {
@@ -658,6 +654,8 @@ function deprecateStuff(noa) {
     dep(noa.world, '_maxChunksPendingMeshing', 'use `maxChunksPendingMeshing` (no "_")')
     dep(noa.world, '_maxProcessingPerTick', 'use `maxProcessingPerTick` (no "_")')
     dep(noa.world, '_maxProcessingPerRender', 'use `maxProcessingPerRender` (no "_")')
+    ver = '0.29'
+    dep(noa, '_constants', 'removed, voxel IDs are no longer packed with bit flags')
 }
 
 

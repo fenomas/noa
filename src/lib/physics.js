@@ -25,13 +25,19 @@ var defaults = {
 function makePhysics(noa, opts) {
     opts = Object.assign({}, defaults, opts)
     var world = noa.world
+    var solidLookup = noa.registry._solidityLookup
+    var fluidLookup = noa.registry._fluidityLookup
+    
     // physics engine runs in offset coords, so voxel getters need to match
     var offset = noa.worldOriginOffset
+
     var blockGetter = (x, y, z) => {
-        return world.getBlockSolidity(x + offset[0], y + offset[1], z + offset[2])
+        var id = world.getBlockID(x + offset[0], y + offset[1], z + offset[2])
+        return solidLookup[id]
     }
     var isFluidGetter = (x, y, z) => {
-        return world.getBlockFluidity(x + offset[0], y + offset[1], z + offset[2])
+        var id = world.getBlockID(x + offset[0], y + offset[1], z + offset[2])
+        return fluidLookup[id]
     }
 
     var physics = createPhysics(opts, blockGetter, isFluidGetter)

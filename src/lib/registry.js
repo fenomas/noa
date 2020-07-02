@@ -1,5 +1,4 @@
 
-import { constants } from './constants'
 
 export default function (noa, opts) {
     return new Registry(noa, opts)
@@ -34,8 +33,8 @@ var blockDefaults = {
 }
 
 
-// highest ID that fits into the bits used for voxel IDs
-var MAX_BLOCK_ID = 0xFFFFFFFF & constants.ID_MASK
+// voxel ID now uses the whole Uint16Array element
+var MAX_BLOCK_ID = (1 << 16) - 1
 
 
 /**
@@ -61,6 +60,7 @@ function Registry(noa, opts) {
     var blockSolidity = [false]
     var blockOpacity = [false]
     var blockIsFluid = [false]
+    var blockIsObject = [false]
     var blockMats = [0, 0, 0, 0, 0, 0]
     var blockProps = [null]
     var blockMeshes = [null]
@@ -131,6 +131,7 @@ function Registry(noa, opts) {
         blockIsFluid[id] = !!opts.fluid
 
         // store any custom mesh
+        blockIsObject[id] = !!opts.blockMesh
         blockMeshes[id] = opts.blockMesh || null
 
         // parse out material parameter
@@ -282,6 +283,8 @@ function Registry(noa, opts) {
     // internal access to lookup arrays
     this._solidityLookup = blockSolidity
     this._opacityLookup = blockOpacity
+    this._fluidityLookup = blockIsFluid
+    this._objectLookup = blockIsObject
     this._blockMeshLookup = blockMeshes
     this._blockHandlerLookup = blockHandlers
 
