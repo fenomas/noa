@@ -991,10 +991,10 @@ Extends `EventEmitter`
 
 <a name="World+setBlockID"></a>
 
-## noa.world.setBlockID(x,y,z)
+## noa.world.setBlockID(id, x,y,z)
 **Params**
 
-- x,y,z
+- id,x,y,z
 
 
 ----
