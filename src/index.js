@@ -282,6 +282,7 @@ Engine.prototype.tick = function () {
     if (!this.world.playerChunkLoaded) {
         // when waiting on worldgen, just tick the meshing queue and exit
         this.rendering.tick(dt);
+        this.emit("tick");
         return;
     }
     this.physics.tick(dt); // iterates physics
