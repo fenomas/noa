@@ -9,5 +9,8 @@
     "editor.defaultFormatter": "HookyQR.beautify",
 
     "eslint.enable": true,
+    "[javascriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
     // "javascript.format.enable": false,
 }
