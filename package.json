@@ -4,7 +4,8 @@
     "description": "Experimental voxel game engine",
     "main": "src/index.js",
     "files": [
-        "/src"
+        "/src",
+        "/src/lib"
     ],
     "scripts": {
         "doc": "jsdoc2md -f src/* src/**/* -g table -p list --partial doc-templates/* > doc/API.md"
@@ -17,6 +18,7 @@
     ],
     "license": "MIT",
     "dependencies": {
+        "@babylonjs/core": "^4.1.0",
         "aabb-3d": "andyhall/aabb-3d",
         "box-intersect": "^1.0.2",
         "ent-comp": "^0.9.1",
