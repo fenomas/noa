@@ -552,6 +552,7 @@ function updateBlockTargets(noa) {
             dat.position[1],
             dat.position[2]
         );
+        // Fetch additional data for the object associated with this block in this chunk
         noa.targetedBlock = dat;
         newhash =
             dat.position.join("|") + dat.normal.join("|") + "|" + dat.blockID;

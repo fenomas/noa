@@ -165,6 +165,7 @@ World.prototype.isBoxUnobstructed = function (box) {
             for (var k = Math.floor(base[2]); k < max[2] + 1; k++) {
                 if (this.getBlockSolidity(i, j, k)) return false;
             }
+            ``;
         }
     }
     return true;
@@ -176,8 +177,8 @@ World.prototype.isBoxUnobstructed = function (box) {
  * @param array
  * @param userData
  */
-World.prototype.setChunkData = function (id, array, userData) {
-    setChunkData(this, id, array, userData);
+World.prototype.setChunkData = function (id, array, userData, objectsData) {
+    setChunkData(this, id, array, userData, objectsData);
 };
 
 /** Tells noa to discard voxel data within a given `AABB` (e.g. because
@@ -510,7 +511,7 @@ function requestNewChunk(world, id) {
 
 // called when client sets a chunk's voxel data
 // If userData is passed in it will be attached to the chunk
-function setChunkData(world, reqID, array, userData) {
+function setChunkData(world, reqID, array, userData, objectsData) {
     var arr = reqID.split("|");
     var i = parseInt(arr.shift());
     var j = parseInt(arr.shift());
@@ -544,6 +545,16 @@ function setChunkData(world, reqID, array, userData) {
             if (nab._neighborCount > 20) queueChunkForRemesh(world, nab);
         });
     }
+    // Add objects data to the chunk, update block coordinates to object ID mapping
+    Object.entries(objectsData).forEach(([objectID, object]) => {
+        chunk.objects.set(objectID, object);
+        if (object.coords) {
+            object.coords.forEach((coord) => {
+                chunk.coordsToObjectID.set(coord, objectID);
+            });
+        }
+    });
+
     // chunk can now be meshed...
     queueChunkForRemesh(world, chunk);
     profile_queues_hook("receive");
