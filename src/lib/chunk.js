@@ -228,12 +228,7 @@ Chunk.prototype.updateMeshes = function () {
         objectMesher.removeObjectMeshes(this);
         var meshes = objectMesher.buildObjectMeshes(this);
         var pos2 = [this.x, this.y, this.z];
-        console.log(`pos2`, pos2);
         meshes.forEach((mesh) => {
-            console.log(mesh, mesh.position);
-            mesh.position.y = 10;
-            mesh.position.x = 0;
-            mesh.position.z = 0;
             rendering.addMeshToScene(mesh, true, pos2, this);
         });
         this._objectsDirty = false;

@@ -75,8 +75,13 @@ function ObjectMesher() {
         var z0 = chunk.k * chunk.size;
         // preprocess everything to build lists of object block keys
         // hashed by material ID and then by block ID
-        var matIndexes = {};
-        var meshes = [];
+        // var matIndexes = {};
+
+        // For now: use one SPS for all the meshes
+        var sps = new SolidParticleSystem("object_sps_" + chunk.id, scene, {
+            updatable: false,
+            useModelMaterial: true,
+        });
         for (var key in chunk._objectBlocks) {
             console.log("key", key);
             var blockDat = chunk._objectBlocks[key];
@@ -84,7 +89,7 @@ function ObjectMesher() {
             var mesh = objectMeshLookup[blockID];
             var handlerFn;
             var handlers = blockHandlerLookup[blockID];
-            console.log(handlers);
+            // console.log(handlers);
             if (handlers) {
                 handlerFn = handlers.customizeMesh;
             }
@@ -93,22 +98,26 @@ function ObjectMesher() {
                 y0 + blockDat.y,
                 z0 + blockDat.z,
             ];
+            mesh = mesh.clone();
+            if (mesh.material) {
+                mesh.material = mesh.material.clone();
+            }
             if (handlerFn) {
-                // key is of form x|y|z
-                console.log(x0, y0, z0);
-                console.log("handlerFn exists");
                 const coords = _x + "|" + _y + "|" + _z;
                 const objectID = chunk.coordsToObjectID.get(coords);
                 const object = chunk.objects.get(objectID);
                 mesh = handlerFn(mesh, object, objectID, coords);
             }
-            // Add mesh to the scene, set
-            const _mesh = mesh.clone();
-            _mesh.position.x = blockDat.x + 0.5;
-            _mesh.position.y = blockDat.y;
-            _mesh.position.z = blockDat.z + 0.5;
-            console.log(_mesh.position);
-            meshes.push(_mesh);
+            var setShape = function (particle, partIndex, shapeIndex) {
+                // set (local) pos and call handler (with global coords)
+                particle.position.set(
+                    blockDat.x + 0.5,
+                    blockDat.y,
+                    blockDat.z + 0.5
+                );
+                // if (handlerFn) handlerFn(particle);
+            };
+            sps.addShape(mesh, 1, { positionFunction: setShape });
             // var mat = mesh.material;
             // var matIndex = mat ? scene.materials.indexOf(mat) : -1;
             // if (!matIndexes[matIndex]) matIndexes[matIndex] = {};
@@ -116,8 +125,11 @@ function ObjectMesher() {
             //     matIndexes[matIndex][blockID] = [];
             // matIndexes[matIndex][blockID].push(key);
         }
-        return meshes;
-        profile_hook("preprocess");
+        const merged = sps.buildMesh();
+        return [merged];
+
+        // return meshes;
+        // profile_hook("preprocess");
 
         // data structure now looks like:
         // matIndexes = {
