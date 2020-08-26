@@ -152,7 +152,7 @@ World.prototype.getBlockObjectMesh = function (x, y, z) {
 }
 
 
-/** @param x,y,z */
+/** @param val,x,y,z */
 World.prototype.setBlockID = function (val, x, y, z) {
     var i = this._worldCoordToChunkCoord(x)
     var j = this._worldCoordToChunkCoord(y)
@@ -168,7 +168,7 @@ World.prototype.setBlockID = function (val, x, y, z) {
 }
 
 
-/** @param x,y,z */
+/** @param box */
 World.prototype.isBoxUnobstructed = function (box) {
     var base = box.base
     var max = box.max
