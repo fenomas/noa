@@ -563,6 +563,12 @@ function GreedyMesher(noa) {
         var mask = maskCache
         var aomask = aomaskCache
 
+        var x = [0, 0, 0]
+        var du = [0, 0, 0]
+        var dv = [0, 0, 0]
+        x[d] = i
+        var norms = [0, 0, 0]
+
         // some logic is broken into helper functions for AO and non-AO
         // this fixes deopts in Chrome (for reasons unknown)
         var maskCompareFcn = (doAO) ? maskCompare : maskCompare_noAO
@@ -610,12 +616,8 @@ function GreedyMesher(noa) {
 
 
                 //Add quad, vertices = x -> x+du -> x+du+dv -> x+dv
-                var x = [0, 0, 0]
-                x[d] = i
                 x[u] = j
                 x[v] = k
-                var du = [0, 0, 0]
-                var dv = [0, 0, 0]
                 du[u] = w
                 dv[v] = h
 
@@ -629,7 +631,7 @@ function GreedyMesher(noa) {
 
                 // add uv values, with the order and sign depending on 
                 // axis and direction so as to avoid mirror-image textures
-                var dir = (maskVal > 0) ? 1 : -1
+                var dir = sign(maskVal)
 
                 if (d === 2) {
                     mesh.uvs.push(
@@ -666,16 +668,13 @@ function GreedyMesher(noa) {
 
 
                 // norms depend on which direction the mask was solid in..
-                var norm0 = d === 0 ? dir : 0
-                var norm1 = d === 1 ? dir : 0
-                var norm2 = d === 2 ? dir : 0
-
+                norms[d] = dir
                 // same norm for all vertices
                 mesh.normals.push(
-                    norm0, norm1, norm2,
-                    norm0, norm1, norm2,
-                    norm0, norm1, norm2,
-                    norm0, norm1, norm2)
+                    norms[0], norms[1], norms[2],
+                    norms[0], norms[1], norms[2],
+                    norms[0], norms[1], norms[2],
+                    norms[0], norms[1], norms[2])
 
 
                 //Zero-out mask
@@ -691,7 +690,7 @@ function GreedyMesher(noa) {
 
 
 
-    // Two helper functions with AO and non-AO implementations:
+    // Helper functions with AO and non-AO implementations:
 
     function maskCompare(index, mask, maskVal, aomask, aoVal) {
         if (maskVal !== mask[index]) return false
@@ -732,6 +731,9 @@ function GreedyMesher(noa) {
         return triDir
     }
 
+    function sign(num) {
+        return (num > 0) ? 1 : -1
+    }
 
 
 
