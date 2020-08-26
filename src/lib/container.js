@@ -19,6 +19,7 @@ export default function (noa, opts) {
 function Container(noa, opts) {
     opts = opts || {}
     this._noa = noa
+    this._tickRate = opts.tickRate
     this.element = opts.domElement || createContainerDiv()
     this.canvas = getOrCreateCanvas(this.element)
     this._shell = createShell(this.canvas, opts)
@@ -59,13 +60,50 @@ function onShellInit(self) {
     // create shell listeners that drive engine functions
     var noa = self._noa
     var shell = self._shell
-    shell.on('tick', function onTick(n) { noa.tick(n) })
-    shell.on('render', function onRender(n) { noa.render(n) })
     shell.on('resize', noa.rendering.resize.bind(noa.rendering))
+
+    // override shell's timing with simpler internal implementation
+    setupTimingEvents(self)
 
     // let other components know DOM is ready
     self.emit('DOMready')
 }
+
+
+
+
+
+function setupTimingEvents(self) {
+    var noa = self._noa
+    var tickRate = self._tickRate
+    var lastRAF = performance.now()
+    var tickAccum = 0
+    var onAnimationFrame = function () {
+        var t0 = performance.now()
+        if (!noa._paused) {
+            var dt = t0 - lastRAF
+            tickAccum += dt
+            // do at most two ticks per render
+            var maxTicks = 2
+            while (tickAccum > tickRate && maxTicks-- > 0) {
+                noa.tick(tickRate)
+                tickAccum -= tickRate
+            }
+            // don't accrue deficit when running slow
+            if (tickAccum > tickRate) tickAccum = 0
+            var t1 = performance.now()
+            var renderPt = tickAccum + (t1 - t0)
+            var framePart = Math.min(1, renderPt / tickRate)
+            noa.render(framePart)
+        }
+        lastRAF = t0
+        requestAnimationFrame(onAnimationFrame)
+    }
+    requestAnimationFrame(onAnimationFrame)
+}
+
+
+
 
 
 
