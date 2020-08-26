@@ -17,6 +17,7 @@ export default function (noa) {
         state: {
             entity: 0 | 0,
             offset: null,
+            onTargetMissing: null,
         },
 
         onAdd: function (eid, state) {
@@ -48,19 +49,20 @@ export default function (noa) {
         var self = noa.ents.getPositionData(id)
         var other = noa.ents.getPositionData(state.entity)
         if (!other) {
-            return noa.ents.removeComponent(id, noa.ents.names.followsEntity)
+            if (state.onTargetMissing) state.onTargetMissing(id)
+            noa.ents.removeComponent(id, noa.ents.names.followsEntity)
+        } else {
+            vec3.add(self._localPosition, other._localPosition, state.offset)
         }
-        vec3.add(self._localPosition, other._localPosition, state.offset)
     }
-    
+
     function updateRenderPosition(state) {
         var id = state.__id
         var self = noa.ents.getPositionData(id)
         var other = noa.ents.getPositionData(state.entity)
-        if (!other) {
-            return noa.ents.removeComponent(id, noa.ents.names.followsEntity)
+        if (other) {
+            vec3.add(self._renderPosition, other._renderPosition, state.offset)
         }
-        vec3.add(self._renderPosition, other._renderPosition, state.offset)
     }
 
 }
