@@ -1,6 +1,4 @@
-import Engine from ".."
-import { Material } from "@babylonjs/core/Materials"
-import { Mesh } from "@babylonjs/core/Meshes/mesh"
+import Engine, { Material, Mesh } from ".."
 
 export interface IRegistryOptions {
     /**
@@ -12,7 +10,6 @@ export interface IRegistryOptions {
 const registryDefaults: IRegistryOptions = {
     texturePath: ''
 }
-
 
 interface IMeshData {
     color: [number, number, number];

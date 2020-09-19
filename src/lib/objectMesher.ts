@@ -1,8 +1,7 @@
-import { SolidParticleSystem } from '@babylonjs/core/Particles/solidParticleSystem'
-import { Scene } from "@babylonjs/core/scene"
 import { Chunk } from "./chunk"
 import { blockHandler } from "./registry"
 import { makeProfileHook } from './util'
+const SolidParticleSystem = require('@babylonjs/core/Particles/solidParticleSystem')
 
 // enable for profiling..
 var PROFILE = 0
@@ -138,7 +137,7 @@ export function buildObjectMeshes(chunk: Chunk) {
     return meshes
 }
 
-export function buildSPSforMaterialIndex(chunk: Chunk, scene: Scene, meshHash: any, x0: number, y0: number, z0: number) {
+export function buildSPSforMaterialIndex(chunk: Chunk, scene: any, meshHash: any, x0: number, y0: number, z0: number) {
     var blockHash = chunk._objectBlocks
     // base sps
     var sps = new SolidParticleSystem('object_sps_' + chunk.id, scene, {

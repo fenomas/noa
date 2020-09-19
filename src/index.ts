@@ -31,10 +31,15 @@ import { Registry, IRegistryOptions } from './lib/registry'
 import { constants } from './lib/constants'
 
 
+// todo these types need to pull from babylonjs
+export type Material = any
+export type Mesh = any
+export type Scene = any
+
 declare global {
     interface Window {
         noa: Engine;
-        scene: any; // this.rendering._scene
+        scene: Scene; // this.rendering._scene
         ndarray: ndarray<Uint32Array>;
         vec3: Vector;
     }
@@ -453,7 +458,6 @@ class Engine {
         if (this.container.hasPointerLock ||
             !this.container.supportsPointerLock ||
             (this._dragOutsideLock && this.inputs.state.fire)) {
-                console.log("apply inputs...");
             this.camera.applyInputsToCamera()
         }
         profile_hook('init')
