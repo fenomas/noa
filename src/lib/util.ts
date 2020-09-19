@@ -1,9 +1,10 @@
-
-
-// helper to swap item to end and pop(), instead of splice()ing
-export function removeUnorderedListItem(list, item) {
+/** helper to swap item to end and pop(), instead of splice()ing */
+export function removeUnorderedListItem(list: any[], item: string) {
     var i = list.indexOf(item)
-    if (i < 0) return
+    if (i < 0) {
+        return
+    }
+
     if (i === list.length - 1) {
         list.pop()
     } else {
@@ -11,26 +12,28 @@ export function removeUnorderedListItem(list, item) {
     }
 }
 
-
-
-// loop over a function for a few ms, or until it returns true
-export function loopForTime(maxTimeInMS, callback, startTime) {
-    var cutoff = (startTime || performance.now()) + maxTimeInMS
+/** loop over a function for a few ms, or until it returns true */
+export function loopForTime<T>(maxTimeInMS: number, callback: () => T, startTime: number = performance.now()) {
+    var cutoff = startTime + maxTimeInMS
     var maxIter = 1000 // sanity check
+
     for (var i = 0; i < maxIter; i++) {
         var res = callback()
-        if (res || performance.now() > cutoff) return
+        if (res || performance.now() > cutoff) {
+            return
+        }
     }
 }
 
 
+var prevRad = 0, prevAnswer = 0
+export function numberOfVoxelsInSphere(rad: number) {
+    if (rad === prevRad) {
+        return prevAnswer
+    }
 
-
-
-// ....
-export function numberOfVoxelsInSphere(rad) {
-    if (rad === prevRad) return prevAnswer
     var ext = Math.ceil(rad), ct = 0, rsq = rad * rad
+
     for (var i = -ext; i <= ext; ++i) {
         for (var j = -ext; j <= ext; ++j) {
             for (var k = -ext; k <= ext; ++k) {
@@ -41,27 +44,34 @@ export function numberOfVoxelsInSphere(rad) {
     }
     prevRad = rad
     prevAnswer = ct
+
     return ct
 }
-var prevRad = 0, prevAnswer = 0
 
 
 
 
-// sorts [A, B, C] and [3, 1, 2] into [B, C, A]
-export function sortByReferenceArray(array, ref) {
+/** sorts [A, B, C] and [3, 1, 2] into [B, C, A] */
+export function sortByReferenceArray(array: any[], ref: any) {
     var useMaps = typeof array[0] === 'object'
-    if (useMaps) { refSortWithMaps(array, ref) }
-    else { refSortWithObjects(array, ref) }
+    if (useMaps) {
+        refSortWithMaps(array, ref)
+    }
+    else {
+        refSortWithObjects(array, ref)
+    }
+
     return array
 }
-function refSortWithMaps(array, ref) {
+
+function refSortWithMaps(array: any[], ref: any) {
     var mapping = new Map()
     array.forEach((val, i) => mapping.set(val, ref[i]))
     array.sort((a, b) => mapping.get(a) - mapping.get(b))
 }
-function refSortWithObjects(array, ref) {
-    var mapping = {}
+
+function refSortWithObjects(array: any[], ref: any) {
+    var mapping: { [key: string]: any } = {}
     array.forEach((val, i) => mapping[val] = ref[i])
     array.sort((a, b) => mapping[a] - mapping[b])
 }
@@ -69,15 +79,18 @@ function refSortWithObjects(array, ref) {
 
 
 
-// partly "unrolled" loops to copy contents of ndarrays
-// when there's no source, zeroes out the array instead
-export function copyNdarrayContents(src, tgt, pos, size, tgtPos) {
+/**
+ * partly "unrolled" loops to copy contents of ndarrays
+ * when there's no source, zeroes out the array instead
+ */
+export function copyNdarrayContents(src: any, tgt: any, pos: [number, number, number], size: [number, number, number], tgtPos: [number, number, number]) {
     if (src) doNdarrayCopy(src, tgt, pos[0], pos[1], pos[2],
         size[0], size[1], size[2], tgtPos[0], tgtPos[1], tgtPos[2])
     if (!src) doNdarrayZero(tgt, tgtPos[0], tgtPos[1], tgtPos[2],
         size[0], size[1], size[2])
 }
-function doNdarrayCopy(src, tgt, i0, j0, k0, si, sj, sk, ti, tj, tk) {
+
+function doNdarrayCopy(src: any, tgt: any, i0: number, j0: number, k0: number, si: number, sj: number, sk: number, ti: number, tj: number, tk: number) {
     for (var i = 0; i < si; i++) {
         for (var j = 0; j < sj; j++) {
             var six = src.index(i0 + i, j0 + j, k0)
@@ -91,7 +104,7 @@ function doNdarrayCopy(src, tgt, i0, j0, k0, si, sj, sk, ti, tj, tk) {
     }
 }
 
-function doNdarrayZero(tgt, i0, j0, k0, si, sj, sk) {
+function doNdarrayZero(tgt: any, i0: number, j0: number, k0: number, si: number, sj: number, sk: number) {
     for (var i = 0; i < si; i++) {
         for (var j = 0; j < sj; j++) {
             var ix = tgt.index(i0 + i, j0 + j, k0)
@@ -104,16 +117,14 @@ function doNdarrayZero(tgt, i0, j0, k0, si, sj, sk) {
 }
 
 
-
-
-
-
-// simple thing for reporting time split up between several activities
-export function makeProfileHook(_every, _title) {
+/**
+ * simple thing for reporting time split up between several activities
+ */
+export function makeProfileHook(_every: number, _title: string) {
     var title = _title || ''
     var every = _every || 1
-    var times = []
-    var names = []
+    var times: any[] = []
+    var names: any[] = []
     var started = 0
     var last = 0
     var iter = 0
@@ -128,7 +139,8 @@ export function makeProfileHook(_every, _title) {
         started = last = performance.now()
         iter++
     }
-    var add = function (name) {
+
+    var add = function (name: any) {
         var t = performance.now()
         if (names.indexOf(name) < 0) names.push(name)
         var i = names.indexOf(name)
@@ -136,6 +148,7 @@ export function makeProfileHook(_every, _title) {
         times[i] += t - last
         last = t
     }
+
     var report = function () {
         total += performance.now() - started
         if (iter === every) {
@@ -148,7 +161,8 @@ export function makeProfileHook(_every, _title) {
             total = 0
         }
     }
-    return function profile_hook(state) {
+
+    return function profile_hook(state: any) {
         if (state === 'start') start()
         else if (state === 'end') report()
         else add(state)
@@ -158,14 +172,17 @@ export function makeProfileHook(_every, _title) {
 
 
 
-// simple thing for reporting time actions/sec
-export function makeThroughputHook(_every, _title) {
+/**
+ * simple thing for reporting time actions/sec
+ */
+export function makeThroughputHook(_every: number, _title: string) {
     var title = _title || ''
     var every = _every || 1
-    var counts = {}
+    var counts: { [key: string]: any } = {}
     var started = performance.now()
     var iter = 0
-    return function profile_hook(state) {
+
+    return function profile_hook(state: any) {
         if (state === 'start') return
         if (state === 'end') {
             if (++iter < every) return

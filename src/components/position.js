@@ -22,11 +22,8 @@ export default function (noa) {
 
 
     return {
-
         name: 'position',
-
         order: 60,
-
         state: {
             position: null,
             width: +1,
@@ -35,8 +32,6 @@ export default function (noa) {
             _renderPosition: null,
             _extents: null,
         },
-
-
         onAdd: function (eid, state) {
             // copy position into a plain array
             var pos = [0, 0, 0]
@@ -52,11 +47,7 @@ export default function (noa) {
             vec3.copy(state._renderPosition, state._localPosition)
             updatePositionExtents(state)
         },
-
         onRemove: null,
-
-
-
         system: function (dt, states) {
             var off = noa.worldOriginOffset
             states.forEach(state => {
@@ -64,8 +55,6 @@ export default function (noa) {
                 updatePositionExtents(state)
             })
         },
-
-
     }
 }
 

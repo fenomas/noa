@@ -7,34 +7,24 @@ var vec3 = require('gl-vec3')
  */
 
 export default function (noa) {
-
     return {
-
         name: 'followsEntity',
-
         order: 50,
-
         state: {
             entity: 0 | 0,
             offset: null,
         },
-
         onAdd: function (eid, state) {
             var off = vec3.create()
             state.offset = (state.offset) ? vec3.copy(off, state.offset) : off
             updatePosition(state)
             updateRenderPosition(state)
         },
-
         onRemove: null,
-
-
         // on tick, copy over regular positions
         system: function followEntity(dt, states) {
             states.forEach(state => updatePosition(state))
         },
-
-
         // on render, copy over render positions
         renderSystem: function followEntityMesh(dt, states) {
             states.forEach(state => updateRenderPosition(state))
@@ -52,7 +42,7 @@ export default function (noa) {
         }
         vec3.add(self._localPosition, other._localPosition, state.offset)
     }
-    
+
     function updateRenderPosition(state) {
         var id = state.__id
         var self = noa.ents.getPositionData(id)

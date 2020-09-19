@@ -1,22 +1,20 @@
+import Engine from ".."
 
 var createInputs = require('game-inputs')
 // var createInputs = require('../../../../npm-modules/game-inputs')
 
-
-export default function (noa, opts, element) {
-    return makeInputs(noa, opts, element)
+export interface IInputOptions {
+    bindings: {
+        [key: string]: [string, string] | string;
+    }
 }
 
-
 /**
- * @class Inputs
  * @typicalname noa.inputs
- * @classdesc Abstracts key/mouse input. 
+ * @description Abstracts key/mouse input. 
  * For docs see [andyhall/game-inputs](https://github.com/andyhall/game-inputs)
  */
-
-
-var defaultBindings = {
+const defaultBindings: IInputOptions = {
     bindings: {
         "forward": ["W", "<up>"],
         "left": ["A", "<left>"],
@@ -32,12 +30,16 @@ var defaultBindings = {
 }
 
 
-function makeInputs(noa, opts, element) {
-    opts = Object.assign({}, defaultBindings, opts)
-    var inputs = createInputs(element, opts)
-    var b = opts.bindings
+export function makeInputs(noa: Engine, options: Partial<IInputOptions>, element: HTMLElement) {
+    const optionsWithDefaults = {
+        ...defaultBindings,
+        ...options
+    };
+
+    var inputs = createInputs(element, optionsWithDefaults)
+    var b = optionsWithDefaults.bindings
     for (var name in b) {
-        var arr = (Array.isArray(b[name])) ? b[name] : [b[name]]
+        var arr = (Array.isArray(b[name])) ? b[name] : [b[name]] as any
         arr.unshift(name)
         inputs.bind.apply(inputs, arr)
     }

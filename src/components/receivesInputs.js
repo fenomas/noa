@@ -1,4 +1,3 @@
-
 /**
  * 
  * Input processing component - gets (key) input state and  
@@ -9,17 +8,11 @@
 
 export default function (noa) {
     return {
-
         name: 'receivesInputs',
-
         order: 20,
-
         state: {},
-
         onAdd: null,
-
         onRemove: null,
-
         system: function inputProcessor(dt, states) {
             var ents = noa.entities
             var inputState = noa.inputs.state

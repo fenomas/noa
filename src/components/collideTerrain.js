@@ -1,16 +1,10 @@
-
-
 export default function (noa) {
     return {
-
         name: 'collideTerrain',
-
         order: 0,
-
         state: {
             callback: null
         },
-
         onAdd: function (eid, state) {
             // add collide handler for physics engine to call
             var ents = noa.entities
@@ -22,15 +16,11 @@ export default function (noa) {
                 }
             }
         },
-
         onRemove: function (eid, state) {
             var ents = noa.entities
             if (ents.hasPhysics(eid)) {
                 ents.getPhysicsBody(eid).onCollide = null
             }
-        },
-
-
-
+        }
     }
 }

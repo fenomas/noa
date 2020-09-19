@@ -1,0 +1,1 @@
+declare module 'aabb-3d';

@@ -3,3 +3,4 @@ node_modules
 *-error.log
 /.vs
 ignore/
+dist/

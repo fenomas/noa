@@ -1,20 +1,14 @@
-
 var vec3 = require('gl-vec3')
 
 
 export default function (noa) {
     return {
-
         name: 'mesh',
-
         order: 100,
-
         state: {
             mesh: null,
             offset: null
         },
-
-
         onAdd: function (eid, state) {
             // implicitly assume there's already a position component
             var posDat = noa.ents.getPositionData(eid)
@@ -32,18 +26,12 @@ export default function (noa) {
                 rpos[1] + state.offset[1],
                 rpos[2] + state.offset[2])
         },
-
-
         onRemove: function (eid, state) {
             state.mesh.dispose()
         },
-
-
-
         renderSystem: function (dt, states) {
             // before render move each mesh to its render position, 
             // set by the physics engine or driving logic
-
             states.forEach(state => {
                 var id = state.__id
 
@@ -54,7 +42,5 @@ export default function (noa) {
                     rpos[2] + state.offset[2])
             })
         }
-
-
     }
 }
