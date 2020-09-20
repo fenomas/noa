@@ -1,6 +1,5 @@
-import Engine from ".."
 
-interface IComponent {
+export interface IComponent {
     name: string;
     order: number;
     state: Partial<{
@@ -57,24 +56,4 @@ interface IComponent {
     onRemove: null | ((eid: any, state: any) => any);
     system: null | ((dt: any, states: any) => any);
     renderSystem?: (dt: any, states: any) => any;
-}
-
-
-export default function (noa: Engine): IComponent {
-    return {
-        name: 'smooth-camera',
-        order: 99,
-        state: {
-            time: 100.1
-        },
-        onAdd: null,
-        onRemove: null,
-        system: function (dt, states) {
-            // remove self after time elapses
-            states.forEach((state: any) => {
-                state.time -= dt
-                if (state.time < 0) noa.ents.removeComponent(state.__id, 'smooth-camera')
-            })
-        }
-    }
 }

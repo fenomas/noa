@@ -338,7 +338,7 @@ class Engine {
     }
 
     private _paused: boolean;
-    private _tickRate: number;
+    _tickRate: number;
     private _dragOutsideLock: boolean;
     private _originRebaseDistance: number;
     private _constants: any;
@@ -382,8 +382,8 @@ class Engine {
      */
     blockTargetIdCheck: any;
 
-    ents: any;
-    playerEntity: string;
+    ents: Entities;
+    playerEntity: number;
 
     emit = (event: 'tick' | 'beforeRender' | 'afterRender' | 'targetBlockChanged', callback: any) => {
 
@@ -616,7 +616,7 @@ class Engine {
      * @param dist
      * @param blockIdTestFunction
      */
-    _localPick = (pos: number[] | null, vec: any, dist: any, blockIdTestFunction: any) => {
+    _localPick = (pos: number[] | null, vec: any, dist: any, blockIdTestFunction?: (id: number) => boolean) => {
         // do a raycast in local coords - result obj will be in global coords
         if (dist === 0) {
             return null

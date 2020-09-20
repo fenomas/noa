@@ -30,7 +30,7 @@ const entitiesDefaults: IEntitiesOptions = {
 export class Entities extends EntComp {
     constructor(noa: Engine, options: Partial<IEntitiesOptions>) {
         // inherit from the ECS library
-        super(noa, options)
+        super()
 
         this.noa = noa
         const optionsWithDefaults = {
@@ -62,9 +62,9 @@ export class Entities extends EntComp {
         })
 
         // physics
-        var getPhys = this.getStateAccessor(this.names.physics)
-        this.getPhysics = getPhys
-        this.getPhysicsBody = function (id: any) { return getPhys(id).body }
+        this.getPhysicsBody = function (id: any) {
+            return this.getPhysics(id).body
+        }
 
         // misc
         this.getMeshData = this.getStateAccessor(this.names.mesh)
@@ -84,54 +84,51 @@ export class Entities extends EntComp {
     getCollideEntities: any;
 
     onPairwiseEntityCollision: any;
-    getComponentAccessor: any;
 
-    isPlayer(id: string) {
+    isPlayer(id: number) {
         return id === this.noa.playerEntity
     }
 
-    get hasPhysics() {
-        return this.getComponentAccessor(this.names.physics) as boolean
+
+    getPhysics(id: number) {
+        return this.getStateAccessor<{ __id: number; body: any; }>(this.names.physics)(id)!
+    }
+
+    hasPhysics(id: number) {
+        return this.getComponentAccessor(this.names.physics)(id)!
     }
     
-    get cameraSmoothed() {
-        return this.getComponentAccessor(this.names.smoothCamera) as boolean
+    cameraSmoothed(id: number) {
+        return this.getComponentAccessor(this.names.smoothCamera)(id)!
     }
 
-    get hasMesh() {
-        return this.getComponentAccessor(this.names.mesh) as boolean
+    hasMesh(id: number) {
+        return this.getComponentAccessor(this.names.mesh)(id)!
     }
 
-    get hasPosition() {
-        return this.getComponentAccessor(this.names.position) as boolean
+    hasPosition(id: number) {
+        return this.getComponentAccessor(this.names.position)(id)!
     }
 
-    get getPositionData() {
-        var getPos = this.getStateAccessor(this.names.position)
-        return getPos
+    getPositionData(id: number) {
+        return this.getStateAccessor<{ __id: number; _localPosition: number[]; _renderPosition: number[]; _extents: number[]; height: number; }>(this.names.position)(id)!
     }
 
-
-
-
-    _localGetPosition(id: string) {
-        var getPos = this.getStateAccessor(this.names.position)
-        return getPos(id)._localPosition
+    _localGetPosition(id: number) {
+        return this.getStateAccessor<any>(this.names.position)(id)!._localPosition
     }
 
-    getPosition(id: string) {
-        var getPos = this.getStateAccessor(this.names.position)
-        return getPos(id).position
+    getPosition(id: number) {
+        return this.getStateAccessor<any>(this.names.position)(id)!.position
     }
 
-    _localSetPosition(id: string, pos: any) {
-        var getPos = this.getStateAccessor(this.names.position)
-        var posDat = getPos(id)
-        vec3.copy(posDat._localPosition, pos)
-        this.updateDerivedPositionData(id, posDat)
+    _localSetPosition(id: number, pos: number[]) {
+        const positionData = this.getPositionData(id)
+        vec3.copy(positionData._localPosition, pos)
+        this.updateDerivedPositionData(id, positionData)
     }
 
-    setPosition = (id: string, pos: any, _yarg: any, _zarg: any) => {
+    setPosition = (id: number, pos: any, _yarg: any, _zarg: any) => {
         // check if called with "x, y, z" args
         if (typeof pos === 'number') pos = [pos, _yarg, _zarg]
         // convert to local and defer impl
@@ -139,9 +136,15 @@ export class Entities extends EntComp {
         this._localSetPosition(id, loc)
     }
 
-    setEntitySize(id: string, xs: any, ys: any, zs: any) {
-        var getPos = this.getStateAccessor(this.names.position)
-        var posDat = getPos(id)
+    setEntitySize(id: number, xs: any, ys: any, zs: any) {
+        interface IPosData {
+            __id: number;
+            width: number;
+            height: number;
+        }
+        
+        var getPos = this.getStateAccessor<IPosData>(this.names.position)
+        var posDat = getPos(id)!
         posDat.width = (xs + zs) / 2
         posDat.height = ys
         this.updateDerivedPositionData(id, posDat)
@@ -157,8 +160,6 @@ export class Entities extends EntComp {
 
     createComponent: any;
     getPhysicsBody: any;
-    getPhysics: any;
-    getStateAccessor: any;
 
     hasComponent: any;
     addComponent: any;
@@ -168,7 +169,7 @@ export class Entities extends EntComp {
 
 
     /** helper to update everything derived from `_localPosition` */
-    updateDerivedPositionData(id: string, posDat: any) {
+    updateDerivedPositionData(id: number, posDat: any) {
         vec3.copy(posDat._renderPosition, posDat._localPosition)
         vec3.add(posDat.position, posDat._localPosition, this.noa.worldOriginOffset)
         updatePositionExtents(posDat)
