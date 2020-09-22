@@ -1,11 +1,10 @@
-
 import ndarray from 'ndarray'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import { SubMesh } from '@babylonjs/core/Meshes/subMesh'
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData'
 import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial'
 import { Texture } from '@babylonjs/core/Materials/Textures/texture'
-import '@babylonjs/core/Meshes/meshBuilder'
+// import '@babylonjs/core/Meshes/meshBuilder'
 
 import { constants } from './constants'
 import { copyNdarrayContents } from './util'
@@ -86,7 +85,7 @@ function TerrainMesher() {
  * Then copies in edge data from neighbors, or if not available zeroes it out
  * Actual mesher will then run on the padded ndarray
  * 
-*/
+ */
 
 function buildPaddedVoxelArray(chunk) {
     var src = chunk.voxels
@@ -456,7 +455,7 @@ function GreedyMesher() {
         for (var k = 0; k < len; ++k) {
             var d0 = dbase
             dbase += kstride
-            for (var j = 0; j < len; j++ , n++ , d0 += jstride) {
+            for (var j = 0; j < len; j++, n++, d0 += jstride) {
 
                 // mask[n] will represent the face needed between i-1,j,k and i,j,k
                 // for now, assume we never have two faces in both directions
@@ -548,12 +547,12 @@ function GreedyMesher() {
                 }
 
                 OUTER:
-                for (h = 1; h < len2 - k; ++h) {
-                    for (var m = 0; m < w; ++m) {
-                        var ix = n + m + h * len1
-                        if (!maskCompareFcn(ix, mask, maskVal, aomask, ao)) break OUTER
+                    for (h = 1; h < len2 - k; ++h) {
+                        for (var m = 0; m < w; ++m) {
+                            var ix = n + m + h * len1
+                            if (!maskCompareFcn(ix, mask, maskVal, aomask, ao)) break OUTER
+                        }
                     }
-                }
 
                 // for testing: doing the following will disable greediness
                 //w=h=1
@@ -726,10 +725,10 @@ function GreedyMesher() {
         var facingSolid = (solidBit & data.get(ipos, j, k))
 
         // inc occlusion of vertex next to obstructed side
-        if (data.get(ipos, j + 1, k) & solidBit) { ++a10; ++a11 }
-        if (data.get(ipos, j - 1, k) & solidBit) { ++a00; ++a01 }
-        if (data.get(ipos, j, k + 1) & solidBit) { ++a01; ++a11 }
-        if (data.get(ipos, j, k - 1) & solidBit) { ++a00; ++a10 }
+        if (data.get(ipos, j + 1, k) & solidBit) {++a10;++a11 }
+        if (data.get(ipos, j - 1, k) & solidBit) {++a00;++a01 }
+        if (data.get(ipos, j, k + 1) & solidBit) {++a01;++a11 }
+        if (data.get(ipos, j, k - 1) & solidBit) {++a00;++a10 }
 
         // treat corners differently based when facing a solid block
         if (facingSolid) {
@@ -762,10 +761,10 @@ function GreedyMesher() {
         var facingSolid = (solidBit & data.get(ipos, j, k))
 
         // inc occlusion of vertex next to obstructed side
-        if (data.get(ipos, j + 1, k) & solidBit) { ++a10; ++a11 }
-        if (data.get(ipos, j - 1, k) & solidBit) { ++a00; ++a01 }
-        if (data.get(ipos, j, k + 1) & solidBit) { ++a01; ++a11 }
-        if (data.get(ipos, j, k - 1) & solidBit) { ++a00; ++a10 }
+        if (data.get(ipos, j + 1, k) & solidBit) {++a10;++a11 }
+        if (data.get(ipos, j - 1, k) & solidBit) {++a00;++a01 }
+        if (data.get(ipos, j, k + 1) & solidBit) {++a01;++a11 }
+        if (data.get(ipos, j, k - 1) & solidBit) {++a00;++a10 }
 
         if (facingSolid) {
             // always 2, or 3 in corners
@@ -847,4 +846,4 @@ function GreedyMesher() {
 
 import { makeProfileHook } from './util'
 var profile_hook = (PROFILE_EVERY) ?
-    makeProfileHook(PROFILE_EVERY, 'Terrain meshing') : () => { }
+    makeProfileHook(PROFILE_EVERY, 'Terrain meshing') : () => {}

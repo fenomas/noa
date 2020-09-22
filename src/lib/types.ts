@@ -54,6 +54,6 @@ export interface IComponent {
     }>;
     onAdd: null | ((eid: any, state: any) => any);
     onRemove: null | ((eid: any, state: any) => any);
-    system: null | ((dt: any, states: any) => any);
+    system?: null | ((dt: any, states: any) => any);
     renderSystem?: (dt: any, states: any) => any;
 }

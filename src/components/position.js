@@ -1,26 +1,21 @@
 var vec3 = require('gl-vec3')
 
+/**
+ * Component holding entity's position, width, and height.
+ * By convention, entity's "position" is the bottom center of its AABB
+ * 
+ * Of the various properties, _localPosition is the "real", 
+ * single-source-of-truth position. Others are derived.
+ * Local coords are relative to `noa.worldOriginOffset`.
+ * 
+ * Props:
+ *     position: pos in global coords (may be low precision)
+ *     _localPosition: precise pos in local coords
+ *     _renderPosition: [x,y,z] in LOCAL COORDS
+ *     _extents: array [lo, lo, lo, hi, hi, hi] in LOCAL COORDS
+ * 
+ */
 export default function (noa) {
-
-    /**
-     * 
-     * 	Component holding entity's position, width, and height.
-     *  By convention, entity's "position" is the bottom center of its AABB
-     * 
-     *  Of the various properties, _localPosition is the "real", 
-     *  single-source-of-truth position. Others are derived.
-     *  Local coords are relative to `noa.worldOriginOffset`.
-     * 
-     *  Props:
-     *      position: pos in global coords (may be low precision)
-     *      _localPosition: precise pos in local coords
-     *      _renderPosition: [x,y,z] in LOCAL COORDS
-     *      _extents: array [lo, lo, lo, hi, hi, hi] in LOCAL COORDS
-     * 
-     */
-
-
-
     return {
         name: 'position',
         order: 60,

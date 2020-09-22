@@ -1,5 +1,5 @@
 /** helper to swap item to end and pop(), instead of splice()ing */
-export function removeUnorderedListItem(list: any[], item: string) {
+export function removeUnorderedListItem<T>(list: T[], item: T) {
     var i = list.indexOf(item)
     if (i < 0) {
         return
@@ -8,7 +8,7 @@ export function removeUnorderedListItem(list: any[], item: string) {
     if (i === list.length - 1) {
         list.pop()
     } else {
-        list[i] = list.pop()
+        list[i] = list.pop()!
     }
 }
 

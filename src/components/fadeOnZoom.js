@@ -2,7 +2,6 @@
  * Component for the player entity, when active hides the player's mesh 
  * when camera zoom is less than a certain amount
  */
-
 export default function (noa) {
     return {
         name: 'fadeOnZoom',

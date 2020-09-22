@@ -208,8 +208,8 @@ export class Chunk {
 
             var mesh = this.mesh()
             if (mesh && mesh.getIndices()!.length > 0) {
-                var pos = [this.x, this.y, this.z]
-                rendering.addMeshToScene(mesh, true, pos, this)
+                var pos: [number, number, number] = [this.x, this.y, this.z]
+                rendering.addMeshToScene(mesh as any, true, pos, this)
             }
             this._terrainMesh = mesh || null
             this._terrainDirty = false
@@ -219,7 +219,7 @@ export class Chunk {
         if (this._objectsDirty) {
             removeObjectMeshes(this)
             var meshes = buildObjectMeshes(this)
-            var pos2 = [this.x, this.y, this.z]
+            var pos2: [number, number, number] = [this.x, this.y, this.z]
             meshes.forEach(mesh => rendering.addMeshToScene(mesh, true, pos2, this))
             this._objectsDirty = false
         }

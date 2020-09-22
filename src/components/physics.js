@@ -2,8 +2,6 @@ var vec3 = require('gl-vec3')
 
 
 export default function (noa) {
-
-
     return {
         name: 'physics',
         order: 40,

@@ -5,16 +5,15 @@
  * @license  MIT
  */
 
-/*
-var vec3 = require('gl-vec3')
-var ndarray = require('ndarray')
-var raycast = require('fast-voxel-raycast')
-var EventEmitter = require('events').EventEmitter
-*/
-
 import vec3 from 'gl-vec3'
 import ndarray from 'ndarray'
 import raycast from 'fast-voxel-raycast'
+
+import "@babylonjs/core/Meshes/meshBuilder"
+import "@babylonjs/core/Meshes/Builders/sphereBuilder"
+import "@babylonjs/core/Meshes/Builders/boxBuilder"
+import "@babylonjs/core/Meshes/mesh"
+import "@babylonjs/core/Materials/standardMaterial"
 
 import { EventEmitter } from 'events'
 import { Camera, ICameraOptions } from './lib/camera'
@@ -26,9 +25,9 @@ import { makePhysics, IPhysicsOptions } from "./lib/physics"
 import { makeInputs, IInputOptions } from "./lib/inputs"
 
 import { makeProfileHook } from './lib/util'
-import createRendering from './lib/rendering'
 import { Registry, IRegistryOptions } from './lib/registry'
 import { constants } from './lib/constants'
+import { IRenderingOptions, Rendering } from "./lib/rendering"
 
 
 // todo these types need to pull from babylonjs
@@ -59,7 +58,7 @@ var _hitResult = {
 }
 
 
-interface IEngineOptions extends Partial<ICameraOptions>, Partial<IEntitiesOptions>, Partial<IContainerOptions>, Partial<IPhysicsOptions>, Partial<IInputOptions>, Partial<IWorldOptions>, Partial<IRegistryOptions> {
+interface IEngineOptions extends Partial<ICameraOptions>, Partial<IEntitiesOptions>, Partial<IContainerOptions>, Partial<IPhysicsOptions>, Partial<IInputOptions>, Partial<IWorldOptions>, Partial<IRegistryOptions>, Partial<IRenderingOptions> {
     /**
      * @default false
      */
@@ -213,45 +212,18 @@ class Engine {
     
         this.worldName = 'default'
     
-        /**
-         * container (html/div) manager
-         */
         this.container = new Container(this, optionsWithDefaults)
     
-        /**
-         * inputs manager - abstracts key/mouse input
-         * @type {Inputs}
-         */
         this.inputs = makeInputs(this, optionsWithDefaults, this.container.element)
     
-        /**
-         * block/item property registry
-         * @type {Registry}
-         */
         this.registry = new Registry(this, optionsWithDefaults)
     
-        /**
-         * world manager
-         * @type {World}
-         */
         this.world = new World(this, optionsWithDefaults)
     
-        /**
-         * Rendering manager
-         * @type {Rendering}
-         */
-        this.rendering = createRendering(this, optionsWithDefaults, this.container.canvas)
+        this.rendering = new Rendering(this, optionsWithDefaults, this.container.canvas)
     
-        /**
-         * physics engine - solves collisions, properties, etc.
-         * @type {Physics}
-         */
         this.physics = makePhysics(this, optionsWithDefaults)
     
-        /** Entity manager / Entity Component System (ECS) 
-         * Aliased to `noa.ents` for convenience.
-         * @type {Entities}
-         */
         this.entities = new Entities(this, optionsWithDefaults)
         this.ents = this.entities
         var ents = this.ents
@@ -351,13 +323,41 @@ class Engine {
     vec3: any;
 
 
+    /**
+     * container (html/div) manager
+     */
     container: Container;
+
+    /**
+     * inputs manager - abstracts key/mouse input
+     */
     inputs: any;
+
     camera: Camera;
+
+    /**
+     * block/item property registry
+     */
     registry: Registry;
+
+    /**
+     * world manager
+     */
     world: World;
-    rendering: any;
+
+    /**
+     * Rendering manager
+     */
+    rendering: Rendering;
+
+    /**
+     * physics engine - solves collisions, properties, etc.
+     */
     physics: any;
+
+    /** Entity manager / Entity Component System (ECS) 
+     * Aliased to `noa.ents` for convenience.
+     */
     entities: Entities;
 
     /**
@@ -664,7 +664,7 @@ class Engine {
             return
         }
     
-        const delta = []
+        const delta = [] as any
         for (let i = 0; i < 3; i++) {
             let d = Math.floor(lpos[i])
             delta[i] = d

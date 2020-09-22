@@ -1,9 +1,7 @@
 import Engine from ".."
+import createInputs, { GameInputs, IGameInputOptions } from 'game-inputs';
 
-var createInputs = require('game-inputs')
-// var createInputs = require('../../../../npm-modules/game-inputs')
-
-export interface IInputOptions {
+export interface IInputOptions extends IGameInputOptions {
     bindings: {
         [key: string]: [string, string] | string;
     }
@@ -30,7 +28,7 @@ const defaultBindings: IInputOptions = {
 }
 
 
-export function makeInputs(noa: Engine, options: Partial<IInputOptions>, element: HTMLElement) {
+export function makeInputs(noa: Engine, options: Partial<IInputOptions>, element: HTMLElement): GameInputs {
     const optionsWithDefaults = {
         ...defaultBindings,
         ...options

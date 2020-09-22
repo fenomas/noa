@@ -1,11 +1,8 @@
 /**
- * 
  * Input processing component - gets (key) input state and  
  * applies it to receiving entities by updating their movement 
  * component state (heading, movespeed, jumping, etc.)
- * 
  */
-
 export default function (noa) {
     return {
         name: 'receivesInputs',
@@ -26,7 +23,6 @@ export default function (noa) {
 
     }
 }
-
 
 
 function setMovementState(state, inputs, camHeading) {
