@@ -1,4 +1,5 @@
 import Engine, { Material, Mesh } from ".."
+import { Color3 } from "./types"
 
 export interface IRegistryOptions {
     /**
@@ -12,7 +13,7 @@ const registryDefaults: IRegistryOptions = {
 }
 
 interface IMeshData {
-    color: [number, number, number];
+    color: Color3;
     alpha: number;
     texture: string;
     textureAlpha: boolean;
@@ -242,7 +243,7 @@ export class Registry {
      * @param texHasAlpha
      * @param renderMaterial an optional BABYLON material to be used for block faces with this block material
      */
-    registerMaterial = (name: string, color: [number, number, number] | [number, number, number, number] = [1, 1, 1], textureURL: string | undefined = undefined, texHasAlpha: boolean = false, renderMaterial: Material | null = null) => {
+    registerMaterial = (name: string, color: Color3 | [number, number, number, number] = [1, 1, 1], textureURL: string | undefined = undefined, texHasAlpha: boolean = false, renderMaterial: Material | null = null) => {
         // console.log('register mat: ', name, color, textureURL)
         const id = this.matIDs[name] || Object.values(this.matData).length
         this.matIDs[name] = id
@@ -253,7 +254,7 @@ export class Registry {
         }
 
         this.matData[id] = {
-            color: color as [number, number, number],
+            color: color as Color3,
             alpha: alpha,
             texture: textureURL ? this.texturePath + textureURL : '',
             textureAlpha: texHasAlpha,
@@ -266,7 +267,7 @@ export class Registry {
      * block solidity (as in physics) 
      * @param id
      */
-    getBlockSolidity = (id: number) => {
+    getBlockSolidity = (id: number): boolean => {
         return this._solidityLookup[id]
     }
 
@@ -320,7 +321,7 @@ export class Registry {
      * look up color used for vertices of blocks of given material
      * - i.e. white if it has a texture, color otherwise
      */
-    _getMaterialVertexColor = (matID: number): [number, number, number] => {
+    _getMaterialVertexColor = (matID: number): Color3 => {
         if (this.matData[matID].texture) {
             return [1, 1, 1]
         }

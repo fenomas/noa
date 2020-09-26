@@ -1,9 +1,9 @@
 // shared references to terrain/object meshers
 import ndarray from "ndarray"
-import terrainMesher from './terrainMesher'
 import { addObjectBlock, buildObjectMeshes, disposeChunk, initChunk, removeObjectBlock, removeObjectMeshes } from './objectMesher'
 import { constants } from './constants'
 import Engine from ".."
+import { TerrainMesher } from "./terrainMesher"
 
 /**
  * Chunk
@@ -195,7 +195,8 @@ export class Chunk {
     // Convert chunk's voxel terrain into a babylon.js mesh
     // Used internally, but needs to be public so mesh-building hacks can call it
     mesh = (matGetter?: any, colGetter?: any, useAO?: any, aoVals?: any, revAoVal?: any) => {
-        return terrainMesher.meshChunk(this, matGetter, colGetter, useAO, aoVals, revAoVal)
+        const mesher = new TerrainMesher(this.noa);
+        return mesher.meshChunk(this, matGetter, colGetter, false, useAO, aoVals, revAoVal)
     }
 
     // gets called by World when this chunk has been queued for remeshing

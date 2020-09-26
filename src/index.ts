@@ -28,6 +28,7 @@ import { makeProfileHook } from './lib/util'
 import { Registry, IRegistryOptions } from './lib/registry'
 import { constants } from './lib/constants'
 import { IRenderingOptions, Rendering } from "./lib/rendering"
+import { GameInputs } from "game-inputs"
 
 
 // todo these types need to pull from babylonjs
@@ -78,7 +79,11 @@ interface IEngineOptions extends Partial<ICameraOptions>, Partial<IEntitiesOptio
      * @default 0.6
      */
     playerWidth: number;
-    playerStart: [0, 10, 0];
+
+    /**
+     * @default [0, 10, 0]
+     */
+    playerStart: [number, number, number];
 
     /**
      * @default false
@@ -115,7 +120,14 @@ interface IEngineOptions extends Partial<ICameraOptions>, Partial<IEntitiesOptio
     /**
      * @default 25
      */
-    originRebaseDistance: 25;
+    originRebaseDistance: number;
+
+    /**
+     * How many air jumps should be allowed
+     * set to 0 to not allow air jumps
+     * @default 0
+     */
+    airJumps: number;
 }
 
 
@@ -132,6 +144,7 @@ const engineDefaults: IEngineOptions = {
     dragCameraOutsidePointerLock: true,
     skipDefaultHighlighting: false,
     originRebaseDistance: 25,
+    airJumps: 0,
 }
 
 
@@ -168,49 +181,36 @@ type Block = {
  * noa's child modules (rendering, camera, etc). 
  * See docs for each module for which options they use.
  * 
- * @class
  * @alias Noa
  * @typicalname noa
  * @emits tick(dt)
  * @emits beforeRender(dt)
  * @emits afterRender(dt)
  * @emits targetBlockChanged(blockDesc)
- * @classdesc Root class of the noa engine
- * 
- * Extends: `EventEmitter`
+ * @description Root class of the noa engine
  */
-class Engine {
+class Engine extends EventEmitter {
     constructor (options: Partial<IEngineOptions>) {
+        super();
+
         const optionsWithDefaults = {
             ...engineDefaults,
             ...options
         }
         
         /** version string, e.g. `"0.25.4"` */
-        this.version = "!! 3.0-" + require('../package.json').version
+        this.version = require('../package.json').version
         console.log(this.version);
         
         this._tickRate = optionsWithDefaults.tickRate
-        this._paused = false
         this._dragOutsideLock = optionsWithDefaults.dragCameraOutsidePointerLock
-        var self = this
     
         if (!optionsWithDefaults.silent) {
             var debugstr = (optionsWithDefaults.debug) ? ' (debug)' : ''
             console.log(`noa-engine v${this.version}${debugstr}`)
         }
     
-        // world origin offset, used throughout engine for origin rebasing
-        this.worldOriginOffset = [0, 0, 0]
         this._originRebaseDistance = optionsWithDefaults.originRebaseDistance
-    
-        // vec3 library used throughout the engine
-        this.vec3 = vec3
-    
-        // how far engine is into the current tick. Updated each render.
-        this.positionInCurrentTick = 0
-    
-        this.worldName = 'default'
     
         this.container = new Container(this, optionsWithDefaults)
     
@@ -226,61 +226,50 @@ class Engine {
     
         this.entities = new Entities(this, optionsWithDefaults)
         this.ents = this.entities
-        var ents = this.ents
     
         /** Entity id for the player entity */
-        this.playerEntity = ents.add(
+        this.playerEntity = this.ents.add(
             optionsWithDefaults.playerStart, // starting location
-            optionsWithDefaults.playerWidth, optionsWithDefaults.playerHeight,
+            optionsWithDefaults.playerWidth,
+            optionsWithDefaults.playerHeight,
             null, null, // no mesh for now, no meshOffset, 
             true, true
         )
     
         // make player entity it collide with terrain and other entities
-        ents.addComponent(this.playerEntity, ents.names.collideTerrain)
-        ents.addComponent(this.playerEntity, ents.names.collideEntities)
+        this.ents.addComponent(this.playerEntity, this.ents.names.collideTerrain)
+        this.ents.addComponent(this.playerEntity, this.ents.names.collideEntities)
     
         // adjust default physics parameters
-        var body = ents.getPhysicsBody(this.playerEntity)
+        var body = this.ents.getPhysicsBody(this.playerEntity)
         body.gravityMultiplier = 2 // less floaty
         body.autoStep = optionsWithDefaults.playerAutoStep // auto step onto blocks
     
         // input component - sets entity's movement state from key inputs
-        ents.addComponent(this.playerEntity, ents.names.receivesInputs)
+        this.ents.addComponent(this.playerEntity, this.ents.names.receivesInputs)
     
         // add a component to make player mesh fade out when zooming in
-        ents.addComponent(this.playerEntity, ents.names.fadeOnZoom)
+        this.ents.addComponent(this.playerEntity, this.ents.names.fadeOnZoom)
     
-        // movement component - applies movement forces
-        // todo: populate movement settings from options
-        var moveOpts = {
-            airJumps: 1
-        }
-        ents.addComponent(this.playerEntity, ents.names.movement, moveOpts)
+        this.ents.addComponent(this.playerEntity, this.ents.names.movement, {
+            airJumps: optionsWithDefaults.airJumps
+        })
     
-    
-        /**
-         * Manages camera, view angle, etc.
-         * @type {Camera}
-         */
         this.camera = new Camera(this, optionsWithDefaults)
-    
     
         // set up block targeting
         this.blockTestDistance = optionsWithDefaults.blockTestDistance
     
         this.blockTargetIdCheck = this.registry.getBlockSolidity
     
-        this.targetedBlock = null
-    
         // add a default block highlighting function
         if (!optionsWithDefaults.skipDefaultHighlighting) {
             // the default listener, defined onto noa in case people want to remove it later
-            this.defaultBlockHighlightFunction = function (tgt: any) {
-                if (tgt) {
-                    self.rendering.highlightBlockFace(true, tgt.position, tgt.normal)
+            this.defaultBlockHighlightFunction = (blockDesc: Block | null) => {
+                if (blockDesc) {
+                    this.rendering.highlightBlockFace(true, blockDesc.position, blockDesc.normal)
                 } else {
-                    self.rendering.highlightBlockFace(false)
+                    this.rendering.highlightBlockFace(false)
                 }
             }
             this.on('targetBlockChanged', this.defaultBlockHighlightFunction)
@@ -296,7 +285,7 @@ class Engine {
             window.scene = this.rendering._scene
             window.ndarray = ndarray as unknown as ndarray<Uint32Array>
             window.vec3 = vec3 as unknown as Vector
-            ents.getMovement(1).airJumps = 999
+            this.ents.getMovement(1).airJumps = optionsWithDefaults.airJumps
             this.setViewDistance = function (dist) {
                 var cs = this.world.chunkSize
                 this.world.chunkAddDistance = dist / cs
@@ -309,7 +298,7 @@ class Engine {
         deprecateStuff(this)
     }
 
-    private _paused: boolean;
+    private _paused: boolean = false;
     _tickRate: number;
     private _dragOutsideLock: boolean;
     private _originRebaseDistance: number;
@@ -317,10 +306,21 @@ class Engine {
 
     version: string;
 
-    defaultBlockHighlightFunction: any;
-    positionInCurrentTick: number;
-    worldOriginOffset: any;
-    vec3: any;
+    defaultBlockHighlightFunction?: (blockDesc: Block | null) => void;
+    
+    /**
+     * how far engine is into the current tick. Updated each render
+     */
+    positionInCurrentTick: number = 0;
+
+    
+    /** world origin offset, used throughout engine for origin rebasing */
+    worldOriginOffset: [number, number, number] = [0, 0, 0];
+
+    /**
+     * vec3 library used throughout the engine
+     */
+    vec3: any = vec3;
 
 
     /**
@@ -331,8 +331,12 @@ class Engine {
     /**
      * inputs manager - abstracts key/mouse input
      */
-    inputs: any;
+    inputs: GameInputs;
 
+    
+    /**
+     * Manages camera, view angle, etc.
+     */
     camera: Camera;
 
     /**
@@ -355,43 +359,40 @@ class Engine {
      */
     physics: any;
 
-    /** Entity manager / Entity Component System (ECS) 
+    /**
+     * Entity manager / Entity Component System (ECS) 
      * Aliased to `noa.ents` for convenience.
      */
     entities: Entities;
+    ents: Entities;
 
     /**
      * String identifier for the current world. (It's safe to ignore this if
      * your game doesn't need to swap between levels/worlds.)
      */
-    worldName: any;
+    worldName: string = 'default';
 
-    blockTestDistance: any;
+    blockTestDistance: number;
 
     
     /**
      * Dynamically updated object describing the currently targeted block.
      * Gets updated each tick, to `null` if no block is targeted, or to an object like
      */
-    targetedBlock: Block | null;
+    targetedBlock: Block | null = null;
 
     
     /**
      * function for which block IDs are targetable. 
      * Defaults to a solidity check, but can be overridden
      */
-    blockTargetIdCheck: any;
+    blockTargetIdCheck: (id: number) => boolean;
 
-    ents: Entities;
     playerEntity: number;
 
-    emit = (event: 'tick' | 'beforeRender' | 'afterRender' | 'targetBlockChanged', callback: any) => {
+    emit!: (event: 'tick' | 'beforeRender' | 'afterRender' | 'targetBlockChanged', callback: any) => boolean;
 
-    }
-
-    on = (event: 'tick' | 'beforeRender' | 'afterRender' | 'targetBlockChanged', callback: (dt: number) => void) => {
-
-    }
+    on!: (event: 'tick' | 'beforeRender' | 'afterRender' | 'targetBlockChanged', callback: (dt: any) => void) => this;
 
     setViewDistance = (dist: number) => {
         var cs = this.world.chunkSize
@@ -674,11 +675,6 @@ class Engine {
         this.entities._rebaseOrigin(delta)
     }
 }
-
-Engine.prototype = Object.create(EventEmitter.prototype)
-
-
-
 
 
 /**

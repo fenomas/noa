@@ -9,12 +9,13 @@ import { OctreeBlock } from '@babylonjs/core/Culling/Octrees/octreeBlock'
 import { AbstractMesh, Engine as BabylonEngine, Material } from "@babylonjs/core"
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight'
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
-import { Vector3, Color3, Color4 } from '@babylonjs/core/Maths/math'
+import { Vector3, Color3 as Color3Babylon, Color4 as Color4Babylon } from '@babylonjs/core/Maths/math'
 import { Mesh as BabylonMesh } from '@babylonjs/core/Meshes/mesh'
 import { OctreeSceneComponent } from '@babylonjs/core/Culling/Octrees/'
 import '@babylonjs/core/Meshes/meshBuilder'
 import { makeProfileHook } from './util'
 import { Chunk } from "./chunk"
+import { Color3, Color4 } from "./types"
 
 
 export type noaMesh = BabylonMesh & { _noaContainingChunk: Chunk | null | undefined; _isWorldMatrixFrozen: boolean | undefined; };
@@ -37,16 +38,16 @@ export interface IRenderingOptions {
     clearColor: [number, number, number, number];
 
     /** @default [1, 1, 1] */
-    ambientColor: [number, number, number];
+    ambientColor: Color3;
 
     /** @default [1, 1, 1] */
     lightDiffuse: [number, number, number];
     
     /** @default [1, 1, 1] */
-    lightSpecular: [number, number, number];
+    lightSpecular: Color3;
     
     /** @default [0.5, 0.5, 0.5] */
-    groundLightColor: [number, number, number];
+    groundLightColor: Color3;
     
     /** @default true */
     useAO: boolean;
@@ -133,8 +134,8 @@ export class Rendering {
         var lightVec = new Vector3(0.1, 1, 0.3)
         this._light = new HemisphericLight('light', lightVec, this._scene)
 
-        function arrToColor3(a: any) { return new Color3(a[0], a[1], a[2]) }
-        function arrToColor4(a: any) { return new Color4(a[0], a[1], a[2], a[3]) }
+        function arrToColor3(a: Color3) { return new Color3Babylon(a[0], a[1], a[2]) }
+        function arrToColor4(a: Color4) { return new Color4Babylon(a[0], a[1], a[2], a[3]) }
 
         this._scene.clearColor = arrToColor4(optionsWithDefaults.clearColor)
         this._scene.ambientColor = arrToColor3(optionsWithDefaults.ambientColor)
@@ -218,7 +219,7 @@ export class Rendering {
             mesh = BabylonMesh.CreatePlane("highlight", 1.0, this._scene) as noaMesh
             var hlm = this.makeStandardMaterial('highlightMat')
             hlm.backFaceCulling = false
-            hlm.emissiveColor = new Color3(1, 1, 1)
+            hlm.emissiveColor = new Color3Babylon(1, 1, 1)
             hlm.alpha = 0.2
             mesh.material = hlm
     
@@ -231,7 +232,7 @@ export class Rendering {
                 new Vector3(-s, s, 0),
                 new Vector3(s, s, 0)
             ], this._scene)
-            lines.color = new Color3(1, 1, 1)
+            lines.color = new Color3Babylon(1, 1, 1)
             lines.parent = mesh
     
             this.addMeshToScene(mesh)
