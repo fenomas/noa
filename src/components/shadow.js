@@ -1,11 +1,9 @@
-
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import { Color3 } from '@babylonjs/core/Maths/math'
 var vec3 = require('gl-vec3')
 
 
 export default function (noa, dist) {
-
     var shadowDist = dist
 
     // create a mesh to re-use for shadows
@@ -23,30 +21,21 @@ export default function (noa, dist) {
 
 
     return {
-
         name: 'shadow',
-
         order: 80,
-
         state: {
             size: 0.5,
             _mesh: null,
         },
-
-
         onAdd: function (eid, state) {
             var mesh = disc.createInstance('shadow_instance')
             noa.rendering.addMeshToScene(mesh)
             mesh.setEnabled(false)
             state._mesh = mesh
         },
-
-
         onRemove: function (eid, state) {
             state._mesh.dispose()
         },
-
-
         system: function shadowSystem(dt, states) {
             var cpos = noa.camera._localGetPosition()
             var dist = shadowDist
@@ -56,8 +45,6 @@ export default function (noa, dist) {
                 updateShadowHeight(noa, posState, physState, state._mesh, state.size, dist, cpos)
             })
         },
-
-
         renderSystem: function (dt, states) {
             // before render adjust shadow x/z to render positions
             states.forEach(state => {
@@ -67,10 +54,6 @@ export default function (noa, dist) {
                 spos.z = rpos[2]
             })
         }
-
-
-
-
     }
 }
 
@@ -93,7 +76,7 @@ function updateShadowHeight(noa, posDat, physDat, mesh, size, shadowDist, camPos
     }
 
     // round Y pos and offset upwards slightly to avoid z-fighting
-    localY = Math.round(localY) 
+    localY = Math.round(localY)
     vec3.copy(shadowPos, posDat._localPosition)
     shadowPos[1] = localY
     var sqdist = vec3.squaredDistance(camPos, shadowPos)

@@ -1,4 +1,3 @@
-
 var boxIntersect = require('box-intersect')
 
 
@@ -22,27 +21,18 @@ var boxIntersect = require('box-intersect')
 
 
 export default function (noa) {
-
     var intervals = []
-
     return {
-
         name: 'collideEntities',
-
         order: 70,
-
         state: {
             cylinder: false,
             collideBits: 1 | 0,
             collideMask: 1 | 0,
             callback: null,
         },
-
         onAdd: null,
-
         onRemove: null,
-
-
         system: function entityCollider(dt, states) {
             var ents = noa.ents
 
@@ -65,19 +55,12 @@ export default function (noa) {
                     handleCollision(noa, stateA, stateB)
                 }
             })
-
         }
     }
 
-
-
-    /*
-     * 
-     * 		IMPLEMENTATION
-     * 
+    /**
+     * IMPLEMENTATION
      */
-
-
     function handleCollision(noa, stateA, stateB) {
         var idA = stateA.__id
         var idB = stateB.__id
@@ -94,11 +77,8 @@ export default function (noa) {
         noa.ents.onPairwiseEntityCollision(idA, idB)
     }
 
-
-
     // For entities whose extents overlap, 
     // test if collision still happens when taking cylinder flags into account
-
     function cylindricalHitTest(stateA, stateB, intervalA, intervalB) {
         if (stateA.cylinder) {
             if (stateB.cylinder) {
@@ -112,12 +92,8 @@ export default function (noa) {
         return true
     }
 
-
-
-
     // Cylinder-cylinder hit test (AABBs are known to overlap)
     // given their extent arrays [lo, lo, lo, hi, hi, hi]
-
     function cylinderCylinderTest(a, b) {
         // distance between cylinder centers
         var rada = (a[3] - a[0]) / 2
@@ -130,12 +106,8 @@ export default function (noa) {
         return (distsq <= radsum * radsum)
     }
 
-
-
-
     // Cylinder-Box hit test (AABBs are known to overlap)
     // given their extent arrays [lo, lo, lo, hi, hi, hi]
-
     function cylinderBoxTest(cyl, cube) {
         // X-z center of cylinder
         var rad = (cyl[3] - cyl[0]) / 2
@@ -154,8 +126,4 @@ export default function (noa) {
     function clamp(val, lo, hi) {
         return (val < lo) ? lo : (val > hi) ? hi : val
     }
-
-
-
-
 }

@@ -3,6 +3,7 @@
 
 This is a summary of new features and breaking changes in recent `noa` versions.
 
+ * [0.30.0](#0290)
  * [0.29.0](#0290)
  * [0.28.0](#0280)
  * [0.27.0](#0270)
@@ -17,6 +18,11 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 
 ----
+
+### 0.30.0
+
+   * typescript    
+
 
 ### 0.29.0
 

@@ -1,21 +1,15 @@
 var vec3 = require('gl-vec3')
 
 /**
- * 
  * Movement component. State stores settings like jump height, etc.,
  * as well as current state (running, jumping, heading angle).
  * Processor checks state and applies movement/friction/jump forces
- * to the entity's physics body. 
- * 
+ * to the entity's physics body.
  */
-
 export default function (noa) {
     return {
-
         name: 'movement',
-
         order: 30,
-
         state: {
             // current state
             heading: 0, // radians
@@ -40,12 +34,8 @@ export default function (noa) {
             _isJumping: 0,
             _currjumptime: 0,
         },
-
         onAdd: null,
-
         onRemove: null,
-
-
         system: function movementProcessor(dt, states) {
             var ents = noa.entities
 
@@ -53,10 +43,7 @@ export default function (noa) {
                 var body = ents.getPhysicsBody(state.__id)
                 applyMovementPhysics(dt, state, body)
             })
-
         }
-
-
     }
 }
 

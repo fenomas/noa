@@ -2,27 +2,18 @@ var vec3 = require('gl-vec3')
 
 
 export default function (noa) {
-
-
     return {
-
         name: 'physics',
-
         order: 40,
-
         state: {
             body: null,
         },
-
-
         onAdd: function (entID, state) {
             state.body = noa.physics.addBody()
             // implicitly assume body has a position component, to get size
             var posDat = noa.ents.getPositionData(state.__id)
             setPhysicsFromPosition(state, posDat)
         },
-
-
         onRemove: function (entID, state) {
             // update position before removing
             // this lets entity wind up at e.g. the result of a collision
@@ -34,8 +25,6 @@ export default function (noa) {
             }
             noa.physics.removeBody(state.body)
         },
-
-
         system: function (dt, states) {
             states.forEach(state => {
                 var pdat = noa.ents.getPositionData(state.__id)
@@ -43,10 +32,7 @@ export default function (noa) {
             })
 
         },
-
-
         renderSystem: function (dt, states) {
-
             var tickPos = noa.positionInCurrentTick
             var tickMS = tickPos * noa._tickRate
 
@@ -65,9 +51,7 @@ export default function (noa) {
                 backtrackRenderPos(state, pdat, backtrackAmt, smoothed)
             })
         }
-
     }
-
 }
 
 

@@ -42,6 +42,8 @@ See [history.md](doc/history.md) for changes and migration info from each versio
 
 Recent changes:
 
+ * `v0.30`: 
+   * typescript
  * `v0.29`: 
    * maximum voxel ID is now `65535`
    * adds option `worldGenWhilePaused`
