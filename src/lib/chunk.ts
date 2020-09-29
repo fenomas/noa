@@ -197,7 +197,7 @@ export class Chunk {
             terrainMesher = new TerrainMesher(this.noa)
         }
 
-        return terrainMesher.meshChunk(this, matGetter, colGetter, false, useAO, aoVals, revAoVal)
+        return terrainMesher.meshChunk(this, matGetter, colGetter, useAO, aoVals, revAoVal)
     }
 
     // gets called by World when this chunk has been queued for remeshing
@@ -279,13 +279,16 @@ export class Chunk {
                 var index = voxels.index(i, j, 0)
                 for (var k = 0; k < len; ++k, ++index) {
                     var id = voxels.data[index]
+
                     // skip air blocks
                     if (id === 0) {
                         fullyOpaque = false
                         continue
                     }
                     fullyOpaque = fullyOpaque && opaqueLookup[id]
+
                     fullyAir = false
+                    
                     // handle object blocks and handlers
                     if (objectLookup[id]) {
                         this.addObjectBlock(id, i, j, k)
@@ -341,7 +344,6 @@ var terrainMesher: undefined | TerrainMesher;
 var solidLookup: any[]
 var opaqueLookup: any[]
 var objectLookup: any[]
-var objectMeshLookup: any[]
 var blockHandlerLookup: any[]
 
 /** helpers to determine which blocks are, or can affect, terrain meshes */

@@ -21,10 +21,12 @@ var PROFILE_EVERY = 0 // 100
  */
 export class TerrainMesher {
     constructor(noa: Engine) {
+        this.noa = noa;
         this.greedyMesher = new GreedyMesher(noa)
         this.meshBuilder = new MeshBuilder(noa)
     }
 
+    noa: Engine;
     greedyMesher: GreedyMesher
     meshBuilder: MeshBuilder
 
@@ -35,17 +37,16 @@ export class TerrainMesher {
         ignoreMaterials: boolean,
         useAO: boolean | undefined,
         aoVals: [number, number, number] | undefined,
-        revAoVal: number | undefined
+        revAoVal?: number
     ) => {
         profile_hook('start')
-        const noa = chunk.noa
 
         // args
-        const mats = matGetter || noa.registry.getBlockFaceMaterial
-        const cols = colGetter || noa.registry._getMaterialVertexColor
-        const ao = (useAO === undefined) ? noa.rendering.useAO : useAO
-        const vals = aoVals || noa.rendering.aoVals
-        const rev = isNaN(revAoVal!) ? noa.rendering.revAoVal : revAoVal
+        const mats = matGetter || this.noa.registry.getBlockFaceMaterial
+        const cols = colGetter || this.noa.registry._getMaterialVertexColor
+        const ao = (useAO === undefined) ? this.noa.rendering.useAO : useAO
+        const vals = aoVals || this.noa.rendering.aoVals
+        const rev = isNaN(revAoVal!) ? this.noa.rendering.revAoVal : revAoVal
 
         // copy voxel data into array padded with neighbor values
         const voxels = buildPaddedVoxelArray(chunk)
@@ -57,7 +58,7 @@ export class TerrainMesher {
 
         // builds the babylon mesh that will be added to the scene
         let mesh
-        if (Object.keys(subMeshes).length) {
+        if (subMeshes.length) {
             mesh = this.meshBuilder.build(chunk, subMeshes, ignoreMaterials)
             profile_hook('terrain')
         }
@@ -133,8 +134,9 @@ function allocateVectors(size: number, posValues: number[], sizeValues: any[], t
  * Basically, the greedy mesher builds these and the mesh builder consumes them
  */
 export class Submesh {
-    constructor (id: number = 0) {
-        this.id = id
+    // todo fix
+    constructor (id: number) {
+        this.id = id | 0
     }
     
     id: number
@@ -149,11 +151,11 @@ export class Submesh {
     renderMat: any
 
     dispose = () => {
-        this.positions = []
-        this.indices = []
-        this.normals = []
-        this.colors = []
-        this.uvs = []
+        this.positions = null as any
+        this.indices = null as any
+        this.normals = null as any
+        this.colors = null as any
+        this.uvs = null as any
     }
 }
 
@@ -177,8 +179,7 @@ class MeshBuilder {
         // flag and merge submesh data that can share the default terrain material
         let numMergeable = 0
 
-        const meshLength = Object.keys(meshDataList).length
-        for (let i = 0; i < meshLength; i++) {
+        for (let i = 0; i < meshDataList.length; i++) {
             const mdat = meshDataList[i]
             if (ignoreMaterials) {
                 mdat.mergeable = true
@@ -222,8 +223,7 @@ class MeshBuilder {
         let matIDs = []
 
         let target = null
-        const dataLength = Object.keys(meshDataList).length
-        for (var i = 0; i < dataLength; ++i) {
+        for (var i = 0; i < meshDataList.length; ++i) {
             var mdat = meshDataList[i]
             if (!(mergeAll || mdat.mergeable)) continue
 
@@ -248,6 +248,7 @@ class MeshBuilder {
                 }
 
                 // get rid of entry that's been merged
+                meshDataList.splice(i, 1)
                 mdat.dispose()
                 i--
             }

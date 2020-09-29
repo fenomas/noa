@@ -21,7 +21,8 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 ### 0.30.0
 
-   * typescript    
+   * typescript
+   * new `airJumps` option (defaults to `0`)
 
 
 ### 0.29.0

@@ -42,14 +42,15 @@ See [history.md](doc/history.md) for changes and migration info from each versio
 
 Recent changes:
 
- * `v0.30`: 
+ * `v0.30`:
    * typescript
- * `v0.29`: 
+   * new `airJumps` option (defaults to `0`)
+ * `v0.29`:
    * maximum voxel ID is now `65535`
    * adds option `worldGenWhilePaused`
    * adds option `manuallyControlChunkLoading` and related APIs
    * performance and bug fixes
- * `v0.28`: 
+ * `v0.28`:
    * improves swapping between world data sets (see `noa.worldName`).
    * Removes duplicated voxel padding in each chunk (this means world generation 
  no longer needs to be deterministic!)

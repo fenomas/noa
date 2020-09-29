@@ -1,8 +1,7 @@
 import { EventEmitter } from "events"
 import Engine from ".."
 import { Chunk, _createVoxelArray } from './chunk'
-import { StringList, loopForTime, numberOfVoxelsInSphere } from './util'
-import { makeProfileHook } from './util'
+import { StringList, loopForTime, numberOfVoxelsInSphere, makeProfileHook } from './util'
 
 var lookIndex = -1
 const PROFILE = 0
@@ -535,7 +534,7 @@ export class World extends EventEmitter {
     /** rebuild queue of chunks to be removed from around (ci,cj,ck) */
     findDistantChunksToRemove = (ci: number, cj: number, ck: number) => {
         var remDistSq = this.chunkRemoveDistance * this.chunkRemoveDistance
-        var toRemove = this._chunkIDsToRemove
+        var toRemove = this._chunkIDsToRemove;
         this._chunkIDsKnown.forEach(id => {
             if (toRemove.includes(id)) {
                 return
@@ -691,12 +690,6 @@ export class World extends EventEmitter {
         // on render, quickly process the high-priority meshing queue
         // to help avoid flashes of background while neighboring chunks update
         loopForTime(this.maxProcessingPerRender, () => this.processMeshingQueue(true))
-
-        // on render, quickly process the high-priority meshing queue
-        // to help avoid flashes of background while neighboring chunks update
-        loopForTime(this.maxProcessingPerRender, () => {
-            return this.processMeshingQueue(true)
-        })
     }
 
     /**
