@@ -32,20 +32,21 @@ export class TerrainMesher {
 
     meshChunk = (
         chunk: Chunk,
-        matGetter: (blockId: number, dir: number) => number[],
-        colGetter: (matID: number) => [number, number, number],
-        ignoreMaterials: boolean,
-        useAO: boolean | undefined,
-        aoVals: [number, number, number] | undefined,
+        matGetter?: (blockId: number, dir: number) => number[],
+        colGetter?: (matID: number) => [number, number, number],
+        ignoreMaterials?: boolean,
+        useAO?: boolean | undefined,
+        aoVals?: [number, number, number] | undefined,
         revAoVal?: number
     ) => {
         profile_hook('start')
 
         // args
-        const mats = matGetter || this.noa.registry.getBlockFaceMaterial
-        const cols = colGetter || this.noa.registry._getMaterialVertexColor
-        const ao = (useAO === undefined) ? this.noa.rendering.useAO : useAO
-        const vals = aoVals || this.noa.rendering.aoVals
+        const mats = matGetter ?? this.noa.registry.getBlockFaceMaterial
+        const cols = colGetter ?? this.noa.registry._getMaterialVertexColor
+        const ignoreMaterialsDefault = ignoreMaterials ?? false
+        const ao = useAO ?? this.noa.rendering.useAO
+        const vals = aoVals ?? this.noa.rendering.aoVals
         const rev = isNaN(revAoVal!) ? this.noa.rendering.revAoVal : revAoVal
 
         // copy voxel data into array padded with neighbor values
@@ -59,7 +60,7 @@ export class TerrainMesher {
         // builds the babylon mesh that will be added to the scene
         let mesh
         if (subMeshes.length) {
-            mesh = this.meshBuilder.build(chunk, subMeshes, ignoreMaterials)
+            mesh = this.meshBuilder.build(chunk, subMeshes, ignoreMaterialsDefault)
             profile_hook('terrain')
         }
 

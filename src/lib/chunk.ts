@@ -192,12 +192,12 @@ export class Chunk {
 
     // Convert chunk's voxel terrain into a babylon.js mesh
     // Used internally, but needs to be public so mesh-building hacks can call it
-    mesh = (matGetter?: any, colGetter?: any, useAO?: any, aoVals?: any, revAoVal?: any) => {
+    mesh = (matGetter?: (blockId: number, dir: number) => number[], colGetter?: (matID: number) => [number, number, number], useAO?: boolean | undefined, aoVals?: [number, number, number] | undefined, revAoVal?: number) => {
         if (terrainMesher === undefined) {
             terrainMesher = new TerrainMesher(this.noa)
         }
 
-        return terrainMesher.meshChunk(this, matGetter, colGetter, useAO, aoVals, revAoVal)
+        return terrainMesher.meshChunk(this, matGetter, colGetter, false, useAO, aoVals, revAoVal)
     }
 
     // gets called by World when this chunk has been queued for remeshing
