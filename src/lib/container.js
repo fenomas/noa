@@ -80,22 +80,20 @@ function setupTimingEvents(self) {
     var tickAccum = 0
     var onAnimationFrame = function () {
         var t0 = performance.now()
-        if (!noa._paused) {
-            var dt = t0 - lastRAF
-            tickAccum += dt
-            // do at most two ticks per render
-            var maxTicks = 2
-            while (tickAccum > tickRate && maxTicks-- > 0) {
-                noa.tick(tickRate)
-                tickAccum -= tickRate
-            }
-            // don't accrue deficit when running slow
-            if (tickAccum > tickRate) tickAccum = 0
-            var t1 = performance.now()
-            var renderPt = tickAccum + (t1 - t0)
-            var framePart = Math.min(1, renderPt / tickRate)
-            noa.render(framePart)
+        var dt = t0 - lastRAF
+        tickAccum += dt
+        // do at most two ticks per render
+        var maxTicks = 2
+        while (tickAccum > tickRate && maxTicks-- > 0) {
+            noa.tick(tickRate)
+            tickAccum -= tickRate
         }
+        // don't accrue deficit when running slow
+        if (tickAccum > tickRate) tickAccum = 0
+        var t1 = performance.now()
+        var renderPt = tickAccum + (t1 - t0)
+        var framePart = Math.min(1, renderPt / tickRate)
+        noa.render(framePart)
         lastRAF = t0
         requestAnimationFrame(onAnimationFrame)
     }
