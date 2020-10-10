@@ -35,7 +35,7 @@ export interface IRenderingOptions {
     antiAlias: boolean;
 
     /** @default [0.8, 0.9, 1, 1] */
-    clearColor: [number, number, number, number];
+    clearColor: Color4;
 
     /** @default [1, 1, 1] */
     ambientColor: Color3;

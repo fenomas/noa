@@ -395,7 +395,7 @@ class GreedyMesher {
     maskCache: Int16Array = new Int16Array(16)
     aomaskCache: Uint16Array = new Uint16Array(16)
 
-    mesh = (voxels: ndarray<number>, getMaterial: any, getColor: any, doAO: any, aoValues: any, revAoVal: any, edgesOnly: boolean) => {
+    mesh = (voxels: ndarray, getMaterial: any, getColor: any, doAO: any, aoValues: any, revAoVal: any, edgesOnly: boolean) => {
         this.solidLookup = this.noa.registry._solidityLookup
         this.opacityLookup = this.noa.registry._opacityLookup
 
@@ -506,10 +506,17 @@ class GreedyMesher {
         var op0 = this.opacityLookup[id0]
         var op1 = this.opacityLookup[id1]
 
-        if (op0 && op1) return 0
+        if (op0 && op1) {
+            return 0
+        }
+
         // if either block is opaque draw a face for it
-        if (op0) return 1
-        if (op1) return -1
+        if (op0) {
+            return 1
+        }
+        if (op1) {
+            return -1
+        }
 
         // can't tell from block IDs, so compare block materials of each face
         var m0 = getMaterial(id0, materialDir)
@@ -587,7 +594,7 @@ class GreedyMesher {
                 var matID = Math.abs(maskVal)
                 if (!submeshes[matID]) submeshes[matID] = new Submesh(matID)
                 var mesh = submeshes[matID]
-                var colors = mesh.colors! as [number, number, number, number]
+                var colors = mesh.colors! as Color4
                 var c = getColor(matID)
 
                 // colors are pushed in helper function - avoids deopts
@@ -678,7 +685,7 @@ class GreedyMesher {
     }
 
 
-    pushMeshColors_noAO = (colors: [number, number, number, number], c: number[], ao: any, aoValues: any, revAoVal: any) => {
+    pushMeshColors_noAO = (colors: Color4, c: number[], ao: any, aoValues: any, revAoVal: any) => {
         colors.push(c[0], c[1], c[2], 1)
         colors.push(c[0], c[1], c[2], 1)
         colors.push(c[0], c[1], c[2], 1)
@@ -852,5 +859,6 @@ import { makeProfileHook } from './util'
 import Engine, { Material } from ".."
 import { Nullable, FloatArray, IndicesArray } from "@babylonjs/core"
 import { Chunk } from "./chunk"
+import { Color4 } from "./types"
 var profile_hook = (PROFILE_EVERY) ?
     makeProfileHook(PROFILE_EVERY, 'Terrain meshing') : () => {}

@@ -1,5 +1,5 @@
 import Engine, { Material, Mesh } from ".."
-import { Color3 } from "./types"
+import { Color3, Color4 } from "./types"
 
 export interface IRegistryOptions {
     /**
@@ -228,7 +228,7 @@ export class Registry {
      * @param texHasAlpha
      * @param renderMaterial an optional BABYLON material to be used for block faces with this block material
      */
-    registerMaterial = (name: string, color: Color3 | [number, number, number, number] = [1, 1, 1], textureURL: string | undefined = undefined, texHasAlpha: boolean = false, renderMaterial: Material | null = null) => {
+    registerMaterial = (name: string, color: Color3 | Color4 = [1, 1, 1], textureURL: string | undefined = undefined, texHasAlpha: boolean = false, renderMaterial: Material | null = null) => {
         // console.log('register mat: ', name, color, textureURL)
         const id = this.matIDs[name] || Object.values(this.matData).length
         this.matIDs[name] = id

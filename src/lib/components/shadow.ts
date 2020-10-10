@@ -1,23 +1,23 @@
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import { Color3 } from '@babylonjs/core/Maths/math'
-var vec3 = require('gl-vec3')
+import Engine from "../.."
+import { IComponentType } from "./componentType"
+import * as vec3 from "gl-vec3"
 
 
-export default function (noa, dist) {
-    var shadowDist = dist
-
+export function shadow(noa: Engine, shadowDistance: number): IComponentType<{ size: number; _mesh: null | any }> {
     // create a mesh to re-use for shadows
-    var scene = noa.rendering.getScene()
-    var disc = Mesh.CreateDisc('shadow', 0.75, 30, scene)
-    disc.rotation.x = Math.PI / 2
-    disc.material = noa.rendering.makeStandardMaterial('shadowMat')
-    disc.material.diffuseColor = Color3.Black()
-    disc.material.ambientColor = Color3.Black()
-    disc.material.alpha = 0.5
-    disc.setEnabled(false)
+    var scene = noa.rendering.getScene();
+    var disc = Mesh.CreateDisc('shadow', 0.75, 30, scene);
+    disc.rotation.x = Math.PI / 2;
+    disc.material = noa.rendering.makeStandardMaterial('shadowMat');
+    (disc.material as any).diffuseColor = Color3.Black();
+    (disc.material as any).ambientColor = Color3.Black();
+    disc.material.alpha = 0.5;
+    disc.setEnabled(false);
 
     // source mesh needn't be in the scene graph
-    scene.removeMesh(disc)
+    scene.removeMesh(disc);
 
 
     return {
@@ -27,25 +27,24 @@ export default function (noa, dist) {
             size: 0.5,
             _mesh: null,
         },
-        onAdd: function (eid, state) {
+        onAdd(eid, state) {
             var mesh = disc.createInstance('shadow_instance')
-            noa.rendering.addMeshToScene(mesh)
+            noa.rendering.addMeshToScene(mesh as any)
             mesh.setEnabled(false)
             state._mesh = mesh
         },
-        onRemove: function (eid, state) {
+        onRemove(eid, state) {
             state._mesh.dispose()
         },
-        system: function shadowSystem(dt, states) {
+        system(dt, states) {
             var cpos = noa.camera._localGetPosition()
-            var dist = shadowDist
             states.forEach(state => {
                 var posState = noa.ents.getPositionData(state.__id)
                 var physState = noa.ents.getPhysics(state.__id)
-                updateShadowHeight(noa, posState, physState, state._mesh, state.size, dist, cpos)
+                updateShadowHeight(noa, posState, physState, state._mesh, state.size, shadowDistance, cpos)
             })
         },
-        renderSystem: function (dt, states) {
+        renderSystem(dt, states) {
             // before render adjust shadow x/z to render positions
             states.forEach(state => {
                 var rpos = noa.ents.getPositionData(state.__id)._renderPosition
@@ -60,8 +59,7 @@ export default function (noa, dist) {
 var shadowPos = vec3.fromValues(0, 0, 0)
 var down = vec3.fromValues(0, -1, 0)
 
-function updateShadowHeight(noa, posDat, physDat, mesh, size, shadowDist, camPos) {
-
+function updateShadowHeight(noa: Engine, posDat: any, physDat: any, mesh: any, size: number, shadowDist: any, camPos: any) {
     // local Y ground position - from physics or raycast
     var localY
     if (physDat && physDat.body.resting[1] < 0) {
@@ -79,7 +77,7 @@ function updateShadowHeight(noa, posDat, physDat, mesh, size, shadowDist, camPos
     localY = Math.round(localY)
     vec3.copy(shadowPos, posDat._localPosition)
     shadowPos[1] = localY
-    var sqdist = vec3.squaredDistance(camPos, shadowPos)
+    var sqdist = (vec3 as any).squaredDistance(camPos, shadowPos)
     // offset ~ 0.01 for nearby shadows, up to 0.1 at distance of ~40
     var offset = 0.01 + 0.1 * (sqdist / 1600)
     if (offset > 0.1) offset = 0.1

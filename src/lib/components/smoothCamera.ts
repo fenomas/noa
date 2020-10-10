@@ -1,13 +1,14 @@
-export default function (noa) {
+import Engine from "../.."
+import { IComponentType } from "./componentType"
+
+export function smoothCamera(noa: Engine): IComponentType<{ time: number }> {
     return {
         name: 'smooth-camera',
         order: 99,
         state: {
             time: 100.1
         },
-        onAdd: null,
-        onRemove: null,
-        system: function (dt, states) {
+        system(dt, states) {
             // remove self after time elapses
             states.forEach(state => {
                 state.time -= dt

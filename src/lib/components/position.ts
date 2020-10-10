@@ -1,4 +1,6 @@
-var vec3 = require('gl-vec3')
+import Engine, { Vector } from "../.."
+import { IComponentType } from "./componentType"
+import * as vec3 from "gl-vec3"
 
 /**
  * Component holding entity's position, width, and height.
@@ -15,7 +17,14 @@ var vec3 = require('gl-vec3')
  *     _extents: array [lo, lo, lo, hi, hi, hi] in LOCAL COORDS
  * 
  */
-export default function (noa) {
+export function position(noa: Engine): IComponentType<{
+    position: null | Vector;
+    width: number;
+    height: number;
+    _localPosition: null | Vector;
+    _renderPosition: null | Vector;
+    _extents: null | Float32Array;
+}> {
     return {
         name: 'position',
         order: 60,
@@ -27,14 +36,17 @@ export default function (noa) {
             _renderPosition: null,
             _extents: null,
         },
-        onAdd: function (eid, state) {
+        onAdd(eid, state) {
             // copy position into a plain array
-            var pos = [0, 0, 0]
-            if (state.position) vec3.copy(pos, state.position)
+            const pos: Vector = [0, 0, 0]
+            if (state.position) {
+                vec3.copy(pos, state.position)
+            }
+            
             state.position = pos
 
-            state._localPosition = vec3.create()
-            state._renderPosition = vec3.create()
+            state._localPosition = vec3.create() as Vector
+            state._renderPosition = vec3.create() as Vector
             state._extents = new Float32Array(6)
 
             // on init only, set local from global
@@ -42,10 +54,9 @@ export default function (noa) {
             vec3.copy(state._renderPosition, state._localPosition)
             updatePositionExtents(state)
         },
-        onRemove: null,
-        system: function (dt, states) {
+        system(dt, states: any) {
             var off = noa.worldOriginOffset
-            states.forEach(state => {
+            states.forEach((state: any) => {
                 vec3.add(state.position, state._localPosition, off)
                 updatePositionExtents(state)
             })
@@ -56,7 +67,7 @@ export default function (noa) {
 
 
 // update an entity's position state `_extents` 
-export function updatePositionExtents(state) {
+export function updatePositionExtents(state: any) {
     var hw = state.width / 2
     var lpos = state._localPosition
     var ext = state._extents

@@ -3,7 +3,7 @@ import createInputs, { GameInputs, IGameInputOptions } from 'game-inputs';
 
 export interface IInputOptions extends IGameInputOptions {
     bindings: {
-        [key: string]: [string, string] | string;
+        [key: string]: [string] | [string, string] | string;
     }
 }
 

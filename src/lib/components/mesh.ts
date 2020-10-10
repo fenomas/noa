@@ -1,23 +1,33 @@
-var vec3 = require('gl-vec3')
+import Engine, { Mesh, Vector } from "../.."
+import * as vec3 from "gl-vec3"
+import { IComponentType } from "./componentType"
 
+interface IMeshState {
+    mesh: Mesh;
+    offset: Vector;
+}
 
-export default function (noa) {
+export function mesh(noa: Engine): IComponentType<IMeshState> {
     return {
         name: 'mesh',
         order: 100,
         state: {
             mesh: null,
-            offset: null
+            offset: null as any
         },
-        onAdd: function (eid, state) {
+        onAdd(eid, state) {
             // implicitly assume there's already a position component
             var posDat = noa.ents.getPositionData(eid)
             if (state.mesh) {
                 noa.rendering.addMeshToScene(state.mesh, false, posDat.position)
-            } else {
+            }
+            else {
                 throw new Error('Mesh component added without a mesh - probably a bug!')
             }
-            if (!state.offset) state.offset = new vec3.create()
+
+            if (!state.offset) {
+                state.offset = vec3.create() as Vector
+            }
 
             // set mesh to correct position
             var rpos = posDat._renderPosition
@@ -26,10 +36,10 @@ export default function (noa) {
                 rpos[1] + state.offset[1],
                 rpos[2] + state.offset[2])
         },
-        onRemove: function (eid, state) {
+        onRemove(eid, state) {
             state.mesh.dispose()
         },
-        renderSystem: function (dt, states) {
+        renderSystem(dt, states) {
             // before render move each mesh to its render position, 
             // set by the physics engine or driving logic
             states.forEach(state => {

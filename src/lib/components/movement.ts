@@ -1,4 +1,35 @@
-var vec3 = require('gl-vec3')
+import Engine from "../.."
+import { IComponentType } from "./componentType"
+import * as vec3 from "gl-vec3"
+
+
+interface IMovementState {
+    // current state
+    /** radians */
+    heading: number;
+    running: boolean;
+    jumping: boolean;
+
+    // options:
+    maxSpeed: number;
+    moveForce: number;
+    responsiveness: number;
+    runningFriction: number;
+    standingFriction: number;
+
+    airMoveMult: number;
+    jumpImpulse: number;
+    jumpForce: number;
+
+    /** ms */
+    jumpTime: number;
+    airJumps: number;
+
+    // internal state
+    _jumpCount: number;
+    _isJumping: boolean;
+    _currjumptime: number;
+}
 
 /**
  * Movement component. State stores settings like jump height, etc.,
@@ -6,7 +37,7 @@ var vec3 = require('gl-vec3')
  * Processor checks state and applies movement/friction/jump forces
  * to the entity's physics body.
  */
-export default function (noa) {
+export function movement(noa: Engine): IComponentType<IMovementState> {
     return {
         name: 'movement',
         order: 30,
@@ -31,12 +62,10 @@ export default function (noa) {
 
             // internal state
             _jumpCount: 0,
-            _isJumping: 0,
+            _isJumping: false,
             _currjumptime: 0,
         },
-        onAdd: null,
-        onRemove: null,
-        system: function movementProcessor(dt, states) {
+        system(dt, states) {
             var ents = noa.entities
 
             states.forEach(state => {
@@ -53,7 +82,7 @@ var tempvec2 = vec3.create()
 var zeroVec = vec3.create()
 
 
-function applyMovementPhysics(dt, state, body) {
+function applyMovementPhysics(dt: number, state: IMovementState, body: any) {
     // move implementation originally written as external module
     //   see https://github.com/andyhall/voxel-fps-controller
     //   for original code
@@ -90,8 +119,8 @@ function applyMovementPhysics(dt, state, body) {
     // apply movement forces if entity is moving, otherwise just friction
     var m = tempvec
     var push = tempvec2
-    if (state.running) {
 
+    if (state.running) {
         var speed = state.maxSpeed
         // todo: add crouch/sprint modifiers if needed
         // if (state.sprint) speed *= state.sprintMoveMult
@@ -104,9 +133,9 @@ function applyMovementPhysics(dt, state, body) {
         // push vector to achieve desired speed & dir
         // following code to adjust 2D velocity to desired amount is patterned on Quake: 
         // https://github.com/id-Software/Quake-III-Arena/blob/master/code/game/bg_pmove.c#L275
-        vec3.subtract(push, m, body.velocity)
+        vec3.sub(push, m, body.velocity)
         push[1] = 0
-        var pushLen = vec3.length(push)
+        var pushLen = vec3.len(push)
         vec3.normalize(push, push)
 
         if (pushLen > 0) {
@@ -125,10 +154,8 @@ function applyMovementPhysics(dt, state, body) {
         // different friction when not moving
         // idea from Sonic: http://info.sonicretro.org/SPG:Running
         body.friction = state.runningFriction
-    } else {
+    }
+    else {
         body.friction = state.standingFriction
     }
-
-
-
 }

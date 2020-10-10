@@ -1,4 +1,5 @@
 import { EventEmitter } from "events"
+import ndarray from "ndarray"
 import Engine from ".."
 import { Chunk, _createVoxelArray } from './chunk'
 import { StringList, loopForTime, numberOfVoxelsInSphere, makeProfileHook } from './util'
@@ -50,7 +51,7 @@ const defaultWorldOptions: IWorldOptions = {
  * @description Manages the world and its chunks
  */
 
-export class World extends EventEmitter {
+export class World<ChunkDataType = any> extends EventEmitter {
     constructor(noa: Engine, options: Partial<IWorldOptions>) {
         super()
 
@@ -99,11 +100,11 @@ export class World extends EventEmitter {
         if ((cs & cs - 1) === 0) {
             var shift = Math.log2(cs) | 0
             var mask = (cs - 1) | 0
-            this._worldCoordToChunkCoord = coord => (coord >> shift) | 0
-            this._worldCoordToChunkIndex = coord => (coord & mask) | 0
+            this._worldCoordToChunkCoord = (coord: number) => (coord >> shift) | 0
+            this._worldCoordToChunkIndex = () => (coord: number) => (coord & mask) | 0
         } else {
-            this._worldCoordToChunkCoord = coord => Math.floor(coord / cs) | 0
-            this._worldCoordToChunkIndex = coord => (((coord % cs) + cs) % cs) | 0
+            this._worldCoordToChunkCoord = (coord: number) => Math.floor(coord / cs) | 0
+            this._worldCoordToChunkIndex = () => (coord: number) => (((coord % cs) + cs) % cs) | 0
         }
     }
 
@@ -123,7 +124,7 @@ export class World extends EventEmitter {
         return this._chunkStorage[id] || null
     }
 
-    _setChunk = (i: number, j: number, k: number, value: number | null) => {
+    _setChunk = (i: number, j: number, k: number, value: Chunk | null) => {
         var id = getChunkID(i, j, k)
         if (value) {
             this._chunkStorage[id] = value
@@ -173,7 +174,7 @@ export class World extends EventEmitter {
     /** set up internal state */
     _cachedWorldName: string = '';
     _lastPlayerChunkID: string = '';
-    _chunkStorage: any = {};
+    _chunkStorage: { [key: string]: Chunk } = {};
     _queueChunkForRemesh: any;
 
     /** all chunks existing in any queue */
@@ -205,27 +206,27 @@ export class World extends EventEmitter {
         }
     }
 
-    _worldCoordToChunkIndex = (coord: any) => {
+    _worldCoordToChunkIndex = () => {
         // instantiate coord conversion functions based on the chunk size
         // use bit twiddling if chunk size is a power of 2
         if ((this.chunkSize & this.chunkSize - 1) === 0) {
             var mask = (this.chunkSize - 1) | 0
-            this._worldCoordToChunkIndex = coord => (coord & mask) | 0
+            return (coord: number) => (coord & mask) | 0
         } else {
-            this._worldCoordToChunkIndex = coord => (((coord % this.chunkSize) + this.chunkSize) % this.chunkSize) | 0
+            return (coord: number) => (((coord % this.chunkSize) + this.chunkSize) % this.chunkSize) | 0
         }
     }
 
     getBlockID = (x: number, y: number, z: number) => {
         var chunk = this._getChunkByCoords(x, y, z)
         if (!chunk) return 0
-        return chunk.get(this._worldCoordToChunkIndex(x), this._worldCoordToChunkIndex(y), this._worldCoordToChunkIndex(z))
+        return chunk.get(this._worldCoordToChunkIndex()(x), this._worldCoordToChunkIndex()(y), this._worldCoordToChunkIndex()(z))
     }
 
     getBlockSolidity = (x: number, y: number, z: number) => {
         var chunk = this._getChunkByCoords(x, y, z)
         if (!chunk) return false
-        return !!chunk.getSolidityAt(this._worldCoordToChunkIndex(x), this._worldCoordToChunkIndex(y), this._worldCoordToChunkIndex(z))
+        return !!chunk.getSolidityAt(this._worldCoordToChunkIndex()(x), this._worldCoordToChunkIndex()(y), this._worldCoordToChunkIndex()(z))
     }
 
     getBlockOpacity = (x: number, y: number, z: number) => {
@@ -245,32 +246,35 @@ export class World extends EventEmitter {
 
     getBlockObjectMesh = (x: number, y: number, z: number) => {
         var chunk = this._getChunkByCoords(x, y, z)
-        if (!chunk) return 0
-        return chunk.getObjectMeshAt(this._worldCoordToChunkIndex(x), this._worldCoordToChunkIndex(y), this._worldCoordToChunkIndex(z))
+        if (!chunk) {
+            return 0
+        }
+
+        return chunk.getObjectMeshAt(this._worldCoordToChunkIndex()(x), this._worldCoordToChunkIndex()(y), this._worldCoordToChunkIndex()(z))
     }
 
-    setBlockID = (val: string, x: number, y: number, z: number) => {
-        var i = this._worldCoordToChunkCoord(x)
-        var j = this._worldCoordToChunkCoord(y)
-        var k = this._worldCoordToChunkCoord(z)
-        var ix = this._worldCoordToChunkIndex(x)
-        var iy = this._worldCoordToChunkIndex(y)
-        var iz = this._worldCoordToChunkIndex(z)
+    setBlockID = (val: number, x: number, y: number, z: number) => {
+        const i = this._worldCoordToChunkCoord(x)
+        const j = this._worldCoordToChunkCoord(y)
+        const k = this._worldCoordToChunkCoord(z)
+        const ix = this._worldCoordToChunkIndex()(x)
+        const iy = this._worldCoordToChunkIndex()(y)
+        const iz = this._worldCoordToChunkIndex()(z)
 
         // logic inside the chunk will trigger a remesh for chunk and 
         // any neighbors that need it
-        var chunk = this._getChunk(i, j, k)
+        const chunk = this._getChunk(i, j, k)
         if (chunk) {
             chunk.set(ix, iy, iz, val)
         }
     }
 
     isBoxUnobstructed = (box: any) => {
-        var base = box.base
-        var max = box.max
-        for (var i = Math.floor(base[0]); i < max[0] + 1; i++) {
-            for (var j = Math.floor(base[1]); j < max[1] + 1; j++) {
-                for (var k = Math.floor(base[2]); k < max[2] + 1; k++) {
+        const base = box.base
+        const max = box.max
+        for (let i = Math.floor(base[0]); i < max[0] + 1; i++) {
+            for (let j = Math.floor(base[1]); j < max[1] + 1; j++) {
+                for (let k = Math.floor(base[2]); k < max[2] + 1; k++) {
                     if (this.getBlockSolidity(i, j, k)) return false
                 }
             }
@@ -422,10 +426,13 @@ export class World extends EventEmitter {
 
 
     /**
-     * client should call this after creating a chunk's worth of data (as an ndarray)  
-     * If userData is passed in it will be attached to the chunk
+     * client should call this after creating a chunk's worth of data (as an ndarray)
+     * 
+     * @param reqID 
+     * @param array data to set into chunk
+     * @param userData If userData is passed in it will be attached to the chunk
      */
-    setChunkData = (reqID: string, array: any[], userData: any) => {
+    setChunkData(reqID: string, array: ndarray<any>, userData?: any) {
         var arr = reqID.split('|')
         var i = parseInt(arr.shift()!)
         var j = parseInt(arr.shift()!)

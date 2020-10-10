@@ -1,10 +1,18 @@
 import vec3 from 'gl-vec3'
 import EntComp from 'ent-comp'
 
-import { updatePositionExtents } from '../components/position'
-import { setPhysicsFromPosition } from '../components/physics'
-import Engine from ".."
-import { inherits } from "util"
+import { position, updatePositionExtents } from './components/position'
+import { physics, setPhysicsFromPosition } from './components/physics'
+import Engine, { Vector } from ".."
+import { smoothCamera } from "./components/smoothCamera"
+import { shadow } from "./components/shadow"
+import { receivesInputs } from "./components/receivesInputs"
+import { movement } from "./components/movement"
+import { mesh } from "./components/mesh"
+import { followsEntity } from "./components/followsEntity"
+import { fadeOnZoom } from "./components/fadeOnZoom"
+import { collideTerrain } from "./components/collideTerrain"
+import { collideEntities } from "./components/collideEntities"
 
 export interface IEntitiesOptions {
     shadowDistance: number;
@@ -38,29 +46,20 @@ export class Entities extends EntComp {
             ...options
         }
 
-        // properties
-        /** Hash containing the component names of built-in components. */
-        this.names = {}
-
-        // optional arguments to supply to component creation functions
-        const componentArgs: { [key: string]: number } = {
-            'shadow': optionsWithDefaults.shadowDistance,
+        this.names = {
+            collideEntities: this.createComponent(collideEntities(noa)),
+            collideTerrain: this.createComponent(collideTerrain(noa)),
+            fadeOnZoom: this.createComponent(fadeOnZoom(noa)),
+            followsEntity: this.createComponent(followsEntity(noa)),
+            mesh: this.createComponent(mesh(noa)),
+            movement: this.createComponent(movement(noa)),
+            physics: this.createComponent(physics(noa)),
+            position: this.createComponent(position(noa)),
+            receivesInputs: this.createComponent(receivesInputs(noa)),
+            shadow: this.createComponent(shadow(noa, optionsWithDefaults.shadowDistance)),
+            smoothCamera: this.createComponent(smoothCamera(noa)),
         }
-
-        // Bundler magic to import everything in the ../components directory
-        // each component module exports a default function: (noa) => compDefinition
-        var reqContext = require.context('../components/', false, /\.js$/)
-        reqContext.keys().forEach((name: any) => {
-            // convert name ('./foo.js') to bare name ('foo')
-            var bareName = /\.\/(.*)\.js/.exec(name)![1]
-            var arg = componentArgs[bareName] || undefined
-            var compFn = reqContext(name)
-            if (compFn.default) compFn = compFn.default
-            var compDef = compFn(noa, arg)
-            var comp = this.createComponent(compDef)
-            this.names[bareName] = comp
-        })
-
+        
         // physics
         this.getPhysicsBody = function (id: any) {
             return this.getPhysics(id).body
@@ -77,7 +76,22 @@ export class Entities extends EntComp {
     }
 
     noa: Engine;
-    names: any;
+
+    /** Hash containing the component names of built-in components. */
+    names = {
+        collideEntities: "collideEntities",
+        collideTerrain: "collideTerrain",
+        fadeOnZoom: "fadeOnZoom",
+        followsEntity: "followsEntity",
+        mesh: "mesh",
+        movement: "movement",
+        physics: "physics",
+        position: "position",
+        receivesInputs: "receivesInputs",
+        shadow: "shadow",
+        smoothCamera: "smoothCamera",
+    };
+
     getMeshData: any;
     getMovement: any;
     getCollideTerrain: any;
@@ -88,7 +102,6 @@ export class Entities extends EntComp {
     isPlayer(id: number) {
         return id === this.noa.playerEntity
     }
-
 
     getPhysics(id: number) {
         return this.getStateAccessor<{ __id: number; body: any; }>(this.names.physics)(id)!
@@ -111,7 +124,7 @@ export class Entities extends EntComp {
     }
 
     getPositionData(id: number) {
-        return this.getStateAccessor<{ __id: number; _localPosition: number[]; _renderPosition: number[]; _extents: number[]; height: number; }>(this.names.position)(id)!
+        return this.getStateAccessor<{ __id: number; _localPosition: Vector; _renderPosition: Vector; _extents: Vector; position: Vector; height: number; }>(this.names.position)(id)!
     }
 
     _localGetPosition(id: number) {
@@ -122,17 +135,27 @@ export class Entities extends EntComp {
         return this.getStateAccessor<any>(this.names.position)(id)!.position
     }
 
-    _localSetPosition(id: number, pos: number[]) {
+    _localSetPosition(id: number, pos: Vector) {
         const positionData = this.getPositionData(id)
         vec3.copy(positionData._localPosition, pos)
         this.updateDerivedPositionData(id, positionData)
     }
 
-    setPosition = (id: number, pos: any, _yarg: any, _zarg: any) => {
+    setPosition(id: number, position: Vector): void;
+    setPosition(id: number, x: number, y: number, z: number): void;
+    setPosition(id: number, position: Vector | number, y?: number, z?: number) {
+        let vector: Vector;
+
         // check if called with "x, y, z" args
-        if (typeof pos === 'number') pos = [pos, _yarg, _zarg]
+        if (Array.isArray(position)) {
+            vector = position
+        }
+        else {
+            vector = [position, y!, z!]
+        }
+        
         // convert to local and defer impl
-        var loc = this.noa.globalToLocal(pos, null, [] as any)
+        const loc = this.noa.globalToLocal(vector, null, [] as any)
         this._localSetPosition(id, loc)
     }
 

@@ -1,20 +1,25 @@
-var vec3 = require('gl-vec3')
+import Engine from "../.."
+import { IComponentType } from "./componentType"
+import * as vec3 from "gl-vec3"
 
+interface IPhysicsState {
+    body: null
+}
 
-export default function (noa) {
+export function physics(noa: Engine): IComponentType<IPhysicsState> {
     return {
         name: 'physics',
         order: 40,
         state: {
             body: null,
         },
-        onAdd: function (entID, state) {
+        onAdd(entID, state) {
             state.body = noa.physics.addBody()
             // implicitly assume body has a position component, to get size
             var posDat = noa.ents.getPositionData(state.__id)
             setPhysicsFromPosition(state, posDat)
         },
-        onRemove: function (entID, state) {
+        onRemove(entID, state) {
             // update position before removing
             // this lets entity wind up at e.g. the result of a collision
             // even if physics component is removed in collision handler
@@ -25,14 +30,14 @@ export default function (noa) {
             }
             noa.physics.removeBody(state.body)
         },
-        system: function (dt, states) {
+        system(dt, states) {
             states.forEach(state => {
                 var pdat = noa.ents.getPositionData(state.__id)
                 setPositionFromPhysics(state, pdat)
             })
 
         },
-        renderSystem: function (dt, states) {
+        renderSystem(dt, states) {
             var tickPos = noa.positionInCurrentTick
             var tickMS = tickPos * noa._tickRate
 
@@ -59,7 +64,7 @@ export default function (noa) {
 // var offset = vec3.create()
 var local = vec3.create()
 
-export function setPhysicsFromPosition(physState, posState) {
+export function setPhysicsFromPosition(physState: any, posState: any) {
     var box = physState.body.aabb
     var ext = posState._extents
     vec3.copy(box.base, ext)
@@ -68,14 +73,14 @@ export function setPhysicsFromPosition(physState, posState) {
 }
 
 
-function setPositionFromPhysics(physState, posState) {
+function setPositionFromPhysics(physState: any, posState: any) {
     var base = physState.body.aabb.base
     var hw = posState.width / 2
     vec3.set(posState._localPosition, base[0] + hw, base[1], base[2] + hw)
 }
 
 
-function backtrackRenderPos(physState, posState, backtrackAmt, smoothed) {
+function backtrackRenderPos(physState: any, posState: any, backtrackAmt: number, smoothed: boolean) {
     // pos = pos + backtrack * body.velocity
     var vel = physState.body.velocity
     vec3.scaleAndAdd(local, posState._localPosition, vel, backtrackAmt)

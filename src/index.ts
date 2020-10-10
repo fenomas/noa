@@ -28,6 +28,7 @@ import { makeProfileHook } from './lib/util'
 import { Registry, IRegistryOptions } from './lib/registry'
 import { IRenderingOptions, Rendering } from "./lib/rendering"
 import { GameInputs } from "game-inputs"
+import * as packageJson from "../package.json"
 
 
 // todo these types need to pull from babylonjs
@@ -39,7 +40,7 @@ declare global {
     interface Window {
         noa: Engine;
         scene: Scene; // this.rendering._scene
-        ndarray: ndarray<Uint32Array>;
+        ndarray: ndarray;
         vec3: Vector;
     }
 }
@@ -58,7 +59,7 @@ var _hitResult = {
 }
 
 
-interface IEngineOptions extends Partial<ICameraOptions>, Partial<IEntitiesOptions>, Partial<IContainerOptions>, Partial<IPhysicsOptions>, Partial<IInputOptions>, Partial<IWorldOptions>, Partial<IRegistryOptions>, Partial<IRenderingOptions> {
+export interface IEngineOptions extends Partial<ICameraOptions>, Partial<IEntitiesOptions>, Partial<IContainerOptions>, Partial<IPhysicsOptions>, Partial<IInputOptions>, Partial<IWorldOptions>, Partial<IRegistryOptions>, Partial<IRenderingOptions> {
     /**
      * @default false
      */
@@ -147,7 +148,11 @@ const engineDefaults: IEngineOptions = {
 }
 
 
-type Vector = [number, number, number];
+export type Vector = [number, number, number];
+
+export type ArrayTypes = number[] | Int8Array | Int16Array | Int32Array |
+Uint8Array | Uint16Array | Uint32Array |
+Float32Array | Float64Array | Uint8ClampedArray;
 
 type Block = {
     /** voxel ID */
@@ -198,7 +203,7 @@ class Engine extends EventEmitter {
         }
         
         /** version string, e.g. `"0.25.4"` */
-        this.version = require('../package.json').version
+        this.version = packageJson.version
         console.log(this.version);
         
         this._tickRate = optionsWithDefaults.tickRate
@@ -278,7 +283,7 @@ class Engine extends EventEmitter {
         if (optionsWithDefaults.debug) {
             window.noa = this
             window.scene = this.rendering._scene
-            window.ndarray = ndarray as unknown as ndarray<Uint32Array>
+            window.ndarray = ndarray as unknown as ndarray
             window.vec3 = vec3 as unknown as Vector
             this.ents.getMovement(1).airJumps = optionsWithDefaults.airJumps
             this.setViewDistance = function (dist) {
@@ -502,7 +507,7 @@ class Engine extends EventEmitter {
      * @param globalPrecise sub-voxel offset to the global position
      * @param local output array which will receive the result
      */
-    globalToLocal = (global: [number, number, number], globalPrecise: [number, number, number] | null, local: [number, number, number]): [number, number, number] => {
+    globalToLocal = (global: Vector, globalPrecise: Vector | null, local: Vector): Vector => {
         const off = this.worldOriginOffset
 
         if (globalPrecise) {
@@ -513,7 +518,7 @@ class Engine extends EventEmitter {
             }
             return local
         } else {
-            return vec3.sub(local, global, off) as [number, number, number]
+            return vec3.sub(local, global, off) as Vector
         }
     }
 
@@ -554,41 +559,47 @@ class Engine extends EventEmitter {
         }
     }
 
-    getBlock = (x: any, y: any, z: any) => {
-        if (x.length) {
-            return this.world.getBlockID(x[0], x[1], x[2])
+    getBlock(position: Vector): number;
+    getBlock(x: number, y: number, z: number): number;
+    getBlock(position: Vector | number, y?: number, z?: number) {
+        if (Array.isArray(position)) {
+            return this.world.getBlockID(position[0], position[1], position[2])
         } else {
-            return this.world.getBlockID(x, y, z)
+            return this.world.getBlockID(position, y!, z!)
         }
     }
 
-    setBlock = (id: string, x: any, y: any, z: any) => {
+    setBlock(id: number, position: Vector): void;
+    setBlock(id: number, x: number, y: number, z: number): void;
+    setBlock(id: number, position: Vector | number, y?: number, z?: number) {
         // skips the entity collision check
-        if (x.length) {
-            return this.world.setBlockID(id, x[0], x[1], x[2])
+        if (Array.isArray(position)) {
+            return this.world.setBlockID(id, position[0], position[1], position[2])
         } else {
-            return this.world.setBlockID(id, x, y, z)
+            return this.world.setBlockID(id, position, y!, z!)
         }
     }
 
     /**
      * Adds a block unless obstructed by entities
      */
-    addBlock = (id: string, x: any, y: any, z: any): any => {
+    addBlock(id: number, position: Vector): number;
+    addBlock(id: number, x: number, y: number, z: number): number;
+    addBlock(id: number, position: Vector | number, y?: number, z?: number): number | undefined {
         // add a new terrain block, if nothing blocks the terrain there
-        if (x.length) {
-            if (this.entities.isTerrainBlocked(x[0], x[1], x[2])) {
-                return
+        if (Array.isArray(position)) {
+            if (this.entities.isTerrainBlocked(position[0], position[1], position[2])) {
+                return undefined
             }
 
-            this.world.setBlockID(id, x[0], x[1], x[2])
+            this.world.setBlockID(id, position[0], position[1], position[2])
             return id
         } else {
-            if (this.entities.isTerrainBlocked(x, y, z)) {
-                return
+            if (this.entities.isTerrainBlocked(position, y!, z!)) {
+                return undefined
             }
 
-            this.world.setBlockID(id, x, y, z)
+            this.world.setBlockID(id, position, y!, z!)
             return id
         }
     }

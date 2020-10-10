@@ -3,7 +3,7 @@
     "version": "0.30.0",
     "description": "Experimental voxel game engine",
     "main": "dist/index.js",
-    "typings": "types/index.d.ts",
+    "typings": "dist/index.d.ts",
     "files": [
         "/src",
         "/types"
@@ -32,13 +32,15 @@
         "voxel-physics-engine": "^0.10.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^4.0.0"
+        "@babylonjs/core": "^4.1.0",
+        "@babylonjs/materials": "^4.1.0"
     },
     "repository": "https://github.com/andyhall/noa",
     "bugs": {
         "url": "https://github.com/andyhall/noa/issues"
     },
     "devDependencies": {
+        "@types/box-intersect": "^1.0.0",
         "@types/gl-vec3": "^1.1.0",
         "@types/ndarray": "^1.0.8",
         "@types/node": "^14.10.1",

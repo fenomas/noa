@@ -1,27 +1,28 @@
-var boxIntersect = require('box-intersect')
+import Engine, { Vector } from "../.."
+import { IBaseComponentState, IComponentType } from "./componentType"
+import boxIntersect from "box-intersect";
 
+interface ICollideEntitiesState {
+    cylinder: boolean;
+    collideBits: number;
+    collideMask: number;
+    callback: (id: number) => void;
+}
 
-/*
- * 	Every frame, entities with this component will get mutually checked for colliions
+/**
+ * Every frame, entities with this component will get mutually checked for colliions
+ * * cylinder: flag for checking collisions as a vertical cylindar (rather than AABB)
+ * * collideBits: category for this entity
+ * * collideMask: categories this entity collides with
+ * * callback: function(other_id) - called when `own.collideBits & other.collideMask` is true
  * 
- *   * cylinder: flag for checking collisions as a vertical cylindar (rather than AABB)
- *   * collideBits: category for this entity
- *   * collideMask: categories this entity collides with
- *   * callback: function(other_id) - called when `own.collideBits & other.collideMask` is true
- * 
- * 
- * 		Notes:
- * 	Set collideBits=0 for entities like bullets, which can collide with things 
- * 		but are never the target of a collision.
- * 	Set collideMask=0 for things with no callback - things that get collided with,
- * 		but don't themselves instigate collisions.
- * 
+ * Notes:
+ *  Set collideBits=0 for entities like bullets, which can collide with things but are never the target of a collision.
+ * 	Set collideMask=0 for things with no callback - things that get collided with, but don't themselves instigate collisions.
  */
+export function collideEntities(noa: Engine): IComponentType<ICollideEntitiesState> {
+    const intervals: Vector[] = []
 
-
-
-export default function (noa) {
-    var intervals = []
     return {
         name: 'collideEntities',
         order: 70,
@@ -29,11 +30,9 @@ export default function (noa) {
             cylinder: false,
             collideBits: 1 | 0,
             collideMask: 1 | 0,
-            callback: null,
+            callback: () => {},
         },
-        onAdd: null,
-        onRemove: null,
-        system: function entityCollider(dt, states) {
+        system(dt, states) {
             var ents = noa.ents
 
             // data struct that boxIntersect looks for
@@ -61,16 +60,20 @@ export default function (noa) {
     /**
      * IMPLEMENTATION
      */
-    function handleCollision(noa, stateA, stateB) {
+    function handleCollision(noa: Engine, stateA: ICollideEntitiesState & IBaseComponentState, stateB: ICollideEntitiesState & IBaseComponentState) {
         var idA = stateA.__id
         var idB = stateB.__id
 
         // entities really do overlap, so check masks and call event handlers
         if (stateA.collideMask & stateB.collideBits) {
-            if (stateA.callback) stateA.callback(idB)
+            if (stateA.callback) {
+                stateA.callback(idB)
+            }
         }
         if (stateB.collideMask & stateA.collideBits) {
-            if (stateB.callback) stateB.callback(idA)
+            if (stateB.callback) {
+                stateB.callback(idA)
+            }
         }
 
         // general pairwise handler
@@ -79,7 +82,7 @@ export default function (noa) {
 
     // For entities whose extents overlap, 
     // test if collision still happens when taking cylinder flags into account
-    function cylindricalHitTest(stateA, stateB, intervalA, intervalB) {
+    function cylindricalHitTest(stateA: ICollideEntitiesState & IBaseComponentState, stateB: ICollideEntitiesState & IBaseComponentState, intervalA: number[], intervalB: number[]) {
         if (stateA.cylinder) {
             if (stateB.cylinder) {
                 return cylinderCylinderTest(intervalA, intervalB)
@@ -94,7 +97,7 @@ export default function (noa) {
 
     // Cylinder-cylinder hit test (AABBs are known to overlap)
     // given their extent arrays [lo, lo, lo, hi, hi, hi]
-    function cylinderCylinderTest(a, b) {
+    function cylinderCylinderTest(a: number[], b: number[]) {
         // distance between cylinder centers
         var rada = (a[3] - a[0]) / 2
         var radb = (b[3] - b[0]) / 2
@@ -108,7 +111,7 @@ export default function (noa) {
 
     // Cylinder-Box hit test (AABBs are known to overlap)
     // given their extent arrays [lo, lo, lo, hi, hi, hi]
-    function cylinderBoxTest(cyl, cube) {
+    function cylinderBoxTest(cyl: number[], cube: number[]) {
         // X-z center of cylinder
         var rad = (cyl[3] - cyl[0]) / 2
         var cx = cyl[0] + rad
@@ -123,7 +126,7 @@ export default function (noa) {
         return (distsq <= rad * rad)
     }
 
-    function clamp(val, lo, hi) {
+    function clamp(val: number, lo: number, hi: number) {
         return (val < lo) ? lo : (val > hi) ? hi : val
     }
 }

@@ -1,7 +1,5 @@
 import Engine from ".."
-
-var createPhysics = require('voxel-physics-engine')
-// var createPhysics = require('../../../../npm-modules/voxel-physics-engine')
+import * as createPhysics from 'voxel-physics-engine'
 
 export interface IPhysicsOptions {
     gravity: [number, number, number];

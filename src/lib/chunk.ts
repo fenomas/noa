@@ -1,16 +1,18 @@
 // shared references to terrain/object meshers
 import ndarray from "ndarray"
 import { addObjectBlock, buildObjectMeshes, disposeChunk, initChunk, removeObjectBlock, removeObjectMeshes } from './objectMesher'
-import Engine from ".."
+import Engine, { ArrayTypes } from ".."
 import { TerrainMesher } from "./terrainMesher"
+import { Mesh } from "@babylonjs/core"
+import { noaMesh } from "./rendering"
 
 
 /**
  * Chunk
  * Stores and manages voxel ids and flags for each voxel within chunk
  */
-export class Chunk {
-    constructor(noa: Engine, id: string, i: number, j: number, k: number, size: number, dataArray: any[]) {
+export class Chunk<UserDataType = any> {
+    constructor(noa: Engine, id: string, i: number, j: number, k: number, size: number, dataArray: ndarray<any>) {
         this.id = id // id used by noa
         this.requestID = '' // id sent to game client
 
@@ -67,6 +69,9 @@ export class Chunk {
     /** id sent to game client */
     requestID: string;
 
+    /** data attached to chunk */
+    userData: UserDataType | undefined;
+
     noa: Engine;
     isDisposed: boolean;
     octreeBlock: null | any;
@@ -75,7 +80,7 @@ export class Chunk {
     isFull: boolean;
 
     /** voxel data and properties */
-    voxels: any;
+    voxels: ndarray<any>;
 
     i: number;
     j: number;
@@ -192,7 +197,7 @@ export class Chunk {
 
     // Convert chunk's voxel terrain into a babylon.js mesh
     // Used internally, but needs to be public so mesh-building hacks can call it
-    mesh = (matGetter?: (blockId: number, dir: number) => number[], colGetter?: (matID: number) => [number, number, number], useAO?: boolean | undefined, aoVals?: [number, number, number] | undefined, revAoVal?: number) => {
+    mesh = (matGetter?: (blockId: number, dir: number) => number[], colGetter?: (matID: number) => [number, number, number], useAO?: boolean | undefined, aoVals?: [number, number, number] | undefined, revAoVal?: number): Mesh | null => {
         if (terrainMesher === undefined) {
             terrainMesher = new TerrainMesher(this.noa)
         }
@@ -222,7 +227,7 @@ export class Chunk {
             removeObjectMeshes(this)
             var meshes = buildObjectMeshes(this)
             var pos2: [number, number, number] = [this.x, this.y, this.z]
-            meshes.forEach(mesh => rendering.addMeshToScene(mesh, true, pos2, this))
+            meshes.forEach(mesh => rendering.addMeshToScene(mesh as noaMesh, true, pos2, this))
             this._objectsDirty = false
         }
     }
@@ -239,8 +244,8 @@ export class Chunk {
         }
 
         // apparently there's no way to dispose typed arrays, so just null everything
-        this.voxels.data = null
-        this.voxels = null
+        this.voxels.data = null as any
+        this.voxels = null as any
         this._neighbors.data = null
         this._neighbors = null
 
@@ -330,6 +335,9 @@ export class Chunk {
         }
     }
 
+    getObjectMeshAt = (x: number, y: number, z: number) => {
+        throw new Error("Not implemented yet")
+    }
 }
 
 /** expose logic internally to create and update the voxel data array */

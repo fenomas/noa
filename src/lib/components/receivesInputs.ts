@@ -1,16 +1,17 @@
+import Engine from "../.."
+import { IComponentType } from "./componentType"
+
 /**
  * Input processing component - gets (key) input state and  
  * applies it to receiving entities by updating their movement 
  * component state (heading, movespeed, jumping, etc.)
  */
-export default function (noa) {
+export function receivesInputs(noa: Engine): IComponentType {
     return {
         name: 'receivesInputs',
         order: 20,
         state: {},
-        onAdd: null,
-        onRemove: null,
-        system: function inputProcessor(dt, states) {
+        system(dt, states) {
             var ents = noa.entities
             var inputState = noa.inputs.state
             var camHeading = noa.camera.heading
@@ -25,7 +26,7 @@ export default function (noa) {
 }
 
 
-function setMovementState(state, inputs, camHeading) {
+function setMovementState(state: any, inputs: any, camHeading: number) {
     state.jumping = !!inputs.jump
 
     var fb = inputs.forward ? (inputs.backward ? 0 : 1) : (inputs.backward ? -1 : 0)

@@ -1,9 +1,6 @@
 import { EventEmitter } from "events"
 import Engine from ".."
-
-var createGameShell = require('game-shell')
-// var createGameShell = require('../../../../npm-modules/game-shell')
-// var EventEmitter = require('events').EventEmitter
+import * as createGameShell from 'game-shell'
 
 export interface IContainerOptions {
     element: HTMLElement;

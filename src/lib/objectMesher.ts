@@ -1,7 +1,7 @@
 import { Chunk } from "./chunk"
 import { blockHandler } from "./registry"
 import { makeProfileHook } from './util'
-const SolidParticleSystem = require('@babylonjs/core/Particles/solidParticleSystem')
+import { SolidParticleSystem } from "@babylonjs/core/Particles/solidParticleSystem"
 
 // enable for profiling..
 var PROFILE = 0
