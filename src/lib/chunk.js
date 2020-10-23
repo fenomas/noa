@@ -198,7 +198,7 @@ function callBlockHandler(chunk, blockID, type, x, y, z) {
 // Used internally, but needs to be public so mesh-building hacks can call it
 Chunk.prototype.mesh = function (matGetter, colGetter, useAO, aoVals, revAoVal) {
     if (!terrainMesher) terrainMesher = new TerrainMesher(this.noa)
-    return terrainMesher.meshChunk(this, matGetter, colGetter, useAO, aoVals, revAoVal)
+    return terrainMesher.meshChunk(this, matGetter, colGetter, false, useAO, aoVals, revAoVal)
 }
 
 var terrainMesher
