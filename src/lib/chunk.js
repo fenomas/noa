@@ -184,10 +184,8 @@ Chunk.prototype.set = function (x, y, z, newID) {
 
 
 // helper to call handler of a given type at a particular xyz
-function callBlockHandler(chunk, blockID, type, x, y, z) {
-    var hobj = blockHandlerLookup[blockID]
-    if (!hobj) return
-    var handler = hobj[type]
+function callBlockHandler(chunk, handlers, type, x, y, z) {
+    var handler = handlers[type]
     if (!handler) return
     handler(chunk.x + x, chunk.y + y, chunk.z + z)
 }
@@ -266,12 +264,14 @@ function scanVoxelData(chunk) {
     var hasObj = false
 
     var voxels = chunk.voxels
+    var data = voxels.data
     var len = voxels.shape[0]
+    var handlerLookup = blockHandlerLookup
     for (var i = 0; i < len; ++i) {
         for (var j = 0; j < len; ++j) {
             var index = voxels.index(i, j, 0)
             for (var k = 0; k < len; ++k, ++index) {
-                var id = voxels.data[index]
+                var id = data[index]
                 // skip air blocks
                 if (id === 0) {
                     fullyOpaque = false
@@ -284,7 +284,10 @@ function scanVoxelData(chunk) {
                     addObjectBlock(chunk, id, i, j, k)
                     hasObj = true
                 }
-                callBlockHandler(chunk, id, 'onLoad', i, j, k)
+                var handlers = handlerLookup[id]
+                if (handlers) {
+                    callBlockHandler(chunk, handlers, 'onLoad', i, j, k)
+                }
             }
         }
     }
@@ -337,13 +340,18 @@ Chunk.prototype.dispose = function () {
 
 // helper to call a given handler for all blocks in the chunk
 function callAllBlockHandlers(chunk, type) {
-    var arr = chunk.voxels
-    var size = arr.shape[0]
-    for (var i = 0; i < size; ++i) {
-        for (var j = 0; j < size; ++j) {
-            for (var k = 0; k < size; ++k) {
-                var id = arr.get(i, j, k)
-                if (id > 0) callBlockHandler(chunk, id, type, i, j, k)
+    var voxels = chunk.voxels
+    var data = voxels.data
+    var handlerLookup = blockHandlerLookup
+    var len = voxels.shape[0]
+    for (var i = 0; i < len; ++i) {
+        for (var j = 0; j < len; ++j) {
+            var index = voxels.index(i, j, 0)
+            for (var k = 0; k < len; ++k, ++index) {
+                var id = data[index]
+                if (id > 0 && handlerLookup[id]) {
+                    callBlockHandler(chunk, handlerLookup[id], type, i, j, k)
+                }
             }
         }
     }
