@@ -196,9 +196,9 @@ function callBlockHandler(chunk, blockID, type, x, y, z) {
 
 // Convert chunk's voxel terrain into a babylon.js mesh
 // Used internally, but needs to be public so mesh-building hacks can call it
-Chunk.prototype.mesh = function (matGetter, colGetter, useAO, aoVals, revAoVal) {
+Chunk.prototype.mesh = function (matGetter, colGetter, ignoreMats, useAO, aoVals, revAoVal) {
     if (!terrainMesher) terrainMesher = new TerrainMesher(this.noa)
-    return terrainMesher.meshChunk(this, matGetter, colGetter, false, useAO, aoVals, revAoVal)
+    return terrainMesher.meshChunk(this, matGetter, colGetter, ignoreMats, useAO, aoVals, revAoVal)
 }
 
 var terrainMesher
