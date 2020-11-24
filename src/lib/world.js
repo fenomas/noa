@@ -78,13 +78,39 @@ function World(noa, opts) {
         var mask = (cs - 1) | 0
         this._worldCoordToChunkCoord = coord => (coord >> shift) | 0
         this._worldCoordToChunkIndex = coord => (coord & mask) | 0
+        this._worldCoordsToChunkCoords = (x, y, z) => {
+            var i = (x >> shift) | 0
+            var j = (y >> shift) | 0
+            var k = (z >> shift) | 0
+            return [i, j, k]
+        }
+        this._worldCoordsToChunkIndexes = (x, y, z) => {
+            var i = (x & mask) | 0
+            var j = (y & mask) | 0
+            var k = (z & mask) | 0
+            return [i, j, k]
+        }
     } else {
         this._worldCoordToChunkCoord = coord => Math.floor(coord / cs) | 0
         this._worldCoordToChunkIndex = coord => (((coord % cs) + cs) % cs) | 0
+        this._worldCoordsToChunkCoords = (x, y, z) => {
+            var i = Math.floor(x / cs) | 0
+            var j = Math.floor(y / cs) | 0
+            var k = Math.floor(z / cs) | 0
+            return [i, j, k]
+        }
+        this._worldCoordsToChunkIndexes = (x, y, z) => {
+            var i = (((x % cs) + cs) % cs) | 0
+            var j = (((y % cs) + cs) % cs) | 0
+            var k = (((z % cs) + cs) % cs) | 0
+            return [i, j, k]
+        }
     }
-
 }
 World.prototype = Object.create(EventEmitter.prototype)
+
+
+
 
 
 
@@ -107,20 +133,16 @@ World.prototype = Object.create(EventEmitter.prototype)
 World.prototype.getBlockID = function (x, y, z) {
     var chunk = this._getChunkByCoords(x, y, z)
     if (!chunk) return 0
-    return chunk.get(
-        this._worldCoordToChunkIndex(x),
-        this._worldCoordToChunkIndex(y),
-        this._worldCoordToChunkIndex(z))
+    var [i, j, k] = this._worldCoordsToChunkIndexes(x, y, z)
+    return chunk.get(i, j, k)
 }
 
 /** @param x,y,z */
 World.prototype.getBlockSolidity = function (x, y, z) {
     var chunk = this._getChunkByCoords(x, y, z)
     if (!chunk) return false
-    return !!chunk.getSolidityAt(
-        this._worldCoordToChunkIndex(x),
-        this._worldCoordToChunkIndex(y),
-        this._worldCoordToChunkIndex(z))
+    var [i, j, k] = this._worldCoordsToChunkIndexes(x, y, z)
+    return !!chunk.getSolidityAt(i, j, k)
 }
 
 /** @param x,y,z */
@@ -154,12 +176,8 @@ World.prototype.getBlockObjectMesh = function (x, y, z) {
 
 /** @param val,x,y,z */
 World.prototype.setBlockID = function (val, x, y, z) {
-    var i = this._worldCoordToChunkCoord(x)
-    var j = this._worldCoordToChunkCoord(y)
-    var k = this._worldCoordToChunkCoord(z)
-    var ix = this._worldCoordToChunkIndex(x)
-    var iy = this._worldCoordToChunkIndex(y)
-    var iz = this._worldCoordToChunkIndex(z)
+    var [i, j, k] = this._worldCoordsToChunkCoords(x, y, z)
+    var [ix, iy, iz] = this._worldCoordsToChunkIndexes(x, y, z)
 
     // logic inside the chunk will trigger a remesh for chunk and 
     // any neighbors that need it
@@ -213,9 +231,7 @@ World.prototype.invalidateVoxelsInAABB = function (box) {
  */
 World.prototype.manuallyLoadChunk = function (x, y, z) {
     if (!this.manuallyControlChunkLoading) throw manualErr
-    var i = this._worldCoordToChunkCoord(x)
-    var j = this._worldCoordToChunkCoord(y)
-    var k = this._worldCoordToChunkCoord(z)
+    var [i, j, k] = this._worldCoordsToChunkCoords(x, y, z)
     var id = getChunkID(i, j, k)
     this._chunkIDsKnown.add(id)
     this._chunkIDsToRequest.add(id)
@@ -227,9 +243,7 @@ World.prototype.manuallyLoadChunk = function (x, y, z) {
  */
 World.prototype.manuallyUnloadChunk = function (x, y, z) {
     if (!this.manuallyControlChunkLoading) throw manualErr
-    var i = this._worldCoordToChunkCoord(x)
-    var j = this._worldCoordToChunkCoord(y)
-    var k = this._worldCoordToChunkCoord(z)
+    var [i, j, k] = this._worldCoordsToChunkCoords(x, y, z)
     var id = getChunkID(i, j, k)
     this._chunkIDsToRemove.add(id)
     this._chunkIDsToRequest.remove(id)
@@ -357,7 +371,7 @@ function parseChunkID(id) {
 function initChunkStorage(world) {
     // var chunkHash = ndHash([1024, 1024, 1024])
     world._getChunk = (i, j, k) => {
-        var id = getChunkID(i, j, k)
+        var id = i + '|' + j + '|' + k
         return world._chunkStorage[id] || null
     }
     world._setChunk = (i, j, k, value) => {
@@ -370,18 +384,14 @@ function initChunkStorage(world) {
     }
     // chunk accessor for internal use
     world._getChunkByCoords = function (x, y, z) {
-        var i = world._worldCoordToChunkCoord(x)
-        var j = world._worldCoordToChunkCoord(y)
-        var k = world._worldCoordToChunkCoord(z)
+        var [i, j, k] = world._worldCoordsToChunkCoords(x, y, z)
         return world._getChunk(i, j, k)
     }
 }
 
 function getPlayerChunkCoords(world) {
     var pos = world.noa.entities.getPosition(world.noa.playerEntity)
-    var i = world._worldCoordToChunkCoord(pos[0])
-    var j = world._worldCoordToChunkCoord(pos[1])
-    var k = world._worldCoordToChunkCoord(pos[2])
+    var [i, j, k] = world._worldCoordsToChunkCoords(pos[0], pos[1], pos[2])
     return [i, j, k]
 }
 
