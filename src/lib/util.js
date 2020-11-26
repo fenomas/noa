@@ -15,11 +15,16 @@ export function removeUnorderedListItem(list, item) {
 
 // loop over a function for a few ms, or until it returns true
 export function loopForTime(maxTimeInMS, callback, startTime) {
-    var cutoff = (startTime || performance.now()) + maxTimeInMS
+    var t0 = startTime || performance.now()
+    var res = callback()
+    if (res) return
+    var t1 = performance.now(), dt = t1 - startTime
+    // tweak time to make the average delay equal to the desired amt
+    var cutoff = t0 + maxTimeInMS - dt / 2
+    if (t1 > cutoff) return
     var maxIter = 1000 // sanity check
     for (var i = 0; i < maxIter; i++) {
-        var res = callback()
-        if (res || performance.now() > cutoff) return
+        if (callback() || performance.now() > cutoff) return
     }
 }
 
@@ -61,28 +66,70 @@ export function copyNdarrayContents(src, tgt, pos, size, tgtPos) {
     }
 }
 function doNdarrayCopy(src, tgt, i0, j0, k0, si, sj, sk, ti, tj, tk) {
+    var sdx = src.stride[2]
+    var tdx = tgt.stride[2]
     for (var i = 0; i < si; i++) {
         for (var j = 0; j < sj; j++) {
             var six = src.index(i0 + i, j0 + j, k0)
             var tix = tgt.index(ti + i, tj + j, tk)
             for (var k = 0; k < sk; k++) {
                 tgt.data[tix] = src.data[six]
-                six += src.stride[2]
-                tix += tgt.stride[2]
+                six += sdx
+                tix += tdx
             }
         }
     }
 }
 
 function doNdarrayZero(tgt, i0, j0, k0, si, sj, sk) {
+    var dx = tgt.stride[2]
     for (var i = 0; i < si; i++) {
         for (var j = 0; j < sj; j++) {
             var ix = tgt.index(i0 + i, j0 + j, k0)
             for (var k = 0; k < sk; k++) {
                 tgt.data[ix] = 0
-                ix += tgt.stride[2]
+                ix += dx
             }
         }
+    }
+}
+
+
+
+
+//  hash an array of indexes [i,j,k] to an integer ID. 
+//  Used by stuff below. Wraps every 1024 indexes.
+var hashLocation = (() => {
+    var bits = 10, twobits = bits * 2
+    var mask = (1 << bits) - 1
+    return function hashLocation(i, j, k) {
+        var id = i & mask
+        id += (j & mask) << bits
+        id += (k & mask) << twobits
+        return id
+    }
+})()
+
+
+
+/*
+ * 
+ *      chunkStorage - a Map-backed abstraction for storing/
+ *      retrieving chunk objects by their location indexes
+ * 
+*/
+
+export function ChunkStorage() {
+    var map = new Map()
+    // exposed API - getting and setting
+    this.getChunkByIndexes = (i, j, k) => {
+        var id = hashLocation(i, j, k)
+        return map.get(id) || null
+    }
+    this.storeChunkByIndexes = (i, j, k, chunk) => {
+        var id = hashLocation(i, j, k)
+        if (chunk) { map.set(id, chunk); return }
+        map.delete(id)
     }
 }
 
@@ -94,48 +141,66 @@ function doNdarrayZero(tgt, i0, j0, k0, si, sj, sk) {
 
 /*
  * 
- *      strList - internal data structure for lists of chunk IDs
+ *      LocationQueue - simple array of [i,j,k] locations, 
+ *      backed by a Set for O(1) existence checks.
+ *      removals by value are O(n).
  * 
 */
 
-export function StringList() {
+export function LocationQueue() {
     this.arr = []
-    this.hash = {}
+    this.set = new Set()
 }
-StringList.prototype.includes = function (key) {
-    return this.hash[key]
+LocationQueue.prototype.forEach = function (a, b) { this.arr.forEach(a, b) }
+LocationQueue.prototype.includes = function (i, j, k) {
+    var id = hashLocation(i, j, k)
+    return this.set.has(id)
 }
-StringList.prototype.add = function (key) {
-    if (this.hash[key]) return
-    this.arr.push(key)
-    this.hash[key] = true
+LocationQueue.prototype.add = function (i, j, k) {
+    var id = hashLocation(i, j, k)
+    if (this.set.has(id)) return
+    this.arr.push([i, j, k])
+    this.set.add(id)
 }
-StringList.prototype.remove = function (key) {
-    if (!this.hash[key]) return
-    this.arr.splice(this.arr.indexOf(key), 1)
-    delete this.hash[key]
+LocationQueue.prototype.removeByIndex = function (ix) {
+    var el = this.arr[ix]
+    var id = hashLocation(el[0], el[1], el[2])
+    this.set.delete(id)
+    this.arr.splice(ix, 1)
 }
-StringList.prototype.count = function () { return this.arr.length }
-StringList.prototype.forEach = function (a, b) { return this.arr.forEach(a, b) }
-StringList.prototype.slice = function (a, b) { return this.arr.slice(a, b) }
-StringList.prototype.isEmpty = function () { return (this.arr.length === 0) }
-StringList.prototype.empty = function () {
+LocationQueue.prototype.remove = function (i, j, k) {
+    var id = hashLocation(i, j, k)
+    if (!this.set.has(id)) return
+    this.set.delete(id)
+    for (var ix = 0; ix < this.arr.length; ix++) {
+        var el = this.arr[ix]
+        if (el[0] !== i || el[1] !== j || el[2] !== k) continue
+        this.arr.splice(ix, 1)
+        return
+    }
+    throw 'internal bug with location queue - hash value overlapped'
+}
+LocationQueue.prototype.count = function () { return this.arr.length }
+LocationQueue.prototype.isEmpty = function () { return (this.arr.length === 0) }
+LocationQueue.prototype.empty = function () {
     this.arr.length = 0
-    this.hash = {}
+    this.set.clear()
 }
-StringList.prototype.pop = function () {
-    var key = this.arr.pop()
-    delete this.hash[key]
-    return key
+LocationQueue.prototype.pop = function () {
+    var el = this.arr.pop()
+    var id = hashLocation(el[0], el[1], el[2])
+    this.set.delete(id)
+    return el
 }
-StringList.prototype.sort = function (keyToDistanceFn) {
-    var mapping = {}
-    this.arr.forEach(key => { mapping[key] = keyToDistanceFn(key) })
-    this.arr.sort((a, b) => mapping[b] - mapping[a]) // DESCENDING!
+LocationQueue.prototype.copyFrom = function (queue) {
+    this.arr = queue.arr.slice()
+    this.set.clear()
+    queue.set.forEach((val, key) => this.set.add(key, true))
 }
-StringList.prototype.copyFrom = function (list) {
-    this.arr = list.arr.slice()
-    this.hash = Object.assign({}, list.hash)
+LocationQueue.prototype.sortByDistance = function (locToDist) {
+    var map = new Map()
+    this.arr.forEach((loc, i) => { map.set(loc, locToDist(loc)) })
+    this.arr.sort((a, b) => map.get(b) - map.get(a)) // DESCENDING!
 }
 
 
@@ -149,9 +214,9 @@ StringList.prototype.copyFrom = function (list) {
 
 
 // simple thing for reporting time split up between several activities
-export function makeProfileHook(_every, _title) {
-    var title = _title || ''
-    var every = _every || 1
+export function makeProfileHook(every, title, filter) {
+    if (!(every > 0)) return () => { }
+    title = title || ''
     var times = []
     var names = []
     var started = 0
@@ -181,6 +246,7 @@ export function makeProfileHook(_every, _title) {
         if (iter === every) {
             var head = title + ' total ' + (total / every).toFixed(2) + 'ms (avg, ' + every + ' runs)    '
             console.log(head, names.map(function (name, i) {
+                if (filter && times[i] / total < 0.05) return ''
                 return name + ': ' + (times[i] / every).toFixed(2) + 'ms    '
             }).join(''))
             clearNext = true
@@ -199,7 +265,7 @@ export function makeProfileHook(_every, _title) {
 
 
 // simple thing for reporting time actions/sec
-export function makeThroughputHook(_every, _title) {
+export function makeThroughputHook(_every, _title, filter) {
     var title = _title || ''
     var every = _every || 1
     var counts = {}

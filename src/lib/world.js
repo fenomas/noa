@@ -1,11 +1,11 @@
 
 var EventEmitter = require('events').EventEmitter
 import Chunk from './chunk'
-import { StringList } from './util'
+import { LocationQueue, ChunkStorage } from './util'
 import { loopForTime, numberOfVoxelsInSphere } from './util'
 
-var PROFILE = 0
-var PROFILE_QUEUES = 0
+var PROFILE_EVERY = 0               // ticks
+var PROFILE_QUEUES_EVERY = 0        // ticks
 
 
 export default function (noa, opts) {
@@ -39,8 +39,9 @@ function World(noa, opts) {
     opts = Object.assign({}, defaultOptions, opts)
 
     this.playerChunkLoaded = false
-    this.Chunk = Chunk
+    this.Chunk = Chunk // expose this class for   ..reasons
 
+    // settings
     this.chunkSize = opts.chunkSize
     this.chunkAddDistance = opts.chunkAddDistance
     this.chunkRemoveDistance = opts.chunkRemoveDistance
@@ -59,50 +60,52 @@ function World(noa, opts) {
     // settings for tuning worldgen behavior and throughput
     this.maxChunksPendingCreation = 10
     this.maxChunksPendingMeshing = 10
-    this.maxProcessingPerTick = 9      // ms
-    this.maxProcessingPerRender = 5    // ms
+    this.maxProcessingPerTick = 9           // ms
+    this.maxProcessingPerRender = 5         // ms
     this.worldGenWhilePaused = opts.worldGenWhilePaused
 
     // set up internal state
     this._cachedWorldName = ''
-    this._lastPlayerChunkID = ''
-    this._chunkStorage = {}
+    this._lastPlayerChunkStr = ''
     initChunkQueues(this)
-    initChunkStorage(this)
 
-    // instantiate coord conversion functions based on the chunk size
-    // use bit twiddling if chunk size is a power of 2
+
+    // chunks stored in a data structure for quick lookup
+    // note that the hash wraps around every 1024 chunk indexes!!
+    // i.e. two chunks that far apart can't be loaded at the same time
+    this._storage = new ChunkStorage()
+
+
+    // coordinate converter functions - default versions first:
     var cs = this.chunkSize
-    if ((cs & cs - 1) === 0) {
+    this._coordsToChunkIndexes = (x, y, z) => {
+        var i = Math.floor(x / cs) | 0
+        var j = Math.floor(y / cs) | 0
+        var k = Math.floor(z / cs) | 0
+        return [i, j, k]
+    }
+    this._coordsToChunkLocals = (x, y, z) => {
+        var i = (x % cs) | 0; if (i < 0) i += cs
+        var j = (y % cs) | 0; if (j < 0) j += cs
+        var k = (z % cs) | 0; if (k < 0) k += cs
+        return [i, j, k]
+    }
+
+    // when chunk size is a power of two, override with bit-twiddling:
+    var powerOfTwo = ((cs & cs - 1) === 0)
+    if (powerOfTwo) {
         var shift = Math.log2(cs) | 0
-        var mask = (cs - 1) | 0
-        this._worldCoordToChunkCoord = coord => (coord >> shift) | 0
-        this._worldCoordToChunkIndex = coord => (coord & mask) | 0
-        this._worldCoordsToChunkCoords = (x, y, z) => {
+        var csmask = (cs - 1) | 0
+        this._coordsToChunkIndexes = (x, y, z) => {
             var i = (x >> shift) | 0
             var j = (y >> shift) | 0
             var k = (z >> shift) | 0
             return [i, j, k]
         }
-        this._worldCoordsToChunkIndexes = (x, y, z) => {
-            var i = (x & mask) | 0
-            var j = (y & mask) | 0
-            var k = (z & mask) | 0
-            return [i, j, k]
-        }
-    } else {
-        this._worldCoordToChunkCoord = coord => Math.floor(coord / cs) | 0
-        this._worldCoordToChunkIndex = coord => (((coord % cs) + cs) % cs) | 0
-        this._worldCoordsToChunkCoords = (x, y, z) => {
-            var i = Math.floor(x / cs) | 0
-            var j = Math.floor(y / cs) | 0
-            var k = Math.floor(z / cs) | 0
-            return [i, j, k]
-        }
-        this._worldCoordsToChunkIndexes = (x, y, z) => {
-            var i = (((x % cs) + cs) % cs) | 0
-            var j = (((y % cs) + cs) % cs) | 0
-            var k = (((z % cs) + cs) % cs) | 0
+        this._coordsToChunkLocals = (x, y, z) => {
+            var i = (x & csmask) | 0
+            var j = (y & csmask) | 0
+            var k = (z & csmask) | 0
             return [i, j, k]
         }
     }
@@ -131,17 +134,19 @@ World.prototype = Object.create(EventEmitter.prototype)
 
 /** @param x,y,z */
 World.prototype.getBlockID = function (x, y, z) {
-    var chunk = this._getChunkByCoords(x, y, z)
+    var [ci, cj, ck] = this._coordsToChunkIndexes(x, y, z)
+    var chunk = this._storage.getChunkByIndexes(ci, cj, ck)
     if (!chunk) return 0
-    var [i, j, k] = this._worldCoordsToChunkIndexes(x, y, z)
-    return chunk.get(i, j, k)
+    var [i, j, k] = this._coordsToChunkLocals(x, y, z)
+    return chunk.voxels.get(i, j, k)
 }
 
 /** @param x,y,z */
 World.prototype.getBlockSolidity = function (x, y, z) {
-    var chunk = this._getChunkByCoords(x, y, z)
+    var [ci, cj, ck] = this._coordsToChunkIndexes(x, y, z)
+    var chunk = this._storage.getChunkByIndexes(ci, cj, ck)
     if (!chunk) return false
-    var [i, j, k] = this._worldCoordsToChunkIndexes(x, y, z)
+    var [i, j, k] = this._coordsToChunkLocals(x, y, z)
     return !!chunk.getSolidityAt(i, j, k)
 }
 
@@ -163,26 +168,15 @@ World.prototype.getBlockProperties = function (x, y, z) {
     return this.noa.registry.getBlockProps(id)
 }
 
-/** @param x,y,z */
-World.prototype.getBlockObjectMesh = function (x, y, z) {
-    var chunk = this._getChunkByCoords(x, y, z)
-    if (!chunk) return 0
-    return chunk.getObjectMeshAt(
-        this._worldCoordToChunkIndex(x),
-        this._worldCoordToChunkIndex(y),
-        this._worldCoordToChunkIndex(z))
-}
 
 
 /** @param val,x,y,z */
 World.prototype.setBlockID = function (val, x, y, z) {
-    var [i, j, k] = this._worldCoordsToChunkCoords(x, y, z)
-    var [ix, iy, iz] = this._worldCoordsToChunkIndexes(x, y, z)
-
-    // logic inside the chunk will trigger a remesh for chunk and 
-    // any neighbors that need it
-    var chunk = this._getChunk(i, j, k)
-    if (chunk) chunk.set(ix, iy, iz, val)
+    var [ci, cj, ck] = this._coordsToChunkIndexes(x, y, z)
+    var chunk = this._storage.getChunkByIndexes(ci, cj, ck)
+    if (!chunk) return
+    var [i, j, k] = this._coordsToChunkLocals(x, y, z)
+    return chunk.set(i, j, k, val)
 }
 
 
@@ -231,11 +225,11 @@ World.prototype.invalidateVoxelsInAABB = function (box) {
  */
 World.prototype.manuallyLoadChunk = function (x, y, z) {
     if (!this.manuallyControlChunkLoading) throw manualErr
-    var [i, j, k] = this._worldCoordsToChunkCoords(x, y, z)
-    var id = getChunkID(i, j, k)
-    this._chunkIDsKnown.add(id)
-    this._chunkIDsToRequest.add(id)
+    var [i, j, k] = this._coordsToChunkIndexes(x, y, z)
+    this._chunksKnown.add(i, j, k)
+    this._chunksToRequest.add(i, j, k)
 }
+
 /** When manually controlling chunk loading, tells the engine that the 
  * chunk containing the specified (x,y,z) needs to be unloaded and disposed.
  * > Note: has no effect when `noa.world.manuallyControlChunkLoading` is not set.
@@ -243,12 +237,11 @@ World.prototype.manuallyLoadChunk = function (x, y, z) {
  */
 World.prototype.manuallyUnloadChunk = function (x, y, z) {
     if (!this.manuallyControlChunkLoading) throw manualErr
-    var [i, j, k] = this._worldCoordsToChunkCoords(x, y, z)
-    var id = getChunkID(i, j, k)
-    this._chunkIDsToRemove.add(id)
-    this._chunkIDsToRequest.remove(id)
-    this._chunkIDsToMesh.remove(id)
-    this._chunkIDsToMeshFirst.remove(id)
+    var [i, j, k] = this._coordsToChunkIndexes(x, y, z)
+    this._chunksToRemove.add(i, j, k)
+    this._chunksToMesh.remove(i, j, k)
+    this._chunksToRequest.remove(i, j, k)
+    this._chunksToMeshFirst.remove(i, j, k)
 }
 var manualErr = 'Set `noa.world.manuallyControlChunkLoading` if you need this API'
 
@@ -277,26 +270,29 @@ World.prototype.tick = function () {
         this._cachedWorldName = this.noa.worldName
     }
 
-    // current player chunk changed since last tick?
-    var pos = getPlayerChunkCoords(this)
-    var chunkID = getChunkID(pos[0], pos[1], pos[2])
-    var changedChunks = (chunkID != this._lastPlayerChunkID)
+    // base logic around indexes of player's current chunk
+    var [ci, cj, ck] = getPlayerChunkIndexes(this)
+
+    // player changed chunks since last tick?
+    var chunkLocStr = `${ci}:${cj}:${ck}`
+    var changedChunks = (chunkLocStr != this._lastPlayerChunkStr)
     if (changedChunks) {
-        this.emit('playerEnteredChunk', pos[0], pos[1], pos[2])
-        this._lastPlayerChunkID = chunkID
+        this.emit('playerEnteredChunk', ci, cj, ck)
+        this._lastPlayerChunkStr = chunkLocStr
     }
+
     profile_hook('start')
     profile_queues_hook('start')
 
-    // possibly scan for chunks to add/remove
+    // scan for chunks to add/remove (unless client handles manually)
     if (!this.manuallyControlChunkLoading) {
         if (changedChunks) {
-            findDistantChunksToRemove(this, pos[0], pos[1], pos[2])
+            findDistantChunksToRemove(this, ci, cj, ck)
             profile_hook('remQueue')
         }
         var numChunks = numberOfVoxelsInSphere(this.chunkAddDistance)
-        if (changedChunks || (this._chunkIDsKnown.count() < numChunks)) {
-            findNewChunksInRange(this, pos[0], pos[1], pos[2])
+        if (changedChunks || (this._chunksKnown.count() < numChunks)) {
+            findNewChunksInRange(this, ci, cj, ck)
             profile_hook('addQueue')
         }
     }
@@ -325,7 +321,7 @@ World.prototype.tick = function () {
     }
 
     // track whether the player's local chunk is loaded and ready or not
-    var pChunk = this._getChunk(pos[0], pos[1], pos[2])
+    var pChunk = this._storage.getChunkByIndexes(ci, cj, ck)
     this.playerChunkLoaded = !!pChunk
 
     profile_queues_hook('end', this)
@@ -342,58 +338,6 @@ World.prototype.render = function () {
 }
 
 
-
-
-
-
-
-
-/*
- * 
- * 
- * 
- *              chunk IDs, storage, and lookup/retrieval
- * 
- * 
- * 
-*/
-
-function getChunkID(i, j, k) {
-    // chunk coords -> canonical string ID
-    return i + '|' + j + '|' + k
-}
-
-function parseChunkID(id) {
-    // chunk ID -> coords
-    return id.split('|').map(s => parseInt(s))
-}
-
-function initChunkStorage(world) {
-    // var chunkHash = ndHash([1024, 1024, 1024])
-    world._getChunk = (i, j, k) => {
-        var id = i + '|' + j + '|' + k
-        return world._chunkStorage[id] || null
-    }
-    world._setChunk = (i, j, k, value) => {
-        var id = getChunkID(i, j, k)
-        if (value) {
-            world._chunkStorage[id] = value
-        } else {
-            delete world._chunkStorage[id]
-        }
-    }
-    // chunk accessor for internal use
-    world._getChunkByCoords = function (x, y, z) {
-        var [i, j, k] = world._worldCoordsToChunkCoords(x, y, z)
-        return world._getChunk(i, j, k)
-    }
-}
-
-function getPlayerChunkCoords(world) {
-    var pos = world.noa.entities.getPosition(world.noa.playerEntity)
-    var [i, j, k] = world._worldCoordsToChunkCoords(pos[0], pos[1], pos[2])
-    return [i, j, k]
-}
 
 
 
@@ -421,12 +365,12 @@ function initChunkQueues(world) {
     //    ToMesh:       created but not yet meshed
     //    ToMeshFirst:  priority meshing queue
     //    ToRemove:     chunks awaiting disposal
-    world._chunkIDsKnown = new StringList()
-    world._chunkIDsToRequest = new StringList()
-    world._chunkIDsPending = new StringList()
-    world._chunkIDsToMesh = new StringList()
-    world._chunkIDsToMeshFirst = new StringList()
-    world._chunkIDsToRemove = new StringList()
+    world._chunksKnown = new LocationQueue()
+    world._chunksToMesh = new LocationQueue()
+    world._chunksPending = new LocationQueue()
+    world._chunksToRemove = new LocationQueue()
+    world._chunksToRequest = new LocationQueue()
+    world._chunksToMeshFirst = new LocationQueue()
     // accessor for chunks to queue themselves for remeshing
     world._queueChunkForRemesh = (chunk) => {
         queueChunkForRemesh(world, chunk)
@@ -434,88 +378,96 @@ function initChunkQueues(world) {
 }
 
 
+
+// helper - chunk indexes of where the player is
+function getPlayerChunkIndexes(world) {
+    var pos = world.noa.entities.getPosition(world.noa.playerEntity)
+    return world._coordsToChunkIndexes(pos[0], pos[1], pos[2])
+}
+
+
+
+
 // process neighborhood chunks, add missing ones to "toRequest" and "inMemory"
 function findNewChunksInRange(world, ci, cj, ck) {
     var add = Math.ceil(world.chunkAddDistance)
     var addDistSq = world.chunkAddDistance * world.chunkAddDistance
-    var known = world._chunkIDsKnown
-    var toRequest = world._chunkIDsToRequest
+    var known = world._chunksKnown
+    var toRequest = world._chunksToRequest
     // search all nearby chunk locations
     for (var i = ci - add; i <= ci + add; ++i) {
         for (var j = cj - add; j <= cj + add; ++j) {
             for (var k = ck - add; k <= ck + add; ++k) {
-                var id = getChunkID(i, j, k)
-                if (known.includes(id)) continue
+                if (known.includes(i, j, k)) continue
                 var di = i - ci
                 var dj = j - cj
                 var dk = k - ck
                 var distSq = di * di + dj * dj + dk * dk
                 if (distSq > addDistSq) continue
-                known.add(id)
-                toRequest.add(id)
+                known.add(i, j, k)
+                toRequest.add(i, j, k)
             }
         }
     }
-    sortIDListByDistanceFrom(toRequest, ci, cj, ck)
+    sortQueueByDistanceFrom(toRequest, ci, cj, ck)
 }
 
 
 // rebuild queue of chunks to be removed from around (ci,cj,ck)
 function findDistantChunksToRemove(world, ci, cj, ck) {
     var remDistSq = world.chunkRemoveDistance * world.chunkRemoveDistance
-    var toRemove = world._chunkIDsToRemove
-    world._chunkIDsKnown.forEach(id => {
-        if (toRemove.includes(id)) return
-        var loc = parseChunkID(id)
+    var toRemove = world._chunksToRemove
+    world._chunksKnown.forEach(loc => {
+        if (toRemove.includes(loc[0], loc[1], loc[2])) return
         var di = loc[0] - ci
         var dj = loc[1] - cj
         var dk = loc[2] - ck
         var distSq = di * di + dj * dj + dk * dk
         if (distSq < remDistSq) return
         // flag chunk for removal and remove it from work queues
-        world._chunkIDsToRemove.add(id)
-        world._chunkIDsToRequest.remove(id)
-        world._chunkIDsToMesh.remove(id)
-        world._chunkIDsToMeshFirst.remove(id)
+        world._chunksToRemove.add(loc[0], loc[1], loc[2])
+        world._chunksToMesh.remove(loc[0], loc[1], loc[2])
+        world._chunksToRequest.remove(loc[0], loc[1], loc[2])
+        world._chunksToMeshFirst.remove(loc[0], loc[1], loc[2])
     })
-    sortIDListByDistanceFrom(toRemove, ci, cj, ck)
+    sortQueueByDistanceFrom(toRemove, ci, cj, ck)
 }
 
 
 // invalidate chunks overlapping the given AABB
 function invalidateChunksInBox(world, box) {
-    var min = box.base.map(n => Math.floor(world._worldCoordToChunkCoord(n)))
-    var max = box.max.map(n => Math.floor(world._worldCoordToChunkCoord(n)))
-    world._chunkIDsKnown.forEach(id => {
-        var pos = parseChunkID(id)
+    var min = box.base.map(n => Math.floor(world._storage.worldCoordToChunkIndex(n)))
+    var max = box.max.map(n => Math.floor(world._storage.worldCoordToChunkIndex(n)))
+    world._chunksKnown.forEach(loc => {
         for (var i = 0; i < 3; i++) {
-            if (pos[i] < min[i] || pos[i] > max[i]) return
+            if (loc[i] < min[i] || loc[i] >= max[i]) return
         }
-        if (world._chunkIDsToRemove.includes(id)) return
-        world._chunkIDsToRequest.add(id)
+        if (world._chunksToRemove.includes(loc[0], loc[1], loc[2])) return
+        world._chunksToRequest.add(loc[0], loc[1], loc[2])
     })
 }
 
 // when current world changes - empty work queues and mark all for removal
 function markAllChunksForRemoval(world) {
-    world._chunkIDsToRemove.copyFrom(world._chunkIDsKnown)
-    world._chunkIDsToRequest.empty()
-    world._chunkIDsToMesh.empty()
-    world._chunkIDsToMeshFirst.empty()
-    var loc = getPlayerChunkCoords(world)
-    sortIDListByDistanceFrom(world._chunkIDsToRemove, loc[0], loc[1], loc[2])
+    world._chunksToRemove.copyFrom(world._chunksKnown)
+    world._chunksToRequest.empty()
+    world._chunksToMesh.empty()
+    world._chunksToMeshFirst.empty()
+    var loc = getPlayerChunkIndexes(world)
+    sortQueueByDistanceFrom(world._chunksToRemove, loc[0], loc[1], loc[2])
 }
 
 
 // incrementally look for chunks that could stand to be re-meshed
 function lookForChunksToMesh(world) {
-    var queue = world._chunkIDsKnown.arr
-    var ct = Math.min(50, queue.length)
-    var numQueued = world._chunkIDsToMesh.count() + world._chunkIDsToMeshFirst.count()
+    var numQueued = world._chunksToMesh.count() + world._chunksToMeshFirst.count()
+    if (numQueued > 10) return
+    var knownLocs = world._chunksKnown.arr
+    var ct = Math.min(50, knownLocs.length)
     for (var i = 0; i < ct; i++) {
-        lookIndex = (lookIndex + 1) % queue.length
-        var id = queue[lookIndex]
-        var chunk = world._chunkStorage[id]
+        lookIndex = (lookIndex + 1) % knownLocs.length
+        var loc = knownLocs[lookIndex]
+        var chunk = world._storage.getChunkByIndexes(loc[0], loc[1], loc[2])
         if (!chunk) continue
         var nc = chunk._neighborCount
         if (nc < world.minNeighborsToMesh) continue
@@ -530,36 +482,38 @@ var lookIndex = -1
 
 // run through chunk tracking queues looking for work to do next
 function processRequestQueue(world) {
-    var toRequest = world._chunkIDsToRequest
+    var toRequest = world._chunksToRequest
     if (toRequest.isEmpty()) return true
     // skip if too many outstanding requests, or if meshing queue is full
-    var pending = world._chunkIDsPending.count()
-    var toMesh = world._chunkIDsToMesh.count()
+    var pending = world._chunksPending.count()
+    var toMesh = world._chunksToMesh.count()
     if (pending >= world.maxChunksPendingCreation) return true
     if (toMesh >= world.maxChunksPendingMeshing) return true
-    var id = toRequest.pop()
-    requestNewChunk(world, id)
+    var loc = toRequest.pop()
+    requestNewChunk(world, loc[0], loc[1], loc[2])
     return toRequest.isEmpty()
 }
 
 
 function processRemoveQueue(world) {
-    var toRemove = world._chunkIDsToRemove
+    var toRemove = world._chunksToRemove
     if (toRemove.isEmpty()) return true
-    removeChunk(world, toRemove.pop())
+    var loc = toRemove.pop()
+    removeChunk(world, loc[0], loc[1], loc[2])
     return (toRemove.isEmpty())
 }
 
 
 // similar to above but for chunks waiting to be meshed
 function processMeshingQueue(world, firstOnly) {
-    var queue = world._chunkIDsToMeshFirst
-    if (queue.isEmpty() && !firstOnly) queue = world._chunkIDsToMesh
+    var queue = world._chunksToMeshFirst
+    if (queue.isEmpty() && !firstOnly) queue = world._chunksToMesh
     if (queue.isEmpty()) return true
 
-    var id = queue.pop()
-    if (world._chunkIDsToRemove.includes(id)) return
-    var chunk = world._chunkStorage[id]
+    var loc = queue.pop()
+    if (world._chunksToRemove.includes(loc[0], loc[1], loc[2])) return
+    var chunk = world._storage.getChunkByIndexes(loc[0], loc[1], loc[2])
+
     if (chunk) doChunkRemesh(world, chunk)
 }
 
@@ -583,11 +537,7 @@ function processMeshingQueue(world, firstOnly) {
 
 
 // create chunk object and request voxel data from client
-function requestNewChunk(world, id) {
-    var pos = parseChunkID(id)
-    var i = pos[0]
-    var j = pos[1]
-    var k = pos[2]
+function requestNewChunk(world, i, j, k) {
     var size = world.chunkSize
     var dataArr = Chunk._createVoxelArray(world.chunkSize)
     var worldName = world.noa.worldName
@@ -595,7 +545,7 @@ function requestNewChunk(world, id) {
     var x = i * size
     var y = j * size
     var z = k * size
-    world._chunkIDsPending.add(id)
+    world._chunksPending.add(i, j, k)
     world.emit('worldDataNeeded', requestID, dataArr, x, y, z, worldName)
     profile_queues_hook('request')
 }
@@ -608,20 +558,19 @@ function setChunkData(world, reqID, array, userData) {
     var j = parseInt(arr.shift())
     var k = parseInt(arr.shift())
     var worldName = arr.join('|')
-    var id = getChunkID(i, j, k)
-    world._chunkIDsPending.remove(id)
+    world._chunksPending.remove(i, j, k)
     // discard data if it's for a world that's no longer current
     if (worldName !== world.noa.worldName) return
     // discard if chunk is no longer needed
-    if (!world._chunkIDsKnown.includes(id)) return
-    if (world._chunkIDsToRemove.includes(id)) return
-    var chunk = world._chunkStorage[id]
+    if (!world._chunksKnown.includes(i, j, k)) return
+    if (world._chunksToRemove.includes(i, j, k)) return
+
+    var chunk = world._storage.getChunkByIndexes(i, j, k)
     if (!chunk) {
         // if chunk doesn't exist, create and init
         var size = world.chunkSize
-        chunk = new Chunk(world.noa, id, i, j, k, size, array)
-        world._setChunk(i, j, k, chunk)
-        chunk.requestID = reqID
+        chunk = new Chunk(world.noa, reqID, i, j, k, size, array)
+        world._storage.storeChunkByIndexes(i, j, k, chunk)
         chunk.userData = userData
         updateNeighborsOfChunk(world, i, j, k, chunk)
         world.noa.rendering.prepareChunkForRendering(chunk)
@@ -644,20 +593,21 @@ function setChunkData(world, reqID, array, userData) {
 
 
 // remove a chunk that wound up in the remove queue
-function removeChunk(world, id) {
-    var loc = parseChunkID(id)
-    var chunk = world._getChunk(loc[0], loc[1], loc[2])
+function removeChunk(world, i, j, k) {
+    var chunk = world._storage.getChunkByIndexes(i, j, k)
+
     if (chunk) {
         world.emit('chunkBeingRemoved', chunk.requestID, chunk.voxels, chunk.userData)
         world.noa.rendering.disposeChunkForRendering(chunk)
         chunk.dispose()
         profile_queues_hook('dispose')
-        updateNeighborsOfChunk(world, loc[0], loc[1], loc[2], null)
+        updateNeighborsOfChunk(world, i, j, k, null)
     }
-    world._setChunk(loc[0], loc[1], loc[2], null)
-    world._chunkIDsKnown.remove(id)
-    world._chunkIDsToMesh.remove(id)
-    world._chunkIDsToMeshFirst.remove(id)
+
+    world._storage.storeChunkByIndexes(i, j, k, null)
+    world._chunksKnown.remove(i, j, k)
+    world._chunksToMesh.remove(i, j, k)
+    world._chunksToMeshFirst.remove(i, j, k)
 }
 
 
@@ -667,14 +617,14 @@ function queueChunkForRemesh(world, chunk) {
     if (nc < limit) return
     chunk._terrainDirty = true
     var queue = (nc === 26) ?
-        world._chunkIDsToMeshFirst : world._chunkIDsToMesh
-    queue.add(chunk.id)
+        world._chunksToMeshFirst : world._chunksToMesh
+    queue.add(chunk.i, chunk.j, chunk.k)
 }
 
 
 function doChunkRemesh(world, chunk) {
-    world._chunkIDsToMesh.remove(chunk.id)
-    world._chunkIDsToMeshFirst.remove(chunk.id)
+    world._chunksToMesh.remove(chunk.i, chunk.j, chunk.k)
+    world._chunksToMeshFirst.remove(chunk.i, chunk.j, chunk.k)
     chunk.updateMeshes()
     profile_queues_hook('mesh')
 }
@@ -701,12 +651,11 @@ function doChunkRemesh(world, chunk) {
 */
 
 
-function sortIDListByDistanceFrom(list, i, j, k) {
-    list.sort(id => {
-        var pos = parseChunkID(id)
-        var dx = pos[0] - i
-        var dy = pos[1] - j
-        var dz = pos[2] - k
+function sortQueueByDistanceFrom(queue, i, j, k) {
+    queue.sortByDistance(loc => {
+        var dx = loc[0] - i
+        var dy = loc[1] - j
+        var dz = loc[2] - k
         // bias towards keeping verticals together for now
         return (dx * dx + dz * dz) + Math.abs(dy)
     })
@@ -719,8 +668,7 @@ function updateNeighborsOfChunk(world, ci, cj, ck, chunk) {
         for (var j = -1; j <= 1; j++) {
             for (var k = -1; k <= 1; k++) {
                 if ((i | j | k) === 0) continue
-                var nid = getChunkID(ci + i, cj + j, ck + k)
-                var neighbor = world._chunkStorage[nid]
+                var neighbor = world._storage.getChunkByIndexes(ci + i, cj + j, ck + k)
                 if (!neighbor) continue
                 if (chunk) {
                     chunk._neighborCount++
@@ -761,11 +709,11 @@ function updateNeighborsOfChunk(world, ci, cj, ck, chunk) {
 
 World.prototype.report = function () {
     console.log('World report - playerChunkLoaded: ', this.playerChunkLoaded)
-    _report(this, '  known:     ', this._chunkIDsKnown.arr, true)
-    _report(this, '  to request:', this._chunkIDsToRequest.arr)
-    _report(this, '  to remove: ', this._chunkIDsToRemove.arr)
-    _report(this, '  creating:  ', this._chunkIDsPending.arr)
-    _report(this, '  to mesh:   ', this._chunkIDsToMesh.arr.concat(this._chunkIDsToMeshFirst.arr))
+    _report(this, '  known:     ', this._chunksKnown.arr, true)
+    _report(this, '  to request:', this._chunksToRequest.arr)
+    _report(this, '  to remove: ', this._chunksToRemove.arr)
+    _report(this, '  creating:  ', this._chunksPending.arr)
+    _report(this, '  to mesh:   ', this._chunksToMesh.arr.concat(this._chunksToMeshFirst.arr))
 }
 
 function _report(world, name, arr, ext) {
@@ -774,8 +722,8 @@ function _report(world, name, arr, ext) {
         exist = 0,
         surrounded = 0,
         remeshes = []
-    arr.forEach(id => {
-        var chunk = world._chunkStorage[id]
+    arr.forEach(loc => {
+        var chunk = world._storage.getChunkByIndexes(loc[0], loc[1], loc[2])
         if (!chunk) return
         exist++
         remeshes.push(chunk._timesMeshed)
@@ -801,10 +749,9 @@ function _report(world, name, arr, ext) {
 
 
 import { makeProfileHook } from './util'
-var profile_hook = (PROFILE) ?
-    makeProfileHook(100, 'world ticks:') : () => { }
-var profile_queues_hook = () => { }
-if (PROFILE_QUEUES) profile_queues_hook = ((every) => {
+var profile_hook = makeProfileHook(PROFILE_EVERY, 'world ticks:', 1)
+var profile_queues_hook = ((every) => {
+    if (!(every > 0)) return () => { }
     var iter = 0
     var counts = {}
     var queues = {}
@@ -812,11 +759,11 @@ if (PROFILE_QUEUES) profile_queues_hook = ((every) => {
     return function profile_queues_hook(state, world) {
         if (state === 'start') return
         if (state !== 'end') return counts[state] = (counts[state] || 0) + 1
-        queues.toreq = (queues.toreq || 0) + world._chunkIDsToRequest.count()
-        queues.toget = (queues.toget || 0) + world._chunkIDsPending.count()
-        queues.tomesh = (queues.tomesh || 0) + world._chunkIDsToMesh.count() + world._chunkIDsToMeshFirst.count()
-        queues.tomesh1 = (queues.tomesh1 || 0) + world._chunkIDsToMeshFirst.count()
-        queues.torem = (queues.torem || 0) + world._chunkIDsToRemove.count()
+        queues.toreq = (queues.toreq || 0) + world._chunksToRequest.count()
+        queues.toget = (queues.toget || 0) + world._chunksPending.count()
+        queues.tomesh = (queues.tomesh || 0) + world._chunksToMesh.count() + world._chunksToMeshFirst.count()
+        queues.tomesh1 = (queues.tomesh1 || 0) + world._chunksToMeshFirst.count()
+        queues.torem = (queues.torem || 0) + world._chunksToRemove.count()
         if (++iter < every) return
         var t = performance.now(), dt = t - started
         var res = {}
@@ -829,10 +776,10 @@ if (PROFILE_QUEUES) profile_queues_hook = ((every) => {
             res[k] = ('' + num).padStart(3)
         })
         console.log('chunk flow: ',
-            `${res.toreq}-> ${res.request} req/s  `,
-            `${res.toget}-> ${res.receive} got/s  `,
-            `${(res.tomesh)}-> ${res.mesh} mesh/s  `,
-            `${res.torem}-> ${res.dispose} rem/s  `,
+            `${res.toreq}-> ${res.request || 0} req/s  `,
+            `${res.toget}-> ${res.receive || 0} got/s  `,
+            `${(res.tomesh)}-> ${res.mesh || 0} mesh/s  `,
+            `${res.torem}-> ${res.dispose || 0} rem/s  `,
             `(meshFirst: ${res.tomesh1.trim()})`,
         )
         iter = 0
@@ -840,4 +787,4 @@ if (PROFILE_QUEUES) profile_queues_hook = ((every) => {
         queues = {}
         started = performance.now()
     }
-})(100)
+})(PROFILE_QUEUES_EVERY)
