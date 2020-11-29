@@ -19,6 +19,11 @@ The easiest way to start building a game with `noa` is to clone the [examples](h
 To hack on the `noa` engine itself, you'll want to clone this repo alongside your game content, and make the latter depend on the former with a local file dependency (i.e. `file:../noa` in `package.json`). Note however that webpack is picky about this - see the [examples readme](https://github.com/andyhall/noa-examples) for details.
 
 
+## Size
+
+Built in production mode, `noa` is around ~160kb unzipped and its peer dependency `babylon.js` is ~900kb. When bundled together and zipped they total ~250kb.
+
+
 ## Docs
 
 See the [API reference](doc/API.md) for an overview of engine classes and methods.
@@ -32,7 +37,7 @@ This library is under active development and contributions are welcome!
 **Please submit any PRs against the `develop` branch**, and for nontrivial new 
 features it's probably best to open a discussion issue first.
 
-For code style/formatting, the repo includes config files for [eslint](https://eslint.org/) and [js-beautify](https://github.com/beautify-web/js-beautify), which are both dev dependencies. If you use VSCode for editing, here are the extensions I use to run them automatically: [beautify](https://marketplace.visualstudio.com/items?itemName=HookyQR.beautify), [eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint).
+For code style/formatting, the repo includes config files for [eslint](https://eslint.org/) and [js-beautify](https://github.com/beautify-web/js-beautify), which are both dev dependencies. Personally, I edit in VSCode with the [eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) extension, and use the built-in autoformatter. If you send PRs, please try to be sorta-kinda consistent with what's already there.
 
 
 
@@ -42,6 +47,9 @@ See [history.md](doc/history.md) for changes and migration info from each versio
 
 Recent changes:
 
+ * `v0.30`: 
+   * slightly more specific babylon imports, for better tree-shaking
+   * improves performance of voxel ID lookups and worldgen overhead
  * `v0.29`: 
    * maximum voxel ID is now `65535`
    * adds option `worldGenWhilePaused`
@@ -49,8 +57,7 @@ Recent changes:
    * performance and bug fixes
  * `v0.28`: 
    * improves swapping between world data sets (see `noa.worldName`).
-   * Removes duplicated voxel padding in each chunk (this means world generation 
- no longer needs to be deterministic!)
+   * Removes duplicated voxel padding in each chunk (this means world generation no longer needs to be deterministic!)
  * `v0.27`: adds world origin rebasing - see [positions.md](doc/positions.md)
 
 

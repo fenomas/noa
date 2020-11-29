@@ -3,6 +3,7 @@
 
 This is a summary of new features and breaking changes in recent `noa` versions.
 
+ * [0.30.0](#0300)
  * [0.29.0](#0290)
  * [0.28.0](#0280)
  * [0.27.0](#0270)
@@ -17,6 +18,11 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 
 ----
+
+### 0.30.0
+
+   * Removed the `id` property on `Chunk` objects. Shouldn't realistically affect any game clients, but if you were using it for some reason, use `requestID` instead.
+   * Made several of the core `babylon` imports more specific, which could cause errors if your client code is using Babylon modules without importing them. If you're using any mesh builders (e.g. `Mesh.CreateBox()`), make sure to import the necessary module (`import '@babylonjs/core/Meshes/Builders/boxBuilder'`).
 
 ### 0.29.0
 
