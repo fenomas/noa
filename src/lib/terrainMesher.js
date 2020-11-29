@@ -218,7 +218,7 @@ function MeshBuilder(noa) {
 
         // merge sole remaining submesh instance into a babylon mesh
         var merged = meshDataList[0]
-        var name = 'chunk_' + chunk.id
+        var name = 'chunk_' + chunk.requestID
         var mats = results.matIDs.map(id => getTerrainMaterial(id, ignoreMaterials))
         var mesh = buildMeshFromSubmesh(merged, name, mats, results.vertices, results.indices)
 
