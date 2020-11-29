@@ -8,10 +8,12 @@ import { OctreeBlock } from '@babylonjs/core/Culling/Octrees/octreeBlock'
 import { Engine } from '@babylonjs/core/Engines/engine'
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight'
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
-import { Vector3, Color3 } from '@babylonjs/core/Maths/math'
+import { Color3 } from '@babylonjs/core/Maths/math.color'
+import { Vector3 } from '@babylonjs/core/Maths/math.vector'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import { OctreeSceneComponent } from '@babylonjs/core/Culling/Octrees/'
-import '@babylonjs/core/Meshes/meshBuilder'
+import '@babylonjs/core/Meshes/Builders/planeBuilder'
+import '@babylonjs/core/Meshes/Builders/linesBuilder'
 
 
 

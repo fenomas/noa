@@ -5,7 +5,6 @@ import { SubMesh } from '@babylonjs/core/Meshes/subMesh'
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData'
 import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial'
 import { Texture } from '@babylonjs/core/Materials/Textures/texture'
-import '@babylonjs/core/Meshes/meshBuilder'
 
 import { copyNdarrayContents } from './util'
 

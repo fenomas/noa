@@ -1,8 +1,10 @@
 
+import { Color3 } from '@babylonjs/core/Maths/math.color'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
-import { Color3 } from '@babylonjs/core/Maths/math'
-var vec3 = require('gl-vec3')
+import '@babylonjs/core/Meshes/Builders/discBuilder'
+import '@babylonjs/core/Meshes/instancedMesh'
 
+var vec3 = require('gl-vec3')
 
 export default function (noa, dist) {
 
@@ -93,7 +95,7 @@ function updateShadowHeight(noa, posDat, physDat, mesh, size, shadowDist, camPos
     }
 
     // round Y pos and offset upwards slightly to avoid z-fighting
-    localY = Math.round(localY) 
+    localY = Math.round(localY)
     vec3.copy(shadowPos, posDat._localPosition)
     shadowPos[1] = localY
     var sqdist = vec3.squaredDistance(camPos, shadowPos)
