@@ -78,7 +78,6 @@ function Rendering(noa, opts, canvas) {
     this.aoVals = opts.AOmultipliers
     this.revAoVal = opts.reverseAOmultiplier
     this.meshingCutoffTime = 6 // ms
-    this._resizeDebounce = 250 // ms
 
     // set up babylon scene
     initScene(this, canvas, opts)
@@ -163,7 +162,7 @@ Rendering.prototype.tick = function (dt) {
 
 
 
-Rendering.prototype.render = function (dt) {
+Rendering.prototype.render = function () {
     profile_hook('start')
     updateCameraForRender(this)
     profile_hook('updateCamera')
@@ -180,15 +179,9 @@ Rendering.prototype.render = function (dt) {
 
 
 Rendering.prototype.resize = function (e) {
-    if (!pendingResize) {
-        pendingResize = true
-        setTimeout(() => {
-            this._engine.resize()
-            pendingResize = false
-        }, this._resizeDebounce)
-    }
+    this._engine.resize()
+    if (this.noa._paused) this._scene.render()
 }
-var pendingResize = false
 
 
 

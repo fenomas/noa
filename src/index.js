@@ -39,10 +39,12 @@ var defaults = {
     playerWidth: 0.6,
     playerStart: [0, 10, 0],
     playerAutoStep: false,
-    tickRate: 33, // ms per tick - not ticks per second
+    tickRate: 30,           // ticks per second
+    maxRenderRate: 0,       // max FPS, 0 for uncapped 
     blockTestDistance: 10,
     stickyPointerLock: true,
     dragCameraOutsidePointerLock: true,
+    stickyFullscreen: false,
     skipDefaultHighlighting: false,
     originRebaseDistance: 25,
 }
@@ -60,10 +62,12 @@ var defaults = {
  *     playerWidth: 0.6,
  *     playerStart: [0, 10, 0],
  *     playerAutoStep: false,
- *     tickRate: 33, // ms per tick - not ticks per second
+ *     tickRate: 30,           // ticks per second
+ *     maxRenderRate: 0,       // max FPS, 0 for uncapped 
  *     blockTestDistance: 10,
  *     stickyPointerLock: true,
  *     dragCameraOutsidePointerLock: true,
+ *     stickyFullscreen: false,
  *     skipDefaultHighlighting: false,
  *     originRebaseDistance: 25,
  * }
@@ -95,8 +99,6 @@ function Engine(opts) {
     this.version = require('../package.json').version
 
     opts = Object.assign({}, defaults, opts)
-    this._tickRate = opts.tickRate
-    this._lastRenderTime = 0
     this._paused = false
     this._dragOutsideLock = opts.dragCameraOutsidePointerLock
     var self = this
@@ -126,6 +128,13 @@ function Engine(opts) {
      * @type {Container}
      */
     this.container = createContainer(this, opts)
+    Object.defineProperty(this, 'tickRate', {
+        get: () => this.container._shell.tickRate
+    })
+    Object.defineProperty(this, 'maxRenderRate', {
+        get: () => this.container._shell.maxRenderRate,
+        set: (v) => { this.container._shell.maxRenderRate = v || 0 },
+    })
 
     /**
      * inputs manager - abstracts key/mouse input
@@ -276,14 +285,15 @@ Engine.prototype = Object.create(EventEmitter.prototype)
  * where dt is the tick rate in ms (default 16.6)
  */
 
-Engine.prototype.tick = function () {
+
+Engine.prototype.tick = function (dt) {
+    // note dt is a fixed value, not an observed delay
     if (this._paused) {
         if (this.world.worldGenWhilePaused) this.world.tick(dt)
         return
     }
     profile_hook('start')
     checkWorldOffset(this)
-    var dt = this._tickRate // fixed timesteps!
     this.world.tick(dt) // chunk creation/removal
     profile_hook('world')
     if (!this.world.playerChunkLoaded) {
@@ -316,14 +326,13 @@ Engine.prototype.tick = function () {
  * where dt is the time in ms *since the last tick*.
  */
 
-Engine.prototype.render = function (framePart) {
+Engine.prototype.render = function (framePart, dt) {
+    // note: framePart is how far we are into the current tick
+    // dt is the *actual* time (ms) since last render, for
+    // animating things that aren't tied to game tick rate
+
     // frame position - for rendering movement between ticks
     this.positionInCurrentTick = framePart
-    // dt - actual time difference (in ms), for animating things
-    // that aren't tied to game tick rate
-    var t = performance.now()
-    var dt = t - (this._lastRenderTime || (t - 16))
-    this._lastRenderTime = t
 
     // when paused, just optionally ping worldgen, then exit
     if (this._paused) {
@@ -656,6 +665,9 @@ function deprecateStuff(noa) {
     dep(noa.world, '_maxProcessingPerRender', 'use `maxProcessingPerRender` (no "_")')
     ver = '0.29'
     dep(noa, '_constants', 'removed, voxel IDs are no longer packed with bit flags')
+    ver = '0.30'
+    dep(noa, '_tickRate', 'tickRate is now at `noa.tickRate`')
+    dep(noa.container, '_tickRate', 'tickRate is now at `noa.tickRate`')
 }
 
 

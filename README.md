@@ -48,7 +48,11 @@ See [history.md](doc/history.md) for changes and migration info from each versio
 Recent changes:
 
  * `v0.30`: 
-   * slightly more specific babylon imports, for better tree-shaking
+   * core option `tickRate` is now in **ticks per second**, not ms per tick
+   * core option `stickyFullscreen` added
+   * adds `noa.tickRate` - read only
+   * adds `noa.maxRenderRate` - read/write, set to `0` for no cap
+   * more specific babylon imports, for better tree-shaking
    * improves performance of voxel ID lookups and worldgen overhead
  * `v0.29`: 
    * maximum voxel ID is now `65535`
