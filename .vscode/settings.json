@@ -9,5 +9,8 @@
     "editor.defaultFormatter": "HookyQR.beautify",
 
     "eslint.enable": true,
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
     // "javascript.format.enable": false,
 }
