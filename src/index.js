@@ -351,7 +351,7 @@ Engine.prototype.render = function (framePart, dt) {
     profile_hook_render('init')
 
     // brief run through meshing queue
-    this.world.render(dt)
+    this.world.render()
     profile_hook_render('meshing')
 
     // entity render systems
