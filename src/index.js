@@ -494,7 +494,7 @@ Engine.prototype.getBlock = function (x, y, z) {
     }
 }
 
-/** @param x,y,z */
+/** @param id,x,y,z */
 Engine.prototype.setBlock = function (id, x, y, z) {
     // skips the entity collision check
     if (x.length) {

@@ -169,7 +169,7 @@ Extends: `EventEmitter`
     * [.localToGlobal()](#Noa+localToGlobal)
     * [.setPaused(paused)](#Noa+setPaused)
     * [.getBlock(x,y,z)](#Noa+getBlock)
-    * [.setBlock(x,y,z)](#Noa+setBlock)
+    * [.setBlock(id,x,y,z)](#Noa+setBlock)
     * [.addBlock(id,x,y,z)](#Noa+addBlock)
     * [.pick(pos, vec, dist, blockTestFunction)](#Noa+pick)
     * [._localPick(pos, vec, dist, blockTestFunction)](#Noa+_localPick)
@@ -191,10 +191,12 @@ var opts = {
     playerWidth: 0.6,
     playerStart: [0, 10, 0],
     playerAutoStep: false,
-    tickRate: 33, // ms per tick - not ticks per second
+    tickRate: 30,           // ticks per second
+    maxRenderRate: 0,       // max FPS, 0 for uncapped 
     blockTestDistance: 10,
     stickyPointerLock: true,
     dragCameraOutsidePointerLock: true,
+    stickyFullscreen: false,
     skipDefaultHighlighting: false,
     originRebaseDistance: 25,
 }
@@ -386,10 +388,10 @@ Pausing the engine will also stop render/tick events, etc.
 
 <a name="Noa+setBlock"></a>
 
-## noa.setBlock(x,y,z)
+## noa.setBlock(id,x,y,z)
 **Params**
 
-- x,y,z
+- id,x,y,z
 
 
 ----
@@ -628,7 +630,7 @@ Wraps `game-shell` module
 and manages HTML container, canvas, etc.
 
 **Emits**:  
-- `event:DOMready`
+- `DOMready, gainedPointerLock,event: PointerLock`
 
 ----
 
@@ -920,9 +922,8 @@ Extends `EventEmitter`
     * [.getBlockOpacity(x,y,z)](#World+getBlockOpacity)
     * [.getBlockFluidity(x,y,z)](#World+getBlockFluidity)
     * [.getBlockProperties(x,y,z)](#World+getBlockProperties)
-    * [.getBlockObjectMesh(x,y,z)](#World+getBlockObjectMesh)
-    * [.setBlockID(x,y,z)](#World+setBlockID)
-    * [.isBoxUnobstructed(x,y,z)](#World+isBoxUnobstructed)
+    * [.setBlockID(val,x,y,z)](#World+setBlockID)
+    * [.isBoxUnobstructed(box)](#World+isBoxUnobstructed)
     * [.setChunkData(id, array, userData)](#World+setChunkData)
     * [.invalidateVoxelsInAABB()](#World+invalidateVoxelsInAABB)
     * [.manuallyLoadChunk(x,)](#World+manuallyLoadChunk)
@@ -981,32 +982,22 @@ Extends `EventEmitter`
 
 ----
 
-<a name="World+getBlockObjectMesh"></a>
-
-## noa.world.getBlockObjectMesh(x,y,z)
-**Params**
-
-- x,y,z
-
-
-----
-
 <a name="World+setBlockID"></a>
 
-## noa.world.setBlockID(x,y,z)
+## noa.world.setBlockID(val,x,y,z)
 **Params**
 
-- x,y,z
+- val,x,y,z
 
 
 ----
 
 <a name="World+isBoxUnobstructed"></a>
 
-## noa.world.isBoxUnobstructed(x,y,z)
+## noa.world.isBoxUnobstructed(box)
 **Params**
 
-- x,y,z
+- box
 
 
 ----
