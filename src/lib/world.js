@@ -436,8 +436,12 @@ function findDistantChunksToRemove(world, ci, cj, ck) {
 
 // invalidate chunks overlapping the given AABB
 function invalidateChunksInBox(world, box) {
-    var min = box.base.map(n => Math.floor(world._storage.worldCoordToChunkIndex(n)))
-    var max = box.max.map(n => Math.floor(world._storage.worldCoordToChunkIndex(n)))
+    var min = world._coordsToChunkIndexes(box.base[0], box.base[1], box.base[2])
+    var max = world._coordsToChunkIndexes(box.max[0], box.max[1], box.max[2])
+    for (var i = 0; i < 3; i++) {
+        if (!Number.isFinite(box.base[i])) min[i] = box.base[i]
+        if (!Number.isFinite(box.max[i])) max[i] = box.max[i]
+    }
     world._chunksKnown.forEach(loc => {
         for (var i = 0; i < 3; i++) {
             if (loc[i] < min[i] || loc[i] >= max[i]) return
