@@ -446,8 +446,10 @@ function invalidateChunksInBox(world, box) {
         for (var i = 0; i < 3; i++) {
             if (loc[i] < min[i] || loc[i] >= max[i]) return
         }
-        if (world._chunksToRemove.includes(loc[0], loc[1], loc[2])) return
-        world._chunksToRequest.add(loc[0], loc[1], loc[2])
+        world._chunksToRemove.add(loc[0], loc[1], loc[2])
+        world._chunksToMesh.remove(loc[0], loc[1], loc[2])
+        world._chunksToRequest.remove(loc[0], loc[1], loc[2])
+        world._chunksToMeshFirst.remove(loc[0], loc[1], loc[2])
     })
 }
 
