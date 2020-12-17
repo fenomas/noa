@@ -18,7 +18,6 @@ import createPhysics from './lib/physics'
 import createCamera from './lib/camera'
 import createRegistry from './lib/registry'
 import createEntities from './lib/entities'
-import fog from './lib/fog'
 
 
 
@@ -48,6 +47,11 @@ var defaults = {
     stickyFullscreen: false,
     skipDefaultHighlighting: false,
     originRebaseDistance: 25,
+    fogMode: 2,
+    fogDensity: 0.01,
+    fogStart: 40.0,
+    fogEnd: 40.0,
+    fogColor: [0.9, 0.9, 0.85],
 }
 
 
@@ -160,7 +164,6 @@ function Engine(opts) {
      * @type {Rendering}
      */
     this.rendering = createRendering(this, opts, this.container.canvas)
-    this.fog = fog(this,opts)
 
     /**
      * physics engine - solves collisions, properties, etc.
@@ -265,6 +268,15 @@ function Engine(opts) {
 
     // add hooks to throw helpful errors when using deprecated methods
     deprecateStuff(this)
+
+    //fog
+    var BABYLON = require("@babylonjs/core/Legacy/legacy")
+    var scene = this.rendering.getScene()
+    scene.fogMode = opts.fogMode
+    scene.fogDensity = opts.fogDensity
+    scene.fogStart = opts.fogStart
+    scene.fogEnd = opts.fogEnd
+    scene.fogColor = new BABYLON.Color3(opts.fogColor[0],opts.fogColor[1],opts.fogColor[2])
 }
 
 Engine.prototype = Object.create(EventEmitter.prototype)
