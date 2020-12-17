@@ -18,6 +18,7 @@ import createPhysics from './lib/physics'
 import createCamera from './lib/camera'
 import createRegistry from './lib/registry'
 import createEntities from './lib/entities'
+import fog from './lib/fog'
 
 
 
