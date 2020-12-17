@@ -160,6 +160,7 @@ function Engine(opts) {
      * @type {Rendering}
      */
     this.rendering = createRendering(this, opts, this.container.canvas)
+    this.fog = fog(this,opts)
 
     /**
      * physics engine - solves collisions, properties, etc.
