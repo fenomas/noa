@@ -29,18 +29,22 @@ export default function (noa) {
                 var moveState = ents.getMovement(state.__id)
                 setMovementState(moveState, inputState, camHeading)
             })
-        }
+        },
 
+        renderSystem: function rotationProcessor(dt, states) {
+            for (const state of states) {
+                var moveState = noa.ents.getMovement(state.__id)
+                moveState.camHeading = noa.camera.heading
+            }
+        }
     }
 }
 
-
-
-function setMovementState(state, inputs, camHeading) {
+export function setMovementState(state, inputs, camHeading) {
     state.jumping = !!inputs.jump
 
-    var fb = inputs.forward ? (inputs.backward ? 0 : 1) : (inputs.backward ? -1 : 0)
-    var rl = inputs.right ? (inputs.left ? 0 : 1) : (inputs.left ? -1 : 0)
+    var fb = state.fb = inputs.forward ? (inputs.backward ? 0 : 1) : (inputs.backward ? -1 : 0)
+    var rl = state.rl = inputs.right ? (inputs.left ? 0 : 1) : (inputs.left ? -1 : 0)
 
     if ((fb | rl) === 0) {
         state.running = false
@@ -56,5 +60,4 @@ function setMovementState(state, inputs, camHeading) {
         }
         state.heading = camHeading
     }
-
 }

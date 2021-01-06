@@ -21,6 +21,9 @@ export default function (noa) {
             heading: 0, // radians
             running: false,
             jumping: false,
+            fb: 0,
+            rl: 0,
+            camHeading: 0,
 
             // options:
             maxSpeed: 10,
