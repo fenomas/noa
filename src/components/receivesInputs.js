@@ -20,7 +20,7 @@ export default function (noa) {
 
         onRemove: null,
 
-        system: function inputProcessor(dt, states) {
+        renderSystem: function inputProcessor(dt, states) {
             var ents = noa.entities
             var inputState = noa.inputs.state
             var camHeading = noa.camera.heading
@@ -31,12 +31,12 @@ export default function (noa) {
             })
         },
 
-        renderSystem: function rotationProcessor(dt, states) {
-            for (const state of states) {
-                var moveState = noa.ents.getMovement(state.__id)
-                moveState.camHeading = noa.camera.heading
-            }
-        }
+        // renderSystem: function rotationProcessor(dt, states) {
+        //     for (const state of states) {
+        //         var moveState = noa.ents.getMovement(state.__id)
+        //         moveState.camHeading = noa.camera.heading
+        //     }
+        // }
     }
 }
 

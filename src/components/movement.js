@@ -23,7 +23,7 @@ export default function (noa) {
             jumping: false,
             fb: 0,
             rl: 0,
-            camHeading: 0,
+            // camHeading: 0,
 
             // options:
             maxSpeed: 10,
