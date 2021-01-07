@@ -21,22 +21,22 @@ export default function (noa) {
             heading: 0, // radians
             running: false,
             jumping: false,
-            fb: 0,
-            rl: 0,
+            // fb: 0,
+            // rl: 0,
             // camHeading: 0,
 
             // options:
             maxSpeed: 10,
-            moveForce: 30,
-            responsiveness: 15,
+            moveForce: 50,
+            responsiveness: 10,
             runningFriction: 0,
-            standingFriction: 2,
+            standingFriction: 5,
 
             airMoveMult: 0.5,
-            jumpImpulse: 10,
-            jumpForce: 12,
+            jumpImpulse: 8,
+            jumpForce: 0,
             jumpTime: 500, // ms
-            airJumps: 1,
+            airJumps: 0,
 
             // internal state
             _jumpCount: 0,
@@ -87,7 +87,7 @@ function applyMovementPhysics(dt, state, body) {
         if (state._isJumping) { // continue previous jump
             if (state._currjumptime > 0) {
                 var jf = state.jumpForce
-                if (state._currjumptime < dt) jf *= state._currjumptime / dt
+                if (state._currjumptime < dt) { jf *= state._currjumptime / dt; }
                 body.applyForce([0, jf, 0])
                 state._currjumptime -= dt
             }

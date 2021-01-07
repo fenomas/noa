@@ -191,7 +191,7 @@ function Engine(opts) {
     // movement component - applies movement forces
     // todo: populate movement settings from options
     var moveOpts = {
-        airJumps: 1
+        // airJumps: 1
     }
     ents.addComponent(this.playerEntity, ents.names.movement, moveOpts)
 
