@@ -3,6 +3,7 @@
     "version": "0.28.0",
     "description": "Experimental voxel game engine",
     "main": "src/index.js",
+    "type": "module",
     "files": [
         "/src"
     ],
@@ -25,6 +26,8 @@
         "game-shell": "andyhall/game-shell",
         "gl-vec3": "^1.1.3",
         "ndarray": "^1.0.16",
+        "node-require-context": "^1.0.0",
+        "require-context": "^1.1.0",
         "voxel-aabb-sweep": "^0.5.0",
         "voxel-physics-engine": "^0.10.0"
     },

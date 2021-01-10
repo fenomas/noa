@@ -1,11 +1,44 @@
 
-var vec3 = require('gl-vec3')
-var EntComp = require('ent-comp')
+import { updatePositionExtents } from '../components/position.js'
+import { setPhysicsFromPosition } from '../components/physics.js'
+
+import vec3 from 'gl-vec3'
+import EntComp from 'ent-comp'
 // var EntComp = require('../../../../npm-modules/ent-comp')
 
+// import collideEntities from '../components/collideEntities.js'
+// import collideTerrain from '../components/collideTerrain.js'
+// import fadeOnZoom from '../components/fadeOnZoom.js'
+// import followsEntity from '../components/followsEntity.js'
+// import mesh from '../components/mesh.js'
+import movement from '../components/movement.js'
+import physics from '../components/physics.js'
+import position from '../components/position.js'
+// import receivesInputs from '../components/receivesInputs.js'
+// import shadow from '../components/shadow.js'
+// import smoothCamera from '../components/smoothCamera.js'
+const components = {
+    // 'collideEntities': {fn: collideEntities},
+    // 'collideTerrain': {fn: collideTerrain},
+    // 'fadeOnZoom': {fn: fadeOnZoom},
+    // 'followsEntity': {fn: followsEntity},
+    // 'mesh': {fn: mesh},
+    'movement': {fn: movement, server: true},
+    'physics': {fn: physics, server: true},
+    'position': {fn: position, server: true},
+    // 'receivesInputs': {fn: receivesInputs},
+    // 'shadow': {fn: shadow},
+    // 'smoothCamera': {fn: smoothCamera},
+    'receivesInputs': {},
+    'shadow': {},
+    'smoothCamera': {},
+    'collideEntities': {},
+    'collideTerrain': {},
+    'fadeOnZoom': {},
+    'followsEntity': {},
+    'mesh': {},
+}
 
-import { updatePositionExtents } from '../components/position'
-import { setPhysicsFromPosition } from '../components/physics'
 
 
 
@@ -37,32 +70,114 @@ function Entities(noa, opts) {
     EntComp.call(this)
 
     this.noa = noa
-    opts = Object.assign({}, defaults, opts)
+    this.opts = Object.assign({}, defaults, opts)
 
     // properties
     /** Hash containing the component names of built-in components. */
     this.names = {}
 
-    // optional arguments to supply to component creation functions
-    var componentArgs = {
-        'shadow': opts.shadowDistance,
-    }
+
 
     // Bundler magic to import everything in the ../components directory
     // each component module exports a default function: (noa) => compDefinition
-    var reqContext = require.context('../components/', false, /\.js$/)
+    // Only imports everything on client side (where require.context is defined)
+
+
+
+    // let myRequireContext
+    // if (typeof fs.statSync !== "function") {
+    //     const reqContext = require.context('../components/', false, /\.js$/)
+    //     console.log(reqContext.keys())
+    //     reqContext.keys().forEach(name => {
+    //         // convert name ('./foo.js') to bare name ('foo')
+    //         var bareName = /\.\/(.*)\.js/.exec(name)[1]
+    //         var arg = componentArgs[bareName] || undefined
+    //         var compFn = reqContext(name)
+    //         if (compFn.default) compFn = compFn.default
+    //         var compDef = compFn(noa, arg)
+    //         var comp = this.createComponent(compDef)
+    //         this.names[bareName] = comp
+    //     })
+    // }
+    // else {
+    //     const reqContext = requireContext('../../src/components/', false, /\.js$/)
+    //     console.log(reqContext.keys())
+    //     reqContext.keys().forEach(name => {
+    //         console.log("hello", name, /\.\/(.*)\.js/.exec(name))
+    //         // convert name ('./foo.js') to bare name ('foo')
+    //         var bareName = /\.\/(.*)\.js/.exec(name)[1]
+    //         var arg = componentArgs[bareName] || undefined
+    //         var compFn = reqContext(name)
+    //         if (compFn.default) compFn = compFn.default
+    //         var compDef = compFn(noa, arg)
+    //         var comp = this.createComponent(compDef)
+    //         this.names[bareName] = comp
+    //     })
+    // }
+
+
+
+
+
+
+}
+
+// inherit from EntComp
+Entities.prototype = Object.create(EntComp.prototype)
+Entities.prototype.constructor = Entities
+
+/**
+ * 
+ * Create components needed client-side. Call assignFieldsAndHelpers() directly after.
+ * 
+ */
+Entities.prototype.createComponentsClient = function() {
+    // optional arguments to supply to component creation functions
+    var componentArgs = {
+        'shadow': this.opts.shadowDistance,
+    }
+    const reqContext = require.context('../components/', false, /\.js$/)
     reqContext.keys().forEach(name => {
         // convert name ('./foo.js') to bare name ('foo')
         var bareName = /\.\/(.*)\.js/.exec(name)[1]
         var arg = componentArgs[bareName] || undefined
         var compFn = reqContext(name)
         if (compFn.default) compFn = compFn.default
-        var compDef = compFn(noa, arg)
+        var compDef = compFn(this.noa, arg)
         var comp = this.createComponent(compDef)
         this.names[bareName] = comp
     })
+}
+
+/**
+ * 
+ * Create components needed server-side. Call assignFieldsAndHelpers() directly after.
+ * 
+ */
+Entities.prototype.createComponentsServer = function() {
+    // optional arguments to supply to component creation functions
+    var componentArgs = {
+        'shadow': this.opts.shadowDistance,
+    }
+    for (const comp in components) {
+        if (components[comp].fn) {
+            this.createComponent(components[comp].fn(this.noa, componentArgs[comp]))
+        }
+        else {
+            this.createComponent({name: comp}) // polyfill
+        }
+        this.names[comp] = comp
+    }
+    console.log(this.names)
+}
 
 
+/**
+ * 
+ * Call directly after either calling either createComponentsClient or createComponentsServer
+ * 
+ */
+Entities.prototype.assignFieldsAndHelpers = function (noa) {
     // decorate the entities object with accessor functions
     /** @param id */
     this.isPlayer = function (id) { return id === noa.playerEntity }
@@ -151,12 +266,6 @@ function Entities(noa, opts) {
     // pairwise collideEntities event - this is for client to override
     this.onPairwiseEntityCollision = function (id1, id2) {}
 }
-
-// inherit from EntComp
-Entities.prototype = Object.create(EntComp.prototype)
-Entities.prototype.constructor = Entities
-
-
 
 
 /*
@@ -247,12 +356,12 @@ Entities.prototype.getEntitiesInAABB = function (box, withComponent) {
  * @param height..
  */
 Entities.prototype.add = function (position, width, height, // required
-    mesh, meshOffset, doPhysics, shadow) {
+    mesh, meshOffset, doPhysics, shadow, customEId) {
 
     var self = this
 
     // new entity
-    var eid = this.createEntity()
+    var eid = customEId || this.createEntity()
 
     // position component
     this.addComponent(eid, this.names.position, {

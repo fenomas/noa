@@ -165,6 +165,9 @@ function Engine(opts) {
     this.ents = this.entities
     var ents = this.ents
 
+    ents.createComponentsClient()
+    ents.assignFieldsAndHelpers(this)
+
     /** Entity id for the player entity */
     this.playerEntity = ents.add(
         opts.playerStart, // starting location
