@@ -75,51 +75,6 @@ export function Entities(noa, opts) {
     // properties
     /** Hash containing the component names of built-in components. */
     this.names = {}
-
-
-
-    // Bundler magic to import everything in the ../components directory
-    // each component module exports a default function: (noa) => compDefinition
-    // Only imports everything on client side (where require.context is defined)
-
-
-
-    // let myRequireContext
-    // if (typeof fs.statSync !== "function") {
-    //     const reqContext = require.context('../components/', false, /\.js$/)
-    //     console.log(reqContext.keys())
-    //     reqContext.keys().forEach(name => {
-    //         // convert name ('./foo.js') to bare name ('foo')
-    //         var bareName = /\.\/(.*)\.js/.exec(name)[1]
-    //         var arg = componentArgs[bareName] || undefined
-    //         var compFn = reqContext(name)
-    //         if (compFn.default) compFn = compFn.default
-    //         var compDef = compFn(noa, arg)
-    //         var comp = this.createComponent(compDef)
-    //         this.names[bareName] = comp
-    //     })
-    // }
-    // else {
-    //     const reqContext = requireContext('../../src/components/', false, /\.js$/)
-    //     console.log(reqContext.keys())
-    //     reqContext.keys().forEach(name => {
-    //         console.log("hello", name, /\.\/(.*)\.js/.exec(name))
-    //         // convert name ('./foo.js') to bare name ('foo')
-    //         var bareName = /\.\/(.*)\.js/.exec(name)[1]
-    //         var arg = componentArgs[bareName] || undefined
-    //         var compFn = reqContext(name)
-    //         if (compFn.default) compFn = compFn.default
-    //         var compDef = compFn(noa, arg)
-    //         var comp = this.createComponent(compDef)
-    //         this.names[bareName] = comp
-    //     })
-    // }
-
-
-
-
-
-
 }
 
 // inherit from EntComp
@@ -168,7 +123,6 @@ Entities.prototype.createComponentsServer = function() {
         }
         this.names[comp] = comp
     }
-    console.log(this.names)
 }
 
 
