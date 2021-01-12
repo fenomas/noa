@@ -65,7 +65,7 @@ var defaults = {
  * Expects entity definitions in a specific format - see source `components` folder for examples.
  */
 
-function Entities(noa, opts) {
+export function Entities(noa, opts) {
     // inherit from the ECS library
     EntComp.call(this)
 
