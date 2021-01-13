@@ -65,21 +65,22 @@ var defaults = {
  * Expects entity definitions in a specific format - see source `components` folder for examples.
  */
 
-export function Entities(noa, opts) {
-    // inherit from the ECS library
-    EntComp.call(this)
+export class Entities extends EntComp {
 
-    this.noa = noa
-    this.opts = Object.assign({}, defaults, opts)
-
-    // properties
-    /** Hash containing the component names of built-in components. */
-    this.names = {}
+    constructor(noa, opts) {
+        super()
+        this.noa = noa
+        this.opts = Object.assign({}, defaults, opts)
+    
+        // properties
+        /** Hash containing the component names of built-in components. */
+        this.names = {}
+    }
 }
 
 // inherit from EntComp
-Entities.prototype = Object.create(EntComp.prototype)
-Entities.prototype.constructor = Entities
+// Entities.prototype = Object.create(EntComp.prototype)
+// Entities.prototype.constructor = Entities
 
 /**
  * 
