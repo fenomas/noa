@@ -14,9 +14,37 @@ export default function (noa) {
 
         order: 20,
 
-        state: {},
+        state: {
+            doublePressRunInterval: 500,
 
-        onAdd: null,
+            _lastForwardPress: null
+        },
+
+        onAdd: function registerForwardListener(eid, state) {
+
+
+            noa.inputs.down.on('forward', () => {
+                const moveState = noa.ents.getMovement(eid)
+                const inputState = noa.inputs.state
+
+
+                if (inputState.backward) { // can't start running while also going back!
+                    return
+                }
+
+                // if player also pressed w/forward recently then they start running
+                if (new Date().getTime() - state._lastForwardPress < state.doublePressRunInterval) {
+                    moveState.running = true
+                }
+                state._lastForwardPress = new Date().getTime()
+            })
+
+            noa.inputs.down.on('sprint', () => {
+                const inputState = noa.inputs.state
+                if (inputState.forward && !inputState.backward) {
+                }
+            })
+        },
 
         onRemove: null,
 
@@ -48,10 +76,27 @@ export function setMovementState(state, inputs, camHeading) {
     var fb = inputs.forward ? (inputs.backward ? 0 : 1) : (inputs.backward ? -1 : 0)
     var rl = inputs.right ? (inputs.left ? 0 : 1) : (inputs.left ? -1 : 0)
 
-    if ((fb | rl) === 0) {
+    // player not trying to move forward, so stop running
+    if (fb !== 1) {
         state.running = false
-    } else {
+    }
+    // user is holding the sprint key
+    else if (fb === 1 && inputs.sprint) {
         state.running = true
+    }
+
+    // this is ok - you can be crouching and sprint at same time
+    if (inputs.crouch) {
+        state.crouching = true
+    }
+    else {
+        state.crouching = false
+    }
+
+    if ((fb | rl) === 0) {
+        state.moving = false
+    } else {
+        state.moving = true
         if (fb) {
             if (fb == -1) camHeading += Math.PI
             if (rl) {
