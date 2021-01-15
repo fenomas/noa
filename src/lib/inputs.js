@@ -27,7 +27,7 @@ var defaultBindings = {
         "alt-fire": ["<mouse 3>", "E"],
         "jump": "<space>",
         "sprint": "<shift>",
-        "crouch": ["Z", "<caps-lock>"],
+        "crouch": ["Z", "<caps-lock>", "\\", "C"],
     }
 }
 
