@@ -25,7 +25,7 @@ export default function (noa) {
 
         name: 'position',
 
-        order: 60,
+        order: 41,
 
         state: {
             position: null,

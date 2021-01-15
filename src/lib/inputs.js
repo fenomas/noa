@@ -27,9 +27,31 @@ var defaultBindings = {
         "alt-fire": ["<mouse 3>", "E"],
         "jump": "<space>",
         "sprint": "<shift>",
-        "crouch": "<control>"
+        "crouch": ["Z", "<caps-lock>"],
     }
 }
+
+
+
+//Prevent Ctrl+S (and Ctrl+W for old browsers and Edge)
+document.onkeydown = function (e) {
+    e = e || window.event;//Get event
+
+    var code = e.which || e.keyCode //Get key code
+
+    if (!e.ctrlKey) return;
+
+
+    switch (code) {
+        case 220: 
+        case 83://Block Ctrl+S
+        case 87://Block Ctrl+W -- Not work in Chrome and new Firefox
+            console.log("yee")
+            e.preventDefault()
+            e.stopPropagation()
+            break;
+    }
+};
 
 
 function makeInputs(noa, opts, element) {

@@ -81,10 +81,10 @@ function updateShadowHeight(noa, posDat, physDat, mesh, size, shadowDist, camPos
 
     // local Y ground position - from physics or raycast
     var localY
-    if (physDat && physDat.body.resting[1] < 0) {
-        localY = posDat._localPosition[1]
+    if (physDat && (physDat.body.resting[1] < 0 || Number.isInteger(posDat._renderPosition[1]))) {
+        localY = posDat._renderPosition[1]
     } else {
-        var res = noa._localPick(posDat._localPosition, down, shadowDist)
+        var res = noa._localPick(posDat._renderPosition, down, shadowDist)
         if (!res) {
             mesh.setEnabled(false)
             return
