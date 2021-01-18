@@ -230,7 +230,7 @@ function Engine(opts) {
     if (!opts.skipDefaultHighlighting) {
         // the default listener, defined onto noa in case people want to remove it later
         this.defaultBlockHighlightFunction = (tgt) => {
-            if (!tgt || (this.serverSettings && this.serverSettings.breakBlocks === false)) {
+            if (!tgt || (this.serverSettings && this.serverSettings.canBuild === false)) {
                 self.rendering.highlightBlockFace(false)
             } else {
                 self.rendering.highlightBlockFace(true, tgt.position, tgt.normal)
