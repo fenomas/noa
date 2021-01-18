@@ -26,8 +26,6 @@ export default function (noa) {
             running: false,
             crouching: false,
 
-
-            running: false,
             jumping: false,
             // fb: 0,
             // rl: 0,
