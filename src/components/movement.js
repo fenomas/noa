@@ -19,7 +19,6 @@ export default function (noa) {
         state: {
             // current state
             heading: 0, // radians
-            walking: false,
 
             moving: false, // whether player is moving at all
 
