@@ -60,12 +60,19 @@ function Container(noa, opts) {
 
     // catch and relay domReady event
     this._shell.onInit = () => {
-        // more listeners
+        // listeners to track when game has focus / pointer
         detectPointerLock(this)
         this.element.addEventListener('mouseenter', () => { this.pointerInGame = true })
         this.element.addEventListener('mouseleave', () => { this.pointerInGame = false })
         window.addEventListener('focus', () => { this.isFocused = true })
         window.addEventListener('blur', () => { this.isFocused = false })
+        // catch edge cases for initial states
+        var onFirstMousedown = () => {
+            this.pointerInGame = true
+            this.isFocused = true
+            this.element.removeEventListener('mousedown', onFirstMousedown)
+        }
+        this.element.addEventListener('mousedown', onFirstMousedown)
         // emit for engine core
         this.emit('DOMready')
     }
