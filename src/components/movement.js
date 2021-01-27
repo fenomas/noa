@@ -40,7 +40,6 @@ export default function (noa) {
             airMoveMult: 0.5,
             jumpForce: 0,
             jumpTime: 500, // ms
-            airJumps: 0,
 
             // internal state
             _jumpCount: 0,
@@ -81,7 +80,7 @@ function applyMovementPhysics(noa, dt, state, body) {
 
     // jumping
     var onGround = (body.atRestY() < 0)
-    var canjump = (onGround || state._jumpCount < state.airJumps)
+    var canjump = (onGround || state._jumpCount < noa.serverSettings.airJumpCount)
     if (onGround) {
         state._isJumping = false
         state._jumpCount = 0
