@@ -294,10 +294,10 @@ var lasty = 0
 
 function bugFix2(state) {
     const newDx = state.dx
-    if (newDx > lx > 0 && newDx-lx > 150) {
+    if (newDx > lx && lx > 0 && newDx-lx > 150) {
         state.dx = lx
     }
-    else if (newDx < lx < 0 && newDx-lx < -150) {
+    else if (newDx < lx && lx < 0 && newDx-lx < -150) {
         state.dx = lx
     }
     lx = newDx
