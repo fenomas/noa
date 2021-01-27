@@ -194,7 +194,9 @@ Camera.prototype.getDirection = function () {
 Camera.prototype.applyInputsToCamera = function () {
     // dx/dy from input state
     var state = this.noa.inputs.state
-    bugFix(state) // TODO: REMOVE EVENTUALLY    
+    console.debug(state.dx, state.dy)
+    bugFix(state) // TODO: REMOVE EVENTUALLY
+    bugFix2(state)
 
     // convert to rads, using (sens * 0.0066 deg/pixel), like Overwatch
     var conv = 0.0066 * Math.PI / 180
@@ -289,3 +291,16 @@ function bugFix(state) {
 
 var lastx = 0
 var lasty = 0
+
+function bugFix2(state) {
+    const newDx = state.dx
+    if (newDx > lx > 0 && newDx-lx > 150) {
+        state.dx = lx
+    }
+    else if (newDx < lx < 0 && newDx-lx < -150) {
+        state.dx = lx
+    }
+    lx = newDx
+}
+
+let lx = 0
