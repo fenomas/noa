@@ -117,7 +117,7 @@ function Camera(noa, opts) {
     this.currentZoom = opts.initialZoom
 
     // internals
-    this._dirVector = vec3.fromValues(0, 1, 0)
+    this._dirVector = vec3.fromValues(0, 0, 1)
 }
 
 
