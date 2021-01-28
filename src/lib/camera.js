@@ -276,31 +276,54 @@ function bugFix(state) {
     var dy = state.dy
     var wval = document.body.clientWidth / 6
     var hval = document.body.clientHeight / 6
-    var badx = (Math.abs(dx) > wval && (dx / lastx) < -1)
-    var bady = (Math.abs(dy) > hval && (dy / lasty) < -1)
+    var badx = (Math.abs(dx) > wval && (dx / oldlastx) < -1)
+    var bady = (Math.abs(dy) > hval && (dy / oldlasty) < -1)
+    if (badx || bady) {
+        state.dx = oldlastx
+        state.dy = oldlasty
+        oldlastx = (dx > 0) ? 1 : -1
+        oldlasty = (dy > 0) ? 1 : -1
+    } else {
+        if (dx) oldlastx = dx
+        if (dy) oldlasty = dy
+    }
+}
+
+var oldlastx = 0
+var oldlasty = 0
+
+
+// my bugfix2, replacing with andy's
+// function bugFix2(state) {
+//     const newDx = state.dx
+//     if (newDx > lx && lx > 0 && newDx-lx > 150) {
+//         state.dx = lx
+//     }
+//     else if (newDx < lx && lx < 0 && newDx-lx < -150) {
+//         state.dx = lx
+//     }
+//     lx = newDx
+// }
+
+// let lx = 0
+
+
+// later updated to also address: https://github.com/andyhall/noa/issues/153
+function bugFix2(state) {
+    var dx = state.dx
+    var dy = state.dy
+    var badx = (Math.abs(dx) > 400 && Math.abs(dx / lastx) > 4)
+    var bady = (Math.abs(dy) > 400 && Math.abs(dy / lasty) > 4)
     if (badx || bady) {
         state.dx = lastx
         state.dy = lasty
-        lastx = (dx > 0) ? 1 : -1
-        lasty = (dy > 0) ? 1 : -1
+        lastx = (lastx + dx) / 2
+        lasty = (lasty + dy) / 2
     } else {
-        if (dx) lastx = dx
-        if (dy) lasty = dy
+        lastx = dx || 1
+        lasty = dy || 1
     }
 }
 
 var lastx = 0
 var lasty = 0
-
-function bugFix2(state) {
-    const newDx = state.dx
-    if (newDx > lx && lx > 0 && newDx-lx > 150) {
-        state.dx = lx
-    }
-    else if (newDx < lx && lx < 0 && newDx-lx < -150) {
-        state.dx = lx
-    }
-    lx = newDx
-}
-
-let lx = 0
