@@ -1,5 +1,5 @@
 
-var EventEmitter = require('events').EventEmitter
+import EventEmitter from 'events'
 import Chunk from './chunk'
 import { LocationQueue, ChunkStorage } from './util'
 import { loopForTime, numberOfVoxelsInSphere } from './util'

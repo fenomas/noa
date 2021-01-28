@@ -1,4 +1,6 @@
 
+// annoying bug-fix to make box-intersect work in webpack 5
+window.Buffer = window.Buffer || { isBuffer: () => false }
 var boxIntersect = require('box-intersect')
 
 

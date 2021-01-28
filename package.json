@@ -24,6 +24,7 @@
         "aabb-3d": "andyhall/aabb-3d",
         "box-intersect": "^1.0.2",
         "ent-comp": "^0.9.1",
+        "events": "^3.2.0",
         "fast-voxel-raycast": "^0.1.1",
         "game-inputs": "^0.4.0",
         "gl-vec3": "^1.1.3",

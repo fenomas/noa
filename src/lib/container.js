@@ -1,6 +1,6 @@
 
 
-var EventEmitter = require('events').EventEmitter
+import EventEmitter from 'events'
 var MicroShell = require('micro-game-shell').MicroGameShell
 
 

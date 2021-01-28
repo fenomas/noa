@@ -8,8 +8,8 @@
 var vec3 = require('gl-vec3')
 var ndarray = require('ndarray')
 var raycast = require('fast-voxel-raycast')
-var EventEmitter = require('events').EventEmitter
 
+import EventEmitter from 'events'
 import createContainer from './lib/container'
 import createRendering from './lib/rendering'
 import createWorld from './lib/world'
