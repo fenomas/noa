@@ -134,8 +134,10 @@ Chunk.prototype.set = function (x, y, z, newID) {
     // voxel lifecycle handling
     if (objectLookup[oldID]) removeObjectBlock(this, x, y, z)
     if (objectLookup[newID]) addObjectBlock(this, newID, x, y, z)
-    callBlockHandler(this, oldIDnum, 'onUnset', x, y, z)
-    callBlockHandler(this, newID, 'onSet', x, y, z)
+    var hold = blockHandlerLookup[oldIDnum]
+    if (hold) callBlockHandler(this, hold, 'onUnset', x, y, z)
+    var hnew = blockHandlerLookup[newID]
+    if (hnew) callBlockHandler(this, hnew, 'onSet', x, y, z)
 
     // track full/emptiness and info about terrain
     if (!opaqueLookup[newID]) this.isFull = false
