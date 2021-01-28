@@ -29,8 +29,8 @@ export default function (noa) {
 
         state: {
             position: null,
-            width: +1,
-            height: +1,
+            width: 0.8,
+            height: 0.8,
             _localPosition: null,
             _renderPosition: null,
             _extents: null,

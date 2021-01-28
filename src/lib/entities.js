@@ -121,9 +121,23 @@ function Entities(noa, opts) {
     // called when engine rebases its local coords
     this._rebaseOrigin = function (delta) {
         this.getStatesList(this.names.position).forEach(state => {
-            vec3.subtract(state._localPosition, state._localPosition, delta)
+            var locPos = state._localPosition
+            var hw = state.width / 2
+            nudgePosition(locPos, 0, -hw, hw, state.__id)
+            nudgePosition(locPos, 1, 0, state.height, state.__id)
+            nudgePosition(locPos, 2, -hw, hw, state.__id)
+            vec3.subtract(locPos, locPos, delta)
             updateDerivedPositionData(state.__id, state)
         })
+    }
+
+    // safety helper - when rebasing, nudge extent away from 
+    // voxel boudaries, so floating point error doesn't carry us accross
+    function nudgePosition(pos, index, dmin, dmax, id) {
+        var min = pos[index] + dmin
+        var max = pos[index] + dmax
+        if (Math.abs(min - Math.round(min)) < 0.002) pos[index] += 0.002
+        if (Math.abs(max - Math.round(max)) < 0.001) pos[index] -= 0.001
     }
 
     // helper to update everything derived from `_localPosition`
@@ -149,7 +163,7 @@ function Entities(noa, opts) {
     this.getCollideEntities = this.getStateAccessor(this.names.collideEntities)
 
     // pairwise collideEntities event - this is for client to override
-    this.onPairwiseEntityCollision = function (id1, id2) {}
+    this.onPairwiseEntityCollision = function (id1, id2) { }
 }
 
 // inherit from EntComp
