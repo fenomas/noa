@@ -269,21 +269,20 @@ var _hitFn = () => true
 
 // workaround for this Chrome 63 + Win10 bug
 // https://bugs.chromium.org/p/chromium/issues/detail?id=781182
+// later updated to also address: https://github.com/andyhall/noa/issues/153
 function bugFix(state) {
     var dx = state.dx
     var dy = state.dy
-    var wval = document.body.clientWidth / 6
-    var hval = document.body.clientHeight / 6
-    var badx = (Math.abs(dx) > wval && (dx / lastx) < -1)
-    var bady = (Math.abs(dy) > hval && (dy / lasty) < -1)
+    var badx = (Math.abs(dx) > 400 && Math.abs(dx / lastx) > 4)
+    var bady = (Math.abs(dy) > 400 && Math.abs(dy / lasty) > 4)
     if (badx || bady) {
         state.dx = lastx
         state.dy = lasty
-        lastx = (dx > 0) ? 1 : -1
-        lasty = (dy > 0) ? 1 : -1
+        lastx = (lastx + dx) / 2
+        lasty = (lasty + dy) / 2
     } else {
-        if (dx) lastx = dx
-        if (dy) lasty = dy
+        lastx = dx || 1
+        lasty = dy || 1
     }
 }
 
