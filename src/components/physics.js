@@ -1,7 +1,8 @@
-import vec3 from 'gl-vec3'
+// import vec3 from 'gl-vec3'
+const vec3 = require('gl-vec3')
 
 
-export default function (noa) {
+exports.default = function (noa) {
 
 
     return {
@@ -75,13 +76,15 @@ export default function (noa) {
 // var offset = vec3.create()
 var local = vec3.create()
 
-export function setPhysicsFromPosition(physState, posState) {
+function setPhysicsFromPosition(physState, posState) {
     var box = physState.body.aabb
     var ext = posState._extents
     vec3.copy(box.base, ext)
     vec3.set(box.vec, posState.width, posState.height, posState.width)
     vec3.add(box.max, box.base, box.vec)
 }
+
+exports.setPhysicsFromPosition = setPhysicsFromPosition
 
 
 function setPositionFromPhysics(physState, posState) {

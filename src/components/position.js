@@ -1,6 +1,7 @@
-import vec3 from 'gl-vec3'
+// import vec3 from 'gl-vec3'
+const vec3 = require('gl-vec3')
 
-export default function (noa) {
+exports.default = function (noa) {
 
     /**
      * 
@@ -72,7 +73,7 @@ export default function (noa) {
 
 
 // update an entity's position state `_extents` 
-export function updatePositionExtents(state) {
+function updatePositionExtents(state) {
     var hw = state.width / 2
     var lpos = state._localPosition
     var ext = state._extents
@@ -83,3 +84,5 @@ export function updatePositionExtents(state) {
     ext[4] = lpos[1] + state.height
     ext[5] = lpos[2] + hw
 }
+
+exports.updatePositionExtents = updatePositionExtents

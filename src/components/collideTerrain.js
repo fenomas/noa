@@ -11,7 +11,7 @@ export default function (noa) {
             callback: null
         },
 
-        onAdd: function (eid, state) {
+        onAdd: function collideTerrainAdd(eid, state) {
             // add collide handler for physics engine to call
             var ents = noa.entities
             if (ents.hasPhysics(eid)) {
@@ -23,7 +23,7 @@ export default function (noa) {
             }
         },
 
-        onRemove: function (eid, state) {
+        onRemove: function collideTerrainRemove(eid, state) {
             var ents = noa.entities
             if (ents.hasPhysics(eid)) {
                 ents.getPhysicsBody(eid).onCollide = null

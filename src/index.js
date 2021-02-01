@@ -17,7 +17,7 @@ import createInputs from './lib/inputs'
 import createPhysics from './lib/physics'
 import createCamera from './lib/camera'
 import createRegistry from './lib/registry'
-import createEntities from './lib/entities'
+const createEntities = require('./lib/entities').default
 import { constants } from './lib/constants'
 
 
