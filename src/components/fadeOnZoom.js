@@ -13,7 +13,7 @@ export default function (noa) {
 
         state: {
             cutoff: 1.5,
-            _showing: true
+            _showing: null,
         },
 
         onAdd: null,
@@ -34,8 +34,9 @@ export default function (noa) {
 function checkZoom(state, id, zoom, ents) {
     if (!ents.hasMesh(id)) return
 
-    if (state._showing && zoom < state.cutoff || !state._showing && zoom > state.cutoff) {
-        var mesh = ents.getMeshData(id).mesh
-        mesh.visibility = state._showing = (zoom > state.cutoff)
+    var shouldShow = (zoom > state.cutoff)
+    if (state._showing !== shouldShow) {
+        ents.getMeshData(id).mesh.visibility = shouldShow
+        state._showing = shouldShow
     }
 }
