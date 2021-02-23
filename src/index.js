@@ -365,6 +365,7 @@ Engine.prototype.render = function (framePart, dt) {
     profile_hook_render('before render')
 
     this.rendering.render(dt)
+    this.rendering.postRender()
     profile_hook_render('render')
 
     this.emit('afterRender', dt)

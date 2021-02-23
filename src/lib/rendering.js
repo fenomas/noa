@@ -78,6 +78,7 @@ function Rendering(noa, opts, canvas) {
     this.aoVals = opts.AOmultipliers
     this.revAoVal = opts.reverseAOmultiplier
     this.meshingCutoffTime = 6 // ms
+    this._meshesToFreeze = []
 
     // set up babylon scene
     initScene(this, canvas, opts)
@@ -174,6 +175,13 @@ Rendering.prototype.render = function () {
     this._engine.endFrame()
     profile_hook('endFrame')
     profile_hook('end')
+}
+
+
+Rendering.prototype.postRender = function () {
+    while (this._meshesToFreeze.length > 0) {
+        this._meshesToFreeze.pop().freezeWorldMatrix()
+    }
 }
 
 
@@ -348,7 +356,11 @@ Rendering.prototype._rebaseOrigin = function (delta) {
         // move each mesh by delta (even though most are managed by components)
         mesh.position.subtractInPlace(dvec)
 
-        if (mesh._isWorldMatrixFrozen) mesh.markAsDirty()
+        // unfreeze terrain meshes for one render
+        if (mesh._isWorldMatrixFrozen) {
+            mesh.unfreezeWorldMatrix()
+            this._meshesToFreeze.push(mesh)
+        }
     })
 
     // update octree block extents
