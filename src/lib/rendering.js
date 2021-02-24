@@ -295,6 +295,8 @@ Rendering.prototype.makeStandardMaterial = function (name) {
     mat.specularColor.copyFromFloats(0, 0, 0)
     mat.ambientColor.copyFromFloats(1, 1, 1)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
+    // these seem to be safe in effectively all cases
+    mat.checkOnlyOnce = true
     return mat
 }
 
