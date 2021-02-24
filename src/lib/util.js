@@ -104,8 +104,8 @@ var hashLocation = (() => {
     var mask = (1 << bits) - 1
     return function hashLocation(i, j, k) {
         var id = i & mask
-        id += (j & mask) << bits
-        id += (k & mask) << twobits
+        id |= (j & mask) << bits
+        id |= (k & mask) << twobits
         return id
     }
 })()
@@ -159,7 +159,7 @@ LocationQueue.prototype.includes = function (i, j, k) {
 LocationQueue.prototype.add = function (i, j, k) {
     var id = hashLocation(i, j, k)
     if (this.set.has(id)) return
-    this.arr.push([i, j, k])
+    this.arr.push([i, j, k, id])
     this.set.add(id)
 }
 LocationQueue.prototype.removeByIndex = function (ix) {
@@ -173,10 +173,10 @@ LocationQueue.prototype.remove = function (i, j, k) {
     if (!this.set.has(id)) return
     this.set.delete(id)
     for (var ix = 0; ix < this.arr.length; ix++) {
-        var el = this.arr[ix]
-        if (el[0] !== i || el[1] !== j || el[2] !== k) continue
-        this.arr.splice(ix, 1)
-        return
+        if (id === this.arr[ix][3]) {
+            this.arr.splice(ix, 1)
+            return
+        }
     }
     throw 'internal bug with location queue - hash value overlapped'
 }
