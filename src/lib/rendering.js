@@ -11,6 +11,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
 import { Color3 } from '@babylonjs/core/Maths/math.color'
 import { Vector3 } from '@babylonjs/core/Maths/math.vector'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
+import { TransformNode } from '@babylonjs/core/'
 import { OctreeSceneComponent } from '@babylonjs/core/Culling/Octrees/'
 import '@babylonjs/core/Meshes/Builders/planeBuilder'
 import '@babylonjs/core/Meshes/Builders/linesBuilder'
@@ -106,8 +107,8 @@ function initScene(self, canvas, opts) {
     self._octree.blocks = []
     scene._selectionOctree = self._octree
 
-    // camera, and empty mesh to hold it, and one to accumulate rotations
-    self._cameraHolder = new Mesh('camHolder', scene)
+    // camera, and a node to hold it and accumulate rotations
+    self._cameraHolder = new TransformNode('camHolder', scene)
     self._camera = new FreeCamera('camera', new Vector3(0, 0, 0), scene)
     self._camera.parent = self._cameraHolder
     self._camera.minZ = .01
