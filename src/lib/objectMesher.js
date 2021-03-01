@@ -1,5 +1,5 @@
 import { SolidParticleSystem } from '@babylonjs/core/Particles/solidParticleSystem'
-
+import { locationHasher } from './util'
 
 export default new ObjectMesher()
 
@@ -11,11 +11,11 @@ var PROFILE = 0
 
 
 // helper class to hold data about a single object mesh
-function ObjMeshDat(id, x, y, z) {
+function ObjMeshDat(id, i, j, k) {
     this.id = id | 0
-    this.x = x | 0
-    this.y = y | 0
-    this.z = z | 0
+    this.i = i | 0
+    this.j = j | 0
+    this.k = k | 0
 }
 
 
@@ -52,15 +52,15 @@ function ObjectMesher() {
 
 
     // accessors for the chunk to regester as object voxels are set/unset
-    this.addObjectBlock = function (chunk, id, x, y, z) {
-        var key = x + '|' + y + '|' + z
-        chunk._objectBlocks[key] = new ObjMeshDat(id, x, y, z, null)
+    this.setObjectBlock = function (chunk, blockID, i, j, k) {
+        var key = locationHasher(i, j, k)
+        if (blockID) {
+            chunk._objectBlocks[key] = new ObjMeshDat(blockID, i, j, k)
+        } else {
+            if (chunk._objectBlocks[key]) delete chunk._objectBlocks[key]
+        }
     }
 
-    this.removeObjectBlock = function (chunk, x, y, z) {
-        var key = x + '|' + y + '|' + z
-        if (chunk._objectBlocks[key]) delete chunk._objectBlocks[key]
-    }
 
 
 
@@ -105,7 +105,7 @@ function ObjectMesher() {
         // matIndexes = {
         //      2: {                    // i.e. 2nd material in scene
         //          14: {               // i.e. voxel ID 14 from registry
-        //              [ '2|3|4' ]     // key of block's local coords
+        //              [ 1234, 5678 ]  // int keys for chunk._objectBlocks
         //          }
         //      }
         // }
@@ -163,8 +163,8 @@ function ObjectMesher() {
                 var dat = blockHash[key]
 
                 // set (local) pos and call handler (with global coords)
-                particle.position.set(dat.x + 0.5, dat.y, dat.z + 0.5)
-                if (handlerFn) handlerFn(particle, x0 + dat.x, y0 + dat.y, z0 + dat.z)
+                particle.position.set(dat.i + 0.5, dat.j, dat.k + 0.5)
+                if (handlerFn) handlerFn(particle, x0 + dat.i, y0 + dat.j, z0 + dat.k)
             }
             sps.addShape(mesh, count, { positionFunction: setShape })
             blockArr.length = 0

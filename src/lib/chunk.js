@@ -132,8 +132,8 @@ Chunk.prototype.set = function (x, y, z, newID) {
     this.voxels.set(x, y, z, newID)
 
     // voxel lifecycle handling
-    if (objectLookup[oldID]) removeObjectBlock(this, x, y, z)
-    if (objectLookup[newID]) addObjectBlock(this, newID, x, y, z)
+    if (objectLookup[oldID]) setObjectBlockState(this, 0, x, y, z)
+    if (objectLookup[newID]) setObjectBlockState(this, newID, x, y, z)
     var hold = blockHandlerLookup[oldIDnum]
     if (hold) callBlockHandler(this, hold, 'onUnset', x, y, z)
     var hnew = blockHandlerLookup[newID]
@@ -177,15 +177,19 @@ Chunk.prototype.set = function (x, y, z, newID) {
 
 
 
-
-
+// helper to track the state of all object blocks in the chunk
+function setObjectBlockState(chunk, blockID, i, j, k) {
+    objectMesher.setObjectBlock(chunk, blockID, i, j, k)
+    chunk._objectsDirty = true
+}
 
 // helper to call handler of a given type at a particular xyz
-function callBlockHandler(chunk, handlers, type, x, y, z) {
+function callBlockHandler(chunk, handlers, type, i, j, k) {
     var handler = handlers[type]
     if (!handler) return
-    handler(chunk.x + x, chunk.y + y, chunk.z + z)
+    handler(chunk.x + i, chunk.y + j, chunk.z + k)
 }
+
 
 
 
@@ -259,7 +263,6 @@ function scanVoxelData(chunk) {
     // flags for tracking if chunk is entirely opaque or transparent
     var fullyOpaque = true
     var fullyAir = true
-    var hasObj = false
 
     var voxels = chunk.voxels
     var data = voxels.data
@@ -279,8 +282,7 @@ function scanVoxelData(chunk) {
                 fullyAir = false
                 // handle object blocks and handlers
                 if (objectLookup[id]) {
-                    addObjectBlock(chunk, id, i, j, k)
-                    hasObj = true
+                    setObjectBlockState(chunk, id, i, j, k)
                 }
                 var handlers = handlerLookup[id]
                 if (handlers) {
@@ -293,24 +295,13 @@ function scanVoxelData(chunk) {
     chunk.isFull = fullyOpaque
     chunk.isEmpty = fullyAir
     chunk._terrainDirty = !chunk.isEmpty
-    chunk._objectsDirty = hasObj
 }
 
 
 
 
 
-// accessors related to meshing
 
-function addObjectBlock(chunk, id, x, y, z) {
-    objectMesher.addObjectBlock(chunk, id, x, y, z)
-    chunk._objectsDirty = true
-}
-
-function removeObjectBlock(chunk, x, y, z) {
-    objectMesher.removeObjectBlock(chunk, x, y, z)
-    chunk._objectsDirty = true
-}
 
 
 
