@@ -97,18 +97,49 @@ function doNdarrayZero(tgt, i0, j0, k0, si, sj, sk) {
 
 
 
-//  hash an array of indexes [i,j,k] to an integer ID. 
-//  Used by stuff below. Wraps every 1024 indexes.
-var hashLocation = (() => {
-    var bits = 10, twobits = bits * 2
-    var mask = (1 << bits) - 1
-    return function hashLocation(i, j, k) {
-        var id = i & mask
-        id |= (j & mask) << bits
-        id |= (k & mask) << twobits
-        return id
+// iterate over 3D locations a fixed area from the origin
+// and exiting if the callback returns true
+// skips locations beyond a horiz or vertical max distance
+export function iterateOverShellAtDistance(d, xmax, ymax, cb) {
+    if (d === 0) return cb(0, 0, 0)
+    // larger top/bottom planes of current shell
+    var dx = Math.min(d, xmax)
+    var dy = Math.min(d, ymax)
+    if (d <= ymax) {
+        for (var x = -dx; x <= dx; x++) {
+            for (var z = -dx; z <= dx; z++) {
+                if (cb(x, d, z)) return true
+                if (cb(x, -d, z)) return true
+            }
+        }
     }
-})()
+    // smaller side planes of shell
+    if (d <= xmax) {
+        for (var i = -d; i < d; i++) {
+            for (var y = -dy + 1; y < dy; y++) {
+                if (cb(i, y, d)) return true
+                if (cb(-i, y, -d)) return true
+                if (cb(d, y, -i)) return true
+                if (cb(-d, y, i)) return true
+            }
+        }
+    }
+    return false
+}
+
+
+
+
+
+
+// function to hash three indexes (i,j,k) into one integer
+// note that hash wraps around every 1024 indexes.
+export function locationHasher(i, j, k) {
+    var id = i & 1023
+    id |= (j & 1023) << 10
+    id |= (k & 1023) << 20
+    return id
+}
 
 
 
@@ -123,16 +154,15 @@ export function ChunkStorage() {
     var map = new Map()
     // exposed API - getting and setting
     this.getChunkByIndexes = (i, j, k) => {
-        var id = hashLocation(i, j, k)
-        return map.get(id) || null
+        return map.get(locationHasher(i, j, k)) || null
     }
     this.storeChunkByIndexes = (i, j, k, chunk) => {
-        var id = hashLocation(i, j, k)
-        if (chunk) { map.set(id, chunk); return }
-        map.delete(id)
+        map.set(locationHasher(i, j, k), chunk)
+    }
+    this.removeChunkByIndexes = (i, j, k) => {
+        map.delete(locationHasher(i, j, k))
     }
 }
-
 
 
 
@@ -142,36 +172,35 @@ export function ChunkStorage() {
 /*
  * 
  *      LocationQueue - simple array of [i,j,k] locations, 
- *      backed by a Set for O(1) existence checks.
+ *      backed by a hash for O(1) existence checks.
  *      removals by value are O(n).
  * 
 */
 
 export function LocationQueue() {
     this.arr = []
-    this.set = new Set()
+    this.hash = {}
 }
 LocationQueue.prototype.forEach = function (a, b) { this.arr.forEach(a, b) }
 LocationQueue.prototype.includes = function (i, j, k) {
-    var id = hashLocation(i, j, k)
-    return this.set.has(id)
+    var id = locationHasher(i, j, k)
+    return !!this.hash[id]
 }
 LocationQueue.prototype.add = function (i, j, k) {
-    var id = hashLocation(i, j, k)
-    if (this.set.has(id)) return
+    var id = locationHasher(i, j, k)
+    if (this.hash[id]) return
     this.arr.push([i, j, k, id])
-    this.set.add(id)
+    this.hash[id] = true
 }
 LocationQueue.prototype.removeByIndex = function (ix) {
     var el = this.arr[ix]
-    var id = hashLocation(el[0], el[1], el[2])
-    this.set.delete(id)
+    delete this.hash[el[3]]
     this.arr.splice(ix, 1)
 }
 LocationQueue.prototype.remove = function (i, j, k) {
-    var id = hashLocation(i, j, k)
-    if (!this.set.has(id)) return
-    this.set.delete(id)
+    var id = locationHasher(i, j, k)
+    if (!this.hash[id]) return
+    delete this.hash[id]
     for (var ix = 0; ix < this.arr.length; ix++) {
         if (id === this.arr[ix][3]) {
             this.arr.splice(ix, 1)
@@ -184,23 +213,23 @@ LocationQueue.prototype.count = function () { return this.arr.length }
 LocationQueue.prototype.isEmpty = function () { return (this.arr.length === 0) }
 LocationQueue.prototype.empty = function () {
     this.arr.length = 0
-    this.set.clear()
+    this.hash = {}
 }
 LocationQueue.prototype.pop = function () {
     var el = this.arr.pop()
-    var id = hashLocation(el[0], el[1], el[2])
-    this.set.delete(id)
+    delete this.hash[el[3]]
     return el
 }
 LocationQueue.prototype.copyFrom = function (queue) {
     this.arr = queue.arr.slice()
-    this.set.clear()
-    queue.set.forEach((val, key) => this.set.add(key, true))
+    this.hash = {}
+    for (var key in queue.hash) this.hash[key] = true
 }
 LocationQueue.prototype.sortByDistance = function (locToDist) {
     var map = new Map()
-    this.arr.forEach((loc, i) => { map.set(loc, locToDist(loc)) })
+    for (var loc of this.arr) map.set(loc, locToDist(loc))
     this.arr.sort((a, b) => map.get(b) - map.get(a)) // DESCENDING!
+    map = null
 }
 
 

@@ -18,7 +18,7 @@ import createPhysics from './lib/physics'
 import createCamera from './lib/camera'
 import createRegistry from './lib/registry'
 import createEntities from './lib/entities'
-
+import { locationHasher } from './lib/util'
 
 
 
@@ -599,7 +599,7 @@ var _hitResult = {
 // Each frame, by default pick along the player's view vector 
 // and tell rendering to highlight the struck block face
 function updateBlockTargets(noa) {
-    var newhash = ''
+    var newhash = 0
     var blockIdFn = noa.blockTargetIdCheck || noa.registry.getBlockSolidity
     var result = noa._localPick(null, null, null, blockIdFn)
     if (result) {
@@ -610,7 +610,7 @@ function updateBlockTargets(noa) {
         vec3.sub(dat.position, dat.adjacent, dat.normal)
         dat.blockID = noa.world.getBlockID(dat.position[0], dat.position[1], dat.position[2])
         noa.targetedBlock = dat
-        newhash = dat.position.join('|') + dat.normal.join('|') + '|' + dat.blockID
+        newhash = makeTargetHash(dat.position, dat.normal, dat.blockID, locationHasher)
     } else {
         noa.targetedBlock = null
     }
@@ -626,8 +626,13 @@ var _targetedBlockDat = {
     normal: [],
     adjacent: [],
 }
+var _prevTargetHash = 0
+var makeTargetHash = (pos, norm, id, hashFn) => {
+    var N = hashFn(pos[0], pos[1], pos[2])
+    return N ^ (id + 7 * norm[0] + 13 * norm[1] + 17 * norm[2])
+}
 
-var _prevTargetHash = ''
+
 
 
 
