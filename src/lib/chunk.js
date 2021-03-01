@@ -151,27 +151,24 @@ Chunk.prototype.set = function (x, y, z, newID) {
     }
 
     // neighbors only affected if solidity or opacity changed on an edge
-    var SOchanged = false
-    if (solidLookup[oldID] !== solidLookup[newID]) SOchanged = true
-    if (opaqueLookup[oldID] !== opaqueLookup[newID]) SOchanged = true
+    var SOchanged = (solidLookup[oldID] !== solidLookup[newID])
+        || (opaqueLookup[oldID] !== opaqueLookup[newID])
     if (SOchanged) {
         var edge = this.size - 1
-        var iedge = (x === 0) ? -1 : (x < edge) ? 0 : 1
-        var jedge = (y === 0) ? -1 : (y < edge) ? 0 : 1
-        var kedge = (z === 0) ? -1 : (z < edge) ? 0 : 1
-        if (iedge | jedge | kedge) {
-            var ivals = (iedge) ? [0, iedge] : [0]
-            var jvals = (jedge) ? [0, jedge] : [0]
-            var kvals = (kedge) ? [0, kedge] : [0]
-            for (var i of ivals) {
-                for (var j of jvals) {
-                    for (var k of kvals) {
-                        if ((i | j | k) === 0) return
-                        var nab = this._neighbors.get(i, j, k)
-                        if (!nab) return
-                        nab._terrainDirty = true
-                        this.noa.world._queueChunkForRemesh(nab)
-                    }
+        var imin = (x === 0) ? -1 : 0
+        var imax = (x === edge) ? 1 : 0
+        var jmin = (y === 0) ? -1 : 0
+        var jmax = (y === edge) ? 1 : 0
+        var kmin = (z === 0) ? -1 : 0
+        var kmax = (z === edge) ? 1 : 0
+        for (var i = imin; i <= imax; i++) {
+            for (var j = jmin; j <= jmax; j++) {
+                for (var k = kmin; k <= kmax; k++) {
+                    if ((i | j | k) === 0) continue
+                    var nab = this._neighbors.get(i, j, k)
+                    if (!nab) return
+                    nab._terrainDirty = true
+                    this.noa.world._queueChunkForRemesh(nab)
                 }
             }
         }
