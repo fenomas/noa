@@ -326,7 +326,7 @@ Engine.prototype.tick = function (dt) {
  * where dt is the time in ms *since the last tick*.
  */
 
-Engine.prototype.render = function (framePart, dt) {
+Engine.prototype.render = function (dt, framePart) {
     // note: framePart is how far we are into the current tick
     // dt is the *actual* time (ms) since last render, for
     // animating things that aren't tied to game tick rate
@@ -457,9 +457,8 @@ function checkWorldOffset(noa) {
     if (vec3.sqrLen(lpos) < cutoff * cutoff) return
     var delta = []
     for (var i = 0; i < 3; i++) {
-        var d = Math.floor(lpos[i])
-        delta[i] = d
-        noa.worldOriginOffset[i] += d
+        delta[i] = Math.floor(lpos[i])
+        noa.worldOriginOffset[i] += delta[i]
     }
     noa.rendering._rebaseOrigin(delta)
     noa.entities._rebaseOrigin(delta)

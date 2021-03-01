@@ -32,13 +32,17 @@ export default function (noa) {
 
         // on tick, copy over regular positions
         system: function followEntity(dt, states) {
-            states.forEach(state => updatePosition(state))
+            for (var i = 0; i < states.length; i++) {
+                updatePosition(states[i])
+            }
         },
 
 
         // on render, copy over render positions
         renderSystem: function followEntityMesh(dt, states) {
-            states.forEach(state => updateRenderPosition(state))
+            for (var i = 0; i < states.length; i++) {
+                updateRenderPosition(states[i])
+            }
         }
     }
 

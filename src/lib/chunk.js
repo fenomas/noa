@@ -63,7 +63,7 @@ function Chunk(noa, requestID, i, j, k, size, dataArray) {
     this.isEmpty = false
 
     // references to neighboring chunks, if they exist (filled in by `world`)
-    var narr = Array.from(Array(27)).map(() => null)
+    var narr = Array.from(Array(27), () => null)
     this._neighbors = new ndarray(narr, [3, 3, 3]).lo(1, 1, 1)
     this._neighbors.set(0, 0, 0, this)
     this._neighborCount = 0
@@ -160,20 +160,20 @@ Chunk.prototype.set = function (x, y, z, newID) {
         var jedge = (y === 0) ? -1 : (y < edge) ? 0 : 1
         var kedge = (z === 0) ? -1 : (z < edge) ? 0 : 1
         if (iedge | jedge | kedge) {
-            var is = (iedge) ? [0, iedge] : [0]
-            var js = (jedge) ? [0, jedge] : [0]
-            var ks = (kedge) ? [0, kedge] : [0]
-            is.forEach(i => {
-                js.forEach(j => {
-                    ks.forEach(k => {
+            var ivals = (iedge) ? [0, iedge] : [0]
+            var jvals = (jedge) ? [0, jedge] : [0]
+            var kvals = (kedge) ? [0, kedge] : [0]
+            for (var i of ivals) {
+                for (var j of jvals) {
+                    for (var k of kvals) {
                         if ((i | j | k) === 0) return
                         var nab = this._neighbors.get(i, j, k)
                         if (!nab) return
                         nab._terrainDirty = true
                         this.noa.world._queueChunkForRemesh(nab)
-                    })
-                })
-            })
+                    }
+                }
+            }
         }
     }
 }
@@ -207,11 +207,11 @@ var terrainMesher
 // gets called by World when this chunk has been queued for remeshing
 Chunk.prototype.updateMeshes = function () {
     var rendering = this.noa.rendering
+    var pos = [this.x, this.y, this.z]
     if (this._terrainDirty) {
         if (this._terrainMesh) this._terrainMesh.dispose()
         var mesh = this.mesh()
         if (mesh && mesh.getIndices().length > 0) {
-            var pos = [this.x, this.y, this.z]
             rendering.addMeshToScene(mesh, true, pos, this)
         }
         this._terrainMesh = mesh || null
@@ -222,8 +222,9 @@ Chunk.prototype.updateMeshes = function () {
     if (this._objectsDirty) {
         objectMesher.removeObjectMeshes(this)
         var meshes = objectMesher.buildObjectMeshes(this)
-        var pos2 = [this.x, this.y, this.z]
-        meshes.forEach(mesh => rendering.addMeshToScene(mesh, true, pos2, this))
+        for (var dmesh of meshes) {
+            rendering.addMeshToScene(dmesh, true, pos, this)
+        }
         this._objectsDirty = false
     }
 }

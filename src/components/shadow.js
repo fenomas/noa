@@ -52,22 +52,24 @@ export default function (noa, dist) {
         system: function shadowSystem(dt, states) {
             var cpos = noa.camera._localGetPosition()
             var dist = shadowDist
-            states.forEach(state => {
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i]
                 var posState = noa.ents.getPositionData(state.__id)
                 var physState = noa.ents.getPhysics(state.__id)
                 updateShadowHeight(noa, posState, physState, state._mesh, state.size, dist, cpos)
-            })
+            }
         },
 
 
         renderSystem: function (dt, states) {
             // before render adjust shadow x/z to render positions
-            states.forEach(state => {
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i]
                 var rpos = noa.ents.getPositionData(state.__id)._renderPosition
                 var spos = state._mesh.position
                 spos.x = rpos[0]
                 spos.z = rpos[2]
-            })
+            }
         }
 
 

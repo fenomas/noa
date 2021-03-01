@@ -133,7 +133,7 @@ function buildPaddedVoxelArray(chunk) {
     return tgt
 }
 var cachedPadded = new ndarray(new Uint16Array(27), [3, 3, 3])
-var _vecs = Array.from(Array(10)).map(n => [0, 0, 0])
+var _vecs = Array.from(Array(10), () => [0, 0, 0])
 var _cachedVecSize
 function allocateVectors(size, posValues, sizeValues, tgtPosValues) {
     for (var i = 0; i < 3; i++) {
@@ -158,7 +158,7 @@ function allocateVectors(size, posValues, sizeValues, tgtPosValues) {
  * 
  */
 
-function Submesh(id) {
+function SubmeshData(id) {
     this.id = id | 0
     this.positions = []
     this.indices = []
@@ -168,7 +168,7 @@ function Submesh(id) {
     this.mergeable = false      // flag used during terrain meshing
 }
 
-Submesh.prototype.dispose = function () {
+SubmeshData.prototype.dispose = function () {
     this.positions = null
     this.indices = null
     this.normals = null
@@ -328,14 +328,14 @@ function MeshBuilder(noa) {
     // manage materials/textures to avoid duplicating them
     function getTerrainMaterial(matID, ignore) {
         if (ignore) return noa.rendering.flatMaterial
-        var name = 'terrain mat ' + matID
-        if (!materialCache[name]) materialCache[name] = makeTerrainMaterial(matID)
+        var name = 'terrain_mat:' + matID
+        if (!materialCache[name]) materialCache[name] = makeTerrainMaterial(matID, name)
         return materialCache[name]
     }
 
 
     // canonical function to make a terrain material
-    function makeTerrainMaterial(id) {
+    function makeTerrainMaterial(id, name) {
         // if user-specified render material is defined, use it
         var matData = noa.registry.getMaterialData(id)
         if (matData.renderMat) return matData.renderMat
@@ -346,7 +346,7 @@ function MeshBuilder(noa) {
             // base material is fine for non-textured case, if no alpha
             return noa.rendering.flatMaterial
         }
-        var mat = noa.rendering.flatMaterial.clone('terrain' + id)
+        var mat = noa.rendering.flatMaterial.clone(name)
         if (url) {
             var scene = noa.rendering.getScene()
             var tex = new Texture(url, scene, true, false, Texture.NEAREST_SAMPLINGMODE)
@@ -460,7 +460,9 @@ function GreedyMesher(noa) {
         }
 
         // done, return hash of subMeshes as an array
-        return Object.keys(subMeshes).map(k => subMeshes[k])
+        var subMeshArr = []
+        for (var k in subMeshes) subMeshArr.push(subMeshes[k])
+        return subMeshArr
     }
 
 
@@ -603,7 +605,7 @@ function GreedyMesher(noa) {
 
                 // material and mesh for this face
                 var matID = Math.abs(maskVal)
-                if (!submeshes[matID]) submeshes[matID] = new Submesh(matID)
+                if (!submeshes[matID]) submeshes[matID] = new SubmeshData(matID)
                 var mesh = submeshes[matID]
                 var colors = mesh.colors
                 var c = getColor(matID)

@@ -51,7 +51,7 @@ function Entities(noa, opts) {
     // Bundler magic to import everything in the ../components directory
     // each component module exports a default function: (noa) => compDefinition
     var reqContext = require.context('../components/', false, /\.js$/)
-    reqContext.keys().forEach(name => {
+    for (var name of reqContext.keys()) {
         // convert name ('./foo.js') to bare name ('foo')
         var bareName = /\.\/(.*)\.js/.exec(name)[1]
         var arg = componentArgs[bareName] || undefined
@@ -60,7 +60,7 @@ function Entities(noa, opts) {
         var compDef = compFn(noa, arg)
         var comp = this.createComponent(compDef)
         this.names[bareName] = comp
-    })
+    }
 
 
     // decorate the entities object with accessor functions
@@ -102,7 +102,7 @@ function Entities(noa, opts) {
     }
 
     /** @param id, positionArr */
-    this.setPosition = (id, pos, _yarg, _zarg) => {
+    this.setPosition = function (id, pos, _yarg, _zarg) {
         // check if called with "x, y, z" args
         if (typeof pos === 'number') pos = [pos, _yarg, _zarg]
         // convert to local and defer impl
@@ -120,7 +120,7 @@ function Entities(noa, opts) {
 
     // called when engine rebases its local coords
     this._rebaseOrigin = function (delta) {
-        this.getStatesList(this.names.position).forEach(state => {
+        for (var state of this.getStatesList(this.names.position)) {
             var locPos = state._localPosition
             var hw = state.width / 2
             nudgePosition(locPos, 0, -hw, hw, state.__id)
@@ -128,7 +128,7 @@ function Entities(noa, opts) {
             nudgePosition(locPos, 2, -hw, hw, state.__id)
             vec3.subtract(locPos, locPos, delta)
             updateDerivedPositionData(state.__id, state)
-        })
+        }
     }
 
     // safety helper - when rebasing, nudge extent away from 
@@ -235,17 +235,25 @@ Entities.prototype.getEntitiesInAABB = function (box, withComponent) {
         box.max[0] + off[0], box.max[1] + off[1], box.max[2] + off[2],
     ]
     // entity position state list
-    var entStates = (withComponent) ?
-        this.getStatesList(withComponent).map(state => {
-            return this.getPositionData(state.__id)
-        }) : this.getStatesList(this.names.position)
+    var entStates
+    if (withComponent) {
+        entStates = []
+        for (var compState of this.getStatesList(withComponent)) {
+            var pdat = this.getPositionData(compState.__id)
+            if (pdat) entStates.push(pdat)
+        }
+    } else {
+        entStates = this.getStatesList(this.names.position)
+    }
+
     // run each test
     var hits = []
-    entStates.forEach(state => {
+    for (var i = 0; i < entStates.length; i++) {
+        var state = entStates[i]
         if (extentsOverlap(testExtents, state._extents)) {
             hits.push(state.__id)
         }
-    })
+    }
     return hits
 }
 

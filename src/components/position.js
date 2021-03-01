@@ -59,10 +59,11 @@ export default function (noa) {
 
         system: function (dt, states) {
             var off = noa.worldOriginOffset
-            states.forEach(state => {
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i]
                 vec3.add(state.position, state._localPosition, off)
                 updatePositionExtents(state)
-            })
+            }
         },
 
 

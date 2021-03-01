@@ -48,12 +48,11 @@ export default function (noa) {
 
         system: function movementProcessor(dt, states) {
             var ents = noa.entities
-
-            states.forEach(state => {
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i]
                 var body = ents.getPhysicsBody(state.__id)
                 applyMovementPhysics(dt, state, body)
-            })
-
+            }
         }
 
 

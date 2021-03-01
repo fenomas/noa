@@ -37,11 +37,11 @@ export default function (noa) {
 
 
         system: function (dt, states) {
-            states.forEach(state => {
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i]
                 var pdat = noa.ents.getPositionData(state.__id)
                 setPositionFromPhysics(state, pdat)
-            })
-
+            }
         },
 
 
@@ -59,12 +59,13 @@ export default function (noa) {
             // http://gafferongames.com/game-physics/fix-your-timestep/
 
             var backtrackAmt = (tickMS - tickTime) / 1000
-            states.forEach(state => {
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i]
                 var id = state.__id
                 var pdat = noa.ents.getPositionData(id)
                 var smoothed = noa.ents.cameraSmoothed(id)
                 backtrackRenderPos(state, pdat, backtrackAmt, smoothed)
-            })
+            }
         }
 
     }

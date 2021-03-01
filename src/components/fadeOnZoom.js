@@ -23,20 +23,21 @@ export default function (noa) {
         system: function fadeOnZoomProc(dt, states) {
             var zoom = noa.camera.currentZoom
             var ents = noa.entities
-            states.forEach(state => {
-                checkZoom(state, state.__id, zoom, ents)
-            })
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i]
+                checkZoom(state, zoom, ents)
+            }
         }
     }
 }
 
 
-function checkZoom(state, id, zoom, ents) {
-    if (!ents.hasMesh(id)) return
+function checkZoom(state, zoom, ents) {
+    if (!ents.hasMesh(state.__id)) return
 
     var shouldShow = (zoom > state.cutoff)
     if (state._showing !== shouldShow) {
-        ents.getMeshData(id).mesh.visibility = shouldShow
+        ents.getMeshData(state.__id).mesh.visibility = shouldShow
         state._showing = shouldShow
     }
 }

@@ -243,24 +243,20 @@ Camera.prototype.updateAfterEntityRenderSystems = function () {
  */
 
 function cameraObstructionDistance(self) {
-    if (!_camBox) {
-        var off = self.noa.worldOriginOffset
-        _camBox = new aabb([0, 0, 0], vec3.clone(_camBoxVec))
-        _getVoxel = (x, y, z) => self.noa.world.getBlockSolidity(x + off[0], y + off[1], z + off[2])
-        vec3.scale(_camBoxVec, _camBoxVec, -0.5)
+    if (!self._sweepBox) {
+        self._sweepBox = new aabb([0, 0, 0], [0.2, 0.2, 0.2])
+        self._sweepGetVoxel = self.noa.world.getBlockSolidity.bind(self.noa.world)
+        self._sweepVec = vec3.create()
+        self._sweepHit = () => true
     }
-    _camBox.setPosition(self._localGetTargetPosition())
-    _camBox.translate(_camBoxVec)
+    var pos = vec3.copy(self._sweepVec, self._localGetTargetPosition())
+    vec3.add(pos, pos, self.noa.worldOriginOffset)
+    for (var i = 0; i < 3; i++) pos[i] -= 0.1
+    self._sweepBox.setPosition(pos)
     var dist = Math.max(self.zoomDistance, self.currentZoom) + 0.1
-    vec3.scale(_sweepVec, self.getDirection(), -dist)
-    return sweep(_getVoxel, _camBox, _sweepVec, _hitFn, true)
+    vec3.scale(self._sweepVec, self.getDirection(), -dist)
+    return sweep(self._sweepGetVoxel, self._sweepBox, self._sweepVec, self._sweepHit, true)
 }
-
-var _camBoxVec = vec3.fromValues(0.2, 0.2, 0.2)
-var _sweepVec = vec3.create()
-var _camBox
-var _getVoxel
-var _hitFn = () => true
 
 
 

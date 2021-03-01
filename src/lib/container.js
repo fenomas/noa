@@ -2,6 +2,7 @@
 
 import EventEmitter from 'events'
 var MicroShell = require('micro-game-shell').MicroGameShell
+// var MicroShell = require('../../../../npm-modules/micro-game-shell').MicroGameShell
 
 
 
@@ -39,12 +40,8 @@ function Container(noa, opts) {
     this.hasPointerLock = false
 
     // core timing events
-    this._shell.onTick = (dt) => {
-        noa.tick(dt)
-    }
-    this._shell.onRender = (dt, framePart) => {
-        noa.render(framePart, dt)
-    }
+    this._shell.onTick = noa.tick.bind(noa)
+    this._shell.onRender = noa.render.bind(noa)
 
     // shell listeners
     this._shell.onPointerLockChanged = (hasPL) => {
@@ -54,12 +51,10 @@ function Container(noa, opts) {
         // gets issued after starting pointerlock
         if (hasPL) this.pointerInGame = true
     }
-    this._shell.onResize = () => {
-        noa.rendering.resize()
-    }
 
     // catch and relay domReady event
     this._shell.onInit = () => {
+        this._shell.onResize = noa.rendering.resize.bind(noa.rendering)
         // listeners to track when game has focus / pointer
         detectPointerLock(this)
         this.element.addEventListener('mouseenter', () => { this.pointerInGame = true })

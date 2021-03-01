@@ -25,10 +25,11 @@ export default function (noa) {
             var inputState = noa.inputs.state
             var camHeading = noa.camera.heading
 
-            states.forEach(state => {
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i]
                 var moveState = ents.getMovement(state.__id)
                 setMovementState(moveState, inputState, camHeading)
-            })
+            }
         }
 
     }
