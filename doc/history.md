@@ -21,6 +21,9 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 ### 0.30.0
 
+   * A lot of performance optimizations
+   * Adds separate horizontal/vertical add/remove chunk distances in `world`
+   * Scene octree now can put multiple chunks in each octree block
    * Changed game-shell dependency, which affects several properties:
      * core option `tickRate` is now in **ticks per second**, not ms per tick
      * core option `maxRenderRate` added (leave at `0` for no cap)
@@ -29,7 +32,6 @@ This is a summary of new features and breaking changes in recent `noa` versions.
      * adds `noa.maxRenderRate` - this is safe to change dynamically. Set to `0` for no limit.
    * Removed the `id` property on `Chunk` objects. Shouldn't realistically affect any game clients, but if you were using it for some reason, use `chunk.requestID` instead.
    * Made several of the core `babylon` imports more specific, which could cause errors if your client code is using Babylon modules without importing them. If you're using any mesh builders (e.g. `Mesh.CreateBox()`), make sure to import the necessary module (`import '@babylonjs/core/Meshes/Builders/boxBuilder'`).
-   * improved performance of voxel ID lookups and worldgen overhead
 
 ### 0.29.0
 
