@@ -151,16 +151,16 @@ export function locationHasher(i, j, k) {
 */
 
 export function ChunkStorage() {
-    var map = new Map()
+    var hash = {}
     // exposed API - getting and setting
     this.getChunkByIndexes = (i, j, k) => {
-        return map.get(locationHasher(i, j, k)) || null
+        return hash[locationHasher(i, j, k)] || null
     }
     this.storeChunkByIndexes = (i, j, k, chunk) => {
-        map.set(locationHasher(i, j, k), chunk)
+        hash[locationHasher(i, j, k)] = chunk
     }
     this.removeChunkByIndexes = (i, j, k) => {
-        map.delete(locationHasher(i, j, k))
+        delete hash[locationHasher(i, j, k)]
     }
 }
 
@@ -226,10 +226,10 @@ LocationQueue.prototype.copyFrom = function (queue) {
     for (var key in queue.hash) this.hash[key] = true
 }
 LocationQueue.prototype.sortByDistance = function (locToDist) {
-    var map = new Map()
-    for (var loc of this.arr) map.set(loc, locToDist(loc))
-    this.arr.sort((a, b) => map.get(b) - map.get(a)) // DESCENDING!
-    map = null
+    var hash = {}
+    for (var loc of this.arr) hash[loc] = locToDist(loc)
+    this.arr.sort((a, b) => hash[b] - hash[a]) // DESCENDING!
+    hash = null
 }
 
 
