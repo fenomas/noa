@@ -30,7 +30,6 @@ export default Chunk
 function Chunk(noa, requestID, i, j, k, size, dataArray) {
     this.noa = noa
     this.isDisposed = false
-    this.octreeBlock = null
 
     // voxel data and properties
     this.requestID = requestID     // id sent to game client

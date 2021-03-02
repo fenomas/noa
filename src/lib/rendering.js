@@ -1,10 +1,9 @@
 var glvec3 = require('gl-vec3')
-import { removeUnorderedListItem } from './util'
+
+import { SceneOctreeManager } from './sceneOctreeManager'
 
 import { Scene } from '@babylonjs/core/scene'
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera'
-import { Octree } from '@babylonjs/core/Culling/Octrees/octree'
-import { OctreeBlock } from '@babylonjs/core/Culling/Octrees/octreeBlock'
 import { Engine } from '@babylonjs/core/Engines/engine'
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight'
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
@@ -12,7 +11,6 @@ import { Color3 } from '@babylonjs/core/Maths/math.color'
 import { Vector3 } from '@babylonjs/core/Maths/math.vector'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import { TransformNode } from '@babylonjs/core/'
-import { OctreeSceneComponent } from '@babylonjs/core/Culling/Octrees/'
 import '@babylonjs/core/Meshes/Builders/planeBuilder'
 import '@babylonjs/core/Meshes/Builders/linesBuilder'
 
@@ -41,6 +39,7 @@ var defaults = {
     AOmultipliers: [0.93, 0.8, 0.5],
     reverseAOmultiplier: 1.0,
     preserveDrawingBuffer: true,
+    octreeBlockSize: 2,
 }
 
 
@@ -69,6 +68,7 @@ function Rendering(noa, opts, canvas) {
      *   AOmultipliers: [0.93, 0.8, 0.5],
      *   reverseAOmultiplier: 1.0,
      *   preserveDrawingBuffer: true,
+     *   octreeBlockSize: 2,
      * }
      * ```
      */
@@ -101,11 +101,9 @@ function initScene(self, canvas, opts) {
     // remove built-in listeners
     scene.detachControl()
 
-    // octree setup
-    scene._addComponent(new OctreeSceneComponent(scene))
-    self._octree = new Octree($ => { })
-    self._octree.blocks = []
-    scene._selectionOctree = self._octree
+    // octree manager class
+    var blockSize = Math.round(opts.octreeBlockSize)
+    self._octreeManager = new SceneOctreeManager(self, blockSize)
 
     // camera, and a node to hold it and accumulate rotations
     self._cameraHolder = new TransformNode('camHolder', scene)
@@ -229,10 +227,9 @@ var hlpos = []
  * @param chunk: (optional) chunk to which the mesh is statically bound
  * @method
  */
-Rendering.prototype.addMeshToScene = function (mesh, isStatic, pos, _containingChunk) {
+Rendering.prototype.addMeshToScene = function (mesh, isStatic, pos, containingChunk) {
     // exit silently if mesh has already been added and not removed
-    if (mesh._noaContainingChunk) return
-    if (this._octree.dynamicContent.includes(mesh)) return
+    if (this._octreeManager.includesMesh(mesh)) return
 
     // find local position for mesh and move it there (unless it's parented)
     if (!mesh.parent) {
@@ -242,43 +239,21 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic, pos, _containingC
         mesh.position.copyFromFloats(lpos[0], lpos[1], lpos[2])
     }
 
-    // statically tie to a chunk's octree, or treat as dynamic?
-    var addToOctree = false
-    if (isStatic) {
-        var chunk = _containingChunk ||
-            this.noa.world._getChunkByCoords(pos[0], pos[1], pos[2])
-        addToOctree = !!(chunk && chunk.octreeBlock)
-    }
-
-    if (addToOctree) {
-        chunk.octreeBlock.entries.push(mesh)
-        mesh._noaContainingChunk = chunk
-    } else {
-        this._octree.dynamicContent.push(mesh)
-    }
-
+    // save CPU by freezing terrain meshes
     if (isStatic) {
         mesh.freezeWorldMatrix()
         mesh.freezeNormals()
     }
 
-    // add dispose event to undo everything done here
-    var remover = this.removeMeshFromScene.bind(this, mesh)
-    mesh.onDisposeObservable.add(remover)
+    // add to the octree, and add dispose handler to remove it
+    this._octreeManager.addMesh(mesh, isStatic, pos, containingChunk)
+    mesh.onDisposeObservable.add(() => {
+        this._octreeManager.removeMesh(mesh)
+    })
 }
 
 
 
-/**  Undoes everything `addMeshToScene` does
- * @method
- */
-Rendering.prototype.removeMeshFromScene = function (mesh) {
-    if (mesh._noaContainingChunk && mesh._noaContainingChunk.octreeBlock) {
-        removeUnorderedListItem(mesh._noaContainingChunk.octreeBlock.entries, mesh)
-    }
-    mesh._noaContainingChunk = null
-    removeUnorderedListItem(this._octree.dynamicContent, mesh)
-}
 
 
 
@@ -295,8 +270,6 @@ Rendering.prototype.makeStandardMaterial = function (name) {
     mat.specularColor.copyFromFloats(0, 0, 0)
     mat.ambientColor.copyFromFloats(1, 1, 1)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
-    // these seem to be safe in effectively all cases
-    mat.checkOnlyOnce = true
     return mat
 }
 
@@ -315,20 +288,11 @@ Rendering.prototype.makeStandardMaterial = function (name) {
  */
 
 Rendering.prototype.prepareChunkForRendering = function (chunk) {
-    var cs = chunk.size
-    var loc = []
-    this.noa.globalToLocal([chunk.x, chunk.y, chunk.z], null, loc)
-    var min = new Vector3(loc[0], loc[1], loc[2])
-    var max = new Vector3(loc[0] + cs, loc[1] + cs, loc[2] + cs)
-    chunk.octreeBlock = new OctreeBlock(min, max, undefined, undefined, undefined, $ => { })
-    this._octree.blocks.push(chunk.octreeBlock)
+    // currently no logic needed here, but I may need it again...
 }
 
 Rendering.prototype.disposeChunkForRendering = function (chunk) {
-    if (!chunk.octreeBlock) return
-    removeUnorderedListItem(this._octree.blocks, chunk.octreeBlock)
-    chunk.octreeBlock.entries.length = 0
-    chunk.octreeBlock = null
+    // nothing currently
 }
 
 
@@ -366,14 +330,8 @@ Rendering.prototype._rebaseOrigin = function (delta) {
         }
     })
 
-    // update octree block extents
-    this._octree.blocks.forEach(octreeBlock => {
-        octreeBlock.minPoint.subtractInPlace(dvec)
-        octreeBlock.maxPoint.subtractInPlace(dvec)
-        octreeBlock._boundingVectors.forEach(v => {
-            v.subtractInPlace(dvec)
-        })
-    })
+    // updates position of all octree blocks
+    this._octreeManager.rebase(dvec)
 }
 
 
@@ -459,6 +417,7 @@ function getHighlightMesh(rendering) {
     }
     return mesh
 }
+
 
 
 
