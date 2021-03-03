@@ -14,7 +14,7 @@ export default TerrainMesher
 
 
 // enable for profiling..
-var PROFILE_EVERY = 0 // 100
+var PROFILE_EVERY = 400 // 100
 
 
 
@@ -54,14 +54,11 @@ function TerrainMesher(noa) {
 
         // greedy mesher creates an array of Submesh structs
         var edgesOnly = chunk.isFull || chunk.isEmpty
-        var subMeshes = greedyMesher.mesh(voxels, mats, cols, ao, vals, rev, edgesOnly)
+        var geomData = greedyMesher.mesh(voxels, mats, cols, ao, vals, rev, edgesOnly)
 
         // builds the babylon mesh that will be added to the scene
-        var mesh
-        if (subMeshes.length) {
-            mesh = meshBuilder.build(chunk, subMeshes, ignoreMaterials)
-            profile_hook('terrain')
-        }
+        var mesh = (geomData.numQuads === 0) ? null :
+            meshBuilder.build(chunk, geomData, ignoreMaterials)
 
         profile_hook('end')
         return mesh || null
@@ -152,29 +149,29 @@ function allocateVectors(size, posValues, sizeValues, tgtPosValues) {
 
 /*
  * 
- *  Submesh - holds one submesh worth of greedy-meshed data
+ *  A single reusable struct to hold all geometry data for the chunk 
+ *  currently being meshed.
  * 
- *  Basically, the greedy mesher builds these and the mesh builder consumes them
+ *  Basically, the greedy mesher builds this and the mesh builder consumes it
  * 
- */
+*/
 
-function SubmeshData(id) {
-    this.id = id | 0
-    this.positions = []
-    this.indices = []
-    this.normals = []
-    this.colors = []
-    this.uvs = []
-    this.mergeable = false      // flag used during terrain meshing
+var cachedGeometryData = {
+    numQuads: 0,                // how many quads meshed so far
+    materialQuadCounts: {},     // how many quads use each material ID
+    quadMaterials: [1],         // list of which matID each quad used
+    positions: [0.5],           // raw data, 12 positions per quad
+    indices: [1],               // raw data, 6 indexes per quad
+    normals: [0.5],             // raw data, 12 normals per quad
+    colors: [0.5],              // raw data, 16 colors per quad
+    uvs: [0.5],                 // raw data, 8 uvs per quad
+
+    reset: function () {
+        this.numQuads = 0
+        this.materialQuadCounts = {}
+    }
 }
 
-SubmeshData.prototype.dispose = function () {
-    this.positions = null
-    this.indices = null
-    this.normals = null
-    this.colors = null
-    this.uvs = null
-}
 
 
 
@@ -185,137 +182,124 @@ SubmeshData.prototype.dispose = function () {
 
 /*
  * 
- *  Mesh Builder - turns an array of Submesh data into a 
+ *  Mesh Builder - consumes all the raw data in geomData to build
  *  Babylon.js mesh/submeshes, ready to be added to the scene
  * 
  */
 
 function MeshBuilder(noa) {
 
-
     // core
-    this.build = function (chunk, meshDataList, ignoreMaterials) {
+    this.build = function (chunk, geomData, ignoreMaterials) {
+        var nq = geomData.numQuads
+        var quadCounts = geomData.materialQuadCounts
 
-        // flag and merge submesh data that can share the default terrain material
-        var numMergeable = 0
-        for (var i = 0; i < meshDataList.length; i++) {
-            var mdat = meshDataList[i]
-            if (ignoreMaterials) {
-                mdat.mergeable = true
+        // find any used materials that can share the scene default
+        // and move their quad counts to matID 0
+        var matLookup = { '0': '0' }
+        quadCounts['0'] = 0
+        for (var matID in quadCounts) {
+            if (matID === '0') continue
+            if (ignoreMaterials || canUseDefaultMat(matID)) {
+                quadCounts['0'] += quadCounts[matID]
+                quadCounts[matID] = 0
+                matLookup[matID] = '0'
             } else {
-                var url = noa.registry.getMaterialTexture(mdat.id)
-                var matData = noa.registry.getMaterialData(mdat.id)
-                mdat.mergeable = (!url)
-                    && (matData.alpha === 1)
-                    && (!matData.renderMat)
-            }
-            if (mdat.mergeable) numMergeable++
-        }
-        if (numMergeable > 1) mergeSubmeshes(meshDataList, false)
-
-        // now merge everything, keeping track of vertices/indices/materials
-        var results = mergeSubmeshes(meshDataList, true)
-
-        // merge sole remaining submesh instance into a babylon mesh
-        var merged = meshDataList[0]
-        var name = 'chunk_' + chunk.requestID
-        var mats = results.matIDs.map(id => getTerrainMaterial(id, ignoreMaterials))
-        var mesh = buildMeshFromSubmesh(merged, name, mats, results.vertices, results.indices)
-
-        // done, mesh will be positioned later when added to the scene
-        return mesh
-    }
-
-
-
-    // given a set of submesh objects, merge some or all of them
-    //      while tracking vertex/index offsets for each material ID
-    // Note: modifies meshDataList in place!
-    function mergeSubmeshes(meshDataList, mergeAll) {
-        var vertices = []
-        var indices = []
-        var matIDs = []
-
-        var target = null
-        for (var i = 0; i < meshDataList.length; ++i) {
-            var mdat = meshDataList[i]
-            if (!(mergeAll || mdat.mergeable)) continue
-
-            vertices.push(mdat.positions.length)
-            indices.push(mdat.indices.length)
-            matIDs.push(mdat.id)
-
-            if (!target) {
-                target = mdat
-
-            } else {
-                var indexOffset = target.positions.length / 3
-                // merge data in "mdat" onto "target"
-                mergeArrays(target.positions, mdat.positions)
-                mergeArrays(target.normals, mdat.normals)
-                mergeArrays(target.colors, mdat.colors)
-                mergeArrays(target.uvs, mdat.uvs)
-                // indices must be offset relative to data being merged onto
-                for (var j = 0, len = mdat.indices.length; j < len; ++j) {
-                    target.indices.push(mdat.indices[j] + indexOffset)
-                }
-                // get rid of entry that's been merged
-                meshDataList.splice(i, 1)
-                mdat.dispose()
-                i--
+                matLookup[matID] = matID
             }
         }
 
-        return {
-            vertices: vertices,
-            indices: indices,
-            matIDs: matIDs,
+        // arbitrarily choose a starting offset for quads using each material
+        var matOffsets = {}
+        var currOffset = 0
+        for (var matID2 in quadCounts) {
+            if (quadCounts[matID2] === 0) continue
+            matOffsets[matID2] = currOffset
+            currOffset += quadCounts[matID2]
         }
-    }
 
-    function mergeArrays(tgt, src) {
-        for (var i = 0; i < src.length; i++) tgt.push(src[i])
-    }
+        // allocate the typed data arrays we'll hand off to Babylon
+        var pos = new Float32Array(nq * 12)
+        var ind = new Uint16Array(nq * 6)
+        var nor = new Float32Array(nq * 12)
+        var col = new Float32Array(nq * 16)
+        var uvs = new Float32Array(nq * 8)
 
+        // copy data from dataGeom into typed arrays, reordering it as we go
+        // so that geometry sharing the same material is contiguous
+        for (var ix = 0; ix < nq; ix++) {
+            var mergedID = matLookup[geomData.quadMaterials[ix]]
+            var off = matOffsets[mergedID]
+            // note: indices need a flat offset to point to their original data
+            var indexAdjust = (off - ix) * 4
+            copyArraySubset(geomData.positions, ix, pos, off, 12, 0)
+            copyArraySubset(geomData.indices, ix, ind, off, 6, indexAdjust)
+            copyArraySubset(geomData.normals, ix, nor, off, 12, 0)
+            copyArraySubset(geomData.colors, ix, col, off, 16, 0)
+            copyArraySubset(geomData.uvs, ix, uvs, off, 8, 0)
+            matOffsets[mergedID]++
+        }
 
-    function buildMeshFromSubmesh(submesh, name, mats, verts, inds) {
-
-        // base mesh and vertexData object
+        // build the mesh and vertexData object
         var scene = noa.rendering.getScene()
+        var name = 'chunk_' + chunk.requestID
         var mesh = new Mesh(name, scene)
         var vdat = new VertexData()
-        vdat.positions = submesh.positions
-        vdat.indices = submesh.indices
-        vdat.normals = submesh.normals
-        vdat.colors = submesh.colors
-        vdat.uvs = submesh.uvs
+        vdat.positions = pos
+        vdat.indices = ind
+        vdat.normals = nor
+        vdat.colors = col
+        vdat.uvs = uvs
         vdat.applyToMesh(mesh)
-        submesh.dispose()
 
-        if (mats.length === 1) {
-            // if only one material ID, assign as a regular mesh and return
-            mesh.material = mats[0]
-
+        // assign a material or make a multimaterial
+        if (Object.keys(matOffsets).length === 1) {
+            var onlyMatID = matLookup[geomData.quadMaterials[0]]
+            mesh.material = getTerrainMaterial(onlyMatID, ignoreMaterials)
         } else {
-            // else we need to make a multimaterial and define (babylon) submeshes
+            // make a multimaterial and define (babylon) submeshes
             var multiMat = new MultiMaterial('multimat ' + name, scene)
             mesh.subMeshes = []
-            // var totalVerts = vdat.positions.length
-            // var totalInds = vdat.indices.length
-            var vertStart = 0
-            var indStart = 0
-            for (var i = 0; i < mats.length; i++) {
-                multiMat.subMaterials[i] = mats[i]
-                var sub = new SubMesh(i, vertStart, verts[i], indStart, inds[i], mesh)
-                mesh.subMeshes[i] = sub
-                vertStart += verts[i]
-                indStart += inds[i]
+            var matNum = 0
+            for (var matID4 in matOffsets) {
+                // note that offsets are currently at END of their respective spans
+                var qct = quadCounts[matID4]
+                var start = matOffsets[matID4] - qct
+                new SubMesh(
+                    matNum, // index into multmat
+                    start * 12, qct * 12, // vertex start, count - these appear to be used
+                    start * 6, qct * 6, // indices start, length
+                    mesh)
+                var subMat = getTerrainMaterial(matID4, ignoreMaterials)
+                multiMat.subMaterials[matNum] = subMat
+                matNum++
             }
             mesh.material = multiMat
         }
 
+        // done, mesh will be positioned later when added to the scene
+        profile_hook('mesh')
         return mesh
     }
+
+    function canUseDefaultMat(matID) {
+        if (noa.registry.getMaterialTexture(matID)) return false
+        var matData = noa.registry.getMaterialData(matID)
+        return (matData.alpha === 1 && !matData.renderMat)
+    }
+
+    function copyArraySubset(src, sbase, tgt, tbase, count, addValue) {
+        var soff = sbase * count
+        var toff = tbase * count
+        for (var i = 0; i < count; i++) {
+            tgt[toff + i] = src[soff + i] + addValue
+        }
+    }
+
+
+
+
+
 
 
 
@@ -323,15 +307,17 @@ function MeshBuilder(noa) {
     //                         Material wrangling
 
 
-    var materialCache = {}
 
     // manage materials/textures to avoid duplicating them
     function getTerrainMaterial(matID, ignore) {
-        if (ignore) return noa.rendering.flatMaterial
+        if (ignore || matID == 0) return noa.rendering.flatMaterial
         var name = 'terrain_mat:' + matID
-        if (!materialCache[name]) materialCache[name] = makeTerrainMaterial(matID, name)
+        if (!materialCache[name]) {
+            materialCache[name] = makeTerrainMaterial(matID, name)
+        }
         return materialCache[name]
     }
+    var materialCache = {}
 
 
     // canonical function to make a terrain material
@@ -413,8 +399,9 @@ function GreedyMesher(noa) {
         solidLookup = noa.registry._solidityLookup
         opacityLookup = noa.registry._opacityLookup
 
-        // hash of Submeshes, keyed by material ID
-        var subMeshes = {}
+        // collected geometry data for the current mesh
+        var geomData = cachedGeometryData
+        geomData.reset()
 
         // precalc how to apply AO packing in first masking function
         var skipReverseAO = (revAoVal === aoValues[0])
@@ -446,23 +433,20 @@ function GreedyMesher(noa) {
 
                 // fills mask and aomask arrays with values
                 constructMeshMasks(i, d, arrT, getMaterial)
-                profile_hook('masks')
 
                 // parses the masks to do greedy meshing
-                constructMeshDataFromMasks(i, d, u, v, len1, len2,
-                    doAO, subMeshes, getColor, aoValues, revAoVal)
+                constructGeometryFromMasks(i, d, u, v, len1, len2,
+                    doAO, geomData, getColor, aoValues, revAoVal)
 
                 // process edges only by jumping to other edge
                 if (edgesOnly) i += (len0 - 1)
 
-                profile_hook('submeshes')
             }
         }
+        profile_hook('geometry')
 
-        // done, return hash of subMeshes as an array
-        var subMeshArr = []
-        for (var k in subMeshes) subMeshArr.push(subMeshes[k])
-        return subMeshArr
+        // done!
+        return geomData
     }
 
 
@@ -553,13 +537,13 @@ function GreedyMesher(noa) {
 
 
 
-
+    // 
     //      Greedy meshing inner loop two
     //
-    // construct data for mesh using the masks
+    // construct geometry data from the masks
 
-    function constructMeshDataFromMasks(i, d, u, v, len1, len2,
-        doAO, submeshes, getColor, aoValues, revAoVal) {
+    function constructGeometryFromMasks(i, d, u, v, len1, len2,
+        doAO, geomData, getColor, aoValues, revAoVal) {
         var n = 0
         var mask = maskCache
         var aomask = aomaskCache
@@ -605,78 +589,45 @@ function GreedyMesher(noa) {
 
                 // material and mesh for this face
                 var matID = Math.abs(maskVal)
-                if (!submeshes[matID]) submeshes[matID] = new SubmeshData(matID)
-                var mesh = submeshes[matID]
-                var colors = mesh.colors
-                var c = getColor(matID)
 
-                // colors are pushed in helper function - avoids deopts
+                // we're now ready to push a quad worth of geometry data
+                var nq = geomData.numQuads
+                geomData.quadMaterials[nq] = matID | 0
+                geomData.materialQuadCounts[matID] =
+                    (geomData.materialQuadCounts[matID] || 0) + 1
+
+                // add colors into geomData
                 // tridir is boolean for which way to split the quad into triangles
+                var colorsArr = geomData.colors
+                var colorsIndex = nq * 16
+                var triDir = meshColorFcn(colorsArr, colorsIndex,
+                    getColor(matID), ao, aoValues, revAoVal)
 
-                var triDir = meshColorFcn(colors, c, ao, aoValues, revAoVal)
-
-
-                //Add quad, vertices = x -> x+du -> x+du+dv -> x+dv
+                //Add quad positions - vertices = x -> x+du -> x+du+dv -> x+dv
                 x[u] = j
                 x[v] = k
                 du[u] = w
                 dv[v] = h
-
-                var pos = mesh.positions
-                pos.push(
-                    x[0], x[1], x[2],
-                    x[0] + du[0], x[1] + du[1], x[2] + du[2],
-                    x[0] + du[0] + dv[0], x[1] + du[1] + dv[1], x[2] + du[2] + dv[2],
-                    x[0] + dv[0], x[1] + dv[1], x[2] + dv[2])
-
+                addPositionValues(geomData.positions, nq * 12, x, du, dv)
 
                 // add uv values, with the order and sign depending on 
                 // axis and direction so as to avoid mirror-image textures
                 var dir = sign(maskVal)
+                addUVs(geomData.uvs, nq * 8, d, w, h, dir)
 
-                if (d === 2) {
-                    mesh.uvs.push(
-                        0, h,
-                        -dir * w, h,
-                        -dir * w, 0,
-                        0, 0)
-                } else {
-                    mesh.uvs.push(
-                        0, w,
-                        0, 0,
-                        dir * h, 0,
-                        dir * h, w)
-                }
-
+                // add same normals for all vertices, depending on
+                // which direction the mask was solid in..
+                norms[d] = dir
+                addNormalValues(geomData.normals, nq * 12, norms)
 
                 // Add indexes, ordered clockwise for the facing direction;
+                var inds = geomData.indices
+                var ioff = nq * 6
+                var voff = nq * 4
+                addIndexValues(inds, ioff, voff, maskVal, triDir)
 
-                var vs = pos.length / 3 - 4
-
-                if (maskVal < 0) {
-                    if (triDir) {
-                        mesh.indices.push(vs, vs + 1, vs + 2, vs, vs + 2, vs + 3)
-                    } else {
-                        mesh.indices.push(vs + 1, vs + 2, vs + 3, vs, vs + 1, vs + 3)
-                    }
-                } else {
-                    if (triDir) {
-                        mesh.indices.push(vs, vs + 2, vs + 1, vs, vs + 3, vs + 2)
-                    } else {
-                        mesh.indices.push(vs + 3, vs + 1, vs, vs + 3, vs + 2, vs + 1)
-                    }
-                }
-
-
-                // norms depend on which direction the mask was solid in..
-                norms[d] = dir
-                // same norm for all vertices
-                mesh.normals.push(
-                    norms[0], norms[1], norms[2],
-                    norms[0], norms[1], norms[2],
-                    norms[0], norms[1], norms[2],
-                    norms[0], norms[1], norms[2])
-
+                // finished adding  quad geometry data
+                geomData.numQuads++
 
                 //Zero-out mask
                 for (var hx = 0; hx < h; ++hx) {
@@ -688,6 +639,51 @@ function GreedyMesher(noa) {
             }
         }
     }
+
+
+    // small helpers to add values to raw data geometry arrays:
+
+    function addPositionValues(posArr, offset, x, du, dv) {
+        for (var i = 0; i < 3; i++) {
+            posArr[offset + i] = x[i]
+            posArr[offset + 3 + i] = x[i] + du[i]
+            posArr[offset + 6 + i] = x[i] + du[i] + dv[i]
+            posArr[offset + 9 + i] = x[i] + dv[i]
+        }
+    }
+
+    function addUVs(uvArr, offset, d, w, h, dir) {
+        for (var i = 0; i < 8; i++) uvArr[offset + i] = 0
+        if (d === 2) {
+            uvArr[offset + 1] = uvArr[offset + 3] = h
+            uvArr[offset + 2] = uvArr[offset + 4] = -dir * w
+        } else {
+            uvArr[offset + 1] = uvArr[offset + 7] = w
+            uvArr[offset + 4] = uvArr[offset + 6] = dir * h
+        }
+    }
+
+    function addNormalValues(normArr, offset, norms) {
+        for (var i = 0; i < 12; i++) {
+            normArr[offset + i] = norms[i % 3]
+        }
+    }
+
+    function addIndexValues(indArr, offset, baseIndex, maskVal, triDir) {
+        var indexVals = (maskVal < 0) ?
+            (triDir ? indexLists.A : indexLists.B) :
+            (triDir ? indexLists.C : indexLists.D)
+        for (var i = 0; i < 6; i++) {
+            indArr[offset + i] = baseIndex + indexVals[i]
+        }
+    }
+    var indexLists = {
+        A: [0, 1, 2, 0, 2, 3],
+        B: [1, 2, 3, 0, 1, 3],
+        C: [0, 2, 1, 0, 3, 2],
+        D: [3, 1, 0, 3, 2, 1],
+    }
+
 
 
 
@@ -704,23 +700,25 @@ function GreedyMesher(noa) {
         return true
     }
 
-    function pushMeshColors_noAO(colors, c, ao, aoValues, revAoVal) {
-        colors.push(c[0], c[1], c[2], 1)
-        colors.push(c[0], c[1], c[2], 1)
-        colors.push(c[0], c[1], c[2], 1)
-        colors.push(c[0], c[1], c[2], 1)
+    function pushMeshColors_noAO(colors, ix, c, ao, aoValues, revAoVal) {
+        for (var off = 0; off < 16; off += 4) {
+            colors[ix + off] = c[0]
+            colors[ix + off + 1] = c[1]
+            colors[ix + off + 2] = c[2]
+            colors[ix + off + 3] = 1
+        }
         return true // triangle direction doesn't matter for non-AO
     }
 
-    function pushMeshColors(colors, c, ao, aoValues, revAoVal) {
+    function pushMeshColors(colors, ix, c, ao, aoValues, revAoVal) {
         var ao00 = unpackAOMask(ao, 0, 0)
         var ao10 = unpackAOMask(ao, 1, 0)
         var ao11 = unpackAOMask(ao, 1, 1)
         var ao01 = unpackAOMask(ao, 0, 1)
-        pushAOColor(colors, c, ao00, aoValues, revAoVal)
-        pushAOColor(colors, c, ao10, aoValues, revAoVal)
-        pushAOColor(colors, c, ao11, aoValues, revAoVal)
-        pushAOColor(colors, c, ao01, aoValues, revAoVal)
+        pushAOColor(colors, ix, c, ao00, aoValues, revAoVal)
+        pushAOColor(colors, ix + 4, c, ao10, aoValues, revAoVal)
+        pushAOColor(colors, ix + 8, c, ao11, aoValues, revAoVal)
+        pushAOColor(colors, ix + 12, c, ao01, aoValues, revAoVal)
 
         // this bit is pretty magical..
         var triDir = true
@@ -868,9 +866,12 @@ function GreedyMesher(noa) {
 
     // premultiply vertex colors by value depending on AO level
     // then push them into color array
-    function pushAOColor(colors, baseCol, ao, aoVals, revAoVal) {
+    function pushAOColor(colors, ix, baseCol, ao, aoVals, revAoVal) {
         var mult = (ao === 0) ? revAoVal : aoVals[ao - 1]
-        colors.push(baseCol[0] * mult, baseCol[1] * mult, baseCol[2] * mult, 1)
+        colors[ix] = baseCol[0] * mult
+        colors[ix + 1] = baseCol[1] * mult
+        colors[ix + 2] = baseCol[2] * mult
+        colors[ix + 3] = 1
     }
 
 }
