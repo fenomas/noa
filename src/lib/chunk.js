@@ -1,11 +1,6 @@
 
 var ndarray = require('ndarray')
 
-// shared references to terrain/object meshers
-import TerrainMesher from './terrainMesher'
-import objectMesher from './objectMesher'
-
-
 export default Chunk
 
 
@@ -27,36 +22,29 @@ export default Chunk
  *
  */
 
-function Chunk(noa, requestID, i, j, k, size, dataArray) {
+function Chunk(noa, requestID, ci, cj, ck, size, dataArray) {
     this.noa = noa
     this.isDisposed = false
 
     // voxel data and properties
     this.requestID = requestID     // id sent to game client
     this.voxels = dataArray
-    this.i = i
-    this.j = j
-    this.k = k
+    this.i = ci
+    this.j = cj
+    this.k = ck
     this.size = size
-    this.x = i * size
-    this.y = j * size
-    this.z = k * size
+    this.x = ci * size
+    this.y = cj * size
+    this.z = ck * size
+    this.pos = [this.x, this.y, this.z]
 
     // flags to track if things need re-meshing
     this._terrainDirty = false
     this._objectsDirty = false
 
-    // (re) init references shared among all chunks
-    solidLookup = noa.registry._solidityLookup
-    opaqueLookup = noa.registry._opacityLookup
-    objectLookup = noa.registry._objectLookup
-    blockHandlerLookup = noa.registry._blockHandlerLookup
-
-    // makes data for terrain / object meshing
-    this._terrainMesh = null
-    this._objectBlocks = null
-    this._objectSystems = null
-    objectMesher.initChunk(this)
+    // inits state of terrain / object meshing
+    noa._terrainMesher.initChunk(this)
+    noa._objectMesher.initChunk(this)
 
     this.isFull = false
     this.isEmpty = false
@@ -66,7 +54,6 @@ function Chunk(noa, requestID, i, j, k, size, dataArray) {
     this._neighbors = new ndarray(narr, [3, 3, 3]).lo(1, 1, 1)
     this._neighbors.set(0, 0, 0, this)
     this._neighborCount = 0
-    this._maxMeshedNeighbors = 0
     this._timesMeshed = 0
 
     // passes through voxel contents, calling block handlers etc.
@@ -83,21 +70,15 @@ Chunk._createVoxelArray = function (size) {
 Chunk.prototype._updateVoxelArray = function (dataArray) {
     // dispose current object blocks
     callAllBlockHandlers(this, 'onUnload')
-    objectMesher.disposeChunk(this)
+    this.noa._objectMesher.disposeChunk(this)
+    this.noa._terrainMesher.disposeChunk(this)
     this.voxels = dataArray
     this._terrainDirty = false
     this._objectsDirty = false
-    objectMesher.initChunk(this)
+    this.noa._objectMesher.initChunk(this)
+    this.noa._terrainMesher.initChunk(this)
     scanVoxelData(this)
 }
-
-
-// Registry lookup references shared by all chunks
-var solidLookup
-var opaqueLookup
-var objectLookup
-var blockHandlerLookup
-
 
 
 
@@ -114,57 +95,70 @@ var blockHandlerLookup
 
 // get/set deal with block IDs, so that this class acts like an ndarray
 
-Chunk.prototype.get = function (x, y, z) {
-    return this.voxels.get(x, y, z)
+Chunk.prototype.get = function (i, j, k) {
+    return this.voxels.get(i, j, k)
 }
 
-Chunk.prototype.getSolidityAt = function (x, y, z) {
-    return solidLookup[this.voxels.get(x, y, z)]
+Chunk.prototype.getSolidityAt = function (i, j, k) {
+    var solidLookup = this.noa.registry._solidityLookup
+    return solidLookup[this.voxels.get(i, j, k)]
 }
 
-Chunk.prototype.set = function (x, y, z, newID) {
-    var oldID = this.voxels.get(x, y, z)
-    var oldIDnum = oldID
-    if (newID === oldIDnum) return
+Chunk.prototype.set = function (i, j, k, newID, x, y, z) {
+    var oldID = this.voxels.get(i, j, k)
+    if (newID === oldID) return
 
-    // manage data
-    this.voxels.set(x, y, z, newID)
+    // update voxel data
+    this.voxels.set(i, j, k, newID)
+
+    // lookup tables from registry, etc
+    var solidLookup = this.noa.registry._solidityLookup
+    var objectLookup = this.noa.registry._objectLookup
+    var opaqueLookup = this.noa.registry._opacityLookup
+    var handlerLookup = this.noa.registry._blockHandlerLookup
 
     // voxel lifecycle handling
-    if (objectLookup[oldID]) setObjectBlockState(this, 0, x, y, z)
-    if (objectLookup[newID]) setObjectBlockState(this, newID, x, y, z)
-    var hold = blockHandlerLookup[oldIDnum]
-    if (hold) callBlockHandler(this, hold, 'onUnset', x, y, z)
-    var hnew = blockHandlerLookup[newID]
-    if (hnew) callBlockHandler(this, hnew, 'onSet', x, y, z)
+    var hold = handlerLookup[oldID]
+    var hnew = handlerLookup[newID]
+    if (hold) callBlockHandler(this, hold, 'onUnset', i, j, k)
+    if (hnew) callBlockHandler(this, hnew, 'onSet', i, j, k)
 
-    // track full/emptiness and info about terrain
+    // track object block states
+    var objMesher = this.noa._objectMesher
+    var objOld = objectLookup[oldID]
+    var objNew = objectLookup[newID]
+    if (objOld) objMesher.setObjectBlock(this, 0, i, j, k)
+    if (objNew) objMesher.setObjectBlock(this, newID, i, j, k)
+
+    // track full/emptiness and dirty flags for the chunk
     if (!opaqueLookup[newID]) this.isFull = false
     if (newID !== 0) this.isEmpty = false
-    if (affectsTerrain(newID) || affectsTerrain(oldID)) {
-        this._terrainDirty = true
-    }
+
+    var solidityChanged = (solidLookup[oldID] !== solidLookup[newID])
+    var opacityChanged = (opaqueLookup[oldID] !== opaqueLookup[newID])
+
+    if (objOld || objNew) this._objectsDirty = true
+    if (solidityChanged || opacityChanged
+        || (!objNew && (newID !== 0))) this._terrainDirty = true
 
     if (this._terrainDirty || this._objectsDirty) {
         this.noa.world._queueChunkForRemesh(this)
     }
 
     // neighbors only affected if solidity or opacity changed on an edge
-    var SOchanged = (solidLookup[oldID] !== solidLookup[newID])
-        || (opaqueLookup[oldID] !== opaqueLookup[newID])
-    if (SOchanged) {
+    if (solidityChanged || opacityChanged) {
         var edge = this.size - 1
-        var imin = (x === 0) ? -1 : 0
-        var imax = (x === edge) ? 1 : 0
-        var jmin = (y === 0) ? -1 : 0
-        var jmax = (y === edge) ? 1 : 0
-        var kmin = (z === 0) ? -1 : 0
-        var kmax = (z === edge) ? 1 : 0
-        for (var i = imin; i <= imax; i++) {
-            for (var j = jmin; j <= jmax; j++) {
-                for (var k = kmin; k <= kmax; k++) {
-                    if ((i | j | k) === 0) continue
-                    var nab = this._neighbors.get(i, j, k)
+        var imin = (i === 0) ? -1 : 0
+        var jmin = (j === 0) ? -1 : 0
+        var kmin = (k === 0) ? -1 : 0
+        var imax = (i === edge) ? 1 : 0
+        var jmax = (j === edge) ? 1 : 0
+        var kmax = (k === edge) ? 1 : 0
+        for (var ni = imin; ni <= imax; ni++) {
+            for (var nj = jmin; nj <= jmax; nj++) {
+                for (var nk = kmin; nk <= kmax; nk++) {
+                    if ((ni | nj | nk) === 0) continue
+                    var nab = this._neighbors.get(ni, nj, nk)
                     if (!nab) return
                     nab._terrainDirty = true
                     this.noa.world._queueChunkForRemesh(nab)
@@ -176,12 +170,6 @@ Chunk.prototype.set = function (x, y, z, newID) {
 
 
 
-// helper to track the state of all object blocks in the chunk
-function setObjectBlockState(chunk, blockID, i, j, k) {
-    objectMesher.setObjectBlock(chunk, blockID, i, j, k)
-    chunk._objectsDirty = true
-}
-
 // helper to call handler of a given type at a particular xyz
 function callBlockHandler(chunk, handlers, type, i, j, k) {
     var handler = handlers[type]
@@ -190,57 +178,21 @@ function callBlockHandler(chunk, handlers, type, i, j, k) {
 }
 
 
-
-
-// Convert chunk's voxel terrain into a babylon.js mesh
-// Used internally, but needs to be public so mesh-building hacks can call it
-Chunk.prototype.mesh = function (matGetter, colGetter, ignoreMats, useAO, aoVals, revAoVal) {
-    if (!terrainMesher) terrainMesher = new TerrainMesher(this.noa)
-    return terrainMesher.meshChunk(this, matGetter, colGetter, ignoreMats, useAO, aoVals, revAoVal)
-}
-
-var terrainMesher
-
-
-
-
 // gets called by World when this chunk has been queued for remeshing
 Chunk.prototype.updateMeshes = function () {
-    var rendering = this.noa.rendering
-    var pos = [this.x, this.y, this.z]
     if (this._terrainDirty) {
-        if (this._terrainMesh) this._terrainMesh.dispose()
-        var mesh = this.mesh()
-        if (mesh && mesh.getIndices().length > 0) {
-            rendering.addMeshToScene(mesh, true, pos, this)
-        }
-        this._terrainMesh = mesh || null
-        this._terrainDirty = false
+        this.noa._terrainMesher.meshChunk(this)
         this._timesMeshed++
-        this._maxMeshedNeighbors = Math.max(this._maxMeshedNeighbors, this._neighborCount)
+        this._terrainDirty = false
     }
     if (this._objectsDirty) {
-        objectMesher.removeObjectMeshes(this)
-        var meshes = objectMesher.buildObjectMeshes(this)
-        for (var dmesh of meshes) {
-            rendering.addMeshToScene(dmesh, true, pos, this)
-        }
+        this.noa._objectMesher.buildObjectMeshes(this)
         this._objectsDirty = false
     }
 }
 
 
 
-
-
-
-
-// helpers to determine which blocks are, or can affect, terrain meshes
-function affectsTerrain(id) {
-    if (id === 0) return false
-    if (solidLookup[id]) return true
-    return !objectLookup[id]
-}
 
 
 
@@ -266,7 +218,10 @@ function scanVoxelData(chunk) {
     var voxels = chunk.voxels
     var data = voxels.data
     var len = voxels.shape[0]
-    var handlerLookup = blockHandlerLookup
+    var opaqueLookup = chunk.noa.registry._opacityLookup
+    var handlerLookup = chunk.noa.registry._blockHandlerLookup
+    var objectLookup = chunk.noa.registry._objectLookup
+    var objMesher = chunk.noa._objectMesher
     for (var i = 0; i < len; ++i) {
         for (var j = 0; j < len; ++j) {
             var index = voxels.index(i, j, 0)
@@ -281,7 +236,8 @@ function scanVoxelData(chunk) {
                 fullyAir = false
                 // handle object blocks and handlers
                 if (objectLookup[id]) {
-                    setObjectBlockState(chunk, id, i, j, k)
+                    objMesher.setObjectBlock(chunk, id, i, j, k)
+                    chunk._objectsDirty = true
                 }
                 var handlers = handlerLookup[id]
                 if (handlers) {
@@ -313,8 +269,8 @@ Chunk.prototype.dispose = function () {
     callAllBlockHandlers(this, 'onUnload')
 
     // let meshers dispose their stuff
-    objectMesher.disposeChunk(this)
-    if (this._terrainMesh) this._terrainMesh.dispose()
+    this.noa._objectMesher.disposeChunk(this)
+    this.noa._terrainMesher.disposeChunk(this)
 
     // apparently there's no way to dispose typed arrays, so just null everything
     this.voxels.data = null
@@ -330,7 +286,7 @@ Chunk.prototype.dispose = function () {
 function callAllBlockHandlers(chunk, type) {
     var voxels = chunk.voxels
     var data = voxels.data
-    var handlerLookup = blockHandlerLookup
+    var handlerLookup = chunk.noa.registry._blockHandlerLookup
     var len = voxels.shape[0]
     for (var i = 0; i < len; ++i) {
         for (var j = 0; j < len; ++j) {

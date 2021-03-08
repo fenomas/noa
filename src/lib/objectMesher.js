@@ -1,7 +1,7 @@
 import { SolidParticleSystem } from '@babylonjs/core/Particles/solidParticleSystem'
 import { locationHasher } from './util'
 
-export default new ObjectMesher()
+export default ObjectMesher
 
 
 // enable for profiling..
@@ -44,7 +44,7 @@ function ObjectMesher() {
     }
 
     this.disposeChunk = function (chunk) {
-        this.removeObjectMeshes(chunk)
+        removeObjectMeshes(chunk)
         chunk._objectBlocks = null
     }
 
@@ -71,18 +71,9 @@ function ObjectMesher() {
      * 
      */
 
-    this.removeObjectMeshes = function (chunk) {
-        // remove the current (if any) sps/mesh
-        var systems = chunk._objectSystems || []
-        while (systems.length) {
-            var sps = systems.pop()
-            if (sps.mesh) sps.mesh.dispose()
-            sps.dispose()
-        }
-    }
-
     this.buildObjectMeshes = function (chunk) {
         profile_hook('start')
+        removeObjectMeshes(chunk)
 
         var scene = chunk.noa.rendering.getScene()
         var objectMeshLookup = chunk.noa.registry._blockMeshLookup
@@ -114,8 +105,8 @@ function ObjectMesher() {
         var y0 = chunk.j * chunk.size
         var z0 = chunk.k * chunk.size
 
+
         // build one SPS mesh for each material
-        var meshes = []
         for (var ix in matIndexes) {
 
             var meshHash = matIndexes[ix]
@@ -123,17 +114,28 @@ function ObjectMesher() {
             profile_hook('made SPS')
 
             // build SPS into the scene
-            var merged = sps.buildMesh()
+            var mesh = sps.buildMesh()
             profile_hook('built mesh')
 
-            // finish up
-            merged.material = (ix > -1) ? scene.materials[ix] : null
-            meshes.push(merged)
+            // finish up and add to scene as static terrain
+            mesh.material = (ix > -1) ? scene.materials[ix] : null
             chunk._objectSystems.push(sps)
+            chunk.noa.rendering.addMeshToScene(mesh, true, chunk.pos, chunk)
+            profile_hook('misc')
         }
 
         profile_hook('end')
-        return meshes
+    }
+
+
+    function removeObjectMeshes(chunk) {
+        // remove the current (if any) sps/mesh
+        var systems = chunk._objectSystems || []
+        while (systems.length) {
+            var sps = systems.pop()
+            if (sps.mesh) sps.mesh.dispose()
+            sps.dispose()
+        }
     }
 
 

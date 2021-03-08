@@ -134,11 +134,11 @@ export function iterateOverShellAtDistance(d, xmax, ymax, cb) {
 
 // function to hash three indexes (i,j,k) into one integer
 // note that hash wraps around every 1024 indexes.
+//      i.e.:   hash(1, 1, 1) === hash(1025, 1, -1023)
 export function locationHasher(i, j, k) {
-    var id = i & 1023
-    id |= (j & 1023) << 10
-    id |= (k & 1023) << 20
-    return id
+    return (i & 1023)
+        | ((j & 1023) << 10)
+        | ((k & 1023) << 20)
 }
 
 

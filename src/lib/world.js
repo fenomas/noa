@@ -166,7 +166,7 @@ World.prototype.setBlockID = function (val, x, y, z) {
     var chunk = this._storage.getChunkByIndexes(ci, cj, ck)
     if (!chunk) return
     var [i, j, k] = this._coordsToChunkLocals(x, y, z)
-    return chunk.set(i, j, k, val)
+    return chunk.set(i, j, k, val, x, y, z)
 }
 
 
@@ -393,8 +393,11 @@ function initChunkQueues(world) {
     world._chunksToRemove = new LocationQueue()
     world._chunksToRequest = new LocationQueue()
     world._chunksToMeshFirst = new LocationQueue()
-    // accessor for chunks to queue themselves for remeshing
-    world._queueChunkForRemesh = queueChunkForRemesh.bind(null, world)
+}
+
+// internal accessor chunks to queue themeselves for remeshing
+World.prototype._queueChunkForRemesh = function (chunk) {
+    possiblyQueueChunkForMeshing(this, chunk)
 }
 
 
@@ -506,10 +509,11 @@ function markAllChunksForRemoval(world) {
 }
 
 
-// incrementally look for chunks that could stand to be re-meshed
+// incrementally look for chunks that could be re-meshed
 function lookForChunksToMesh(world) {
+    var limit = 5
     var numQueued = world._chunksToMesh.count() + world._chunksToMeshFirst.count()
-    if (numQueued > 10) return
+    if (numQueued > limit) return
     var knownLocs = world._chunksKnown.arr
     var ct = Math.min(50, knownLocs.length)
     for (var i = 0; i < ct; i++) {
@@ -517,11 +521,9 @@ function lookForChunksToMesh(world) {
         var loc = knownLocs[lookIndex]
         var chunk = world._storage.getChunkByIndexes(loc[0], loc[1], loc[2])
         if (!chunk) continue
-        var nc = chunk._neighborCount
-        if (nc < world.minNeighborsToMesh) continue
-        if (nc <= chunk._maxMeshedNeighbors) continue
-        queueChunkForRemesh(world, chunk)
-        if (++numQueued > 10) return
+        var res = possiblyQueueChunkForMeshing(world, chunk)
+        if (res) numQueued++
+        if (numQueued > limit) return
     }
 }
 var lookIndex = -1
@@ -566,6 +568,15 @@ function processMeshingQueue(world, firstOnly) {
 }
 
 
+function possiblyQueueChunkForMeshing(world, chunk) {
+    if (!(chunk._terrainDirty || chunk._objectsDirty)) return
+    var nc = chunk._neighborCount
+    if (nc < chunk.minNeighborsToMesh) return
+    var queue = (nc === 26) ?
+        world._chunksToMeshFirst : world._chunksToMesh
+    queue.add(chunk.i, chunk.j, chunk.k)
+    return true
+}
 
 
 
@@ -620,21 +631,16 @@ function setChunkData(world, reqID, array, userData) {
         chunk = new Chunk(world.noa, reqID, i, j, k, size, array)
         world._storage.storeChunkByIndexes(i, j, k, chunk)
         chunk.userData = userData
-        updateNeighborsOfChunk(world, i, j, k, chunk)
         world.noa.rendering.prepareChunkForRendering(chunk)
         world.emit('chunkAdded', chunk)
     } else {
         // else we're updating data for an existing chunk
         chunk._updateVoxelArray(array)
-        // assume neighbors need remeshing
-        var list = chunk._neighbors.data
-        list.forEach(nab => {
-            if (!nab || nab === chunk) return
-            if (nab._neighborCount > 20) queueChunkForRemesh(world, nab)
-        })
     }
-    // chunk can now be meshed...
-    queueChunkForRemesh(world, chunk)
+    // chunk can now be meshed, and ping neighbors
+    possiblyQueueChunkForMeshing(world, chunk)
+    updateNeighborsOfChunk(world, i, j, k, chunk)
+
     profile_queues_hook('receive')
 }
 
@@ -656,17 +662,6 @@ function removeChunk(world, i, j, k) {
     world._chunksKnown.remove(i, j, k)
     world._chunksToMesh.remove(i, j, k)
     world._chunksToMeshFirst.remove(i, j, k)
-}
-
-
-function queueChunkForRemesh(world, chunk) {
-    var nc = chunk._neighborCount
-    var limit = Math.min(world.minNeighborsToMesh, 26)
-    if (nc < limit) return
-    chunk._terrainDirty = true
-    var queue = (nc === 26) ?
-        world._chunksToMeshFirst : world._chunksToMesh
-    queue.add(chunk.i, chunk.j, chunk.k)
 }
 
 
@@ -745,22 +740,30 @@ function sortQueueByDistanceFrom(queue, i, j, k) {
 
 // keep neighbor data updated when chunk is added or removed
 function updateNeighborsOfChunk(world, ci, cj, ck, chunk) {
+    var terrainChanged = (!chunk) || (chunk && !chunk.isEmpty)
     for (var i = -1; i <= 1; i++) {
         for (var j = -1; j <= 1; j++) {
             for (var k = -1; k <= 1; k++) {
                 if ((i | j | k) === 0) continue
                 var neighbor = world._storage.getChunkByIndexes(ci + i, cj + j, ck + k)
                 if (!neighbor) continue
-                if (chunk) {
+                // flag neighbor, assume terrain needs remeshing
+                if (terrainChanged) neighbor._terrainDirty = true
+                // update neighbor counts and references, both ways
+                if (chunk && !chunk._neighbors.get(i, j, k)) {
                     chunk._neighborCount++
                     chunk._neighbors.set(i, j, k, neighbor)
+                }
+                var nabRef = neighbor._neighbors.get(-i, -j, -k)
+                if (chunk && !nabRef) {
                     neighbor._neighborCount++
                     neighbor._neighbors.set(-i, -j, -k, chunk)
-                    // flag for remesh when chunk gets its last neighbor
+                    // immediately queue neighbor if it's surrounded
                     if (neighbor._neighborCount === 26) {
-                        queueChunkForRemesh(world, neighbor)
+                        possiblyQueueChunkForMeshing(world, neighbor)
                     }
-                } else {
+                }
+                if (!chunk && nabRef) {
                     neighbor._neighborCount--
                     neighbor._neighbors.set(-i, -j, -k, null)
                 }
@@ -768,6 +771,10 @@ function updateNeighborsOfChunk(world, ci, cj, ck, chunk) {
         }
     }
 }
+
+
+
+
 
 
 

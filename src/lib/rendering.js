@@ -242,7 +242,7 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic, pos, containingCh
     // save CPU by freezing terrain meshes
     if (isStatic) {
         mesh.freezeWorldMatrix()
-        mesh.freezeNormals()
+        if (mesh.freezeNormals) mesh.freezeNormals()
     }
 
     // add to the octree, and add dispose handler to remove it

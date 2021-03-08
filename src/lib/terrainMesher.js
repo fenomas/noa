@@ -34,12 +34,24 @@ function TerrainMesher(noa) {
 
     /*
      * 
-     *      Entry point and high-level flow
+     *      public API
      * 
     */
 
+
+    // add any properties that will get used for meshing
+    this.initChunk = function (chunk) {
+        chunk._terrainMesh = null
+    }
+
+
+    // meshing entry point and high-level flow
     this.meshChunk = function (chunk, matGetter, colGetter, ignoreMaterials, useAO, aoVals, revAoVal) {
         profile_hook('start')
+
+        // dispose any previously existing mesh
+        if (chunk._terrainMesh) chunk._terrainMesh.dispose()
+        profile_hook('cleanup')
 
         // args
         var mats = matGetter || noa.registry.getBlockFaceMaterial
@@ -61,8 +73,23 @@ function TerrainMesher(noa) {
             meshBuilder.build(chunk, geomData, ignoreMaterials)
 
         profile_hook('end')
-        return mesh || null
+
+        // add to scene and finish
+        chunk._terrainMesh = null
+        if (mesh && mesh.getIndices().length > 0) {
+            noa.rendering.addMeshToScene(mesh, true, chunk.pos, this)
+            chunk._terrainMesh = mesh
+        }
     }
+
+
+    // nothing to do on dispose except remove the previous mesh
+    this.disposeChunk = function (chunk) {
+        if (chunk._terrainMesh) chunk._terrainMesh.dispose()
+    }
+
+
+
 }
 
 
@@ -332,7 +359,7 @@ function MeshBuilder(noa) {
             // base material is fine for non-textured case, if no alpha
             return noa.rendering.flatMaterial
         }
-        var mat = noa.rendering.flatMaterial.clone(name)
+        var mat = noa.rendering.makeStandardMaterial(name)
         if (url) {
             var scene = noa.rendering.getScene()
             var tex = new Texture(url, scene, true, false, Texture.NEAREST_SAMPLINGMODE)
