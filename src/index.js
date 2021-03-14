@@ -249,7 +249,7 @@ function Engine(opts) {
 
     // various internals
     this._terrainMesher = new TerrainMesher(this)
-    this._objectMesher = new ObjectMesher()
+    this._objectMesher = new ObjectMesher(this)
 
     // temp hacks for development
     if (opts.debug) {
@@ -308,6 +308,7 @@ Engine.prototype.tick = function (dt) {
     }
     this.physics.tick(dt) // iterates physics
     profile_hook('physics')
+    this._objectMesher.tick(dt) // rebuild objects if needed
     this.rendering.tick(dt) // does deferred chunk meshing
     profile_hook('rendering')
     updateBlockTargets(this) // finds targeted blocks, and highlights one if needed
@@ -467,6 +468,7 @@ function checkWorldOffset(noa) {
     }
     noa.rendering._rebaseOrigin(delta)
     noa.entities._rebaseOrigin(delta)
+    noa._objectMesher._rebaseOrigin(delta)
 }
 
 
