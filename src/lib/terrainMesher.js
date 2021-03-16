@@ -14,7 +14,7 @@ export default TerrainMesher
 
 
 // enable for profiling..
-var PROFILE_EVERY = 0 // 100
+var PROFILE_EVERY = 0
 
 
 
@@ -41,7 +41,7 @@ function TerrainMesher(noa) {
 
     // add any properties that will get used for meshing
     this.initChunk = function (chunk) {
-        chunk._terrainMesh = null
+        chunk._terrainMeshes = []
     }
 
 
@@ -50,7 +50,8 @@ function TerrainMesher(noa) {
         profile_hook('start')
 
         // dispose any previously existing mesh
-        if (chunk._terrainMesh) chunk._terrainMesh.dispose()
+        chunk._terrainMeshes.forEach(m => m.dispose())
+        chunk._terrainMeshes.length = 0
         profile_hook('cleanup')
 
         // args
@@ -64,28 +65,30 @@ function TerrainMesher(noa) {
         var voxels = buildPaddedVoxelArray(chunk)
         profile_hook('copy')
 
-        // greedy mesher creates an array of Submesh structs
+        // greedy mesher creates big arrays of geometry data
         var edgesOnly = chunk.isFull || chunk.isEmpty
         var geomData = greedyMesher.mesh(voxels, mats, cols, ao, vals, rev, edgesOnly)
+        profile_hook('geom')
 
         // builds the babylon mesh that will be added to the scene
         var mesh = (geomData.numQuads === 0) ? null :
             meshBuilder.build(chunk, geomData, ignoreMaterials)
+        profile_hook('build')
 
         profile_hook('end')
 
         // add to scene and finish
-        chunk._terrainMesh = null
         if (mesh && mesh.getIndices().length > 0) {
             noa.rendering.addMeshToScene(mesh, true, chunk.pos, this)
-            chunk._terrainMesh = mesh
+            chunk._terrainMeshes.push(mesh)
         }
     }
 
 
     // nothing to do on dispose except remove the previous mesh
     this.disposeChunk = function (chunk) {
-        if (chunk._terrainMesh) chunk._terrainMesh.dispose()
+        chunk._terrainMeshes.forEach(m => m.dispose())
+        chunk._terrainMeshes.length = 0
     }
 
 
@@ -279,16 +282,18 @@ function MeshBuilder(noa) {
         vdat.uvs = uvs
         vdat.applyToMesh(mesh)
 
+        // array of the materialIDs we need, in stable order
+        var matIDsUsed = Object.keys(matOffsets).sort((a, b) => a - b)
+
         // assign a material or make a multimaterial
-        if (Object.keys(matOffsets).length === 1) {
+        if (matIDsUsed.length === 1) {
             var onlyMatID = matLookup[geomData.quadMaterials[0]]
             mesh.material = getTerrainMaterial(onlyMatID, ignoreMaterials)
         } else {
             // make a multimaterial and define (babylon) submeshes
-            var multiMat = new MultiMaterial('multimat ' + name, scene)
             mesh.subMeshes = []
             var matNum = 0
-            for (var matID4 in matOffsets) {
+            for (var matID4 of matIDsUsed) {
                 // note that offsets are currently at END of their respective spans
                 var qct = quadCounts[matID4]
                 var start = matOffsets[matID4] - qct
@@ -297,15 +302,12 @@ function MeshBuilder(noa) {
                     start * 12, qct * 12, // vertex start, count - these appear to be used
                     start * 6, qct * 6, // indices start, length
                     mesh)
-                var subMat = getTerrainMaterial(matID4, ignoreMaterials)
-                multiMat.subMaterials[matNum] = subMat
                 matNum++
             }
-            mesh.material = multiMat
+            mesh.material = getMultiMatForIDs(matIDsUsed, scene)
         }
 
         // done, mesh will be positioned later when added to the scene
-        profile_hook('mesh')
         return mesh
     }
 
@@ -334,6 +336,12 @@ function MeshBuilder(noa) {
     //                         Material wrangling
 
 
+    function getMultiMatForIDs(matIDs, scene) {
+        var name = 'terrain_multi:' + matIDs.join(',')
+        var multiMat = new MultiMaterial('multimat ' + name, scene)
+        multiMat.subMaterials = matIDs.map(matID => getTerrainMaterial(matID))
+        return multiMat
+    }
 
     // manage materials/textures to avoid duplicating them
     function getTerrainMaterial(matID, ignore) {
@@ -416,8 +424,6 @@ function GreedyMesher(noa) {
     var maskCache = new Int16Array(16)
     var aomaskCache = new Uint16Array(16)
 
-    var aoPackFunction = null
-
     var solidLookup = noa.registry._solidityLookup
     var opacityLookup = noa.registry._opacityLookup
 
@@ -430,10 +436,8 @@ function GreedyMesher(noa) {
         var geomData = cachedGeometryData
         geomData.reset()
 
-        // precalc how to apply AO packing in first masking function
+        // how to apply AO packing in first masking function
         var skipReverseAO = (revAoVal === aoValues[0])
-        aoPackFunction = (!doAO) ? null :
-            (skipReverseAO) ? packAOMaskNoReverse : packAOMask
 
         //Sweep over each axis, mapping axes to [d,u,v]
         for (var d = 0; d < 3; ++d) {
@@ -459,7 +463,7 @@ function GreedyMesher(noa) {
             for (var i = 0; i <= len0; ++i) {
 
                 // fills mask and aomask arrays with values
-                constructMeshMasks(i, d, arrT, getMaterial)
+                constructMeshMasks(i, d, arrT, getMaterial, doAO, skipReverseAO)
 
                 // parses the masks to do greedy meshing
                 constructGeometryFromMasks(i, d, u, v, len1, len2,
@@ -470,7 +474,6 @@ function GreedyMesher(noa) {
 
             }
         }
-        profile_hook('geometry')
 
         // done!
         return geomData
@@ -486,7 +489,7 @@ function GreedyMesher(noa) {
     //
     // iterating across ith 2d plane, with n being index into masks
 
-    function constructMeshMasks(i, d, arrT, getMaterial) {
+    function constructMeshMasks(i, d, arrT, getMaterial, doAO, skipRevAO) {
         var len = arrT.shape[1]
         var mask = maskCache
         var aomask = aomaskCache
@@ -526,11 +529,11 @@ function GreedyMesher(noa) {
                         -getMaterial(id1, materialDir + 1)
 
                     // if doing AO, precalculate AO level for each face into second mask
-                    if (aoPackFunction) {
+                    if (doAO) {
                         // i values in direction face is/isn't pointing{
                         aomask[n] = (faceDir > 0) ?
-                            aoPackFunction(arrT, i, i - 1, j, k) :
-                            aoPackFunction(arrT, i - 1, i, j, k)
+                            packAOMask(arrT, i, i - 1, j, k, skipRevAO) :
+                            packAOMask(arrT, i - 1, i, j, k, skipRevAO)
                     }
                 }
             }
@@ -779,9 +782,7 @@ function GreedyMesher(noa) {
      *      a00(0)  -   a10(4)
      */
 
-    // when skipping reverse AO, uses this simpler version of the function:
-
-    function packAOMaskNoReverse(data, ipos, ineg, j, k) {
+    function packAOMask(data, ipos, ineg, j, k, skipReverse) {
         var a00 = 1
         var a01 = 1
         var a10 = 1
@@ -801,80 +802,57 @@ function GreedyMesher(noa) {
             a01 = (a01 === 3 || solidLookup[data.get(ipos, j - 1, k + 1)]) ? 3 : 2
             a10 = (a10 === 3 || solidLookup[data.get(ipos, j + 1, k - 1)]) ? 3 : 2
             a00 = (a00 === 3 || solidLookup[data.get(ipos, j - 1, k - 1)]) ? 3 : 2
-        } else {
+            return a11 << 6 | a10 << 4 | a01 << 2 | a00
+        }
+
+        // simpler logic if skipping reverse AO?
+        if (skipReverse) {
             // treat corner as occlusion 3 only if not occluded already
             if (a11 === 1 && (solidLookup[data.get(ipos, j + 1, k + 1)])) { a11 = 2 }
             if (a01 === 1 && (solidLookup[data.get(ipos, j - 1, k + 1)])) { a01 = 2 }
             if (a10 === 1 && (solidLookup[data.get(ipos, j + 1, k - 1)])) { a10 = 2 }
             if (a00 === 1 && (solidLookup[data.get(ipos, j - 1, k - 1)])) { a00 = 2 }
+            return a11 << 6 | a10 << 4 | a01 << 2 | a00
         }
 
-        return a11 << 6 | a10 << 4 | a01 << 2 | a00
-    }
-
-    // more complicated AO packing when doing reverse AO on corners
-
-    function packAOMask(data, ipos, ineg, j, k) {
-        var a00 = 1
-        var a01 = 1
-        var a10 = 1
-        var a11 = 1
-
-        // inc occlusion of vertex next to obstructed side
-        if (solidLookup[data.get(ipos, j + 1, k)]) { ++a10; ++a11 }
-        if (solidLookup[data.get(ipos, j - 1, k)]) { ++a00; ++a01 }
-        if (solidLookup[data.get(ipos, j, k + 1)]) { ++a01; ++a11 }
-        if (solidLookup[data.get(ipos, j, k - 1)]) { ++a00; ++a10 }
-
-        // facing into a solid (non-opaque) block?
-        var facingSolid = solidLookup[data.get(ipos, j, k)]
-        if (facingSolid) {
-            // always 2, or 3 in corners
-            a11 = (a11 === 3 || solidLookup[data.get(ipos, j + 1, k + 1)]) ? 3 : 2
-            a01 = (a01 === 3 || solidLookup[data.get(ipos, j - 1, k + 1)]) ? 3 : 2
-            a10 = (a10 === 3 || solidLookup[data.get(ipos, j + 1, k - 1)]) ? 3 : 2
-            a00 = (a00 === 3 || solidLookup[data.get(ipos, j - 1, k - 1)]) ? 3 : 2
-        } else {
-
-            // check each corner, and if not present do reverse AO
-            if (a11 === 1) {
-                if (solidLookup[data.get(ipos, j + 1, k + 1)]) {
-                    a11 = 2
-                } else if (!(solidLookup[data.get(ineg, j, k + 1)]) ||
-                    !(solidLookup[data.get(ineg, j + 1, k)]) ||
-                    !(solidLookup[data.get(ineg, j + 1, k + 1)])) {
-                    a11 = 0
-                }
+        // check each corner, and if not present do reverse AO
+        if (a11 === 1) {
+            if (solidLookup[data.get(ipos, j + 1, k + 1)]) {
+                a11 = 2
+            } else if (!(solidLookup[data.get(ineg, j, k + 1)]) ||
+                !(solidLookup[data.get(ineg, j + 1, k)]) ||
+                !(solidLookup[data.get(ineg, j + 1, k + 1)])) {
+                a11 = 0
             }
+        }
 
-            if (a10 === 1) {
-                if (solidLookup[data.get(ipos, j + 1, k - 1)]) {
-                    a10 = 2
-                } else if (!(solidLookup[data.get(ineg, j, k - 1)]) ||
-                    !(solidLookup[data.get(ineg, j + 1, k)]) ||
-                    !(solidLookup[data.get(ineg, j + 1, k - 1)])) {
-                    a10 = 0
-                }
+        if (a10 === 1) {
+            if (solidLookup[data.get(ipos, j + 1, k - 1)]) {
+                a10 = 2
+            } else if (!(solidLookup[data.get(ineg, j, k - 1)]) ||
+                !(solidLookup[data.get(ineg, j + 1, k)]) ||
+                !(solidLookup[data.get(ineg, j + 1, k - 1)])) {
+                a10 = 0
             }
+        }
 
-            if (a01 === 1) {
-                if (solidLookup[data.get(ipos, j - 1, k + 1)]) {
-                    a01 = 2
-                } else if (!(solidLookup[data.get(ineg, j, k + 1)]) ||
-                    !(solidLookup[data.get(ineg, j - 1, k)]) ||
-                    !(solidLookup[data.get(ineg, j - 1, k + 1)])) {
-                    a01 = 0
-                }
+        if (a01 === 1) {
+            if (solidLookup[data.get(ipos, j - 1, k + 1)]) {
+                a01 = 2
+            } else if (!(solidLookup[data.get(ineg, j, k + 1)]) ||
+                !(solidLookup[data.get(ineg, j - 1, k)]) ||
+                !(solidLookup[data.get(ineg, j - 1, k + 1)])) {
+                a01 = 0
             }
+        }
 
-            if (a00 === 1) {
-                if (solidLookup[data.get(ipos, j - 1, k - 1)]) {
-                    a00 = 2
-                } else if (!(solidLookup[data.get(ineg, j, k - 1)]) ||
-                    !(solidLookup[data.get(ineg, j - 1, k)]) ||
-                    !(solidLookup[data.get(ineg, j - 1, k - 1)])) {
-                    a00 = 0
-                }
+        if (a00 === 1) {
+            if (solidLookup[data.get(ipos, j - 1, k - 1)]) {
+                a00 = 2
+            } else if (!(solidLookup[data.get(ineg, j, k - 1)]) ||
+                !(solidLookup[data.get(ineg, j - 1, k)]) ||
+                !(solidLookup[data.get(ineg, j - 1, k - 1)])) {
+                a00 = 0
             }
         }
 
