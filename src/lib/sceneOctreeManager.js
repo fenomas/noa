@@ -69,6 +69,9 @@ export function SceneOctreeManager(rendering, blockSize) {
         // do the actual adding logic
         block.entries.push(mesh)
         mesh._noaContainingBlock = block
+
+        // rely on octrees for selection, skipping bounds checks
+        mesh.alwaysSelectAsActiveMesh = true
     }
 
     this.removeMesh = (mesh) => {
