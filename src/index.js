@@ -27,7 +27,7 @@ import { locationHasher } from './lib/util'
 export default Engine
 
 
-// profiling flags
+// profile every N ticks/renders
 var PROFILE = 0
 var PROFILE_RENDER = 0
 
@@ -689,7 +689,7 @@ function deprecateStuff(noa) {
 
 
 import { makeProfileHook } from './lib/util'
-var profile_hook = (PROFILE) ?
-    makeProfileHook(200, 'tick   ') : () => { }
-var profile_hook_render = (PROFILE_RENDER) ?
-    makeProfileHook(200, 'render ') : () => { }
+var profile_hook = (PROFILE > 0) ?
+    makeProfileHook(PROFILE, 'tick   ') : () => { }
+var profile_hook_render = (PROFILE_RENDER > 0) ?
+    makeProfileHook(PROFILE_RENDER, 'render ') : () => { }
