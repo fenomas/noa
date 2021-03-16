@@ -259,16 +259,21 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic, pos, containingCh
 
 
 
-
-// Create a default standardMaterial:
-//      flat, nonspecular, fully reflects diffuse and ambient light
+/**
+ * Create a default standardMaterial:      
+ * flat, nonspecular, fully reflects diffuse and ambient light
+ */
 Rendering.prototype.makeStandardMaterial = function (name) {
     var mat = new StandardMaterial(name, this._scene)
     mat.specularColor.copyFromFloats(0, 0, 0)
     mat.ambientColor.copyFromFloats(1, 1, 1)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
+    this.postMaterialCreationHook(mat)
     return mat
 }
+
+/** Exposed hook for if the client wants to do something to newly created materials */
+Rendering.prototype.postMaterialCreationHook = function (mat) { }
 
 
 
