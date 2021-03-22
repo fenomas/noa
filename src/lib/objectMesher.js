@@ -205,8 +205,9 @@ function InstanceManager(noa, mesh) {
     this.keyToIndex = {}
     this.locToKey = []
     // prepare mesh for rendering
-    noa.rendering.addMeshToScene(this.mesh, false, [0, 0, 0])
+    this.mesh.position.setAll(0)
     this.mesh.parent = noa._objectMesher.rootNode
+    noa.rendering.addMeshToScene(this.mesh, false)
     this.mesh.doNotSyncBoundingInfo = true
     this.mesh.alwaysSelectAsActiveMesh = true
 }
