@@ -1,6 +1,7 @@
 
 import { locationHasher } from './util'
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode'
+import '@babylonjs/core/Meshes/thinInstanceMesh'
 
 export default ObjectMesher
 
