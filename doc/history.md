@@ -24,6 +24,7 @@ This is a summary of new features and breaking changes in recent `noa` versions.
    * A lot of performance optimizations
    * Adds separate horizontal/vertical add/remove chunk distances in `world`
    * Scene octree now can put multiple chunks in each octree block
+   * Adds option `noa.rendering.renderOnResize`
    * Changed game-shell dependency, which affects several properties:
      * core option `tickRate` is now in **ticks per second**, not ms per tick
      * core option `maxRenderRate` added (leave at `0` for no cap)

@@ -40,6 +40,7 @@ var defaults = {
     reverseAOmultiplier: 1.0,
     preserveDrawingBuffer: true,
     octreeBlockSize: 2,
+    renderOnResize: true,
 }
 
 
@@ -69,10 +70,14 @@ function Rendering(noa, opts, canvas) {
      *   reverseAOmultiplier: 1.0,
      *   preserveDrawingBuffer: true,
      *   octreeBlockSize: 2,
+     *   renderOnResize: true,
      * }
      * ```
      */
     opts = Object.assign({}, defaults, opts)
+
+    // settings
+    this.renderOnResize = !!opts.renderOnResize
 
     // internals
     this.useAO = !!opts.useAO
@@ -184,7 +189,9 @@ Rendering.prototype.postRender = function () {
 
 Rendering.prototype.resize = function (e) {
     this._engine.resize()
-    if (this.noa._paused) this._scene.render()
+    if (this.noa._paused && this.renderOnResize) {
+        this._scene.render()
+    }
 }
 
 

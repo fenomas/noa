@@ -49,11 +49,12 @@ Recent changes:
 
  * `v0.30`: 
    * many performance optimizations
-   * can now configure separate horizontal/vertical world sizes
+   * can now configure separate vert/horiz values for chunk load distance
    * core option `tickRate` is now in **ticks per second**, not ms per tick
-   * core option `stickyFullscreen` added
+   * adds initial option `stickyFullscreen`
    * adds `noa.tickRate` - read only
    * adds `noa.maxRenderRate` - read/write, set to `0` for no cap
+   * adds `noa.rendering.renderOnResize`
    * more specific babylon imports, for better tree-shaking
  * `v0.29`: 
    * maximum voxel ID is now `65535`
