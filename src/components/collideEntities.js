@@ -61,6 +61,7 @@ export default function (noa) {
             boxIntersect(intervals, function (a, b) {
                 var stateA = states[a]
                 var stateB = states[b]
+                if (!stateA || !stateB) return
                 var intervalA = intervals[a]
                 var intervalB = intervals[b]
                 if (cylindricalHitTest(stateA, stateB, intervalA, intervalB)) {
