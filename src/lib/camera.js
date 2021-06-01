@@ -1,16 +1,11 @@
-
-var vec3 = require('gl-vec3')
-var aabb = require('aabb-3d')
-var sweep = require('voxel-aabb-sweep')
-
-
-export default function (noa, opts) {
-    return new Camera(noa, opts)
-}
+//@ts-check
+import vec3 from 'gl-vec3'
+import aabb from 'aabb-3d'
+import sweep from 'voxel-aabb-sweep'
 
 
 
-
+// default options
 var defaults = {
     inverseX: false,
     inverseY: false,
@@ -21,64 +16,73 @@ var defaults = {
 }
 
 
-/** 
- * @class
- * @typicalname noa.camera
- * @classdesc Manages the camera, exposes camera position, direction, mouse sensitivity.
- */
+// locals
+var tempVectors = [
+    vec3.create(),
+    vec3.create(),
+    vec3.create(),
+]
+var originVector = vec3.create()
 
 
-function Camera(noa, opts) {
-    this.noa = noa
+/**
+ * `noa.camera` - manages the camera, its position and direction, 
+ * mouse sensitivity, and so on.
+ * 
+ * This module uses the following default options (from the options
+ * object passed to the [[Engine]]):
+ * ```js
+ * var defaults = {
+ *     inverseX: false,
+ *     inverseY: false,
+ *     sensitivityX: 10,
+ *     sensitivityY: 10,
+ *     initialZoom: 0,
+ *     zoomSpeed: 0.2,
+ * }
+ * ```
+*/
 
-    /**
-     * `noa.camera` uses the following options (from the root `noa(opts)` options):
-     * ```js
-     * {
-     *   inverseX: false,
-     *   inverseY: false,
-     *   sensitivityX: 15,
-     *   sensitivityY: 15,
-     *   initialZoom: 0,
-     *   zoomSpeed: 0.2,
-     * }
-     * ```
-     */
-    opts = Object.assign({}, defaults, opts)
-
-    /** Horizontal mouse sensitivity. 
-     * Same scale as Overwatch (typical values around `5..10`)
-     */
-    this.sensitivityX = opts.sensitivityX
-
-    /** Vertical mouse sensitivity.
-     * Same scale as Overwatch (typical values around `5..10`)
-     */
-    this.sensitivityY = opts.sensitivityY
-
-    /** Mouse look inverse (horizontal) */
-    this.inverseX = opts.inverseX
-
-    /** Mouse look inverse (vertical) */
-    this.inverseY = opts.inverseY
+export class Camera {
 
 
-    /** Camera yaw angle (read only) 
-     * 
-     * Returns the camera's rotation angle around the vertical axis. Range: `0..2π`
-     */
-    this.heading = 0
+    /** Horizontal mouse sensitivity. Same scale as Overwatch (typical values around `5..10`)
+     * @prop sensitivityX
+    */
 
-    /** Camera pitch angle (read only)
-     * 
-     * Returns the camera's up/down rotation angle. Range: `-π/2..π/2`. 
-     * (The pitch angle is clamped by a small epsilon, such that 
-     * the camera never quite points perfectly up or down.
-     */
-    this.pitch = 0
+    /** Vertical mouse sensitivity. Same scale as Overwatch (typical values around `5..10`)
+     * @prop sensitivityY
+    */
 
+    /** Mouse look inverse (horizontal)
+     * @prop inverseX
+    */
 
-    /** Entity ID of a special entity that exists for the camera to point at.
+    /** Mouse look inverse (vertical)
+     * @prop inverseY
+    */
+
+    /** 
+     * Camera yaw angle. 
+     * Returns the camera's rotation angle around the vertical axis. 
+     * Range: `0..2π`  
+     * This value is writeable, but it's managed by the engine and 
+     * will be overwritten each frame.
+     * @prop heading
+    */
+
+    /** Camera pitch angle. 
+     * Returns the camera's up/down rotation angle. The pitch angle is 
+     * clamped by a small epsilon, such that the camera never quite 
+     * points perfectly up or down.  
+     * Range: `-π/2..π/2`.  
+     * This value is writeable, but it's managed by the engine and 
+     * will be overwritten each frame.
+     * @prop pitch
+    */
+
+    /** 
+     * Entity ID of a special entity that exists for the camera to point at.
      * 
      * By default this entity follows the player entity, so you can 
      * change the player's eye height by changing the `follow` component's offset:
@@ -95,152 +99,200 @@ function Camera(noa, opts) {
      * // control cameraTarget position directly (or whatever..)
      * noa.ents.setPosition(noa.camera.cameraTarget, [x,y,z])
      * ```
+     * @prop cameraTarget
+    */
+
+    /** How far back the camera should be from the player's eye position
+     * @prop zoomDistance
      */
-    this.cameraTarget = this.noa.ents.createEntity(['position'])
 
-    // follow component and default offset
-    var eyeOffset = 0.9 * noa.ents.getPositionData(noa.playerEntity).height
-    noa.ents.addComponent(this.cameraTarget, 'followsEntity', {
-        entity: noa.playerEntity,
-        offset: [0, eyeOffset, 0],
-    })
-
-    /** How far back the camera is zoomed from the camera target */
-    this.zoomDistance = opts.initialZoom
-
-    /** How quickly the camera moves to its `zoomDistance` (0..1) */
-    this.zoomSpeed = opts.zoomSpeed
+    /** How quickly the camera moves to its `zoomDistance` (0..1)
+     * @prop zoomSpeed
+     */
 
     /** Current actual zoom distance. This differs from `zoomDistance` when
      * the camera is in the process of moving towards the desired distance, 
-     * or when it's obstructed by solid terrain behind the player. */
-    this.currentZoom = opts.initialZoom
+     * or when it's obstructed by solid terrain behind the player.
+     * @readonly
+     * @prop currentZoom 
+    */
 
-    // internals
-    this._dirVector = vec3.fromValues(0, 0, 1)
+    /** @internal @prop _currentZoom */
+    /** @internal @prop _dirVector */
+
+    /** 
+     * @internal 
+     * @type {import('../index').Engine}
+     * @prop noa
+    */
+
+    /** @internal */
+    constructor(noa, opts) {
+        this.noa = noa
+        opts = Object.assign({}, defaults, opts)
+
+        // initial settings
+        this.sensitivityX = +opts.sensitivityX
+        this.sensitivityY = +opts.sensitivityY
+        this.inverseX = !!opts.inverseX
+        this.inverseY = !!opts.inverseY
+
+        // local state
+        this.heading = 0
+        this.pitch = 0
+        this.zoomDistance = opts.initialZoom
+        this.zoomSpeed = opts.zoomSpeed
+
+        // entity to follow, and vertical offset to eye position
+        this.cameraTarget = this.noa.ents.createEntity(['position'])
+
+        var eyeOffset = 0.9 * noa.ents.getPositionData(noa.playerEntity).height
+        noa.ents.addComponent(this.cameraTarget, 'followsEntity', {
+            entity: noa.playerEntity,
+            offset: [0, eyeOffset, 0],
+        })
+
+
+        this.currentZoom = opts.initialZoom
+        this._currentZoom = this.currentZoom
+        Object.defineProperty(this, 'currentZoom', { get: () => this._currentZoom })
+
+        this._dirVector = vec3.fromValues(0, 0, 1)
+    }
+
+
+
+
+    /*
+     * 
+     * 
+     *          API
+     * 
+     * 
+    */
+
+
+    /*
+     *      Local position functions for high precision
+    */
+    /** @internal */
+    _localGetTargetPosition() {
+        var pdat = this.noa.ents.getPositionData(this.cameraTarget)
+        var pos = tempVectors[0]
+        return vec3.copy(pos, pdat._renderPosition)
+    }
+    /** @internal */
+    _localGetPosition() {
+        var loc = this._localGetTargetPosition()
+        if (this._currentZoom === 0) return loc
+        return vec3.scaleAndAdd(loc, loc, this._dirVector, -this._currentZoom)
+    }
+
+
+
+    /**
+     * Returns the camera's current target position - i.e. the player's 
+     * eye position. When the camera is zoomed all the way in, 
+     * this returns the same location as `camera.getPosition()`.
+    */
+    getTargetPosition() {
+        var loc = this._localGetTargetPosition()
+        var globalCamPos = tempVectors[1]
+        return this.noa.localToGlobal(loc, globalCamPos)
+    }
+
+
+    /**
+     * Returns the current camera position (read only)
+    */
+    getPosition() {
+        var loc = this._localGetPosition()
+        var globalCamPos = tempVectors[2]
+        return this.noa.localToGlobal(loc, globalCamPos)
+    }
+
+
+    /**
+     * Returns the camera direction vector (read only)
+    */
+    getDirection() {
+        return this._dirVector
+    }
+
+
+
+
+    /*
+     * 
+     * 
+     * 
+     *          internals below
+     * 
+     * 
+     * 
+    */
+
+
+
+    /**
+     * Called before render, if mouseLock etc. is applicable.
+     * Consumes input mouse events x/y, updates camera angle and zoom
+     * @internal
+    */
+
+    applyInputsToCamera() {
+        // dx/dy from input state
+        var state = this.noa.inputs.state
+        bugFix(state) // TODO: REMOVE EVENTUALLY    
+
+        // convert to rads, using (sens * 0.0066 deg/pixel), like Overwatch
+        var conv = 0.0066 * Math.PI / 180
+        var dy = state.dy * this.sensitivityY * conv
+        var dx = state.dx * this.sensitivityX * conv
+        if (this.inverseY) dy = -dy
+        if (this.inverseX) dx = -dx
+
+        // normalize/clamp angles, update direction vector
+        var twopi = 2 * Math.PI
+        this.heading += (dx < 0) ? dx + twopi : dx
+        if (this.heading > twopi) this.heading -= twopi
+        var maxPitch = Math.PI / 2 - 0.001
+        this.pitch = Math.max(-maxPitch, Math.min(maxPitch, this.pitch + dy))
+
+        vec3.set(this._dirVector, 0, 0, 1)
+        console.log
+        var dir = this._dirVector
+        var origin = originVector
+        vec3.rotateX(dir, dir, origin, this.pitch)
+        vec3.rotateY(dir, dir, origin, this.heading)
+    }
+
+
+
+    /**
+     *  Called before all renders, pre- and post- entity render systems
+     * @internal
+    */
+    updateBeforeEntityRenderSystems() {
+        // zoom update
+        this._currentZoom += (this.zoomDistance - this._currentZoom) * this.zoomSpeed
+    }
+
+    /** @internal */
+    updateAfterEntityRenderSystems() {
+        // clamp camera zoom not to clip into solid terrain
+        var maxZoom = cameraObstructionDistance(this)
+        if (this._currentZoom > maxZoom) this._currentZoom = maxZoom
+    }
+
 }
-
-
-/*
- * 
- *  Local position functions for high precision
- * 
- */
-Camera.prototype._localGetTargetPosition = function () {
-    var pdat = this.noa.ents.getPositionData(this.cameraTarget)
-    return vec3.copy(_camPos, pdat._renderPosition)
-}
-
-Camera.prototype._localGetPosition = function () {
-    var loc = this._localGetTargetPosition()
-    if (this.currentZoom === 0) return loc
-    return vec3.scaleAndAdd(loc, loc, this._dirVector, -this.currentZoom)
-}
-var _camPos = vec3.create()
-
-
-
-
-/**
- * Camera target position (read only)
- * 
- * This returns the point the camera looks at - i.e. the player's 
- * eye position. When the camera is zoomed 
- * all the way in, this is equivalent to `camera.getPosition()`.
- */
-Camera.prototype.getTargetPosition = function () {
-    var loc = this._localGetTargetPosition()
-    return this.noa.localToGlobal(loc, globalCamPos)
-}
-var globalCamPos = []
-
-/**
- * Returns the current camera position (read only)
- */
-Camera.prototype.getPosition = function () {
-    var loc = this._localGetPosition()
-    return this.noa.localToGlobal(loc, globalCamPos)
-}
-
-
-
-/**
- * Returns the camera direction vector (read only)
- */
-Camera.prototype.getDirection = function () {
-    return this._dirVector
-}
-
-
-
-
-
-/*
- * 
- * 
- * 
- *          internals below
- * 
- * 
- * 
- */
-
-
-/*
- *  Called before render, if mouseLock etc. is applicable.
- *  Consumes input mouse events x/y, updates camera angle and zoom
- */
-
-Camera.prototype.applyInputsToCamera = function () {
-    // dx/dy from input state
-    var state = this.noa.inputs.state
-    bugFix(state) // TODO: REMOVE EVENTUALLY    
-
-    // convert to rads, using (sens * 0.0066 deg/pixel), like Overwatch
-    var conv = 0.0066 * Math.PI / 180
-    var dy = state.dy * this.sensitivityY * conv
-    var dx = state.dx * this.sensitivityX * conv
-    if (this.inverseY) dy = -dy
-    if (this.inverseX) dx = -dx
-
-    // normalize/clamp angles, update direction vector
-    var twopi = 2 * Math.PI
-    this.heading += (dx < 0) ? dx + twopi : dx
-    if (this.heading > twopi) this.heading -= twopi
-    var maxPitch = Math.PI / 2 - 0.001
-    this.pitch = Math.max(-maxPitch, Math.min(maxPitch, this.pitch + dy))
-
-    vec3.set(this._dirVector, 0, 0, 1)
-    vec3.rotateX(this._dirVector, this._dirVector, origin, this.pitch)
-    vec3.rotateY(this._dirVector, this._dirVector, origin, this.heading)
-}
-var origin = vec3.create()
-
-
-
-/*
- *  Called before all renders, pre- and post- entity render systems
- */
-
-Camera.prototype.updateBeforeEntityRenderSystems = function () {
-    // zoom update
-    this.currentZoom += (this.zoomDistance - this.currentZoom) * this.zoomSpeed
-}
-
-Camera.prototype.updateAfterEntityRenderSystems = function () {
-    // clamp camera zoom not to clip into solid terrain
-    var maxZoom = cameraObstructionDistance(this)
-    if (this.currentZoom > maxZoom) this.currentZoom = maxZoom
-}
-
-
 
 
 
 
 /*
  *  check for obstructions behind camera by sweeping back an AABB
- */
+*/
 
 function cameraObstructionDistance(self) {
     if (!self._sweepBox) {

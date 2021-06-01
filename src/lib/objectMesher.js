@@ -1,3 +1,4 @@
+/** @internal */ /** works around typedoc bug #842 */
 
 import { locationHasher } from './util'
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode'
@@ -34,7 +35,7 @@ function ObjectMesher(noa) {
     var rebuildNextTick = false
 
     // mock object to pass to customMesh handler, to get transforms
-    var transformObj = new TransformNode()
+    var transformObj = new TransformNode('')
 
     // internal storage of instance managers, keyed by ID
     // has check to dedupe by mesh, since babylon chokes on

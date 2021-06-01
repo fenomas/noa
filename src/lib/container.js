@@ -1,113 +1,152 @@
 
-
-import EventEmitter from 'events'
-var MicroShell = require('micro-game-shell').MicroGameShell
-// var MicroShell = require('../../../../npm-modules/micro-game-shell').MicroGameShell
-
+import { EventEmitter } from 'events'
+import { MicroGameShell } from 'micro-game-shell'
+// import { MicroGameShell } from '/Users/andy/dev/npm-modules/micro-game-shell'
 
 
-export default function (noa, opts) {
-    return new Container(noa, opts)
-}
+
 
 /**
- * @class
- * @typicalname noa.container
- * @emits DOMready, gainedPointerLock, PointerLock
- * @classdesc Wraps `game-shell` module 
- * and manages HTML container, canvas, etc.
+ * `noa.container` - manages the game's HTML container element, canvas, 
+ * fullscreen, pointerLock, and so on.
+ * 
+ * This module wraps `micro-game-shell`, which does most of the implementation.
+ * 
+ * @emits DOMready
+ * @emits gainedPointerLock
+ * @emits lostPointerLock
  */
 
-function Container(noa, opts) {
-    opts = opts || {}
-    this._noa = noa
+export class Container extends EventEmitter {
 
-    this.element = opts.domElement || createContainerDiv()
-    this.canvas = getOrCreateCanvas(this.element)
+    /** @internal @prop _noa */
+    /** @internal @prop _shell */
 
-    // shell manages tick/render rates, and pointerlock/fullscreen
-    var pollTime = 10
-    this._shell = new MicroShell(this.element, pollTime)
-    this._shell.tickRate = opts.tickRate
-    this._shell.maxRenderRate = opts.maxRenderRate
-    this._shell.stickyPointerLock = opts.stickyPointerLock
-    this._shell.stickyFullscreen = opts.stickyFullscreen
+    /** The game's DOM element container
+     * @prop element
+    */
 
-    // mouse state/feature detection
-    this.supportsPointerLock = false
-    this.pointerInGame = false
-    this.isFocused = document.hasFocus()
-    this.hasPointerLock = false
+    /** The `canvas` element that the game will draw into
+     * @prop canvas
+    */
 
-    // core timing events
-    this._shell.onTick = noa.tick.bind(noa)
-    this._shell.onRender = noa.render.bind(noa)
+    /** Whether the browser supports pointerLock. Read-only!
+     * @prop supportsPointerLock
+    */
 
-    // shell listeners
-    this._shell.onPointerLockChanged = (hasPL) => {
-        this.hasPointerLock = hasPL
-        this.emit((hasPL) ? 'gainedPointerLock' : 'lostPointerLock')
-        // this works around a Firefox bug where no mouse-in event 
-        // gets issued after starting pointerlock
-        if (hasPL) this.pointerInGame = true
-    }
+    /** Whether the user's pointer is within the game area. Read-only!
+     * @prop pointerInGame
+    */
 
-    // catch and relay domReady event
-    this._shell.onInit = () => {
-        this._shell.onResize = noa.rendering.resize.bind(noa.rendering)
-        // listeners to track when game has focus / pointer
-        detectPointerLock(this)
-        this.element.addEventListener('mouseenter', () => { this.pointerInGame = true })
-        this.element.addEventListener('mouseleave', () => { this.pointerInGame = false })
-        window.addEventListener('focus', () => { this.isFocused = true })
-        window.addEventListener('blur', () => { this.isFocused = false })
-        // catch edge cases for initial states
-        var onFirstMousedown = () => {
-            this.pointerInGame = true
-            this.isFocused = true
-            this.element.removeEventListener('mousedown', onFirstMousedown)
+    /** Whether the game is focused. Read-only!
+     * @prop isFocused
+    */
+
+    /** Gets the current state of pointerLock. Read-only!
+     * @prop hasPointerLock
+    */
+
+
+
+    /** @internal */
+    constructor(noa, opts) {
+        super()
+
+        opts = opts || {}
+        this._noa = noa
+
+        this.element = opts.domElement || createContainerDiv()
+        this.canvas = getOrCreateCanvas(this.element)
+
+        // shell manages tick/render rates, and pointerlock/fullscreen
+        var pollTime = 10
+        this._shell = new MicroGameShell(this.element, pollTime)
+        this._shell.tickRate = opts.tickRate
+        this._shell.maxRenderRate = opts.maxRenderRate
+        this._shell.stickyPointerLock = opts.stickyPointerLock
+        this._shell.stickyFullscreen = opts.stickyFullscreen
+
+
+        // mouse state and feature detection
+        this.supportsPointerLock = false
+        this.pointerInGame = false
+        this.isFocused = !!document.hasFocus()
+        this.hasPointerLock = false
+
+        // core timing events
+        this._shell.onTick = noa.tick.bind(noa)
+        this._shell.onRender = noa.render.bind(noa)
+
+        // shell listeners
+        this._shell.onPointerLockChanged = (hasPL) => {
+            this.hasPointerLock = hasPL
+            this.emit((hasPL) ? 'gainedPointerLock' : 'lostPointerLock')
+            // this works around a Firefox bug where no mouse-in event 
+            // gets issued after starting pointerlock
+            if (hasPL) this.pointerInGame = true
         }
-        this.element.addEventListener('mousedown', onFirstMousedown)
-        // emit for engine core
-        this.emit('DOMready')
+
+        // catch and relay domReady event
+        this._shell.onInit = () => {
+            this._shell.onResize = noa.rendering.resize.bind(noa.rendering)
+            // listeners to track when game has focus / pointer
+            detectPointerLock(this)
+            this.element.addEventListener('mouseenter', () => { this.pointerInGame = true })
+            this.element.addEventListener('mouseleave', () => { this.pointerInGame = false })
+            window.addEventListener('focus', () => { this.isFocused = true })
+            window.addEventListener('blur', () => { this.isFocused = false })
+            // catch edge cases for initial states
+            var onFirstMousedown = () => {
+                this.pointerInGame = true
+                this.isFocused = true
+                this.element.removeEventListener('mousedown', onFirstMousedown)
+            }
+            this.element.addEventListener('mousedown', onFirstMousedown)
+            // emit for engine core
+            this.emit('DOMready')
+            // done and remove listener
+            this._shell.onInit = null
+        }
+    }
+
+
+    /*
+     *
+     *
+     *              PUBLIC API 
+     *
+     *
+    */
+
+    /** @internal */
+    appendTo(htmlElement) {
+        this.element.appendChild(htmlElement)
+    }
+
+    /** 
+     * Sets whether `noa` should try to acquire or release pointerLock
+    */
+    setPointerLock(lock) {
+        // not sure if this will work robustly
+        this._shell.pointerLock = !!lock
     }
 }
 
-Container.prototype = Object.create(EventEmitter.prototype)
-
-
-
 
 
 /*
- *   PUBLIC API 
- */
-
-Container.prototype.appendTo = function (htmlElement) {
-    this.element.appendChild(htmlElement)
-}
-
-
-
-Container.prototype.setPointerLock = function (lock) {
-    // not sure if this will work robustly
-    this._shell.pointerLock = !!lock
-}
-
-
-
-
-
-/*
- *   INTERNALS
- */
-
+ *
+ *
+ *              INTERNALS
+ *
+ *
+*/
 
 
 function createContainerDiv() {
     // based on github.com/mikolalysenko/game-shell - makeDefaultContainer()
     var container = document.createElement("div")
-    container.tabindex = 1
+    container.tabIndex = 1
     container.style.position = "fixed"
     container.style.left = "0px"
     container.style.right = "0px"

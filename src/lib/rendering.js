@@ -1,3 +1,4 @@
+
 var glvec3 = require('gl-vec3')
 
 import { SceneOctreeManager } from './sceneOctreeManager'
@@ -15,10 +16,6 @@ import '@babylonjs/core/Meshes/Builders/planeBuilder'
 import '@babylonjs/core/Meshes/Builders/linesBuilder'
 
 
-
-export default function (noa, opts, canvas) {
-    return new Rendering(noa, opts, canvas)
-}
 
 
 
@@ -46,52 +43,63 @@ var defaults = {
 
 
 /**
- * @class
- * @typicalname noa.rendering
- * @classdesc Manages all rendering, and the BABYLON scene, materials, etc.
- */
+ * `noa.rendering` - 
+ * Manages all rendering, and the BABYLON scene, materials, etc.
+ * 
+ * This module uses the following default options (from the options
+ * object passed to the [[Engine]]):
+ * ```js
+ * {
+ *     showFPS: false,
+ *     antiAlias: true,
+ *     clearColor: [0.8, 0.9, 1],
+ *     ambientColor: [1, 1, 1],
+ *     lightDiffuse: [1, 1, 1],
+ *     lightSpecular: [1, 1, 1],
+ *     groundLightColor: [0.5, 0.5, 0.5],
+ *     useAO: true,
+ *     AOmultipliers: [0.93, 0.8, 0.5],
+ *     reverseAOmultiplier: 1.0,
+ *     preserveDrawingBuffer: true,
+ *     octreeBlockSize: 2,
+ *     renderOnResize: true,
+ * }
+ * ```
+*/
 
-function Rendering(noa, opts, canvas) {
-    this.noa = noa
+export class Rendering {
 
-    /**
-     * `noa.rendering` uses the following options (from the root `noa(opts)` options):
-     * ```js
-     * {
-     *   showFPS: false,
-     *   antiAlias: true,
-     *   clearColor: [0.8, 0.9, 1],
-     *   ambientColor: [1, 1, 1],
-     *   lightDiffuse: [1, 1, 1],
-     *   lightSpecular: [1, 1, 1],
-     *   groundLightColor: [0.5, 0.5, 0.5],
-     *   useAO: true,
-     *   AOmultipliers: [0.93, 0.8, 0.5],
-     *   reverseAOmultiplier: 1.0,
-     *   preserveDrawingBuffer: true,
-     *   octreeBlockSize: 2,
-     *   renderOnResize: true,
-     * }
-     * ```
-     */
-    opts = Object.assign({}, defaults, opts)
+    /** @internal @prop _scene */
+    /** @internal @prop _engine */
+    /** @internal @prop _octree */
+    /** @internal @prop _octreeManager */
 
-    // settings
-    this.renderOnResize = !!opts.renderOnResize
+    /** @internal */
+    constructor(noa, opts, canvas) {
 
-    // internals
-    this.useAO = !!opts.useAO
-    this.aoVals = opts.AOmultipliers
-    this.revAoVal = opts.reverseAOmultiplier
-    this.meshingCutoffTime = 6 // ms
+        this.noa = noa
+        opts = Object.assign({}, defaults, opts)
 
-    // set up babylon scene
-    initScene(this, canvas, opts)
+        // settings
+        this.renderOnResize = !!opts.renderOnResize
 
-    // for debugging
-    if (opts.showFPS) setUpFPS()
+        // internals
+        this.useAO = !!opts.useAO
+        this.aoVals = opts.AOmultipliers
+        this.revAoVal = opts.reverseAOmultiplier
+        this.meshingCutoffTime = 6 // ms
+
+        // set up babylon scene
+        this._scene = null
+        this._engine = null
+        this._octree = null
+        this._octreeManager = null
+        initScene(this, canvas, opts)
+
+        // for debugging
+        if (opts.showFPS) setUpFPS()
+    }
 }
-
 
 // Constructor helper - set up the Babylon.js scene and basic components
 function initScene(self, canvas, opts) {
@@ -225,11 +233,10 @@ var hlpos = []
 /**
  * Add a mesh to the scene's octree setup so that it renders. 
  * 
- * @param mesh: the mesh to add to the scene
- * @param isStatic: pass in true if mesh never moves (i.e. change octree blocks)
- * @param position: (optional) global position where the mesh should be
- * @param chunk: (optional) chunk to which the mesh is statically bound
- * @method
+ * param mesh: the mesh to add to the scene
+ * param isStatic: pass in true if mesh never moves (i.e. change octree blocks)
+ * param position: (optional) global position where the mesh should be
+ * param chunk: (optional) chunk to which the mesh is statically bound
  */
 Rendering.prototype.addMeshToScene = function (mesh, isStatic, pos, containingChunk) {
     // exit silently if mesh has already been added and not removed
@@ -536,11 +543,16 @@ var fps_hook = function () { }
 function setUpFPS() {
     var div = document.createElement('div')
     div.id = 'noa_fps'
-    var style = 'position:absolute; top:0; right:0; z-index:0;'
-    style += 'color:white; background-color:rgba(0,0,0,0.5);'
-    style += 'font:14px monospace; text-align:center;'
-    style += 'min-width:2em; margin:4px;'
-    div.style = style
+    div.style.position = 'absolute'
+    div.style.top = '0'
+    div.style.right = '0'
+    div.style.zIndex = '0'
+    div.style.color = 'white'
+    div.style.backgroundColor = 'rgba(0,0,0,0.5)'
+    div.style.font = '14px monospace'
+    div.style.textAlign = 'center'
+    div.style.minWidth = '2em'
+    div.style.margin = '4px'
     document.body.appendChild(div)
     var every = 1000
     var ct = 0

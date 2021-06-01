@@ -1,3 +1,4 @@
+/** @internal */ /** works around typedoc bug #842 */
 
 var ndarray = require('ndarray')
 
@@ -51,7 +52,7 @@ function Chunk(noa, requestID, ci, cj, ck, size, dataArray) {
 
     // references to neighboring chunks, if they exist (filled in by `world`)
     var narr = Array.from(Array(27), () => null)
-    this._neighbors = new ndarray(narr, [3, 3, 3]).lo(1, 1, 1)
+    this._neighbors = ndarray(narr, [3, 3, 3]).lo(1, 1, 1)
     this._neighbors.set(0, 0, 0, this)
     this._neighborCount = 0
     this._timesMeshed = 0
@@ -64,7 +65,7 @@ function Chunk(noa, requestID, ci, cj, ck, size, dataArray) {
 // expose logic internally to create and update the voxel data array
 Chunk._createVoxelArray = function (size) {
     var arr = new Uint16Array(size * size * size)
-    return new ndarray(arr, [size, size, size])
+    return ndarray(arr, [size, size, size])
 }
 
 Chunk.prototype._updateVoxelArray = function (dataArray) {

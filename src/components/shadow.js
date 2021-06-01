@@ -1,10 +1,11 @@
 
+import vec3 from 'gl-vec3'
+
 import { Color3 } from '@babylonjs/core/Maths/math.color'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import '@babylonjs/core/Meshes/Builders/discBuilder'
 import '@babylonjs/core/Meshes/instancedMesh'
 
-var vec3 = require('gl-vec3')
 
 export default function (noa, dist) {
 
@@ -14,10 +15,11 @@ export default function (noa, dist) {
     var scene = noa.rendering.getScene()
     var disc = Mesh.CreateDisc('shadow', 0.75, 30, scene)
     disc.rotation.x = Math.PI / 2
-    disc.material = noa.rendering.makeStandardMaterial('shadowMat')
-    disc.material.diffuseColor = Color3.Black()
-    disc.material.ambientColor = Color3.Black()
-    disc.material.alpha = 0.5
+    var mat = noa.rendering.makeStandardMaterial('shadowMat')
+    mat.diffuseColor = Color3.Black()
+    mat.ambientColor = Color3.Black()
+    mat.alpha = 0.5
+    disc.material = mat
     disc.setEnabled(false)
 
     // source mesh needn't be in the scene graph

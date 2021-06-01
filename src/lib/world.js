@@ -8,9 +8,6 @@ var PROFILE_EVERY = 0               // ticks
 var PROFILE_QUEUES_EVERY = 0        // ticks
 
 
-export default function (noa, opts) {
-    return new World(noa, opts)
-}
 
 
 
@@ -24,16 +21,12 @@ var defaultOptions = {
 }
 
 /**
- * @class
- * @typicalname noa.world
- * @emits worldDataNeeded(id, ndarray, x, y, z, worldName)
- * @emits chunkAdded(chunk)
- * @emits chunkBeingRemoved(id, ndarray, userData)
- * @classdesc Manages the world and its chunks
+ * `noa.world` - manages world data, chunks, voxels.
  * 
- * `noa.world` uses the following options (from the root `noa(opts)` options):
+ * This module uses the following default options (from the options
+ * object passed to the [[Engine]]):
  * ```js
- * {
+ * var defaultOptions = {
  *   chunkSize: 24,
  *   chunkAddDistance: [2, 2],           // [horizontal, vertical]
  *   chunkRemoveDistance: [3, 3],        // [horizontal, vertical]
@@ -41,70 +34,82 @@ var defaultOptions = {
  *   manuallyControlChunkLoading: false,
  * }
  * ```
- * 
- * Extends `EventEmitter`
- */
+*/
+export class World extends EventEmitter {
 
-function World(noa, opts) {
-    this.noa = noa
-    opts = Object.assign({}, defaultOptions, opts)
-
-    this.playerChunkLoaded = false
-    this.Chunk = Chunk // expose this class for   ..reasons
-
-    // settings
-    this.chunkSize = opts.chunkSize
-    this.chunkAddDistance = [1, 1]
-    this.chunkRemoveDistance = [1, 1]
-
-    // validate add/remove sizes through a setter that clients can use later
-    this.setAddRemoveDistance(opts.chunkAddDistance, opts.chunkRemoveDistance)
-
-    // game clients should set this if they need to manually control 
-    // which chunks to load and unload.
-    // when set, client should call noa.world.manuallyLoadChunk / UnloadChunk
-    this.manuallyControlChunkLoading = !!opts.manuallyControlChunkLoading
-
-    // set this higher to cause chunks not to mesh until they have some neighbors
-    this.minNeighborsToMesh = 6
-
-    // settings for tuning worldgen behavior and throughput
-    this.maxChunksPendingCreation = 10
-    this.maxChunksPendingMeshing = 10
-    this.maxProcessingPerTick = 9           // ms
-    this.maxProcessingPerRender = 5         // ms
-    this.worldGenWhilePaused = opts.worldGenWhilePaused
-
-    // set up internal state
-    this._cachedWorldName = ''
-    this._lastPlayerChunkHash = 0
-    this._chunkAddSearchDistance = 0
-    initChunkQueues(this)
+    /** @internal @prop _chunksKnown */
+    /** @internal @prop _chunksPending */
+    /** @internal @prop _chunksToRequest */
+    /** @internal @prop _chunksToRemove */
+    /** @internal @prop _chunksToMesh */
+    /** @internal @prop _chunksToMeshFirst */
 
 
-    // chunks stored in a data structure for quick lookup
-    // note that the hash wraps around every 1024 chunk indexes!!
-    // i.e. two chunks that far apart can't be loaded at the same time
-    this._storage = new ChunkStorage()
+    /** @internal */
+    constructor(noa, opts) {
+        super()
+        this.noa = noa
+        opts = Object.assign({}, defaultOptions, opts)
 
+        this.playerChunkLoaded = false
+        this.Chunk = Chunk // expose this class for   ..reasons
 
-    // coordinate converter functions - default versions first:
-    var cs = this.chunkSize
-    this._coordsToChunkIndexes = chunkCoordsToIndexesGeneral
-    this._coordsToChunkLocals = chunkCoordsToLocalsGeneral
+        // settings
+        this.chunkSize = opts.chunkSize
+        this.chunkAddDistance = [1, 1]
+        this.chunkRemoveDistance = [1, 1]
 
-    // when chunk size is a power of two, override with bit-twiddling:
-    var powerOfTwo = ((cs & cs - 1) === 0)
-    if (powerOfTwo) {
-        this._coordShiftBits = Math.log2(cs) | 0
-        this._coordMask = (cs - 1) | 0
-        this._coordsToChunkIndexes = chunkCoordsToIndexesPowerOfTwo
-        this._coordsToChunkLocals = chunkCoordsToLocalsPowerOfTwo
+        // validate add/remove sizes through a setter that clients can use later
+        this.setAddRemoveDistance(opts.chunkAddDistance, opts.chunkRemoveDistance)
+
+        // game clients should set this if they need to manually control 
+        // which chunks to load and unload.
+        // when set, client should call noa.world.manuallyLoadChunk / UnloadChunk
+        this.manuallyControlChunkLoading = !!opts.manuallyControlChunkLoading
+
+        // set this higher to cause chunks not to mesh until they have some neighbors
+        this.minNeighborsToMesh = 6
+        
+        // settings for tuning worldgen behavior and throughput
+        this.maxChunksPendingCreation = 10
+        this.maxChunksPendingMeshing = 10
+        this.maxProcessingPerTick = 9           // ms
+        this.maxProcessingPerRender = 5         // ms
+        this.worldGenWhilePaused = opts.worldGenWhilePaused
+
+        // set up internal state
+        this._cachedWorldName = ''
+        this._lastPlayerChunkHash = 0
+        this._chunkAddSearchDistance = 0
+        
+        this._chunksKnown = null
+        this._chunksPending = null
+        this._chunksToRequest = null
+        this._chunksToRemove = null
+        this._chunksToMesh = null
+        this._chunksToMeshFirst = null
+        initChunkQueues(this)
+
+        // chunks stored in a data structure for quick lookup
+        // note that the hash wraps around every 1024 chunk indexes!!
+        // i.e. two chunks that far apart can't be loaded at the same time
+        this._storage = new ChunkStorage()
+
+        // coordinate converter functions - default versions first:
+        var cs = this.chunkSize
+        this._coordsToChunkIndexes = chunkCoordsToIndexesGeneral
+        this._coordsToChunkLocals = chunkCoordsToLocalsGeneral
+
+        // when chunk size is a power of two, override with bit-twiddling:
+        var powerOfTwo = ((cs & cs - 1) === 0)
+        if (powerOfTwo) {
+            this._coordShiftBits = Math.log2(cs) | 0
+            this._coordMask = (cs - 1) | 0
+            this._coordsToChunkIndexes = chunkCoordsToIndexesPowerOfTwo
+            this._coordsToChunkLocals = chunkCoordsToLocalsPowerOfTwo
+        }
     }
 }
-World.prototype = Object.create(EventEmitter.prototype)
-
-
 
 
 
@@ -331,7 +336,7 @@ World.prototype.tick = function () {
             var done = processMeshingQueue(this, false)
             profile_hook('meshes')
             return done
-        }, tickStartTime, true)
+        }, tickStartTime)
     }
 
     // track whether the player's local chunk is loaded and ready or not
@@ -798,10 +803,10 @@ function updateNeighborsOfChunk(world, ci, cj, ck, chunk) {
 World.prototype.report = function () {
     console.log('World report - playerChunkLoaded: ', this.playerChunkLoaded)
     _report(this, '  known:     ', this._chunksKnown.arr, true)
-    _report(this, '  to request:', this._chunksToRequest.arr)
-    _report(this, '  to remove: ', this._chunksToRemove.arr)
-    _report(this, '  creating:  ', this._chunksPending.arr)
-    _report(this, '  to mesh:   ', this._chunksToMesh.arr.concat(this._chunksToMeshFirst.arr))
+    _report(this, '  to request:', this._chunksToRequest.arr, 0)
+    _report(this, '  to remove: ', this._chunksToRemove.arr, 0)
+    _report(this, '  creating:  ', this._chunksPending.arr, 0)
+    _report(this, '  to mesh:   ', this._chunksToMesh.arr.concat(this._chunksToMeshFirst.arr), 0)
 }
 
 function _report(world, name, arr, ext) {

@@ -1,6 +1,11 @@
 module.exports = {
     "root": true,
-    "extends": "eslint:recommended",
+    "extends": [
+        "eslint:recommended",
+    ],
+    plugins: [
+        "jsdoc",
+    ],
     "env": {
         "node": true,
         "browser": true,

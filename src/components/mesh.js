@@ -1,5 +1,5 @@
 
-var vec3 = require('gl-vec3')
+import vec3 from 'gl-vec3'
 
 
 export default function (noa) {
@@ -23,7 +23,7 @@ export default function (noa) {
             } else {
                 throw new Error('Mesh component added without a mesh - probably a bug!')
             }
-            if (!state.offset) state.offset = new vec3.create()
+            if (!state.offset) state.offset = vec3.create()
 
             // set mesh to correct position
             var rpos = posDat._renderPosition

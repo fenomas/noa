@@ -37,6 +37,13 @@ export default function (noa) {
 
 
 
+/**
+ * @param {import('../components/movement').MovementState} state 
+ * @param {Object<string, boolean>} inputs 
+ * @param {number} camHeading 
+ * @internal
+*/
+
 function setMovementState(state, inputs, camHeading) {
     state.jumping = !!inputs.jump
 

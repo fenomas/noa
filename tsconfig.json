@@ -1,25 +1,73 @@
 {
-    // Change this to match your project
-    "include": ["src/**/*", "src/index.js"],
-
+    // inputs
+    "include": [
+        "src/index.js",
+        "src/components/*.js",
+    ],
     "compilerOptions": {
-        // Tells TypeScript to read JS files, as
-        // normally they are ignored as source files
-        "allowJs": true,
-        // Generate d.ts files
+        // output
+        "outDir": "./dist",
+        "target": "es5",
         "declaration": true,
-        // This compiler run should
-        // only output d.ts files
         "emitDeclarationOnly": true,
+        "rootDir": ".",
+        // settings
+        "allowJs": true,
+        "checkJs": true,
+        "resolveJsonModule": true,
         "esModuleInterop": true,
-        "moduleResolution": "node",
-        "downlevelIteration": true,
-        "useDefineForClassFields": true,
-        "target": "ES2018",
-        "lib": ["DOM", "DOM.Iterable", "ES2018"],
-        // Types should go into this directory.
-        // Removing this would place the .d.ts files
-        // next to the .js files
-        "outDir": "types"
-    }
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ES2018"
+        ],
+        "typeRoots": [
+            "./types",
+        ],
+        // "moduleResolution": "Node",
+        // "downlevelIteration": true,
+        // "useDefineForClassFields": false,
+    },
+    "typeAcquisition": {
+        "exclude": [
+            "@types/gl-vec3", // automatic types are both wrong and out of date
+        ]
+    },
+    "typedocOptions": {
+        "entryPoints": [
+            "src/index.js",
+            "src/lib/",
+            "src/components/movement.js",
+        ],
+        "excludeInternal": true,
+        "name": "noa API reference",
+        "out": "docs/API",
+        "readme": "docs/api-header.md",
+        // theme settings
+        "theme": "./node_modules/typedoc-neo-theme/bin/default",
+        "plugin": "typedoc-neo-theme",
+        "links": [
+            {
+                "label": "source",
+                "url": "https://github.com/andyhall/noa/"
+            },
+        ],
+        "outline": [
+            {
+                "core": {
+                    "Engine": "classes/index.engine",
+                },
+                "Libraries": {
+                    "noa.camera": "classes/lib_camera.camera",
+                    "noa.container": "classes/lib_container.container",
+                    "noa.entities": "classes/lib_entities.entities",
+                    "noa.inputs": "interfaces/lib_inputs.inputs",
+                    "noa.physics": "classes/lib_physics.physics",
+                    "noa.registry": "classes/lib_registry.registry",
+                    "noa.rendering": "classes/lib_rendering.rendering",
+                    "noa.world": "classes/lib_world.world",
+                },
+            }
+        ]
+    },
 }

@@ -1,3 +1,4 @@
+/** @internal */ /** works around typedoc bug #842 */
 
 import ndarray from 'ndarray'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
@@ -23,7 +24,7 @@ var PROFILE_EVERY = 0
  * 
  *          TERRAIN MESHER!!
  * 
- */
+*/
 
 
 function TerrainMesher(noa) {
@@ -283,7 +284,7 @@ function MeshBuilder(noa) {
         vdat.applyToMesh(mesh)
 
         // array of the materialIDs we need, in stable order
-        var matIDsUsed = Object.keys(matOffsets).sort((a, b) => a - b)
+        var matIDsUsed = Object.keys(matOffsets).sort((a, b) => (a < b) ? -1 : 1)
 
         // assign a material or make a multimaterial
         if (matIDsUsed.length === 1) {
@@ -339,7 +340,7 @@ function MeshBuilder(noa) {
     function getMultiMatForIDs(matIDs, scene) {
         var name = 'terrain_multi:' + matIDs.join(',')
         var multiMat = new MultiMaterial('multimat ' + name, scene)
-        multiMat.subMaterials = matIDs.map(matID => getTerrainMaterial(matID))
+        multiMat.subMaterials = matIDs.map(matID => getTerrainMaterial(matID, false))
         return multiMat
     }
 

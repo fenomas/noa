@@ -1,3 +1,4 @@
+/** @internal */ /** works around typedoc bug #842 */
 
 
 // helper to swap item to end and pop(), instead of splice()ing
