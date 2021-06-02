@@ -507,16 +507,16 @@ export class Engine extends EventEmitter {
      * Get the voxel ID at the specified position
     */
     getBlock(x, y, z) {
-        checkBlockParams(x)
+        if (x.length) return this.world.getBlockID(x[0], x[1], x[2])
         return this.world.getBlockID(x, y, z)
     }
 
     /** 
      * Sets the voxel ID at the specified position. 
      * Does not check whether any entities are in the way! 
-    */
+     */
     setBlock(id, x, y, z) {
-        checkBlockParams(x)
+        if (x.length) return this.world.setBlockID(x[0], x[1], x[2])
         return this.world.setBlockID(id, x, y, z)
     }
 
@@ -524,11 +524,16 @@ export class Engine extends EventEmitter {
      * Adds a block, unless there's an entity in the way.
     */
     addBlock(id, x, y, z) {
-        checkBlockParams(x)
         // add a new terrain block, if nothing blocks the terrain there
-        if (this.entities.isTerrainBlocked(x, y, z)) return
-        this.world.setBlockID(id, x, y, z)
-        return id
+        if (x.length) {
+            if (this.entities.isTerrainBlocked(x[0], x[1], x[2])) return
+            this.world.setBlockID(id, x[0], x[1], x[2])
+            return id
+        } else {
+            if (this.entities.isTerrainBlocked(x, y, z)) return
+            this.world.setBlockID(id, x, y, z)
+            return id
+        }
     }
 
 
@@ -769,16 +774,6 @@ function deprecateStuff(noa) {
     dep(noa, '_tickRate', 'tickRate is now at `noa.tickRate`')
     dep(noa.container, '_tickRate', 'tickRate is now at `noa.tickRate`')
 }
-
-
-// TODO - remove this later
-var checkBlockParams = (x) => {
-    if (x.length) throw 'Signature changed in v0.30.0 - please pass in (x,y,z) as numbers'
-    if (removeParamCheckFlag) return
-    setTimeout(() => { checkBlockParams = () => { } }, 5000)
-    removeParamCheckFlag = true
-}
-var removeParamCheckFlag = false
 
 
 

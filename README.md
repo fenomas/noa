@@ -63,7 +63,6 @@ Recent changes:
    * can now configure separate vert/horiz values for chunk load distance
    * core option `tickRate` is now in **ticks per second**, not ms per tick
    * adds several init options, e.g. `maxRenderRate`, `stickyFullscreen`
-   * block APIs `noa.setBlock`, `getBlock`, etc. no longer take array params, pass in `x, y, z` instead
  * `v0.29`: 
    * maximum voxel ID is now `65535`
    * adds option `worldGenWhilePaused`
