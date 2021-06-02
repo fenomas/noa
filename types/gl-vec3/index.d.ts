@@ -459,7 +459,6 @@ declare module "forEach" {
     function forEach(a: any[], stride: number, offset: number, count: number, fn: Function, arg?: any): any[];
 }
 declare module "gl-vec3" {
-    export const FAKE: number;
     export const EPSILON: number;
     export const create: typeof import("create");
     export const clone: typeof import("clone");

@@ -18,8 +18,7 @@ The easiest way to start building a game with `noa` is to clone the
 [examples](https://github.com/andyhall/noa-examples) repo and start hacking 
 on the code there. The comments in the `hello-world` example source walk 
 through how to instantiate the engine, define world geometry, and so forth. 
-
-Note also that the examples repo shows the intended way to import noa's 
+The example repo also shows the intended way to import noa's 
 peer depenencies, configure webpack, and so on.
 
 

@@ -1,3 +1,16 @@
+declare module "dataStore" {
+    export = DataStore;
+    class DataStore {
+        list: any[];
+        hash: {};
+        _map: {};
+        _pendingRemovals: any[];
+        add(id: any, stateObject: any): void;
+        remove(id: any): void;
+        dispose(): void;
+        flush(): void;
+    }
+}
 declare module "ent-comp" {
     export = ECS;
     /*!
