@@ -205,7 +205,7 @@ export class Engine extends EventEmitter {
     /**
      * Sets the voxel ID at the specified position.
      * Does not check whether any entities are in the way!
-    */
+     */
     setBlock(id: any, x: any, y: any, z: any): any;
     /**
      * Adds a block, unless there's an entity in the way.
