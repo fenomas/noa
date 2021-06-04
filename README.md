@@ -1,13 +1,13 @@
 
 # noa-engine
 
-An experimental voxel engine.
+An experimental voxel game engine.
 
-Example games:
- * [Minecraft Classic](https://classic.minecraft.net/) - official minecraft game built on this engine
- * [noa-lt](http://andyhall.github.io/noa-lt/) - game world containing "slides" for a talk I gave on voxels in JS
- * [noa-examples](https://github.com/andyhall/noa-examples) - repo with minimal hello-world and testbed game worlds
- * [old testbed](https://andyhall.github.io/noa-testbed/) - outdated, but colorful
+Some projects using `noa`:
+ * [Minecraft Classic](https://classic.minecraft.net/) - official game from Mojang (I'm as surprised as you are)
+ * [VoxelSrv](https://github.com/Patbox/voxelsrv) - a voxel game inspired by Minecraft
+ * [CityCraft.io](https://citycraft.io/) - multiplayer voxel cities
+ * [noa-examples](https://github.com/andyhall/noa-examples) - starter repo with minimal hello-world and testbed games
 
 ----
 
