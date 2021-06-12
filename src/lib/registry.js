@@ -121,11 +121,11 @@ export class Registry {
          *  * onCustomMeshCreate(): block event handler
          */
 
-        this.registerBlock = function (id, _options) {
-            _options = _options || {}
-            blockDefaults.solid = !_options.fluid
-            blockDefaults.opaque = !_options.fluid
-            var opts = Object.assign({}, blockDefaults, _options)
+        this.registerBlock = function (id, options = null) {
+            if (!options) options = {}
+            blockDefaults.solid = !options.fluid
+            blockDefaults.opaque = !options.fluid
+            var opts = Object.assign({}, blockDefaults, options)
 
             // console.log('register block: ', id, opts)
             if (id < 1 || id > MAX_BLOCK_ID) throw 'Block id out of range: ' + id
@@ -198,7 +198,7 @@ export class Registry {
          * @param renderMaterial an optional BABYLON material to be used for block faces with this block material
          */
 
-        this.registerMaterial = function (name, color, textureURL, texHasAlpha, renderMaterial) {
+        this.registerMaterial = function (name, color = [1, 1, 1], textureURL = '', texHasAlpha = false, renderMaterial = null) {
             // console.log('register mat: ', name, color, textureURL)
             var id = matIDs[name] || matData.length
             matIDs[name] = id

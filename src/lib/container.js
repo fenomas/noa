@@ -126,7 +126,7 @@ export class Container extends EventEmitter {
     /** 
      * Sets whether `noa` should try to acquire or release pointerLock
     */
-    setPointerLock(lock) {
+    setPointerLock(lock = false) {
         // not sure if this will work robustly
         this._shell.pointerLock = !!lock
     }

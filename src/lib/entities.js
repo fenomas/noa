@@ -35,8 +35,8 @@ var defaultOptions = {
 
 export class Entities extends ECS {
 
-    /** @internal @pro noa */
-    /** @internal @pro cameraSmoothed */
+    /** @internal @prop noa */
+    /** @internal @prop cameraSmoothed */
 
     // declare some accessors that will get made later
 

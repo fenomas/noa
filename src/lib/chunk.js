@@ -105,7 +105,7 @@ Chunk.prototype.getSolidityAt = function (i, j, k) {
     return solidLookup[this.voxels.get(i, j, k)]
 }
 
-Chunk.prototype.set = function (i, j, k, newID, x, y, z) {
+Chunk.prototype.set = function (i, j, k, newID) {
     var oldID = this.voxels.get(i, j, k)
     if (newID === oldID) return
 
@@ -187,7 +187,7 @@ Chunk.prototype.updateMeshes = function () {
         this._terrainDirty = false
     }
     if (this._objectsDirty) {
-        this.noa._objectMesher.buildObjectMeshes(this)
+        this.noa._objectMesher.buildObjectMeshes()
         this._objectsDirty = false
     }
 }

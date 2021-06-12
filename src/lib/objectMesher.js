@@ -106,7 +106,7 @@ function ObjectMesher(noa) {
 
 
     // called by world when it knows that objects have been updated
-    this.buildObjectMeshes = function (chunk) {
+    this.buildObjectMeshes = function () {
         profile_hook('start')
 
         for (var id in managers) {

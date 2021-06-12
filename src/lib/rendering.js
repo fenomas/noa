@@ -195,7 +195,7 @@ Rendering.prototype.postRender = function () {
 
 
 
-Rendering.prototype.resize = function (e) {
+Rendering.prototype.resize = function () {
     this._engine.resize()
     if (this.noa._paused && this.renderOnResize) {
         this._scene.render()
@@ -233,12 +233,12 @@ var hlpos = []
 /**
  * Add a mesh to the scene's octree setup so that it renders. 
  * 
- * param mesh: the mesh to add to the scene
- * param isStatic: pass in true if mesh never moves (i.e. change octree blocks)
- * param position: (optional) global position where the mesh should be
- * param chunk: (optional) chunk to which the mesh is statically bound
+ * @param mesh the mesh to add to the scene
+ * @param isStatic pass in true if mesh never moves (i.e. change octree blocks)
+ * @param pos (optional) global position where the mesh should be
+ * @param containingChunk (optional) chunk to which the mesh is statically bound
  */
-Rendering.prototype.addMeshToScene = function (mesh, isStatic, pos, containingChunk) {
+Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = null, containingChunk = null) {
     // exit silently if mesh has already been added and not removed
     if (this._octreeManager.includesMesh(mesh)) return
 

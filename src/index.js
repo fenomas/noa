@@ -239,7 +239,7 @@ export class Engine extends EventEmitter {
      * }
      * ```
     */
-    constructor(opts) {
+    constructor(opts = {}) {
         super()
         opts = Object.assign({}, defaultOptions, opts)
 
@@ -495,7 +495,7 @@ export class Engine extends EventEmitter {
 
 
     /** Pausing the engine will also stop render/tick events, etc. */
-    setPaused(paused) {
+    setPaused(paused = false) {
         this._paused = !!paused
         // when unpausing, clear any built-up mouse inputs
         if (!paused) {
@@ -506,7 +506,7 @@ export class Engine extends EventEmitter {
     /** 
      * Get the voxel ID at the specified position
     */
-    getBlock(x, y, z) {
+    getBlock(x, y = 0, z = 0) {
         if (x.length) return this.world.getBlockID(x[0], x[1], x[2])
         return this.world.getBlockID(x, y, z)
     }
@@ -515,7 +515,7 @@ export class Engine extends EventEmitter {
      * Sets the voxel ID at the specified position. 
      * Does not check whether any entities are in the way! 
      */
-    setBlock(id, x, y, z) {
+    setBlock(id, x, y = 0, z = 0) {
         if (x.length) return this.world.setBlockID(x[0], x[1], x[2])
         return this.world.setBlockID(id, x, y, z)
     }
@@ -523,7 +523,7 @@ export class Engine extends EventEmitter {
     /**
      * Adds a block, unless there's an entity in the way.
     */
-    addBlock(id, x, y, z) {
+    addBlock(id, x, y = 0, z = 0) {
         // add a new terrain block, if nothing blocks the terrain there
         if (x.length) {
             if (this.entities.isTerrainBlocked(x[0], x[1], x[2])) return
@@ -588,7 +588,7 @@ export class Engine extends EventEmitter {
      * `globalPrecise` will get fractional parts. If only one array is passed in,
      * `global` will get the whole output position.
     */
-    localToGlobal(local, global, globalPrecise) {
+    localToGlobal(local, global, globalPrecise = null) {
         var off = this.worldOriginOffset
         if (globalPrecise) {
             for (var i = 0; i < 3; i++) {
@@ -619,7 +619,7 @@ export class Engine extends EventEmitter {
      * @param {(id:number) => boolean} blockTestFunction which voxel IDs can be picked (default: any solid voxel)
      * @returns {PickResult}
     */
-    pick(pos, dir, dist, blockTestFunction) {
+    pick(pos = null, dir = null, dist = -1, blockTestFunction = null) {
         if (dist === 0) return null
         // input position to local coords, if any
         var pickPos = this._pickPos
@@ -644,7 +644,7 @@ export class Engine extends EventEmitter {
      * @returns {PickResult}
      */
 
-    _localPick(pos, dir, dist, blockTestFunction) {
+    _localPick(pos = null, dir = null, dist = -1, blockTestFunction = null) {
         // do a raycast in local coords - result obj will be in global coords
         if (dist === 0) return null
         var testFn = blockTestFunction || this.registry.getBlockSolidity
@@ -656,7 +656,8 @@ export class Engine extends EventEmitter {
         }
         if (!pos) pos = this.camera._localGetTargetPosition()
         dir = dir || this.camera.getDirection()
-        dist = dist || this.blockTestDistance
+        dist = dist || -1
+        if (dist < 0) dist = this.blockTestDistance
         var result = this._pickResult
         var rpos = result._localPosition
         var rnorm = result.normal
