@@ -18,8 +18,8 @@
  * ```
 */
 export class Entities extends ECS {
-    /** @internal @pro noa */
-    /** @internal @pro cameraSmoothed */
+    /** @internal @prop noa */
+    /** @internal @prop cameraSmoothed */
     /**
      * Returns whether the entity has a physics body
      * @type {(id:number) => boolean}

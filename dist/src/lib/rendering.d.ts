@@ -43,9 +43,9 @@ export class Rendering {
     tick(dt: any): void;
     render(): void;
     postRender(): void;
-    resize(e: any): void;
+    resize(): void;
     highlightBlockFace(show: any, posArr: any, normArr: any): void;
-    addMeshToScene(mesh: any, isStatic: any, pos: any, containingChunk: any): void;
+    addMeshToScene(mesh: any, isStatic?: boolean, pos?: any, containingChunk?: any): void;
     makeStandardMaterial(name: any): StandardMaterial;
     postMaterialCreationHook(mat: any): void;
     prepareChunkForRendering(chunk: any): void;

@@ -44,6 +44,6 @@ export class Container extends EventEmitter {
     /**
      * Sets whether `noa` should try to acquire or release pointerLock
     */
-    setPointerLock(lock: any): void;
+    setPointerLock(lock?: boolean): void;
 }
 import { EventEmitter } from "events";

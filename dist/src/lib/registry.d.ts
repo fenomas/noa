@@ -44,7 +44,7 @@ export class Registry {
      *  * onUnset(): block event handler
      *  * onCustomMeshCreate(): block event handler
      */
-    registerBlock: (id: any, _options: any) => any;
+    registerBlock: (id: any, options?: any) => any;
     /**
      * Register (by name) a material and its parameters.
      *
@@ -54,7 +54,7 @@ export class Registry {
      * @param texHasAlpha
      * @param renderMaterial an optional BABYLON material to be used for block faces with this block material
      */
-    registerMaterial: (name: any, color: any, textureURL: any, texHasAlpha: any, renderMaterial: any) => any;
+    registerMaterial: (name: any, color?: number[], textureURL?: string, texHasAlpha?: boolean, renderMaterial?: any) => any;
     /**
      * block solidity (as in physics)
      * @param id

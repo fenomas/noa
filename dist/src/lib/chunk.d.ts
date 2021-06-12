@@ -24,7 +24,7 @@ declare class Chunk {
     _updateVoxelArray(dataArray: any): void;
     get(i: any, j: any, k: any): any;
     getSolidityAt(i: any, j: any, k: any): any;
-    set(i: any, j: any, k: any, newID: any, x: any, y: any, z: any): void;
+    set(i: any, j: any, k: any, newID: any): void;
     updateMeshes(): void;
     dispose(): void;
 }

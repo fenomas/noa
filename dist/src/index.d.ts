@@ -140,7 +140,7 @@ export class Engine extends EventEmitter {
      * }
      * ```
     */
-    constructor(opts: any);
+    constructor(opts?: {});
     version: string;
     _paused: boolean;
     _dragOutsideLock: any;
@@ -197,20 +197,20 @@ export class Engine extends EventEmitter {
     */
     render(dt: any, framePart: any): void;
     /** Pausing the engine will also stop render/tick events, etc. */
-    setPaused(paused: any): void;
+    setPaused(paused?: boolean): void;
     /**
      * Get the voxel ID at the specified position
     */
-    getBlock(x: any, y: any, z: any): any;
+    getBlock(x: any, y?: number, z?: number): any;
     /**
      * Sets the voxel ID at the specified position.
      * Does not check whether any entities are in the way!
      */
-    setBlock(id: any, x: any, y: any, z: any): any;
+    setBlock(id: any, x: any, y?: number, z?: number): any;
     /**
      * Adds a block, unless there's an entity in the way.
     */
-    addBlock(id: any, x: any, y: any, z: any): any;
+    addBlock(id: any, x: any, y?: number, z?: number): any;
     /**
      * Precisely converts a world position to the current internal
      * local frame of reference.
@@ -238,7 +238,7 @@ export class Engine extends EventEmitter {
      * `globalPrecise` will get fractional parts. If only one array is passed in,
      * `global` will get the whole output position.
     */
-    localToGlobal(local: any, global: any, globalPrecise: any): any;
+    localToGlobal(local: any, global: any, globalPrecise?: any): any;
     /**
      * Raycast through the world, returning a result object for any non-air block
      *
@@ -250,7 +250,7 @@ export class Engine extends EventEmitter {
      * @param {(id:number) => boolean} blockTestFunction which voxel IDs can be picked (default: any solid voxel)
      * @returns {PickResult}
     */
-    pick(pos: number[], dir: number[], dist: number, blockTestFunction: (id: number) => boolean): PickResult;
+    pick(pos?: number[], dir?: number[], dist?: number, blockTestFunction?: (id: number) => boolean): PickResult;
     /**
      * Do a raycast in local coords.
      * See `/docs/positions.md` for more info.
@@ -260,7 +260,7 @@ export class Engine extends EventEmitter {
      * @param {(id:number) => boolean} blockTestFunction which voxel IDs can be picked (default: any solid voxel)
      * @returns {PickResult}
      */
-    _localPick(pos: number[], dir: number[], dist: number, blockTestFunction: (id: number) => boolean): PickResult;
+    _localPick(pos?: number[], dir?: number[], dist?: number, blockTestFunction?: (id: number) => boolean): PickResult;
 }
 /**
  * - value of `noa.targetedBlock`, updated each tick
