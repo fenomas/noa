@@ -109,10 +109,15 @@ export class Entities extends ECS {
      *
      * In general, always use this to set an entity's position unless
      * you're familiar with engine internals.
+     *
+     * ```js
+     * noa.ents.setPosition(playerEntity, [5, 6, 7])
+     * noa.ents.setPosition(playerEntity, 5, 6, 7)  // also works
+     * ```
+     *
      * @param {number} id
-     * @param {number[]} pos
      */
-    setPosition(id: number, pos: number[]): void;
+    setPosition(id: number, pos: any, y?: number, z?: number): void;
     /** Set an entity's size
      * @param {number} xs
      * @param {number} ys

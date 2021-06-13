@@ -196,10 +196,16 @@ export class Entities extends ECS {
      * 
      * In general, always use this to set an entity's position unless
      * you're familiar with engine internals.
+     * 
+     * ```js
+     * noa.ents.setPosition(playerEntity, [5, 6, 7])
+     * noa.ents.setPosition(playerEntity, 5, 6, 7)  // also works
+     * ```
+     * 
      * @param {number} id
-     * @param {number[]} pos
      */
-    setPosition(id, pos) {
+    setPosition(id, pos, y = 0, z = 0) {
+        if (typeof pos === 'number') pos = [pos, y, z]
         // convert to local and defer impl
         var loc = this.noa.globalToLocal(pos, null, [])
         this._localSetPosition(id, loc)
