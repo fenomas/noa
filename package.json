@@ -24,7 +24,7 @@
     },
     "dependencies": {
         "aabb-3d": "andyhall/aabb-3d",
-        "box-intersect": "^1.0.2",
+        "box-intersect": "andyhall/box-intersect",
         "ent-comp": "^0.10.1",
         "events": "^3.3.0",
         "fast-voxel-raycast": "^0.1.1",
