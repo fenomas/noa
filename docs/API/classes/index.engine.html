@@ -1,0 +1,1558 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Engine | noa API reference</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<ul class="results-priority" style="display:none">
+					</ul>
+					<a href="../index.html" class="title">noa API reference</a>
+					&emsp;<a href="https://github.com/andyhall/noa/" class="title">source</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules/index.html">index</a>
+				</li>
+				<li>
+					<a href="index.engine.html">Engine</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-3 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation outline primary">
+				<a style="margin-left:0em" href="../modules.html">Modules</a>
+				<ul style="display:none">
+					{&quot;core&quot;:{&quot;Engine&quot;:&quot;classes/index.engine&quot;},&quot;Libraries&quot;:{&quot;noa.camera&quot;:&quot;classes/lib_camera.camera&quot;,&quot;noa.container&quot;:&quot;classes/lib_container.container&quot;,&quot;noa.entities&quot;:&quot;classes/lib_entities.entities&quot;,&quot;noa.inputs&quot;:&quot;interfaces/lib_inputs.inputs&quot;,&quot;noa.physics&quot;:&quot;classes/lib_physics.physics&quot;,&quot;noa.registry&quot;:&quot;classes/lib_registry.registry&quot;,&quot;noa.rendering&quot;:&quot;classes/lib_rendering.rendering&quot;,&quot;noa.world&quot;:&quot;classes/lib_world.world&quot;}}
+				</ul>
+			</nav>
+		</div>
+		<div class="col-7 offset-3 col-content">
+			<h1>Class Engine</h1>
+			<section class="tsd-panel tsd-comment"><div class="tsd-comment tsd-typography tsd-comment-shorttext">
+					<div class="lead">
+						<p>Main engine class.
+						Takes an object full of optional settings as a parameter.</p>
+					</div>
+					</div><div class="tsd-comment tsd-typography tsd-comment-text">
+					<pre><code class="language-js"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Engine</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;noa-engine&#039;</span>
+<span style="color: #0000FF">var</span><span style="color: #000000"> </span><span style="color: #001080">noa</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Engine</span><span style="color: #000000">({</span>
+<span style="color: #000000">   </span><span style="color: #001080">debug:</span><span style="color: #000000"> </span><span style="color: #0000FF">false</span><span style="color: #000000">,</span>
+<span style="color: #000000">})</span>
+</code></pre>
+					<p>Note that the options object is also passed to noa&#39;s
+						child modules (<a href="lib_rendering.rendering.html">Rendering</a>, <a href="lib_container.container.html">Container</a>, etc).
+					See docs for each module for their options.</p>
+					</div><div class="tsd-comment tsd-typography tsd-comment-tags">
+					<dl class="tsd-comment-tags"><dt>emits</dt>
+						<dd><p>tick(dt)</p>
+						</dd><dt>emits</dt>
+						<dd><p>beforeRender(dt)</p>
+						</dd><dt>emits</dt>
+						<dd><p>afterRender(dt)</p>
+						</dd><dt>emits</dt>
+						<dd><p>targetBlockChanged(blockDesc)</p>
+					</dd></dl>
+			</div></section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="tsd-signature-type">EventEmitter</span>
+						<ul class="tsd-hierarchy">
+							<li>
+								<span class="target">Engine</span>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite"><a href="index.engine.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#_dragoutsidelock" class="tsd-kind-icon">_drag<wbr>Outside<wbr>Lock</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#_events" class="tsd-kind-icon">_events</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#_eventscount" class="tsd-kind-icon">_events<wbr>Count</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#_maxlisteners" class="tsd-kind-icon">_max<wbr>Listeners</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#_objectmesher" class="tsd-kind-icon">_object<wbr>Mesher</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#_originrebasedistance" class="tsd-kind-icon">_origin<wbr>Rebase<wbr>Distance</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#_paused" class="tsd-kind-icon">_paused</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#_pickpos" class="tsd-kind-icon">_pick<wbr>Pos</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#_pickresult" class="tsd-kind-icon">_pick<wbr>Result</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#_prevtargethash" class="tsd-kind-icon">_prev<wbr>Target<wbr>Hash</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#_targetedblockdat" class="tsd-kind-icon">_targeted<wbr>Block<wbr>Dat</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#_terrainmesher" class="tsd-kind-icon">_terrain<wbr>Mesher</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#blocktargetidcheck" class="tsd-kind-icon">block<wbr>Target<wbr>IdCheck</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#blocktestdistance" class="tsd-kind-icon">block<wbr>Test<wbr>Distance</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#camera" class="tsd-kind-icon">camera</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#container" class="tsd-kind-icon">container</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#defaultblockhighlightfunction" class="tsd-kind-icon">default<wbr>Block<wbr>Highlight<wbr>Function</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#entities" class="tsd-kind-icon">entities</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#ents" class="tsd-kind-icon">ents</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#inputs" class="tsd-kind-icon">inputs</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#listenercount" class="tsd-kind-icon">listener<wbr>Count</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#maketargethash" class="tsd-kind-icon">make<wbr>Target<wbr>Hash</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#maxrenderrate" class="tsd-kind-icon">max<wbr>Render<wbr>Rate</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#ndarray" class="tsd-kind-icon">ndarray</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#off" class="tsd-kind-icon">off</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#on" class="tsd-kind-icon">on</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#physics" class="tsd-kind-icon">physics</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#playerentity" class="tsd-kind-icon">player<wbr>Entity</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#positionincurrenttick" class="tsd-kind-icon">position<wbr>InCurrent<wbr>Tick</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#registry" class="tsd-kind-icon">registry</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#rendering" class="tsd-kind-icon">rendering</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#targetedblock" class="tsd-kind-icon">targeted<wbr>Block</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#tickrate" class="tsd-kind-icon">tick<wbr>Rate</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#vec3" class="tsd-kind-icon">vec3</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#version" class="tsd-kind-icon">version</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#world" class="tsd-kind-icon">world</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#worldname" class="tsd-kind-icon">world<wbr>Name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="index.engine.html#worldoriginoffset" class="tsd-kind-icon">world<wbr>Origin<wbr>Offset</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.engine.html#_localpick" class="tsd-kind-icon">_local<wbr>Pick</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.engine.html#addblock" class="tsd-kind-icon">add<wbr>Block</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#addlistener" class="tsd-kind-icon">add<wbr>Listener</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#emit" class="tsd-kind-icon">emit</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#eventnames" class="tsd-kind-icon">event<wbr>Names</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.engine.html#getblock" class="tsd-kind-icon">get<wbr>Block</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#getmaxlisteners" class="tsd-kind-icon">get<wbr>Max<wbr>Listeners</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.engine.html#globaltolocal" class="tsd-kind-icon">global<wbr>ToLocal</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#listeners" class="tsd-kind-icon">listeners</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.engine.html#localtoglobal" class="tsd-kind-icon">local<wbr>ToGlobal</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#once" class="tsd-kind-icon">once</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.engine.html#pick" class="tsd-kind-icon">pick</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#prependlistener" class="tsd-kind-icon">prepend<wbr>Listener</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#prependoncelistener" class="tsd-kind-icon">prepend<wbr>Once<wbr>Listener</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#rawlisteners" class="tsd-kind-icon">raw<wbr>Listeners</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#removealllisteners" class="tsd-kind-icon">remove<wbr>All<wbr>Listeners</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#removelistener" class="tsd-kind-icon">remove<wbr>Listener</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.engine.html#setblock" class="tsd-kind-icon">set<wbr>Block</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="index.engine.html#setmaxlisteners" class="tsd-kind-icon">set<wbr>Max<wbr>Listeners</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="index.engine.html#setpaused" class="tsd-kind-icon">set<wbr>Paused</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Engine<span class="tsd-signature-symbol">(</span>opts<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="index.engine.html" class="tsd-signature-type">Engine</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Overrides EventEmitter.constructor</p>
+								<ul>
+									<li>Defined in src/index.js:75</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>The core Engine constructor uses the following options:</p>
+								</div>
+								</div><div class="tsd-comment tsd-typography tsd-comment-text">
+								<pre><code class="language-js"><span style="color: #0000FF">var</span><span style="color: #000000"> </span><span style="color: #001080">defaultOptions</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">   </span><span style="color: #001080">debug:</span><span style="color: #000000"> </span><span style="color: #0000FF">false</span><span style="color: #000000">,</span>
+<span style="color: #000000">   </span><span style="color: #001080">silent:</span><span style="color: #000000"> </span><span style="color: #0000FF">false</span><span style="color: #000000">,</span>
+<span style="color: #000000">   </span><span style="color: #001080">playerHeight:</span><span style="color: #000000"> </span><span style="color: #098658">1.8</span><span style="color: #000000">,</span>
+<span style="color: #000000">   </span><span style="color: #001080">playerWidth:</span><span style="color: #000000"> </span><span style="color: #098658">0.6</span><span style="color: #000000">,</span>
+<span style="color: #000000">   </span><span style="color: #001080">playerStart:</span><span style="color: #000000"> [</span><span style="color: #098658">0</span><span style="color: #000000">, </span><span style="color: #098658">10</span><span style="color: #000000">, </span><span style="color: #098658">0</span><span style="color: #000000">],</span>
+<span style="color: #000000">   </span><span style="color: #001080">playerAutoStep:</span><span style="color: #000000"> </span><span style="color: #0000FF">false</span><span style="color: #000000">,</span>
+<span style="color: #000000">   </span><span style="color: #001080">tickRate:</span><span style="color: #000000"> </span><span style="color: #098658">30</span><span style="color: #000000">,           </span><span style="color: #008000">// ticks per second</span>
+<span style="color: #000000">   </span><span style="color: #001080">maxRenderRate:</span><span style="color: #000000"> </span><span style="color: #098658">0</span><span style="color: #000000">,       </span><span style="color: #008000">// max FPS, 0 for uncapped </span>
+<span style="color: #000000">   </span><span style="color: #001080">blockTestDistance:</span><span style="color: #000000"> </span><span style="color: #098658">10</span><span style="color: #000000">,</span>
+<span style="color: #000000">   </span><span style="color: #001080">stickyPointerLock:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000">,</span>
+<span style="color: #000000">   </span><span style="color: #001080">dragCameraOutsidePointerLock:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000">,</span>
+<span style="color: #000000">   </span><span style="color: #001080">stickyFullscreen:</span><span style="color: #000000"> </span><span style="color: #0000FF">false</span><span style="color: #000000">,</span>
+<span style="color: #000000">   </span><span style="color: #001080">skipDefaultHighlighting:</span><span style="color: #000000"> </span><span style="color: #0000FF">false</span><span style="color: #000000">,</span>
+<span style="color: #000000">   </span><span style="color: #001080">originRebaseDistance:</span><span style="color: #000000"> </span><span style="color: #098658">25</span><span style="color: #000000">,</span>
+<span style="color: #000000">}</span>
+</code></pre>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>opts: <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> = {}</span></h5>
+									<ul class="tsd-parameters">
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="index.engine.html" class="tsd-signature-type">Engine</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_dragoutsidelock" class="tsd-anchor"></a>
+					<h3>_drag<wbr>Outside<wbr>Lock</h3>
+					<div class="tsd-signature tsd-kind-icon">_drag<wbr>Outside<wbr>Lock<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="_events" class="tsd-anchor"></a>
+					<h3>_events</h3>
+					<div class="tsd-signature tsd-kind-icon">_events<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from EventEmitter._events</p>
+						<ul>
+							<li>Defined in types/events/index.d.ts:5</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="_eventscount" class="tsd-anchor"></a>
+					<h3>_events<wbr>Count</h3>
+					<div class="tsd-signature tsd-kind-icon">_events<wbr>Count<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from EventEmitter._eventsCount</p>
+						<ul>
+							<li>Defined in types/events/index.d.ts:6</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="_maxlisteners" class="tsd-anchor"></a>
+					<h3>_max<wbr>Listeners</h3>
+					<div class="tsd-signature tsd-kind-icon">_max<wbr>Listeners<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from EventEmitter._maxListeners</p>
+						<ul>
+							<li>Defined in types/events/index.d.ts:7</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_objectmesher" class="tsd-anchor"></a>
+					<h3>_object<wbr>Mesher</h3>
+					<div class="tsd-signature tsd-kind-icon">_object<wbr>Mesher<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ObjectMesher</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_originrebasedistance" class="tsd-anchor"></a>
+					<h3>_origin<wbr>Rebase<wbr>Distance</h3>
+					<div class="tsd-signature tsd-kind-icon">_origin<wbr>Rebase<wbr>Distance<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_paused" class="tsd-anchor"></a>
+					<h3>_paused</h3>
+					<div class="tsd-signature tsd-kind-icon">_paused<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_pickpos" class="tsd-anchor"></a>
+					<h3>_pick<wbr>Pos</h3>
+					<div class="tsd-signature tsd-kind-icon">_pick<wbr>Pos<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_pickresult" class="tsd-anchor"></a>
+					<h3>_pick<wbr>Result</h3>
+					<div class="tsd-signature tsd-kind-icon">_pick<wbr>Result<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter">
+								<h5>_local<wbr>Position<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h5>
+							</li>
+							<li class="tsd-parameter">
+								<h5>normal<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></h5>
+							</li>
+							<li class="tsd-parameter">
+								<h5>position<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></h5>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_prevtargethash" class="tsd-anchor"></a>
+					<h3>_prev<wbr>Target<wbr>Hash</h3>
+					<div class="tsd-signature tsd-kind-icon">_prev<wbr>Target<wbr>Hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_targetedblockdat" class="tsd-anchor"></a>
+					<h3>_targeted<wbr>Block<wbr>Dat</h3>
+					<div class="tsd-signature tsd-kind-icon">_targeted<wbr>Block<wbr>Dat<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter">
+								<h5>adjacent<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h5>
+							</li>
+							<li class="tsd-parameter">
+								<h5>blockID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></h5>
+							</li>
+							<li class="tsd-parameter">
+								<h5>normal<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h5>
+							</li>
+							<li class="tsd-parameter">
+								<h5>position<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></h5>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_terrainmesher" class="tsd-anchor"></a>
+					<h3>_terrain<wbr>Mesher</h3>
+					<div class="tsd-signature tsd-kind-icon">_terrain<wbr>Mesher<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">TerrainMesher</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="blocktargetidcheck" class="tsd-anchor"></a>
+					<h3>block<wbr>Target<wbr>IdCheck</h3>
+					<div class="tsd-signature tsd-kind-icon">block<wbr>Target<wbr>IdCheck<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+											<div class="lead">
+												<p>block solidity (as in physics)</p>
+											</div>
+										</div>
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+												<div class="tsd-comment tsd-typography tsd-comment-text">
+												</div>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="blocktestdistance" class="tsd-anchor"></a>
+					<h3>block<wbr>Test<wbr>Distance</h3>
+					<div class="tsd-signature tsd-kind-icon">block<wbr>Test<wbr>Distance<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="camera" class="tsd-anchor"></a>
+					<h3>camera</h3>
+					<div class="tsd-signature tsd-kind-icon">camera<span class="tsd-signature-symbol">:</span> <a href="lib_camera.camera.html" class="tsd-signature-type">Camera</a></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="container" class="tsd-anchor"></a>
+					<h3>container</h3>
+					<div class="tsd-signature tsd-kind-icon">container<span class="tsd-signature-symbol">:</span> <a href="lib_container.container.html" class="tsd-signature-type">Container</a></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="defaultblockhighlightfunction" class="tsd-anchor"></a>
+					<h3>default<wbr>Block<wbr>Highlight<wbr>Function</h3>
+					<div class="tsd-signature tsd-kind-icon">default<wbr>Block<wbr>Highlight<wbr>Function<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>tgt<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>tgt: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="entities" class="tsd-anchor"></a>
+					<h3>entities</h3>
+					<div class="tsd-signature tsd-kind-icon">entities<span class="tsd-signature-symbol">:</span> <a href="lib_entities.entities.html" class="tsd-signature-type">Entities</a></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="ents" class="tsd-anchor"></a>
+					<h3>ents</h3>
+					<div class="tsd-signature tsd-kind-icon">ents<span class="tsd-signature-symbol">:</span> <a href="lib_entities.entities.html" class="tsd-signature-type">Entities</a></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="inputs" class="tsd-anchor"></a>
+					<h3>inputs</h3>
+					<div class="tsd-signature tsd-kind-icon">inputs<span class="tsd-signature-symbol">:</span> <a href="../interfaces/lib_inputs.inputs.html" class="tsd-signature-type">Inputs</a></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="listenercount" class="tsd-anchor"></a>
+					<h3>listener<wbr>Count</h3>
+					<div class="tsd-signature tsd-kind-icon">listener<wbr>Count<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from EventEmitter.listenerCount</p>
+						<ul>
+							<li>Defined in types/events/index.d.ts:21</li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>emitter<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>type: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>emitter: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>type: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="maketargethash" class="tsd-anchor"></a>
+					<h3>make<wbr>Target<wbr>Hash</h3>
+					<div class="tsd-signature tsd-kind-icon">make<wbr>Target<wbr>Hash<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>pos<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, norm<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>pos: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>norm: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="maxrenderrate" class="tsd-anchor"></a>
+					<h3>max<wbr>Render<wbr>Rate</h3>
+					<div class="tsd-signature tsd-kind-icon">max<wbr>Render<wbr>Rate<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="ndarray" class="tsd-anchor"></a>
+					<h3>ndarray</h3>
+					<div class="tsd-signature tsd-kind-icon">ndarray<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="off" class="tsd-anchor"></a>
+					<h3>off</h3>
+					<div class="tsd-signature tsd-kind-icon">off<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from EventEmitter.off</p>
+						<ul>
+							<li>Defined in types/events/index.d.ts:17</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="on" class="tsd-anchor"></a>
+					<h3>on</h3>
+					<div class="tsd-signature tsd-kind-icon">on<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from EventEmitter.on</p>
+						<ul>
+							<li>Defined in types/events/index.d.ts:12</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="physics" class="tsd-anchor"></a>
+					<h3>physics</h3>
+					<div class="tsd-signature tsd-kind-icon">physics<span class="tsd-signature-symbol">:</span> <a href="lib_physics.physics.html" class="tsd-signature-type">Physics</a></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="playerentity" class="tsd-anchor"></a>
+					<h3>player<wbr>Entity</h3>
+					<div class="tsd-signature tsd-kind-icon">player<wbr>Entity<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="positionincurrenttick" class="tsd-anchor"></a>
+					<h3>position<wbr>InCurrent<wbr>Tick</h3>
+					<div class="tsd-signature tsd-kind-icon">position<wbr>InCurrent<wbr>Tick<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="registry" class="tsd-anchor"></a>
+					<h3>registry</h3>
+					<div class="tsd-signature tsd-kind-icon">registry<span class="tsd-signature-symbol">:</span> <a href="lib_registry.registry.html" class="tsd-signature-type">Registry</a></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="rendering" class="tsd-anchor"></a>
+					<h3>rendering</h3>
+					<div class="tsd-signature tsd-kind-icon">rendering<span class="tsd-signature-symbol">:</span> <a href="lib_rendering.rendering.html" class="tsd-signature-type">Rendering</a></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="targetedblock" class="tsd-anchor"></a>
+					<h3>targeted<wbr>Block</h3>
+					<div class="tsd-signature tsd-kind-icon">targeted<wbr>Block<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="tickrate" class="tsd-anchor"></a>
+					<h3>tick<wbr>Rate</h3>
+					<div class="tsd-signature tsd-kind-icon">tick<wbr>Rate<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="vec3" class="tsd-anchor"></a>
+					<h3>vec3</h3>
+					<div class="tsd-signature tsd-kind-icon">vec3<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">__module</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="version" class="tsd-anchor"></a>
+					<h3>version</h3>
+					<div class="tsd-signature tsd-kind-icon">version<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="world" class="tsd-anchor"></a>
+					<h3>world</h3>
+					<div class="tsd-signature tsd-kind-icon">world<span class="tsd-signature-symbol">:</span> <a href="lib_world.world.html" class="tsd-signature-type">World</a></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="worldname" class="tsd-anchor"></a>
+					<h3>world<wbr>Name</h3>
+					<div class="tsd-signature tsd-kind-icon">world<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="worldoriginoffset" class="tsd-anchor"></a>
+					<h3>world<wbr>Origin<wbr>Offset</h3>
+					<div class="tsd-signature tsd-kind-icon">world<wbr>Origin<wbr>Offset<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="_localpick" class="tsd-anchor"></a>
+					<h3>_local<wbr>Pick</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">_local<wbr>Pick<span class="tsd-signature-symbol">(</span>pos<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span>, dir<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span>, dist<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span>, blockTestFunction<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/index.pickresult.html" class="tsd-signature-type">PickResult</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/index.js:647</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Do a raycast in local coords.
+									See <code>/docs/positions.md</code> for more info.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>pos: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = null</span></h5>
+									<div class="tsd-comment tsd-typography tsd-comment-text">
+										<p>where to pick from (default: player&#39;s eye pos)</p>
+									</div>
+								</li>
+								<li>
+									<h5>dir: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = null</span></h5>
+									<div class="tsd-comment tsd-typography tsd-comment-text">
+										<p>direction to pick along (default: camera vector)</p>
+									</div>
+								</li>
+								<li>
+									<h5>dist: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = -1</span></h5>
+									<div class="tsd-comment tsd-typography tsd-comment-text">
+										<p>pick distance (default: <code>noa.blockTestDistance</code>)</p>
+									</div>
+								</li>
+								<li>
+									<h5>blockTestFunction: <span class="tsd-signature-type">function</span><span class="tsd-signature-symbol"> = null</span></h5>
+									<div class="tsd-comment tsd-typography tsd-comment-text">
+										<p>which voxel IDs can be picked (default: any solid voxel)</p>
+									</div>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-siganture">
+											<ul class="tsd-signatures tsd-kind-type-literal">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>id: <span class="tsd-signature-type">number</span></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/index.pickresult.html" class="tsd-signature-type">PickResult</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="addblock" class="tsd-anchor"></a>
+					<h3>add<wbr>Block</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Block<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, x<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, y<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span>, z<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/index.js:526</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Adds a block, unless there&#39;s an entity in the way.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>id: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>x: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>y: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></h5>
+								</li>
+								<li>
+									<h5>z: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="addlistener" class="tsd-anchor"></a>
+					<h3>add<wbr>Listener</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Listener<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from EventEmitter.addListener</p>
+								<ul>
+									<li>Defined in types/events/index.d.ts:11</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>type: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>listener: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="emit" class="tsd-anchor"></a>
+					<h3>emit</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">emit<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, <span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from EventEmitter.emit</p>
+								<ul>
+									<li>Defined in types/events/index.d.ts:10</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>type: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>args: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="eventnames" class="tsd-anchor"></a>
+					<h3>event<wbr>Names</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">event<wbr>Names<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from EventEmitter.eventNames</p>
+								<ul>
+									<li>Defined in types/events/index.d.ts:22</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getblock" class="tsd-anchor"></a>
+					<h3>get<wbr>Block</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Block<span class="tsd-signature-symbol">(</span>x<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, y<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span>, z<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/index.js:509</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Get the voxel ID at the specified position</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>x: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>y: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></h5>
+								</li>
+								<li>
+									<h5>z: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="getmaxlisteners" class="tsd-anchor"></a>
+					<h3>get<wbr>Max<wbr>Listeners</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Max<wbr>Listeners<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from EventEmitter.getMaxListeners</p>
+								<ul>
+									<li>Defined in types/events/index.d.ts:9</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="globaltolocal" class="tsd-anchor"></a>
+					<h3>global<wbr>ToLocal</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">global<wbr>ToLocal<span class="tsd-signature-symbol">(</span>global<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, globalPrecise<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, local<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/index.js:562</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Precisely converts a world position to the current internal
+									local frame of reference.</p>
+								</div>
+								</div><div class="tsd-comment tsd-typography tsd-comment-text">
+								<p>See <code>/docs/positions.md</code> for more info.</p>
+								<p>Params:</p>
+								<ul>
+									<li><code>global</code>: input position in global coords</li>
+									<li><code>globalPrecise</code>: (optional) sub-voxel offset to the global position</li>
+									<li><code>local</code>: output array which will receive the result</li>
+								</ul>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>global: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>globalPrecise: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>local: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="listeners" class="tsd-anchor"></a>
+					<h3>listeners</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">listeners<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from EventEmitter.listeners</p>
+								<ul>
+									<li>Defined in types/events/index.d.ts:19</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>type: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="localtoglobal" class="tsd-anchor"></a>
+					<h3>local<wbr>ToGlobal</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">local<wbr>ToGlobal<span class="tsd-signature-symbol">(</span>local<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, global<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, globalPrecise<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/index.js:591</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Precisely converts a world position to the current internal
+									local frame of reference.</p>
+								</div>
+								</div><div class="tsd-comment tsd-typography tsd-comment-text">
+								<p>See <code>/docs/positions.md</code> for more info.</p>
+								<p>Params:</p>
+								<ul>
+									<li><code>local</code>: input array of local coords</li>
+									<li><code>global</code>: output array which receives the result</li>
+									<li><code>globalPrecise</code>: (optional) sub-voxel offset to the output global position</li>
+								</ul>
+								<p>If both output arrays are passed in, <code>global</code> will get int values and
+									<code>globalPrecise</code> will get fractional parts. If only one array is passed in,
+								<code>global</code> will get the whole output position.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>local: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>global: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>globalPrecise: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> = null</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="once" class="tsd-anchor"></a>
+					<h3>once</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">once<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EventEmitter</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from EventEmitter.once</p>
+								<ul>
+									<li>Defined in types/events/index.d.ts:14</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>type: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>listener: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">EventEmitter</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="pick" class="tsd-anchor"></a>
+					<h3>pick</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">pick<span class="tsd-signature-symbol">(</span>pos<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span>, dir<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span>, dist<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span>, blockTestFunction<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/index.pickresult.html" class="tsd-signature-type">PickResult</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/index.js:622</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Raycast through the world, returning a result object for any non-air block</p>
+								</div>
+								</div><div class="tsd-comment tsd-typography tsd-comment-text">
+								<p>See <code>/docs/positions.md</code> for info on working with precise positions.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>pos: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = null</span></h5>
+									<div class="tsd-comment tsd-typography tsd-comment-text">
+										<p>where to pick from (default: player&#39;s eye pos)</p>
+									</div>
+								</li>
+								<li>
+									<h5>dir: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = null</span></h5>
+									<div class="tsd-comment tsd-typography tsd-comment-text">
+										<p>direction to pick along (default: camera vector)</p>
+									</div>
+								</li>
+								<li>
+									<h5>dist: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = -1</span></h5>
+									<div class="tsd-comment tsd-typography tsd-comment-text">
+										<p>pick distance (default: <code>noa.blockTestDistance</code>)</p>
+									</div>
+								</li>
+								<li>
+									<h5>blockTestFunction: <span class="tsd-signature-type">function</span><span class="tsd-signature-symbol"> = null</span></h5>
+									<div class="tsd-comment tsd-typography tsd-comment-text">
+										<p>which voxel IDs can be picked (default: any solid voxel)</p>
+									</div>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-siganture">
+											<ul class="tsd-signatures tsd-kind-type-literal">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>id: <span class="tsd-signature-type">number</span></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/index.pickresult.html" class="tsd-signature-type">PickResult</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="prependlistener" class="tsd-anchor"></a>
+					<h3>prepend<wbr>Listener</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">prepend<wbr>Listener<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from EventEmitter.prependListener</p>
+								<ul>
+									<li>Defined in types/events/index.d.ts:13</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>type: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>listener: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="prependoncelistener" class="tsd-anchor"></a>
+					<h3>prepend<wbr>Once<wbr>Listener</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">prepend<wbr>Once<wbr>Listener<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EventEmitter</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from EventEmitter.prependOnceListener</p>
+								<ul>
+									<li>Defined in types/events/index.d.ts:15</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>type: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>listener: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">EventEmitter</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="rawlisteners" class="tsd-anchor"></a>
+					<h3>raw<wbr>Listeners</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">raw<wbr>Listeners<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from EventEmitter.rawListeners</p>
+								<ul>
+									<li>Defined in types/events/index.d.ts:20</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>type: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="removealllisteners" class="tsd-anchor"></a>
+					<h3>remove<wbr>All<wbr>Listeners</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>All<wbr>Listeners<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, <span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EventEmitter</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from EventEmitter.removeAllListeners</p>
+								<ul>
+									<li>Defined in types/events/index.d.ts:18</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>type: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagRest">Rest</span> <span class="tsd-signature-symbol">...</span>args: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">EventEmitter</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="removelistener" class="tsd-anchor"></a>
+					<h3>remove<wbr>Listener</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>Listener<span class="tsd-signature-symbol">(</span>type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EventEmitter</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from EventEmitter.removeListener</p>
+								<ul>
+									<li>Defined in types/events/index.d.ts:16</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>type: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>listener: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">EventEmitter</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="setblock" class="tsd-anchor"></a>
+					<h3>set<wbr>Block</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Block<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, x<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, y<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span>, z<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/index.js:518</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Sets the voxel ID at the specified position.
+									Does not check whether any entities are in the way!</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>id: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>x: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>y: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></h5>
+								</li>
+								<li>
+									<h5>z: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="setmaxlisteners" class="tsd-anchor"></a>
+					<h3>set<wbr>Max<wbr>Listeners</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Max<wbr>Listeners<span class="tsd-signature-symbol">(</span>n<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EventEmitter</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from EventEmitter.setMaxListeners</p>
+								<ul>
+									<li>Defined in types/events/index.d.ts:8</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>n: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">EventEmitter</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="setpaused" class="tsd-anchor"></a>
+					<h3>set<wbr>Paused</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Paused<span class="tsd-signature-symbol">(</span>paused<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/index.js:498</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Pausing the engine will also stop render/tick events, etc.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>paused: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<!--{&quot;options&quot;:&quot;/Users/andy/dev/game/noa&quot;,&quot;tsconfig&quot;:&quot;/Users/andy/dev/game/noa&quot;,&quot;entryPoints&quot;:[&quot;src/index.js&quot;,&quot;src/lib/&quot;,&quot;src/components/movement.js&quot;],&quot;exclude&quot;:[],&quot;externalPattern&quot;:[&quot;**/node_modules/**&quot;],&quot;excludeExternals&quot;:false,&quot;excludeNotDocumented&quot;:false,&quot;excludeInternal&quot;:true,&quot;excludePrivate&quot;:false,&quot;excludeProtected&quot;:false,&quot;disableSources&quot;:false,&quot;includes&quot;:&quot;&quot;,&quot;media&quot;:&quot;&quot;,&quot;watch&quot;:false,&quot;preserveWatchOutput&quot;:false,&quot;emit&quot;:false,&quot;out&quot;:&quot;docs/API&quot;,&quot;json&quot;:&quot;&quot;,&quot;pretty&quot;:true,&quot;theme&quot;:&quot;./node_modules/typedoc-neo-theme/bin/default&quot;,&quot;highlightTheme&quot;:&quot;light-plus&quot;,&quot;name&quot;:&quot;noa API reference&quot;,&quot;includeVersion&quot;:false,&quot;excludeTags&quot;:[],&quot;readme&quot;:&quot;docs/api-header.md&quot;,&quot;defaultCategory&quot;:&quot;Other&quot;,&quot;categoryOrder&quot;:[],&quot;categorizeByGroup&quot;:true,&quot;gitRevision&quot;:&quot;&quot;,&quot;gitRemote&quot;:&quot;origin&quot;,&quot;gaID&quot;:&quot;&quot;,&quot;gaSite&quot;:&quot;auto&quot;,&quot;hideGenerator&quot;:false,&quot;toc&quot;:[],&quot;disableOutputCheck&quot;:false,&quot;help&quot;:false,&quot;version&quot;:false,&quot;showConfig&quot;:false,&quot;plugin&quot;:[&quot;typedoc-neo-theme&quot;],&quot;logger&quot;:&quot;console&quot;,&quot;logLevel&quot;:1,&quot;listInvalidSymbolLinks&quot;:false,&quot;links&quot;:[{&quot;label&quot;:&quot;source&quot;,&quot;url&quot;:&quot;https://github.com/andyhall/noa/&quot;}],&quot;outline&quot;:[{&quot;core&quot;:{&quot;Engine&quot;:&quot;classes/index.engine&quot;},&quot;Libraries&quot;:{&quot;noa.camera&quot;:&quot;classes/lib_camera.camera&quot;,&quot;noa.container&quot;:&quot;classes/lib_container.container&quot;,&quot;noa.entities&quot;:&quot;classes/lib_entities.entities&quot;,&quot;noa.inputs&quot;:&quot;interfaces/lib_inputs.inputs&quot;,&quot;noa.physics&quot;:&quot;classes/lib_physics.physics&quot;,&quot;noa.registry&quot;:&quot;classes/lib_registry.registry&quot;,&quot;noa.rendering&quot;:&quot;classes/lib_rendering.rendering&quot;,&quot;noa.world&quot;:&quot;classes/lib_world.world&quot;}}]}-->
+		</div>
+		<div class="col-2 col-menu secondary-menu">
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-parent-kind-module root">
+						<a href="index.engine.html" class="tsd-kind-icon">Engine</a>
+						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
+								<a href="index.engine.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#_dragoutsidelock" class="tsd-kind-icon">_drag<wbr>Outside<wbr>Lock</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#_events" class="tsd-kind-icon">_events</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#_eventscount" class="tsd-kind-icon">_events<wbr>Count</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#_maxlisteners" class="tsd-kind-icon">_max<wbr>Listeners</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#_objectmesher" class="tsd-kind-icon">_object<wbr>Mesher</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#_originrebasedistance" class="tsd-kind-icon">_origin<wbr>Rebase<wbr>Distance</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#_paused" class="tsd-kind-icon">_paused</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#_pickpos" class="tsd-kind-icon">_pick<wbr>Pos</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#_pickresult" class="tsd-kind-icon">_pick<wbr>Result</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#_prevtargethash" class="tsd-kind-icon">_prev<wbr>Target<wbr>Hash</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#_targetedblockdat" class="tsd-kind-icon">_targeted<wbr>Block<wbr>Dat</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#_terrainmesher" class="tsd-kind-icon">_terrain<wbr>Mesher</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#blocktargetidcheck" class="tsd-kind-icon">block<wbr>Target<wbr>IdCheck</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#blocktestdistance" class="tsd-kind-icon">block<wbr>Test<wbr>Distance</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#camera" class="tsd-kind-icon">camera</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#container" class="tsd-kind-icon">container</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#defaultblockhighlightfunction" class="tsd-kind-icon">default<wbr>Block<wbr>Highlight<wbr>Function</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#entities" class="tsd-kind-icon">entities</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#ents" class="tsd-kind-icon">ents</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#inputs" class="tsd-kind-icon">inputs</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#listenercount" class="tsd-kind-icon">listener<wbr>Count</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#maketargethash" class="tsd-kind-icon">make<wbr>Target<wbr>Hash</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#maxrenderrate" class="tsd-kind-icon">max<wbr>Render<wbr>Rate</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#ndarray" class="tsd-kind-icon">ndarray</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#off" class="tsd-kind-icon">off</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#on" class="tsd-kind-icon">on</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#physics" class="tsd-kind-icon">physics</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#playerentity" class="tsd-kind-icon">player<wbr>Entity</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#positionincurrenttick" class="tsd-kind-icon">position<wbr>InCurrent<wbr>Tick</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#registry" class="tsd-kind-icon">registry</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#rendering" class="tsd-kind-icon">rendering</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#targetedblock" class="tsd-kind-icon">targeted<wbr>Block</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#tickrate" class="tsd-kind-icon">tick<wbr>Rate</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#vec3" class="tsd-kind-icon">vec3</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#version" class="tsd-kind-icon">version</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#world" class="tsd-kind-icon">world</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#worldname" class="tsd-kind-icon">world<wbr>Name</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="index.engine.html#worldoriginoffset" class="tsd-kind-icon">world<wbr>Origin<wbr>Offset</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="index.engine.html#_localpick" class="tsd-kind-icon">_local<wbr>Pick</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="index.engine.html#addblock" class="tsd-kind-icon">add<wbr>Block</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#addlistener" class="tsd-kind-icon">add<wbr>Listener</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#emit" class="tsd-kind-icon">emit</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#eventnames" class="tsd-kind-icon">event<wbr>Names</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="index.engine.html#getblock" class="tsd-kind-icon">get<wbr>Block</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#getmaxlisteners" class="tsd-kind-icon">get<wbr>Max<wbr>Listeners</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="index.engine.html#globaltolocal" class="tsd-kind-icon">global<wbr>ToLocal</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#listeners" class="tsd-kind-icon">listeners</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="index.engine.html#localtoglobal" class="tsd-kind-icon">local<wbr>ToGlobal</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#once" class="tsd-kind-icon">once</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="index.engine.html#pick" class="tsd-kind-icon">pick</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#prependlistener" class="tsd-kind-icon">prepend<wbr>Listener</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#prependoncelistener" class="tsd-kind-icon">prepend<wbr>Once<wbr>Listener</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#rawlisteners" class="tsd-kind-icon">raw<wbr>Listeners</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#removealllisteners" class="tsd-kind-icon">remove<wbr>All<wbr>Listeners</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#removelistener" class="tsd-kind-icon">remove<wbr>Listener</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="index.engine.html#setblock" class="tsd-kind-icon">set<wbr>Block</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="index.engine.html#setmaxlisteners" class="tsd-kind-icon">set<wbr>Max<wbr>Listeners</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="index.engine.html#setpaused" class="tsd-kind-icon">set<wbr>Paused</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-has-type-parameter root">
+						<a href="../interfaces/index.pickresult.html" class="tsd-kind-icon">Pick<wbr>Result</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module tsd-has-type-parameter root">
+						<a href="../interfaces/index.targetedblock.html" class="tsd-kind-icon">Targeted<wbr>Block</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

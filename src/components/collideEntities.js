@@ -1,6 +1,10 @@
 
 var boxIntersect = require('box-intersect')
 
+// annoying bug-fix to make box-intersect work in webpack 5
+var win = /** @type {any} */ (window)
+win.Buffer = win.Buffer || { isBuffer: () => false }
+
 
 /*
  * 	Every frame, entities with this component will get mutually checked for colliions
@@ -59,6 +63,7 @@ export default function (noa) {
             boxIntersect(intervals, function (a, b) {
                 var stateA = states[a]
                 var stateB = states[b]
+                if (!stateA || !stateB) return
                 var intervalA = intervals[a]
                 var intervalB = intervals[b]
                 if (cylindricalHitTest(stateA, stateB, intervalA, intervalB)) {

@@ -1,0 +1,1733 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Entities | noa API reference</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<ul class="results-priority" style="display:none">
+					</ul>
+					<a href="../index.html" class="title">noa API reference</a>
+					&emsp;<a href="https://github.com/andyhall/noa/" class="title">source</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules/lib_entities.html">lib/entities</a>
+				</li>
+				<li>
+					<a href="lib_entities.entities.html">Entities</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-3 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation outline primary">
+				<a style="margin-left:0em" href="../modules.html">Modules</a>
+				<ul style="display:none">
+					{&quot;core&quot;:{&quot;Engine&quot;:&quot;classes/index.engine&quot;},&quot;Libraries&quot;:{&quot;noa.camera&quot;:&quot;classes/lib_camera.camera&quot;,&quot;noa.container&quot;:&quot;classes/lib_container.container&quot;,&quot;noa.entities&quot;:&quot;classes/lib_entities.entities&quot;,&quot;noa.inputs&quot;:&quot;interfaces/lib_inputs.inputs&quot;,&quot;noa.physics&quot;:&quot;classes/lib_physics.physics&quot;,&quot;noa.registry&quot;:&quot;classes/lib_registry.registry&quot;,&quot;noa.rendering&quot;:&quot;classes/lib_rendering.rendering&quot;,&quot;noa.world&quot;:&quot;classes/lib_world.world&quot;}}
+				</ul>
+			</nav>
+		</div>
+		<div class="col-7 offset-3 col-content">
+			<h1>Class Entities</h1>
+			<section class="tsd-panel tsd-comment"><div class="tsd-comment tsd-typography tsd-comment-shorttext">
+					<div class="lead">
+						<p><code>noa.entities</code> - manages entities and components.</p>
+					</div>
+					</div><div class="tsd-comment tsd-typography tsd-comment-text">
+					<p>This class extends <a href="https://github.com/andyhall/ent-comp">ent-comp</a>,
+						a general-purpose ECS. It&#39;s also decorated with noa-specific helpers and
+					accessor functions for querying entity positions, etc.</p>
+					<p>Expects entity definitions in a specific format - see source <code>components</code>
+					folder for examples.</p>
+					<p>This module uses the following default options (from the options
+					object passed to the <a href="index.engine.html">Engine</a>):</p>
+					<pre><code class="language-js"><span style="color: #0000FF">var</span><span style="color: #000000"> </span><span style="color: #001080">defaults</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">    </span><span style="color: #001080">shadowDistance:</span><span style="color: #000000"> </span><span style="color: #098658">10</span><span style="color: #000000">,</span>
+<span style="color: #000000">}</span>
+</code></pre>
+			</div></section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="tsd-signature-type">ECS</span>
+						<ul class="tsd-hierarchy">
+							<li>
+								<span class="target">Entities</span>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#_rendersystems" class="tsd-kind-icon">_render<wbr>Systems</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#_storage" class="tsd-kind-icon">_storage</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#_systems" class="tsd-kind-icon">_systems</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#addcomponent" class="tsd-kind-icon">add<wbr>Component</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#camerasmoothed" class="tsd-kind-icon">camera<wbr>Smoothed</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#components" class="tsd-kind-icon">components</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#comps" class="tsd-kind-icon">comps</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#createcomponent" class="tsd-kind-icon">create<wbr>Component</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#createentity" class="tsd-kind-icon">create<wbr>Entity</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#deletecomponent" class="tsd-kind-icon">delete<wbr>Component</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#deleteentity" class="tsd-kind-icon">delete<wbr>Entity</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#getcollideentities" class="tsd-kind-icon">get<wbr>Collide<wbr>Entities</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#getcollideterrain" class="tsd-kind-icon">get<wbr>Collide<wbr>Terrain</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#getcomponentaccessor" class="tsd-kind-icon">get<wbr>Component<wbr>Accessor</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#getmeshdata" class="tsd-kind-icon">get<wbr>Mesh<wbr>Data</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#getmovement" class="tsd-kind-icon">get<wbr>Movement</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#getphysics" class="tsd-kind-icon">get<wbr>Physics</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#getphysicsbody" class="tsd-kind-icon">get<wbr>Physics<wbr>Body</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#getposition" class="tsd-kind-icon">get<wbr>Position</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#getpositiondata" class="tsd-kind-icon">get<wbr>Position<wbr>Data</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#getstate" class="tsd-kind-icon">get<wbr>State</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#getstateaccessor" class="tsd-kind-icon">get<wbr>State<wbr>Accessor</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#getstateslist" class="tsd-kind-icon">get<wbr>States<wbr>List</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#hascomponent" class="tsd-kind-icon">has<wbr>Component</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#hasmesh" class="tsd-kind-icon">has<wbr>Mesh</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#hasphysics" class="tsd-kind-icon">has<wbr>Physics</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#hasposition" class="tsd-kind-icon">has<wbr>Position</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#names" class="tsd-kind-icon">names</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#noa" class="tsd-kind-icon">noa</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_entities.entities.html#onpairwiseentitycollision" class="tsd-kind-icon">on<wbr>Pairwise<wbr>Entity<wbr>Collision</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#removecomponent" class="tsd-kind-icon">remove<wbr>Component</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#removemulticomponent" class="tsd-kind-icon">remove<wbr>Multi<wbr>Component</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#render" class="tsd-kind-icon">render</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="lib_entities.entities.html#tick" class="tsd-kind-icon">tick</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="lib_entities.entities.html#add" class="tsd-kind-icon">add</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="lib_entities.entities.html#addcomponentagain" class="tsd-kind-icon">add<wbr>Component<wbr>Again</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="lib_entities.entities.html#getentitiesinaabb" class="tsd-kind-icon">get<wbr>Entities<wbr>InAABB</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="lib_entities.entities.html#isterrainblocked" class="tsd-kind-icon">is<wbr>Terrain<wbr>Blocked</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="lib_entities.entities.html#setentitysize" class="tsd-kind-icon">set<wbr>Entity<wbr>Size</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="lib_entities.entities.html#setposition" class="tsd-kind-icon">set<wbr>Position</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="_rendersystems" class="tsd-anchor"></a>
+					<h3>_render<wbr>Systems</h3>
+					<div class="tsd-signature tsd-kind-icon">_render<wbr>Systems<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS._renderSystems</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:50</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="_storage" class="tsd-anchor"></a>
+					<h3>_storage</h3>
+					<div class="tsd-signature tsd-kind-icon">_storage<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS._storage</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:48</li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="_systems" class="tsd-anchor"></a>
+					<h3>_systems</h3>
+					<div class="tsd-signature tsd-kind-icon">_systems<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS._systems</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:49</li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="addcomponent" class="tsd-anchor"></a>
+					<h3>add<wbr>Component</h3>
+					<div class="tsd-signature tsd-kind-icon">add<wbr>Component<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.addComponent</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:125</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Adds a component to an entity, optionally initializing the state object.</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<pre><code class="language-js"><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">createComponent</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">state:</span><span style="color: #000000"> { </span><span style="color: #001080">val:</span><span style="color: #000000"> </span><span style="color: #098658">1</span><span style="color: #000000"> }</span>
+<span style="color: #000000">})</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">addComponent</span><span style="color: #000000">(</span><span style="color: #001080">id1</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">)             </span><span style="color: #008000">// use default state</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">addComponent</span><span style="color: #000000">(</span><span style="color: #001080">id2</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">, { </span><span style="color: #001080">val:</span><span style="color: #098658">2</span><span style="color: #000000"> })  </span><span style="color: #008000">// pass in state data</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>entID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, compName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, state<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ECS</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>entID: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>compName: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>state: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ECS</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="camerasmoothed" class="tsd-anchor"></a>
+					<h3>camera<wbr>Smoothed</h3>
+					<div class="tsd-signature tsd-kind-icon">camera<wbr>Smoothed<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="components" class="tsd-anchor"></a>
+					<h3>components</h3>
+					<div class="tsd-signature tsd-kind-icon">components<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.components</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:46</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Hash of component definitions. Also aliased to <code>comps</code>.</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<pre><code class="language-js"><span style="color: #0000FF">var</span><span style="color: #000000"> </span><span style="color: #001080">comp</span><span style="color: #000000"> = { </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000"> }</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">createComponent</span><span style="color: #000000">(</span><span style="color: #001080">comp</span><span style="color: #000000">)</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #001080">components</span><span style="color: #000000">[</span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">] === </span><span style="color: #001080">comp</span><span style="color: #000000">  </span><span style="color: #008000">// true</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #001080">comps</span><span style="color: #000000">[</span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">]                </span><span style="color: #008000">// same</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="comps" class="tsd-anchor"></a>
+					<h3>comps</h3>
+					<div class="tsd-signature tsd-kind-icon">comps<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.comps</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:47</li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="createcomponent" class="tsd-anchor"></a>
+					<h3>create<wbr>Component</h3>
+					<div class="tsd-signature tsd-kind-icon">create<wbr>Component<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.createComponent</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:98</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Creates a new component from a definition object.
+							The definition must have a <code>name</code>; all other properties are optional.</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<p>Returns the component name, to make it easy to grab when the component
+						is being <code>require</code>d from a module.</p>
+						<pre><code class="language-js"><span style="color: #0000FF">var</span><span style="color: #000000"> </span><span style="color: #001080">comp</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">     </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;some-unique-string&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">     </span><span style="color: #001080">state:</span><span style="color: #000000"> {},</span>
+<span style="color: #000000">     </span><span style="color: #001080">order:</span><span style="color: #000000"> </span><span style="color: #098658">99</span><span style="color: #000000">,</span>
+<span style="color: #000000">     </span><span style="color: #001080">multi:</span><span style="color: #000000"> </span><span style="color: #0000FF">false</span><span style="color: #000000">,</span>
+<span style="color: #000000">     </span><span style="color: #795E26">onAdd</span><span style="color: #001080">:</span><span style="color: #000000">        (</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #001080">state</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> { },</span>
+<span style="color: #000000">     </span><span style="color: #795E26">onRemove</span><span style="color: #001080">:</span><span style="color: #000000">     (</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #001080">state</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> { },</span>
+<span style="color: #000000">     </span><span style="color: #795E26">system</span><span style="color: #001080">:</span><span style="color: #000000">       (</span><span style="color: #001080">dt</span><span style="color: #000000">, </span><span style="color: #001080">states</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> { },</span>
+<span style="color: #000000">     </span><span style="color: #795E26">renderSystem</span><span style="color: #001080">:</span><span style="color: #000000"> (</span><span style="color: #001080">dt</span><span style="color: #000000">, </span><span style="color: #001080">states</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> { },</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #0000FF">var</span><span style="color: #000000"> </span><span style="color: #001080">name</span><span style="color: #000000"> = </span><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">createComponent</span><span style="color: #000000">( </span><span style="color: #001080">comp</span><span style="color: #000000"> )</span>
+<span style="color: #008000">// name == &#039;some-unique-string&#039;</span>
+</code></pre>
+						<p>Note the <code>multi</code> flag - for components where this is true, a given
+							entity can have multiple state objects for that component.
+							For multi-components, APIs that would normally return a state object
+						(like <code>getState</code>) will instead return an array of them.</p>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>compDefn<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>compDefn: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="createentity" class="tsd-anchor"></a>
+					<h3>create<wbr>Entity</h3>
+					<div class="tsd-signature tsd-kind-icon">create<wbr>Entity<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.createEntity</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:61</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Creates a new entity id (currently just an incrementing integer).</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<p>Optionally takes a list of component names to add to the entity (with default state data).</p>
+						<pre><code class="language-js"><span style="color: #0000FF">var</span><span style="color: #000000"> </span><span style="color: #001080">id1</span><span style="color: #000000"> = </span><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">createEntity</span><span style="color: #000000">()</span>
+<span style="color: #0000FF">var</span><span style="color: #000000"> </span><span style="color: #001080">id2</span><span style="color: #000000"> = </span><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">createEntity</span><span style="color: #000000">([ </span><span style="color: #A31515">&#039;some-component&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;other-component&#039;</span><span style="color: #000000"> ])</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>compList<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>compList: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="deletecomponent" class="tsd-anchor"></a>
+					<h3>delete<wbr>Component</h3>
+					<div class="tsd-signature tsd-kind-icon">delete<wbr>Component<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.deleteComponent</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:112</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Deletes the component definition with the given name.
+							First removes the component from all entities that have it.</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<p><strong>Note:</strong> This API shouldn&#39;t be necessary in most real-world usage -
+							you should set up all your components during init and then leave them be.
+							But it&#39;s useful if, say, you receive an ECS from another library and
+						you need to replace its components.</p>
+						<pre><code class="language-js"><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">deleteComponent</span><span style="color: #000000">( </span><span style="color: #A31515">&#039;some-component&#039;</span><span style="color: #000000"> )</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>compName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ECS</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>compName: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ECS</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="deleteentity" class="tsd-anchor"></a>
+					<h3>delete<wbr>Entity</h3>
+					<div class="tsd-signature tsd-kind-icon">delete<wbr>Entity<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.deleteEntity</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:69</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Deletes an entity, which in practice means removing all its components.</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<pre><code class="language-js"><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">deleteEntity</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">)</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>entID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ECS</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>entID: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ECS</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getcollideentities" class="tsd-anchor"></a>
+					<h3>get<wbr>Collide<wbr>Entities</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Collide<wbr>Entities<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getcollideterrain" class="tsd-anchor"></a>
+					<h3>get<wbr>Collide<wbr>Terrain</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Collide<wbr>Terrain<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="getcomponentaccessor" class="tsd-anchor"></a>
+					<h3>get<wbr>Component<wbr>Accessor</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Component<wbr>Accessor<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.getComponentAccessor</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:206</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Makes a <code>hasComponent</code>-like accessor function bound to a given component.
+							The accessor is much faster than <code>hasComponent</code>.</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<pre><code class="language-js"><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">createComponent</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">})</span>
+<span style="color: #0000FF">var</span><span style="color: #000000"> </span><span style="color: #001080">hasFoo</span><span style="color: #000000"> = </span><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">getComponentAccessor</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">)</span>
+<span style="color: #008000">// ...</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">addComponent</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">)</span>
+<span style="color: #795E26">hasFoo</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">) </span><span style="color: #008000">// true</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>compName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>compName: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">function</span></h4>
+										<ul class="tsd-parameters">
+											<li class="tsd-parameter-siganture">
+												<ul class="tsd-signatures tsd-kind-type-literal">
+													<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+												</ul>
+												<ul class="tsd-descriptions">
+													<li class="tsd-description">
+														<h4 class="tsd-parameters-title">Parameters</h4>
+														<ul class="tsd-parameters">
+															<li>
+																<h5>id: <span class="tsd-signature-type">any</span></h5>
+															</li>
+														</ul>
+														<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+													</li>
+												</ul>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getmeshdata" class="tsd-anchor"></a>
+					<h3>get<wbr>Mesh<wbr>Data</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Mesh<wbr>Data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getmovement" class="tsd-anchor"></a>
+					<h3>get<wbr>Movement</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Movement<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getphysics" class="tsd-anchor"></a>
+					<h3>get<wbr>Physics</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Physics<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getphysicsbody" class="tsd-anchor"></a>
+					<h3>get<wbr>Physics<wbr>Body</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Physics<wbr>Body<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getposition" class="tsd-anchor"></a>
+					<h3>get<wbr>Position</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Position<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getpositiondata" class="tsd-anchor"></a>
+					<h3>get<wbr>Position<wbr>Data</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Position<wbr>Data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="getstate" class="tsd-anchor"></a>
+					<h3>get<wbr>State</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>State<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.getState</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:159</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Get the component state for a given entity.
+							It will automatically have an <code>__id</code> property for the entity id.</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<pre><code class="language-js"><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">createComponent</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">state:</span><span style="color: #000000"> { </span><span style="color: #001080">val:</span><span style="color: #000000"> </span><span style="color: #098658">0</span><span style="color: #000000"> }</span>
+<span style="color: #000000">})</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">addComponent</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">)</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">getState</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">).</span><span style="color: #001080">val</span><span style="color: #000000">       </span><span style="color: #008000">// 0</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">getState</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">).</span><span style="color: #001080">__id</span><span style="color: #000000">      </span><span style="color: #008000">// equals id</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>entID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, compName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>entID: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>compName: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="getstateaccessor" class="tsd-anchor"></a>
+					<h3>get<wbr>State<wbr>Accessor</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>State<wbr>Accessor<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.getStateAccessor</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:191</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Makes a <code>getState</code>-like accessor bound to a given component.
+								The accessor is faster than <code>getState</code>, so you may want to create
+							an accessor for any component you&#39;ll be accessing a lot.</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<pre><code class="language-js"><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">createComponent</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;size&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">state:</span><span style="color: #000000"> { </span><span style="color: #001080">val:</span><span style="color: #000000"> </span><span style="color: #098658">0</span><span style="color: #000000"> }</span>
+<span style="color: #000000">})</span>
+<span style="color: #0000FF">var</span><span style="color: #000000"> </span><span style="color: #001080">getEntitySize</span><span style="color: #000000"> = </span><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">getStateAccessor</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;size&#039;</span><span style="color: #000000">)</span>
+<span style="color: #008000">// ...</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">addComponent</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;size&#039;</span><span style="color: #000000">, { </span><span style="color: #001080">val:</span><span style="color: #098658">123</span><span style="color: #000000"> })</span>
+<span style="color: #795E26">getEntitySize</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">).</span><span style="color: #001080">val</span><span style="color: #000000">      </span><span style="color: #008000">// 123</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>compName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>compName: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">function</span></h4>
+										<ul class="tsd-parameters">
+											<li class="tsd-parameter-siganture">
+												<ul class="tsd-signatures tsd-kind-type-literal">
+													<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+												</ul>
+												<ul class="tsd-descriptions">
+													<li class="tsd-description">
+														<h4 class="tsd-parameters-title">Parameters</h4>
+														<ul class="tsd-parameters">
+															<li>
+																<h5>id: <span class="tsd-signature-type">any</span></h5>
+															</li>
+														</ul>
+														<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+													</li>
+												</ul>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="getstateslist" class="tsd-anchor"></a>
+					<h3>get<wbr>States<wbr>List</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>States<wbr>List<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.getStatesList</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:174</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Get an array of state objects for every entity with the given component.
+								Each one will have an <code>__id</code> property for the entity id it refers to.
+							Don&#39;t add or remove elements from the returned list!</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<pre><code class="language-js"><span style="color: #0000FF">var</span><span style="color: #000000"> </span><span style="color: #001080">arr</span><span style="color: #000000"> = </span><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">getStatesList</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">)</span>
+<span style="color: #008000">// returns something shaped like:</span>
+<span style="color: #008000">//   [</span>
+<span style="color: #008000">//     {__id:0, x:1},</span>
+<span style="color: #008000">//     {__id:7, x:2},</span>
+<span style="color: #008000">//   ]</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>compName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>compName: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="hascomponent" class="tsd-anchor"></a>
+					<h3>has<wbr>Component</h3>
+					<div class="tsd-signature tsd-kind-icon">has<wbr>Component<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.hasComponent</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:134</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Checks if an entity has a component.</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<pre><code class="language-js"><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">addComponent</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">)</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">hasComponent</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">)       </span><span style="color: #008000">// true</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>entID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, compName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>entID: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>compName: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="hasmesh" class="tsd-anchor"></a>
+					<h3>has<wbr>Mesh</h3>
+					<div class="tsd-signature tsd-kind-icon">has<wbr>Mesh<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="hasphysics" class="tsd-anchor"></a>
+					<h3>has<wbr>Physics</h3>
+					<div class="tsd-signature tsd-kind-icon">has<wbr>Physics<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="hasposition" class="tsd-anchor"></a>
+					<h3>has<wbr>Position</h3>
+					<div class="tsd-signature tsd-kind-icon">has<wbr>Position<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="names" class="tsd-anchor"></a>
+					<h3>names</h3>
+					<div class="tsd-signature tsd-kind-icon">names<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="noa" class="tsd-anchor"></a>
+					<h3>noa</h3>
+					<div class="tsd-signature tsd-kind-icon">noa<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="onpairwiseentitycollision" class="tsd-anchor"></a>
+					<h3>on<wbr>Pairwise<wbr>Entity<wbr>Collision</h3>
+					<div class="tsd-signature tsd-kind-icon">on<wbr>Pairwise<wbr>Entity<wbr>Collision<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id1<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, id2<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id1: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>id2: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="removecomponent" class="tsd-anchor"></a>
+					<h3>remove<wbr>Component</h3>
+					<div class="tsd-signature tsd-kind-icon">remove<wbr>Component<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.removeComponent</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:144</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Removes a component from an entity, triggering the component&#39;s
+							<code>onRemove</code> handler, and then deleting any state data.</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<pre><code class="language-js"><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">removeComponent</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">)</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">hasComponent</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">)          </span><span style="color: #008000">// false</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>entID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, compName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ECS</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>entID: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>compName: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ECS</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="removemulticomponent" class="tsd-anchor"></a>
+					<h3>remove<wbr>Multi<wbr>Component</h3>
+					<div class="tsd-signature tsd-kind-icon">remove<wbr>Multi<wbr>Component<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.removeMultiComponent</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:265</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Removes one particular instance of a multi-component.
+								To avoid breaking loops, the relevant state object will get nulled
+								immediately, and spliced from the states array later when safe
+							(after the current tick/render/animationFrame).</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<pre><code class="language-js"><span style="color: #008000">// where component &#039;foo&#039; is a multi-component</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">getState</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">)   </span><span style="color: #008000">// [ state1, state2, state3 ]</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">removeMultiComponent</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">, </span><span style="color: #098658">1</span><span style="color: #000000">)</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">getState</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">)   </span><span style="color: #008000">// [ state1, null, state3 ]</span>
+<span style="color: #008000">// one JS event loop later...</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">getState</span><span style="color: #000000">(</span><span style="color: #001080">id</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;foo&#039;</span><span style="color: #000000">)   </span><span style="color: #008000">// [ state1, state3 ]</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>entID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, compName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, index<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ECS</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>entID: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>compName: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>index: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ECS</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="render" class="tsd-anchor"></a>
+					<h3>render</h3>
+					<div class="tsd-signature tsd-kind-icon">render<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.render</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:249</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Functions exactly like <code>tick</code>, but calls <code>renderSystem</code> functions.
+								this effectively gives you a second set of systems that are
+								called with separate timing, in case you want to
+								<a href="http://gafferongames.com/game-physics/fix-your-timestep/">tick and render in separate loops</a>
+							(which you should!).</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<pre><code class="language-js"><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">createComponent</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #001080">foo</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">order:</span><span style="color: #000000"> </span><span style="color: #098658">5</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #795E26">renderSystem</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #0000FF">function</span><span style="color: #000000">(</span><span style="color: #001080">dt</span><span style="color: #000000">, </span><span style="color: #001080">states</span><span style="color: #000000">) {</span>
+<span style="color: #000000">        </span><span style="color: #008000">// states is the same array you&#039;d get from #getStatesList()</span>
+<span style="color: #000000">    }</span>
+<span style="color: #000000">})</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">render</span><span style="color: #000000">(</span><span style="color: #098658">1000</span><span style="color: #000000">/</span><span style="color: #098658">60</span><span style="color: #000000">)</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>dt<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ECS</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>dt: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ECS</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="tick" class="tsd-anchor"></a>
+					<h3>tick</h3>
+					<div class="tsd-signature tsd-kind-icon">tick<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ECS.tick</p>
+						<ul>
+							<li>Defined in types/ent-comp/index.d.ts:230</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+						<div class="lead">
+							<p>Tells the ECS that a game tick has occurred, causing component
+							<code>system</code> functions to get called.</p>
+						</div>
+						</div><div class="tsd-comment tsd-typography tsd-comment-text">
+						<p>The optional parameter simply gets passed to the system functions.
+						It&#39;s meant to be a timestep, but can be used (or not used) as you like.</p>
+						<p>If components have an <code>order</code> property, they&#39;ll get called in that order
+						(lowest to highest). Component order defaults to <code>99</code>.</p>
+						<pre><code class="language-js"><span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">createComponent</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #001080">foo</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">order:</span><span style="color: #000000"> </span><span style="color: #098658">1</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #795E26">system</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #0000FF">function</span><span style="color: #000000">(</span><span style="color: #001080">dt</span><span style="color: #000000">, </span><span style="color: #001080">states</span><span style="color: #000000">) {</span>
+<span style="color: #000000">        </span><span style="color: #008000">// states is the same array you&#039;d get from #getStatesList()</span>
+<span style="color: #000000">        </span><span style="color: #001080">states</span><span style="color: #000000">.</span><span style="color: #795E26">forEach</span><span style="color: #000000">(</span><span style="color: #001080">state</span><span style="color: #000000"> </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
+<span style="color: #000000">            </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;Entity ID: &#039;</span><span style="color: #000000">, </span><span style="color: #001080">state</span><span style="color: #000000">.</span><span style="color: #001080">__id</span><span style="color: #000000">)</span>
+<span style="color: #000000">        })</span>
+<span style="color: #000000">    }</span>
+<span style="color: #000000">})</span>
+<span style="color: #001080">ecs</span><span style="color: #000000">.</span><span style="color: #795E26">tick</span><span style="color: #000000">(</span><span style="color: #098658">30</span><span style="color: #000000">) </span><span style="color: #008000">// triggers log statements</span>
+</code></pre>
+					</div>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>dt<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ECS</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>dt: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">ECS</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="add" class="tsd-anchor"></a>
+					<h3>add</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">add<span class="tsd-signature-symbol">(</span>position<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, width<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, height<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, mesh<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, meshOffset<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, doPhysics<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, shadow<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/lib/entities.js:361</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Helper to set up a general entity, and populate with some common components depending on arguments.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>position: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>width: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>height: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>mesh: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>meshOffset: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>doPhysics: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>shadow: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="addcomponentagain" class="tsd-anchor"></a>
+					<h3>add<wbr>Component<wbr>Again</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Component<wbr>Again<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, state<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/lib/entities.js:291</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Safely add a component - if the entity already had the
+									component, this will remove and re-add it.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>id: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>name: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>state: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getentitiesinaabb" class="tsd-anchor"></a>
+					<h3>get<wbr>Entities<wbr>InAABB</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Entities<wbr>InAABB<span class="tsd-signature-symbol">(</span>box<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, withComponent<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/lib/entities.js:326</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Gets an array of all entities overlapping the given AABB</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>box: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>withComponent: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="isterrainblocked" class="tsd-anchor"></a>
+					<h3>is<wbr>Terrain<wbr>Blocked</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">is<wbr>Terrain<wbr>Blocked<span class="tsd-signature-symbol">(</span>x<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, y<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, z<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/lib/entities.js:302</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Checks whether a voxel is obstructed by any entity (with the
+									<code>collidesTerrain</code> component)</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>x: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>y: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>z: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="setentitysize" class="tsd-anchor"></a>
+					<h3>set<wbr>Entity<wbr>Size</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Entity<wbr>Size<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, xs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, ys<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, zs<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/lib/entities.js:219</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Set an entity&#39;s size</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>id: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>xs: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>ys: <span class="tsd-signature-type">number</span></h5>
+								</li>
+								<li>
+									<h5>zs: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography tsd-comment-text">
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="setposition" class="tsd-anchor"></a>
+					<h3>set<wbr>Position</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Position<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, pos<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, y<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span>, z<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in src/lib/entities.js:207</li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+								<div class="lead">
+									<p>Set an entity&#39;s position, and update all derived state.</p>
+								</div>
+								</div><div class="tsd-comment tsd-typography tsd-comment-text">
+								<p>In general, always use this to set an entity&#39;s position unless
+								you&#39;re familiar with engine internals.</p>
+								<pre><code class="language-js"><span style="color: #001080">noa</span><span style="color: #000000">.</span><span style="color: #001080">ents</span><span style="color: #000000">.</span><span style="color: #795E26">setPosition</span><span style="color: #000000">(</span><span style="color: #001080">playerEntity</span><span style="color: #000000">, [</span><span style="color: #098658">5</span><span style="color: #000000">, </span><span style="color: #098658">6</span><span style="color: #000000">, </span><span style="color: #098658">7</span><span style="color: #000000">])</span>
+<span style="color: #001080">noa</span><span style="color: #000000">.</span><span style="color: #001080">ents</span><span style="color: #000000">.</span><span style="color: #795E26">setPosition</span><span style="color: #000000">(</span><span style="color: #001080">playerEntity</span><span style="color: #000000">, </span><span style="color: #098658">5</span><span style="color: #000000">, </span><span style="color: #098658">6</span><span style="color: #000000">, </span><span style="color: #098658">7</span><span style="color: #000000">)  </span><span style="color: #008000">// also works</span>
+</code></pre>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>id: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography tsd-comment-text">
+									</div>
+								</li>
+								<li>
+									<h5>pos: <span class="tsd-signature-type">any</span></h5>
+								</li>
+								<li>
+									<h5>y: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></h5>
+								</li>
+								<li>
+									<h5>z: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<!--{&quot;options&quot;:&quot;/Users/andy/dev/game/noa&quot;,&quot;tsconfig&quot;:&quot;/Users/andy/dev/game/noa&quot;,&quot;entryPoints&quot;:[&quot;src/index.js&quot;,&quot;src/lib/&quot;,&quot;src/components/movement.js&quot;],&quot;exclude&quot;:[],&quot;externalPattern&quot;:[&quot;**/node_modules/**&quot;],&quot;excludeExternals&quot;:false,&quot;excludeNotDocumented&quot;:false,&quot;excludeInternal&quot;:true,&quot;excludePrivate&quot;:false,&quot;excludeProtected&quot;:false,&quot;disableSources&quot;:false,&quot;includes&quot;:&quot;&quot;,&quot;media&quot;:&quot;&quot;,&quot;watch&quot;:false,&quot;preserveWatchOutput&quot;:false,&quot;emit&quot;:false,&quot;out&quot;:&quot;docs/API&quot;,&quot;json&quot;:&quot;&quot;,&quot;pretty&quot;:true,&quot;theme&quot;:&quot;./node_modules/typedoc-neo-theme/bin/default&quot;,&quot;highlightTheme&quot;:&quot;light-plus&quot;,&quot;name&quot;:&quot;noa API reference&quot;,&quot;includeVersion&quot;:false,&quot;excludeTags&quot;:[],&quot;readme&quot;:&quot;docs/api-header.md&quot;,&quot;defaultCategory&quot;:&quot;Other&quot;,&quot;categoryOrder&quot;:[],&quot;categorizeByGroup&quot;:true,&quot;gitRevision&quot;:&quot;&quot;,&quot;gitRemote&quot;:&quot;origin&quot;,&quot;gaID&quot;:&quot;&quot;,&quot;gaSite&quot;:&quot;auto&quot;,&quot;hideGenerator&quot;:false,&quot;toc&quot;:[],&quot;disableOutputCheck&quot;:false,&quot;help&quot;:false,&quot;version&quot;:false,&quot;showConfig&quot;:false,&quot;plugin&quot;:[&quot;typedoc-neo-theme&quot;],&quot;logger&quot;:&quot;console&quot;,&quot;logLevel&quot;:1,&quot;listInvalidSymbolLinks&quot;:false,&quot;links&quot;:[{&quot;label&quot;:&quot;source&quot;,&quot;url&quot;:&quot;https://github.com/andyhall/noa/&quot;}],&quot;outline&quot;:[{&quot;core&quot;:{&quot;Engine&quot;:&quot;classes/index.engine&quot;},&quot;Libraries&quot;:{&quot;noa.camera&quot;:&quot;classes/lib_camera.camera&quot;,&quot;noa.container&quot;:&quot;classes/lib_container.container&quot;,&quot;noa.entities&quot;:&quot;classes/lib_entities.entities&quot;,&quot;noa.inputs&quot;:&quot;interfaces/lib_inputs.inputs&quot;,&quot;noa.physics&quot;:&quot;classes/lib_physics.physics&quot;,&quot;noa.registry&quot;:&quot;classes/lib_registry.registry&quot;,&quot;noa.rendering&quot;:&quot;classes/lib_rendering.rendering&quot;,&quot;noa.world&quot;:&quot;classes/lib_world.world&quot;}}]}-->
+		</div>
+		<div class="col-2 col-menu secondary-menu">
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-parent-kind-module root">
+						<a href="lib_entities.entities.html" class="tsd-kind-icon">Entities</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#_rendersystems" class="tsd-kind-icon">_render<wbr>Systems</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#_storage" class="tsd-kind-icon">_storage</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#_systems" class="tsd-kind-icon">_systems</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#addcomponent" class="tsd-kind-icon">add<wbr>Component</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#camerasmoothed" class="tsd-kind-icon">camera<wbr>Smoothed</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#components" class="tsd-kind-icon">components</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#comps" class="tsd-kind-icon">comps</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#createcomponent" class="tsd-kind-icon">create<wbr>Component</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#createentity" class="tsd-kind-icon">create<wbr>Entity</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#deletecomponent" class="tsd-kind-icon">delete<wbr>Component</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#deleteentity" class="tsd-kind-icon">delete<wbr>Entity</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#getcollideentities" class="tsd-kind-icon">get<wbr>Collide<wbr>Entities</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#getcollideterrain" class="tsd-kind-icon">get<wbr>Collide<wbr>Terrain</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#getcomponentaccessor" class="tsd-kind-icon">get<wbr>Component<wbr>Accessor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#getmeshdata" class="tsd-kind-icon">get<wbr>Mesh<wbr>Data</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#getmovement" class="tsd-kind-icon">get<wbr>Movement</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#getphysics" class="tsd-kind-icon">get<wbr>Physics</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#getphysicsbody" class="tsd-kind-icon">get<wbr>Physics<wbr>Body</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#getposition" class="tsd-kind-icon">get<wbr>Position</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#getpositiondata" class="tsd-kind-icon">get<wbr>Position<wbr>Data</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#getstate" class="tsd-kind-icon">get<wbr>State</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#getstateaccessor" class="tsd-kind-icon">get<wbr>State<wbr>Accessor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#getstateslist" class="tsd-kind-icon">get<wbr>States<wbr>List</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#hascomponent" class="tsd-kind-icon">has<wbr>Component</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#hasmesh" class="tsd-kind-icon">has<wbr>Mesh</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#hasphysics" class="tsd-kind-icon">has<wbr>Physics</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#hasposition" class="tsd-kind-icon">has<wbr>Position</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#names" class="tsd-kind-icon">names</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#noa" class="tsd-kind-icon">noa</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#onpairwiseentitycollision" class="tsd-kind-icon">on<wbr>Pairwise<wbr>Entity<wbr>Collision</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#removecomponent" class="tsd-kind-icon">remove<wbr>Component</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#removemulticomponent" class="tsd-kind-icon">remove<wbr>Multi<wbr>Component</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#render" class="tsd-kind-icon">render</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="lib_entities.entities.html#tick" class="tsd-kind-icon">tick</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#add" class="tsd-kind-icon">add</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#addcomponentagain" class="tsd-kind-icon">add<wbr>Component<wbr>Again</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#getentitiesinaabb" class="tsd-kind-icon">get<wbr>Entities<wbr>InAABB</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#isterrainblocked" class="tsd-kind-icon">is<wbr>Terrain<wbr>Blocked</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#setentitysize" class="tsd-kind-icon">set<wbr>Entity<wbr>Size</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="lib_entities.entities.html#setposition" class="tsd-kind-icon">set<wbr>Position</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

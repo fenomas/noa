@@ -1,0 +1,73 @@
+{
+    // inputs
+    "include": [
+        "src/index.js",
+        "src/components/*.js",
+    ],
+    "compilerOptions": {
+        // output
+        "outDir": "./dist",
+        "target": "es5",
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "rootDir": ".",
+        // settings
+        "allowJs": true,
+        "checkJs": true,
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ES2018"
+        ],
+        "typeRoots": [
+            "./types",
+        ],
+        // "moduleResolution": "Node",
+        // "downlevelIteration": true,
+        // "useDefineForClassFields": false,
+    },
+    "typeAcquisition": {
+        "exclude": [
+            "@types/gl-vec3", // automatic types are both wrong and out of date
+        ]
+    },
+    "typedocOptions": {
+        "entryPoints": [
+            "src/index.js",
+            "src/lib/",
+            "src/components/movement.js",
+        ],
+        "excludeInternal": true,
+        "name": "noa API reference",
+        "out": "docs/API",
+        "readme": "docs/api-header.md",
+        // theme settings
+        "theme": "./node_modules/typedoc-neo-theme/bin/default",
+        "plugin": "typedoc-neo-theme",
+        "links": [
+            {
+                "label": "source",
+                "url": "https://github.com/andyhall/noa/"
+            },
+        ],
+        "outline": [
+            {
+                "core": {
+                    "Engine": "classes/index.engine",
+                },
+                "Libraries": {
+                    "noa.camera": "classes/lib_camera.camera",
+                    "noa.container": "classes/lib_container.container",
+                    "noa.entities": "classes/lib_entities.entities",
+                    "noa.inputs": "interfaces/lib_inputs.inputs",
+                    "noa.physics": "classes/lib_physics.physics",
+                    "noa.registry": "classes/lib_registry.registry",
+                    "noa.rendering": "classes/lib_rendering.rendering",
+                    "noa.world": "classes/lib_world.world",
+                },
+            }
+        ]
+    },
+}

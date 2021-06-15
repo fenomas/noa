@@ -1,10 +1,18 @@
 module.exports = {
-    "extends": "eslint:recommended",
+    "root": true,
+    "extends": [
+        "eslint:recommended",
+    ],
+    plugins: [
+        "jsdoc",
+    ],
     "env": {
+        "node": true,
         "browser": true,
         "es6": true,
     },
     "parserOptions": {
+        "ecmaVersion": 10,
         "sourceType": "module",
     },
     "rules": {

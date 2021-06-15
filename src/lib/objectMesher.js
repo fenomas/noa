@@ -1,22 +1,185 @@
-import { SolidParticleSystem } from '@babylonjs/core/Particles/solidParticleSystem'
+/** @internal */ /** works around typedoc bug #842 */
 
+import { locationHasher } from './util'
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode'
+import '@babylonjs/core/Meshes/thinInstanceMesh'
 
-export default new ObjectMesher()
+export default ObjectMesher
 
-
-// enable for profiling..
 var PROFILE = 0
 
 
 
 
-// helper class to hold data about a single object mesh
-function ObjMeshDat(id, x, y, z) {
-    this.id = id | 0
-    this.x = x | 0
-    this.y = y | 0
-    this.z = z | 0
+
+/*
+ *
+ *          Object meshing
+ * 
+ *      Per-chunk handling of the creation/disposal of static meshes
+ *      associated with particular voxel IDs
+ * 
+ * 
+*/
+
+
+function ObjectMesher(noa) {
+
+    // transform node for all instance meshes to be parented to
+    this.rootNode = new TransformNode('objectMeshRoot', noa.rendering._scene)
+
+    // tracking rebase amount inside matrix data
+    var rebaseOffset = [0, 0, 0]
+
+    // flag to trigger a rebuild after a chunk is disposed
+    var rebuildNextTick = false
+
+    // mock object to pass to customMesh handler, to get transforms
+    var transformObj = new TransformNode('')
+
+    // internal storage of instance managers, keyed by ID
+    // has check to dedupe by mesh, since babylon chokes on
+    // separate sets of instances for the same mesh/clone/geometry
+    var managers = {}
+    var getManager = (id) => {
+        if (managers[id]) return managers[id]
+        var mesh = noa.registry._blockMeshLookup[id]
+        for (var id2 in managers) {
+            var prev = managers[id2].mesh
+            if (prev === mesh || (prev.geometry === mesh.geometry)) {
+                return managers[id] = managers[id2]
+            }
+        }
+        return managers[id] = new InstanceManager(noa, mesh)
+    }
+
+
+
+
+    /*
+     * 
+     *      public API
+     * 
+    */
+
+
+    // add any properties that will get used for meshing
+    this.initChunk = function (chunk) {
+        chunk._objectBlocks = {}
+    }
+
+
+    // called by world when an object block is set or cleared
+    this.setObjectBlock = function (chunk, blockID, i, j, k) {
+        var x = chunk.x + i
+        var y = chunk.y + j
+        var z = chunk.z + k
+        var key = locationHasher(x, y, z)
+
+        var oldID = chunk._objectBlocks[key] || 0
+        if (oldID === blockID) return // should be impossible
+        if (oldID > 0) {
+            var oldMgr = getManager(oldID)
+            oldMgr.removeInstance(chunk, key)
+        }
+
+        if (blockID > 0) {
+            // if there's a block event handler, call it with
+            // a mock object so client can add transforms
+            var handlers = noa.registry._blockHandlerLookup[blockID]
+            var onCreate = handlers && handlers.onCustomMeshCreate
+            if (onCreate) {
+                transformObj.position.copyFromFloats(0.5, 0, 0.5)
+                transformObj.scaling.setAll(1)
+                transformObj.rotation.setAll(0)
+                onCreate(transformObj, x, y, z)
+            }
+            var mgr = getManager(blockID)
+            var xform = (onCreate) ? transformObj : null
+            mgr.addInstance(chunk, key, i, j, k, xform, rebaseOffset)
+        }
+
+        if (oldID > 0 && !blockID) delete chunk._objectBlocks[key]
+        if (blockID > 0) chunk._objectBlocks[key] = blockID
+    }
+
+
+
+    // called by world when it knows that objects have been updated
+    this.buildObjectMeshes = function () {
+        profile_hook('start')
+
+        for (var id in managers) {
+            var mgr = managers[id]
+            mgr.updateMatrix()
+            if (mgr.count === 0) mgr.dispose()
+            if (mgr.disposed) delete managers[id]
+        }
+
+        profile_hook('rebuilt')
+        profile_hook('end')
+    }
+
+
+
+    // called by world at end of chunk lifecycle
+    this.disposeChunk = function (chunk) {
+        for (var key in chunk._objectBlocks) {
+            var id = chunk._objectBlocks[key]
+            if (id > 0) {
+                var mgr = getManager(id)
+                mgr.removeInstance(chunk, key)
+            }
+        }
+        chunk._objectBlocks = null
+
+        // since some instance managers will have been updated
+        rebuildNextTick = true
+    }
+
+
+
+    // tick handler catches case where objects are dirty due to disposal
+    this.tick = function () {
+        if (rebuildNextTick) {
+            this.buildObjectMeshes()
+            rebuildNextTick = false
+        }
+    }
+
+
+
+    // world rebase handler
+    this._rebaseOrigin = function (delta) {
+        rebaseOffset[0] += delta[0]
+        rebaseOffset[1] += delta[1]
+        rebaseOffset[2] += delta[2]
+
+        for (var id1 in managers) managers[id1].rebased = false
+        for (var id2 in managers) {
+            var mgr = managers[id2]
+            if (mgr.rebased) continue
+            for (var i = 0; i < mgr.count; i++) {
+                var ix = i << 4
+                mgr.buffer[ix + 12] -= delta[0]
+                mgr.buffer[ix + 13] -= delta[1]
+                mgr.buffer[ix + 14] -= delta[2]
+            }
+            mgr.rebased = true
+            mgr.dirty = true
+        }
+        rebuildNextTick = true
+    }
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -27,156 +190,150 @@ function ObjMeshDat(id, x, y, z) {
 /*
  * 
  * 
- *          Object meshing
- *  Per-chunk handling of the creation/disposal of voxels with static meshes
+ *      manager class for thin instances of a given object block ID 
  * 
  * 
- */
+*/
 
-
-function ObjectMesher() {
-
-
-    // adds properties to the new chunk that will be used when processing
-    this.initChunk = function (chunk) {
-        chunk._objectBlocks = {}
-        chunk._objectSystems = []
-    }
-
-    this.disposeChunk = function (chunk) {
-        this.removeObjectMeshes(chunk)
-        chunk._objectBlocks = null
-    }
-
-
-
-
-    // accessors for the chunk to regester as object voxels are set/unset
-    this.addObjectBlock = function (chunk, id, x, y, z) {
-        var key = x + '|' + y + '|' + z
-        chunk._objectBlocks[key] = new ObjMeshDat(id, x, y, z, null)
-    }
-
-    this.removeObjectBlock = function (chunk, x, y, z) {
-        var key = x + '|' + y + '|' + z
-        if (chunk._objectBlocks[key]) delete chunk._objectBlocks[key]
-    }
-
-
-
-
-    /*
-     * 
-     *    main implementation - remove / rebuild all needed object mesh instances
-     * 
-     */
-
-    this.removeObjectMeshes = function (chunk) {
-        // remove the current (if any) sps/mesh
-        var systems = chunk._objectSystems || []
-        while (systems.length) {
-            var sps = systems.pop()
-            if (sps.mesh) sps.mesh.dispose()
-            sps.dispose()
-        }
-    }
-
-    this.buildObjectMeshes = function (chunk) {
-        profile_hook('start')
-
-        var scene = chunk.noa.rendering.getScene()
-        var objectMeshLookup = chunk.noa.registry._blockMeshLookup
-
-        // preprocess everything to build lists of object block keys
-        // hashed by material ID and then by block ID
-        var matIndexes = {}
-        for (var key in chunk._objectBlocks) {
-            var blockDat = chunk._objectBlocks[key]
-            var blockID = blockDat.id
-            var mat = objectMeshLookup[blockID].material
-            var matIndex = (mat) ? scene.materials.indexOf(mat) : -1
-            if (!matIndexes[matIndex]) matIndexes[matIndex] = {}
-            if (!matIndexes[matIndex][blockID]) matIndexes[matIndex][blockID] = []
-            matIndexes[matIndex][blockID].push(key)
-        }
-        profile_hook('preprocess')
-
-        // data structure now looks like:
-        // matIndexes = {
-        //      2: {                    // i.e. 2nd material in scene
-        //          14: {               // i.e. voxel ID 14 from registry
-        //              [ '2|3|4' ]     // key of block's local coords
-        //          }
-        //      }
-        // }
-
-        var x0 = chunk.i * chunk.size
-        var y0 = chunk.j * chunk.size
-        var z0 = chunk.k * chunk.size
-
-        // build one SPS mesh for each material
-        var meshes = []
-        for (var ix in matIndexes) {
-
-            var meshHash = matIndexes[ix]
-            var sps = buildSPSforMaterialIndex(chunk, scene, meshHash, x0, y0, z0)
-            profile_hook('made SPS')
-
-            // build SPS into the scene
-            var merged = sps.buildMesh()
-            profile_hook('built mesh')
-
-            // finish up
-            merged.material = (ix > -1) ? scene.materials[ix] : null
-            meshes.push(merged)
-            chunk._objectSystems.push(sps)
-        }
-
-        profile_hook('end')
-        return meshes
-    }
-
-
-
-
-    function buildSPSforMaterialIndex(chunk, scene, meshHash, x0, y0, z0) {
-        var blockHash = chunk._objectBlocks
-        // base sps
-        var sps = new SolidParticleSystem('object_sps_' + chunk.id, scene, {
-            updatable: false,
-        })
-
-        var blockHandlerLookup = chunk.noa.registry._blockHandlerLookup
-        var objectMeshLookup = chunk.noa.registry._blockMeshLookup
-
-        // run through mesh hash adding shapes and position functions
-        for (var blockID in meshHash) {
-            var mesh = objectMeshLookup[blockID]
-            var blockArr = meshHash[blockID]
-            var count = blockArr.length
-
-            var handlerFn
-            var handlers = blockHandlerLookup[blockID]
-            if (handlers) handlerFn = handlers.onCustomMeshCreate
-            var setShape = function (particle, partIndex, shapeIndex) {
-                var key = blockArr[shapeIndex]
-                var dat = blockHash[key]
-
-                // set (local) pos and call handler (with global coords)
-                particle.position.set(dat.x + 0.5, dat.y, dat.z + 0.5)
-                if (handlerFn) handlerFn(particle, x0 + dat.x, y0 + dat.y, z0 + dat.z)
-            }
-            sps.addShape(mesh, count, { positionFunction: setShape })
-            blockArr.length = 0
-        }
-
-        return sps
-    }
-
-
-
-
+function InstanceManager(noa, mesh) {
+    this.mesh = mesh
+    this.buffer = null
+    this.capacity = 0
+    this.count = 0
+    this.dirty = false
+    this.rebased = true
+    this.disposed = false
+    // dual struct to map keys (locations) to buffer locations, and back
+    this.keyToIndex = {}
+    this.locToKey = []
+    // prepare mesh for rendering
+    this.mesh.position.setAll(0)
+    this.mesh.parent = noa._objectMesher.rootNode
+    noa.rendering.addMeshToScene(this.mesh, false)
+    this.mesh.doNotSyncBoundingInfo = true
+    this.mesh.alwaysSelectAsActiveMesh = true
 }
+
+
+
+InstanceManager.prototype.dispose = function () {
+    if (this.disposed) return
+    this.mesh.thinInstanceCount = 0
+    this.setCapacity(0)
+    this.mesh.isVisible = false
+    this.mesh = null
+    this.keyToIndex = null
+    this.locToKey = null
+    this.disposed = true
+}
+
+
+InstanceManager.prototype.addInstance = function (chunk, key, i, j, k, transform, rebaseVec) {
+    if (this.count === this.capacity) expandBuffer(this)
+    var ix = this.count << 4
+    this.locToKey[this.count] = key
+    this.keyToIndex[key] = ix
+    if (transform) {
+        transform.position.x += (chunk.x - rebaseVec[0]) + i
+        transform.position.y += (chunk.y - rebaseVec[1]) + j
+        transform.position.z += (chunk.z - rebaseVec[2]) + k
+        transform.resetLocalMatrix()
+        var xformArr = transform._localMatrix._m
+        copyMatrixData(xformArr, 0, this.buffer, ix)
+    } else {
+        var matArray = tempMatrixArray
+        matArray[12] = (chunk.x - rebaseVec[0]) + i + 0.5
+        matArray[13] = (chunk.y - rebaseVec[1]) + j
+        matArray[14] = (chunk.z - rebaseVec[2]) + k + 0.5
+        copyMatrixData(matArray, 0, this.buffer, ix)
+    }
+    this.count++
+    this.dirty = true
+}
+
+
+InstanceManager.prototype.removeInstance = function (chunk, key) {
+    var remIndex = this.keyToIndex[key]
+    if (!(remIndex >= 0)) throw 'tried to remove object instance not in storage'
+    delete this.keyToIndex[key]
+    var remLoc = remIndex >> 4
+    // copy tail instance's data to location of one we're removing
+    var tailLoc = this.count - 1
+    if (remLoc !== tailLoc) {
+        var tailIndex = tailLoc << 4
+        copyMatrixData(this.buffer, tailIndex, this.buffer, remIndex)
+        // update key/location structs
+        var tailKey = this.locToKey[tailLoc]
+        this.keyToIndex[tailKey] = remIndex
+        this.locToKey[remLoc] = tailKey
+    }
+    this.count--
+    this.dirty = true
+    if (this.count < this.capacity * 0.4) contractBuffer(this)
+}
+
+
+InstanceManager.prototype.updateMatrix = function () {
+    if (!this.dirty) return
+    this.mesh.thinInstanceCount = this.count
+    this.mesh.thinInstanceBufferUpdated('matrix')
+    this.mesh.isVisible = (this.count > 0)
+    this.dirty = false
+}
+
+
+
+InstanceManager.prototype.setCapacity = function (size) {
+    this.capacity = size || 0
+    if (!size) {
+        this.buffer = null
+    } else {
+        var prev = this.buffer
+        this.buffer = new Float32Array(this.capacity * 16)
+        if (prev) {
+            var len = Math.min(prev.length, this.buffer.length)
+            for (var i = 0; i < len; i++) this.buffer[i] = prev[i]
+        }
+    }
+    this.mesh.thinInstanceSetBuffer('matrix', this.buffer)
+    this.dirty = false
+}
+
+
+function expandBuffer(mgr) {
+    var size = (mgr.capacity < 16) ? 16 : mgr.capacity * 2
+    mgr.setCapacity(size)
+}
+
+function contractBuffer(mgr) {
+    var size = (mgr.capacity / 2) | 0
+    if (size < 100) return
+    mgr.setCapacity(size)
+    mgr.locToKey.length = Math.max(mgr.locToKey.length, mgr.capacity)
+}
+
+
+
+
+
+
+// helpers
+
+var tempMatrixArray = [
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    0.0, 0.0, 0.0, 1.0,
+]
+
+function copyMatrixData(src, srcOff, dest, destOff) {
+    for (var i = 0; i < 16; i++) dest[destOff + i] = src[srcOff + i]
+}
+
+
+
+
+
 
 
 
@@ -186,4 +343,4 @@ function ObjectMesher() {
 
 import { makeProfileHook } from './util'
 var profile_hook = (PROFILE) ?
-    makeProfileHook(50, 'Object meshing') : () => { }
+    makeProfileHook(PROFILE, 'Object meshing') : () => { }

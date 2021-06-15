@@ -1,23 +1,21 @@
+
 var glvec3 = require('gl-vec3')
-import { removeUnorderedListItem } from './util'
+
+import { SceneOctreeManager } from './sceneOctreeManager'
 
 import { Scene } from '@babylonjs/core/scene'
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera'
-import { Octree } from '@babylonjs/core/Culling/Octrees/octree'
-import { OctreeBlock } from '@babylonjs/core/Culling/Octrees/octreeBlock'
 import { Engine } from '@babylonjs/core/Engines/engine'
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight'
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
-import { Vector3, Color3 } from '@babylonjs/core/Maths/math'
+import { Color3 } from '@babylonjs/core/Maths/math.color'
+import { Vector3 } from '@babylonjs/core/Maths/math.vector'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
-import { OctreeSceneComponent } from '@babylonjs/core/Culling/Octrees/'
-import '@babylonjs/core/Meshes/meshBuilder'
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode'
+import '@babylonjs/core/Meshes/Builders/planeBuilder'
+import '@babylonjs/core/Meshes/Builders/linesBuilder'
 
 
-
-export default function (noa, opts, canvas) {
-    return new Rendering(noa, opts, canvas)
-}
 
 
 
@@ -38,53 +36,70 @@ var defaults = {
     AOmultipliers: [0.93, 0.8, 0.5],
     reverseAOmultiplier: 1.0,
     preserveDrawingBuffer: true,
+    octreeBlockSize: 2,
+    renderOnResize: true,
 }
 
 
 
 /**
- * @class
- * @typicalname noa.rendering
- * @classdesc Manages all rendering, and the BABYLON scene, materials, etc.
- */
+ * `noa.rendering` - 
+ * Manages all rendering, and the BABYLON scene, materials, etc.
+ * 
+ * This module uses the following default options (from the options
+ * object passed to the [[Engine]]):
+ * ```js
+ * {
+ *     showFPS: false,
+ *     antiAlias: true,
+ *     clearColor: [0.8, 0.9, 1],
+ *     ambientColor: [1, 1, 1],
+ *     lightDiffuse: [1, 1, 1],
+ *     lightSpecular: [1, 1, 1],
+ *     groundLightColor: [0.5, 0.5, 0.5],
+ *     useAO: true,
+ *     AOmultipliers: [0.93, 0.8, 0.5],
+ *     reverseAOmultiplier: 1.0,
+ *     preserveDrawingBuffer: true,
+ *     octreeBlockSize: 2,
+ *     renderOnResize: true,
+ * }
+ * ```
+*/
 
-function Rendering(noa, opts, canvas) {
-    this.noa = noa
+export class Rendering {
 
-    /**
-     * `noa.rendering` uses the following options (from the root `noa(opts)` options):
-     * ```js
-     * {
-     *   showFPS: false,
-     *   antiAlias: true,
-     *   clearColor: [0.8, 0.9, 1],
-     *   ambientColor: [1, 1, 1],
-     *   lightDiffuse: [1, 1, 1],
-     *   lightSpecular: [1, 1, 1],
-     *   groundLightColor: [0.5, 0.5, 0.5],
-     *   useAO: true,
-     *   AOmultipliers: [0.93, 0.8, 0.5],
-     *   reverseAOmultiplier: 1.0,
-     *   preserveDrawingBuffer: true,
-     * }
-     * ```
-     */
-    opts = Object.assign({}, defaults, opts)
+    /** @internal @prop _scene */
+    /** @internal @prop _engine */
+    /** @internal @prop _octree */
+    /** @internal @prop _octreeManager */
 
-    // internals
-    this.useAO = !!opts.useAO
-    this.aoVals = opts.AOmultipliers
-    this.revAoVal = opts.reverseAOmultiplier
-    this.meshingCutoffTime = 6 // ms
-    this._resizeDebounce = 250 // ms
+    /** @internal */
+    constructor(noa, opts, canvas) {
 
-    // set up babylon scene
-    initScene(this, canvas, opts)
+        this.noa = noa
+        opts = Object.assign({}, defaults, opts)
 
-    // for debugging
-    if (opts.showFPS) setUpFPS()
+        // settings
+        this.renderOnResize = !!opts.renderOnResize
+
+        // internals
+        this.useAO = !!opts.useAO
+        this.aoVals = opts.AOmultipliers
+        this.revAoVal = opts.reverseAOmultiplier
+        this.meshingCutoffTime = 6 // ms
+
+        // set up babylon scene
+        this._scene = null
+        this._engine = null
+        this._octree = null
+        this._octreeManager = null
+        initScene(this, canvas, opts)
+
+        // for debugging
+        if (opts.showFPS) setUpFPS()
+    }
 }
-
 
 // Constructor helper - set up the Babylon.js scene and basic components
 function initScene(self, canvas, opts) {
@@ -98,14 +113,12 @@ function initScene(self, canvas, opts) {
     // remove built-in listeners
     scene.detachControl()
 
-    // octree setup
-    scene._addComponent(new OctreeSceneComponent(scene))
-    self._octree = new Octree($ => { })
-    self._octree.blocks = []
-    scene._selectionOctree = self._octree
+    // octree manager class
+    var blockSize = Math.round(opts.octreeBlockSize)
+    self._octreeManager = new SceneOctreeManager(self, blockSize)
 
-    // camera, and empty mesh to hold it, and one to accumulate rotations
-    self._cameraHolder = new Mesh('camHolder', scene)
+    // camera, and a node to hold it and accumulate rotations
+    self._cameraHolder = new TransformNode('camHolder', scene)
     self._camera = new FreeCamera('camera', new Vector3(0, 0, 0), scene)
     self._camera.parent = self._cameraHolder
     self._camera.minZ = .01
@@ -161,7 +174,7 @@ Rendering.prototype.tick = function (dt) {
 
 
 
-Rendering.prototype.render = function (dt) {
+Rendering.prototype.render = function () {
     profile_hook('start')
     updateCameraForRender(this)
     profile_hook('updateCamera')
@@ -176,17 +189,18 @@ Rendering.prototype.render = function (dt) {
 }
 
 
+Rendering.prototype.postRender = function () {
+    // nothing currently
+}
 
-Rendering.prototype.resize = function (e) {
-    if (!pendingResize) {
-        pendingResize = true
-        setTimeout(() => {
-            this._engine.resize()
-            pendingResize = false
-        }, this._resizeDebounce)
+
+
+Rendering.prototype.resize = function () {
+    this._engine.resize()
+    if (this.noa._paused && this.renderOnResize) {
+        this._scene.render()
     }
 }
-var pendingResize = false
 
 
 
@@ -219,16 +233,14 @@ var hlpos = []
 /**
  * Add a mesh to the scene's octree setup so that it renders. 
  * 
- * @param mesh: the mesh to add to the scene
- * @param isStatic: pass in true if mesh never moves (i.e. change octree blocks)
- * @param position: (optional) global position where the mesh should be
- * @param chunk: (optional) chunk to which the mesh is statically bound
- * @method
+ * @param mesh the mesh to add to the scene
+ * @param isStatic pass in true if mesh never moves (i.e. change octree blocks)
+ * @param pos (optional) global position where the mesh should be
+ * @param containingChunk (optional) chunk to which the mesh is statically bound
  */
-Rendering.prototype.addMeshToScene = function (mesh, isStatic, pos, _containingChunk) {
+Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = null, containingChunk = null) {
     // exit silently if mesh has already been added and not removed
-    if (mesh._noaContainingChunk) return
-    if (this._octree.dynamicContent.includes(mesh)) return
+    if (this._octreeManager.includesMesh(mesh)) return
 
     // find local position for mesh and move it there (unless it's parented)
     if (!mesh.parent) {
@@ -238,61 +250,44 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic, pos, _containingC
         mesh.position.copyFromFloats(lpos[0], lpos[1], lpos[2])
     }
 
-    // statically tie to a chunk's octree, or treat as dynamic?
-    var addToOctree = false
-    if (isStatic) {
-        var chunk = _containingChunk ||
-            this.noa.world._getChunkByCoords(pos[0], pos[1], pos[2])
-        addToOctree = !!(chunk && chunk.octreeBlock)
-    }
-
-    if (addToOctree) {
-        chunk.octreeBlock.entries.push(mesh)
-        mesh._noaContainingChunk = chunk
-    } else {
-        this._octree.dynamicContent.push(mesh)
-    }
-
+    // save CPU by freezing terrain meshes
     if (isStatic) {
         mesh.freezeWorldMatrix()
-        mesh.freezeNormals()
+        if (mesh.freezeNormals) mesh.freezeNormals()
     }
 
-    // add dispose event to undo everything done here
-    var remover = this.removeMeshFromScene.bind(this, mesh)
-    mesh.onDisposeObservable.add(remover)
+    // add to the octree, and add dispose handler to remove it
+    this._octreeManager.addMesh(mesh, isStatic, pos, containingChunk)
+    mesh.onDisposeObservable.add(() => {
+        this._octreeManager.removeMesh(mesh)
+    })
 }
 
 
 
-/**  Undoes everything `addMeshToScene` does
- * @method
+
+
+
+
+
+
+
+
+/**
+ * Create a default standardMaterial:      
+ * flat, nonspecular, fully reflects diffuse and ambient light
  */
-Rendering.prototype.removeMeshFromScene = function (mesh) {
-    if (mesh._noaContainingChunk && mesh._noaContainingChunk.octreeBlock) {
-        removeUnorderedListItem(mesh._noaContainingChunk.octreeBlock.entries, mesh)
-    }
-    mesh._noaContainingChunk = null
-    removeUnorderedListItem(this._octree.dynamicContent, mesh)
-}
-
-
-
-
-
-
-
-
-
-// Create a default standardMaterial:
-//      flat, nonspecular, fully reflects diffuse and ambient light
 Rendering.prototype.makeStandardMaterial = function (name) {
     var mat = new StandardMaterial(name, this._scene)
     mat.specularColor.copyFromFloats(0, 0, 0)
     mat.ambientColor.copyFromFloats(1, 1, 1)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
+    this.postMaterialCreationHook(mat)
     return mat
 }
+
+/** Exposed hook for if the client wants to do something to newly created materials */
+Rendering.prototype.postMaterialCreationHook = function (mat) { }
 
 
 
@@ -309,20 +304,11 @@ Rendering.prototype.makeStandardMaterial = function (name) {
  */
 
 Rendering.prototype.prepareChunkForRendering = function (chunk) {
-    var cs = chunk.size
-    var loc = []
-    this.noa.globalToLocal([chunk.x, chunk.y, chunk.z], null, loc)
-    var min = new Vector3(loc[0], loc[1], loc[2])
-    var max = new Vector3(loc[0] + cs, loc[1] + cs, loc[2] + cs)
-    chunk.octreeBlock = new OctreeBlock(min, max, undefined, undefined, undefined, $ => { })
-    this._octree.blocks.push(chunk.octreeBlock)
+    // currently no logic needed here, but I may need it again...
 }
 
 Rendering.prototype.disposeChunkForRendering = function (chunk) {
-    if (!chunk.octreeBlock) return
-    removeUnorderedListItem(this._octree.blocks, chunk.octreeBlock)
-    chunk.octreeBlock.entries.length = 0
-    chunk.octreeBlock = null
+    // nothing currently
 }
 
 
@@ -353,17 +339,14 @@ Rendering.prototype._rebaseOrigin = function (delta) {
         // move each mesh by delta (even though most are managed by components)
         mesh.position.subtractInPlace(dvec)
 
-        if (mesh._isWorldMatrixFrozen) mesh.markAsDirty()
+        if (mesh._isWorldMatrixFrozen) {
+            // paradoxically this unfreezes, then re-freezes the matrix
+            mesh.freezeWorldMatrix()
+        }
     })
 
-    // update octree block extents
-    this._octree.blocks.forEach(octreeBlock => {
-        octreeBlock.minPoint.subtractInPlace(dvec)
-        octreeBlock.maxPoint.subtractInPlace(dvec)
-        octreeBlock._boundingVectors.forEach(v => {
-            v.subtractInPlace(dvec)
-        })
-    })
+    // updates position of all octree blocks
+    this._octreeManager.rebase(dvec)
 }
 
 
@@ -458,6 +441,7 @@ function getHighlightMesh(rendering) {
 
 
 
+
 /*
  * 
  *      sanity checks:
@@ -469,6 +453,7 @@ Rendering.prototype.debug_SceneCheck = function () {
     var dyns = this._octree.dynamicContent
     var octs = []
     var numOcts = 0
+    var numSubs = 0
     var mats = this._scene.materials
     var allmats = []
     mats.forEach(mat => {
@@ -484,7 +469,9 @@ Rendering.prototype.debug_SceneCheck = function () {
         if (empty(m)) return
         if (missing(m, dyns, octs)) warn(m, 'non-empty mesh missing from octree')
         if (!m.material) { warn(m, 'non-empty scene mesh with no material'); return }
-        (m.material.subMaterials || [m.material]).forEach(function (mat) {
+        numSubs += (m.subMeshes) ? m.subMeshes.length : 1
+        var mats = m.material.subMaterials || [m.material]
+        mats.forEach(function (mat) {
             if (missing(mat, mats)) warn(mat, 'mesh material not in scene')
         })
     })
@@ -509,6 +496,7 @@ Rendering.prototype.debug_SceneCheck = function () {
     })
     var avgPerOct = Math.round(10 * octs.length / numOcts) / 10
     console.log('meshes - octree:', octs.length, '  dynamic:', dyns.length,
+        '   subMeshes:', numSubs,
         '   avg meshes/octreeBlock:', avgPerOct)
 
     function warn(obj, msg) { console.warn(obj.name + ' --- ' + msg) }
@@ -555,11 +543,16 @@ var fps_hook = function () { }
 function setUpFPS() {
     var div = document.createElement('div')
     div.id = 'noa_fps'
-    var style = 'position:absolute; top:0; right:0; z-index:0;'
-    style += 'color:white; background-color:rgba(0,0,0,0.5);'
-    style += 'font:14px monospace; text-align:center;'
-    style += 'min-width:2em; margin:4px;'
-    div.style = style
+    div.style.position = 'absolute'
+    div.style.top = '0'
+    div.style.right = '0'
+    div.style.zIndex = '0'
+    div.style.color = 'white'
+    div.style.backgroundColor = 'rgba(0,0,0,0.5)'
+    div.style.font = '14px monospace'
+    div.style.textAlign = 'center'
+    div.style.minWidth = '2em'
+    div.style.margin = '4px'
     document.body.appendChild(div)
     var every = 1000
     var ct = 0

@@ -3,6 +3,8 @@
 
 This is a summary of new features and breaking changes in recent `noa` versions.
 
+ * [0.30.0](#0300)
+ * [0.29.0](#0290)
  * [0.28.0](#0280)
  * [0.27.0](#0270)
  * [0.26.0](#0260)
@@ -16,6 +18,32 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 
 ----
+
+### 0.30.0
+
+   * Engine now a named class, use `import {Engine} from 'noa-engine'`
+   * many performance and size optimizations
+   * now generates proper type declarations and API references!
+   * Adds separate horizontal/vertical add/remove chunk distances in `world`
+   * Scene octree now can put multiple chunks in each octree block
+   * Adds option `noa.rendering.renderOnResize`
+   * Changed game-shell dependency, which affects several properties:
+     * init option `tickRate` is now in **ticks per second**, not ms per tick
+     * init option `maxRenderRate` added (leave at `0` for no cap)
+     * init option `stickyFullscreen` added
+     * adds `noa.tickRate`. Read only; if you really need to change it use `noa.container._shell.tickRate`.
+     * adds `noa.maxRenderRate` - this is safe to change dynamically. Set to `0` for no limit.
+   * Removed the `id` property on `Chunk` objects. Shouldn't realistically affect any game clients, but if you were using it for some reason, use `chunk.requestID` instead.
+   * Made several of the core `babylon` imports more specific, which could cause errors if your client code is using Babylon modules without importing them. If you're using any mesh builders (e.g. `Mesh.CreateBox()`), make sure to import the necessary module (`import '@babylonjs/core/Meshes/Builders/boxBuilder'`).
+
+### 0.29.0
+
+   * Maximum allowed voxel ID is now `65535`
+   * New option `worldGenWhilePaused` added to `noa.world`. When true, the engine will keep doing world generation (requesting new chunks, disposing old ones, meshing, etc) even while paused.
+   * New option `manuallyControlChunkLoading` added to `noa.world`. When set, the engine will not automatically add or remove chunks near the player. Instead, call `noa.world.manuallyLoadChunk` and `manuallyUnloadChunk` on the coordinates you need.
+   * Voxel IDs are now stored internally as plain `Uint16Array` elements, rather packing IDs and bit flags together. Any clients that were accessing internal data arrays will probably need to be updated.
+   * Fixed the `dt` parameter to `noa#render(dt)` events. Previously it could occasionally be wrong in such a way as to cause temporal aliasing when used for animations.     
+
 
 ### 0.28.0
 

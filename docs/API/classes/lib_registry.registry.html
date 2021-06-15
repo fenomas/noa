@@ -1,0 +1,668 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Registry | noa API reference</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<ul class="results-priority" style="display:none">
+					</ul>
+					<a href="../index.html" class="title">noa API reference</a>
+					&emsp;<a href="https://github.com/andyhall/noa/" class="title">source</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules/lib_registry.html">lib/registry</a>
+				</li>
+				<li>
+					<a href="lib_registry.registry.html">Registry</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-3 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation outline primary">
+				<a style="margin-left:0em" href="../modules.html">Modules</a>
+				<ul style="display:none">
+					{&quot;core&quot;:{&quot;Engine&quot;:&quot;classes/index.engine&quot;},&quot;Libraries&quot;:{&quot;noa.camera&quot;:&quot;classes/lib_camera.camera&quot;,&quot;noa.container&quot;:&quot;classes/lib_container.container&quot;,&quot;noa.entities&quot;:&quot;classes/lib_entities.entities&quot;,&quot;noa.inputs&quot;:&quot;interfaces/lib_inputs.inputs&quot;,&quot;noa.physics&quot;:&quot;classes/lib_physics.physics&quot;,&quot;noa.registry&quot;:&quot;classes/lib_registry.registry&quot;,&quot;noa.rendering&quot;:&quot;classes/lib_rendering.rendering&quot;,&quot;noa.world&quot;:&quot;classes/lib_world.world&quot;}}
+				</ul>
+			</nav>
+		</div>
+		<div class="col-7 offset-3 col-content">
+			<h1>Class Registry</h1>
+			<section class="tsd-panel tsd-comment"><div class="tsd-comment tsd-typography tsd-comment-shorttext">
+					<div class="lead">
+						<p><code>noa.registry</code> - Where you register your voxel types,
+						materials, properties, and events.</p>
+					</div>
+					</div><div class="tsd-comment tsd-typography tsd-comment-text">
+					<p>This module uses the following default options (from the options
+					object passed to the <a href="index.engine.html">Engine</a>):</p>
+					<pre><code class="language-js"><span style="color: #0000FF">var</span><span style="color: #000000"> </span><span style="color: #001080">defaults</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">    </span><span style="color: #001080">texturePath:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;&#039;</span>
+<span style="color: #000000">}</span>
+</code></pre>
+			</div></section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">Registry</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#_blockhandlerlookup" class="tsd-kind-icon">_block<wbr>Handler<wbr>Lookup</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#_blockmeshlookup" class="tsd-kind-icon">_block<wbr>Mesh<wbr>Lookup</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#_fluiditylookup" class="tsd-kind-icon">_fluidity<wbr>Lookup</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#_getmaterialvertexcolor" class="tsd-kind-icon">_get<wbr>Material<wbr>Vertex<wbr>Color</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#_objectlookup" class="tsd-kind-icon">_object<wbr>Lookup</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#_opacitylookup" class="tsd-kind-icon">_opacity<wbr>Lookup</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#_soliditylookup" class="tsd-kind-icon">_solidity<wbr>Lookup</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#_texturepath" class="tsd-kind-icon">_texture<wbr>Path</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#getblockfacematerial" class="tsd-kind-icon">get<wbr>Block<wbr>Face<wbr>Material</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#getblockfluidity" class="tsd-kind-icon">get<wbr>Block<wbr>Fluidity</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#getblockopacity" class="tsd-kind-icon">get<wbr>Block<wbr>Opacity</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#getblockprops" class="tsd-kind-icon">get<wbr>Block<wbr>Props</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#getblocksolidity" class="tsd-kind-icon">get<wbr>Block<wbr>Solidity</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#getmaterialcolor" class="tsd-kind-icon">get<wbr>Material<wbr>Color</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#getmaterialdata" class="tsd-kind-icon">get<wbr>Material<wbr>Data</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#getmaterialtexture" class="tsd-kind-icon">get<wbr>Material<wbr>Texture</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#noa" class="tsd-kind-icon">noa</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#registerblock" class="tsd-kind-icon">register<wbr>Block</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="lib_registry.registry.html#registermaterial" class="tsd-kind-icon">register<wbr>Material</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_blockhandlerlookup" class="tsd-anchor"></a>
+					<h3>_block<wbr>Handler<wbr>Lookup</h3>
+					<div class="tsd-signature tsd-kind-icon">_block<wbr>Handler<wbr>Lookup<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_blockmeshlookup" class="tsd-anchor"></a>
+					<h3>_block<wbr>Mesh<wbr>Lookup</h3>
+					<div class="tsd-signature tsd-kind-icon">_block<wbr>Mesh<wbr>Lookup<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_fluiditylookup" class="tsd-anchor"></a>
+					<h3>_fluidity<wbr>Lookup</h3>
+					<div class="tsd-signature tsd-kind-icon">_fluidity<wbr>Lookup<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_getmaterialvertexcolor" class="tsd-anchor"></a>
+					<h3>_get<wbr>Material<wbr>Vertex<wbr>Color</h3>
+					<div class="tsd-signature tsd-kind-icon">_get<wbr>Material<wbr>Vertex<wbr>Color<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>matID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>matID: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_objectlookup" class="tsd-anchor"></a>
+					<h3>_object<wbr>Lookup</h3>
+					<div class="tsd-signature tsd-kind-icon">_object<wbr>Lookup<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_opacitylookup" class="tsd-anchor"></a>
+					<h3>_opacity<wbr>Lookup</h3>
+					<div class="tsd-signature tsd-kind-icon">_opacity<wbr>Lookup<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_soliditylookup" class="tsd-anchor"></a>
+					<h3>_solidity<wbr>Lookup</h3>
+					<div class="tsd-signature tsd-kind-icon">_solidity<wbr>Lookup<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="_texturepath" class="tsd-anchor"></a>
+					<h3>_texture<wbr>Path</h3>
+					<div class="tsd-signature tsd-kind-icon">_texture<wbr>Path<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getblockfacematerial" class="tsd-anchor"></a>
+					<h3>get<wbr>Block<wbr>Face<wbr>Material</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Block<wbr>Face<wbr>Material<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>blockId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, dir<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>blockId: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>dir: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getblockfluidity" class="tsd-anchor"></a>
+					<h3>get<wbr>Block<wbr>Fluidity</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Block<wbr>Fluidity<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+											<div class="lead">
+												<p>block is fluid or not</p>
+											</div>
+										</div>
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+												<div class="tsd-comment tsd-typography tsd-comment-text">
+												</div>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getblockopacity" class="tsd-anchor"></a>
+					<h3>get<wbr>Block<wbr>Opacity</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Block<wbr>Opacity<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+											<div class="lead">
+												<p>block opacity - whether it obscures the whole voxel (dirt) or
+												can be partially seen through (like a fencepost, etc)</p>
+											</div>
+										</div>
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+												<div class="tsd-comment tsd-typography tsd-comment-text">
+												</div>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getblockprops" class="tsd-anchor"></a>
+					<h3>get<wbr>Block<wbr>Props</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Block<wbr>Props<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+											<div class="lead">
+												<p>Get block property object passed in at registration</p>
+											</div>
+										</div>
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+												<div class="tsd-comment tsd-typography tsd-comment-text">
+												</div>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getblocksolidity" class="tsd-anchor"></a>
+					<h3>get<wbr>Block<wbr>Solidity</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Block<wbr>Solidity<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+											<div class="lead">
+												<p>block solidity (as in physics)</p>
+											</div>
+										</div>
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+												<div class="tsd-comment tsd-typography tsd-comment-text">
+												</div>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getmaterialcolor" class="tsd-anchor"></a>
+					<h3>get<wbr>Material<wbr>Color</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Material<wbr>Color<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>matID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>matID: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getmaterialdata" class="tsd-anchor"></a>
+					<h3>get<wbr>Material<wbr>Data</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Material<wbr>Data<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>matID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>matID: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="getmaterialtexture" class="tsd-anchor"></a>
+					<h3>get<wbr>Material<wbr>Texture</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Material<wbr>Texture<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>matID<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>matID: <span class="tsd-signature-type">any</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="noa" class="tsd-anchor"></a>
+					<h3>noa</h3>
+					<div class="tsd-signature tsd-kind-icon">noa<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
+					<aside class="tsd-sources">
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="registerblock" class="tsd-anchor"></a>
+					<h3>register<wbr>Block</h3>
+					<div class="tsd-signature tsd-kind-icon">register<wbr>Block<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+											<div class="lead">
+												<p>Register (by integer ID) a block type and its parameters.</p>
+											</div>
+											</div><div class="tsd-comment tsd-typography tsd-comment-text">
+											<p> <code>id</code> param: integer, currently 1..255. This needs to be passed in by the
+											client because it goes into the chunk data, which someday will get serialized.</p>
+											<p> <code>options</code> param: Recognized fields for the options object:</p>
+											<ul>
+												<li>material: can be:<ul>
+														<li>one (String) material name</li>
+														<li>array of 2 names: [top/bottom, sides]</li>
+														<li>array of 3 names: [top, bottom, sides]</li>
+														<li>array of 6 names: [-x, +x, -y, +y, -z, +z]
+														If not specified, terrain won&#39;t be meshed for the block type</li>
+													</ul>
+												</li>
+												<li>solid: (true) solidity for physics purposes</li>
+												<li>opaque: (true) fully obscures neighboring blocks</li>
+												<li>fluid: (false) whether nonsolid block is a fluid (buoyant, viscous..)</li>
+												<li>blockMesh: (null) if specified, noa will create a copy this mesh in the voxel</li>
+												<li>fluidDensity: (1.0) for fluid blocks</li>
+												<li>viscosity: (0.5) for fluid blocks</li>
+												<li>onLoad(): block event handler</li>
+												<li>onUnload(): block event handler</li>
+												<li>onSet(): block event handler</li>
+												<li>onUnset(): block event handler</li>
+												<li>onCustomMeshCreate(): block event handler</li>
+											</ul>
+										</div>
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>id: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>options: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> = null</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="registermaterial" class="tsd-anchor"></a>
+					<h3>register<wbr>Material</h3>
+					<div class="tsd-signature tsd-kind-icon">register<wbr>Material<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
+					<aside class="tsd-sources">
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-siganture">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-class">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, color<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span>, textureURL<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span>, texHasAlpha<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span>, renderMaterial<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<div class="tsd-comment tsd-typography tsd-comment-shorttext">
+											<div class="lead">
+												<p>Register (by name) a material and its parameters.</p>
+											</div>
+										</div>
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>name: <span class="tsd-signature-type">any</span></h5>
+											</li>
+											<li>
+												<h5>color: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = ...</span></h5>
+											</li>
+											<li>
+												<h5>textureURL: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &#x27;&#x27;</span></h5>
+											</li>
+											<li>
+												<h5>texHasAlpha: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></h5>
+											</li>
+											<li>
+												<h5>renderMaterial: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> = null</span></h5>
+												<div class="tsd-comment tsd-typography tsd-comment-text">
+													<p>an optional BABYLON material to be used for block faces with this block material</p>
+												</div>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+			</section>
+			<!--{&quot;options&quot;:&quot;/Users/andy/dev/game/noa&quot;,&quot;tsconfig&quot;:&quot;/Users/andy/dev/game/noa&quot;,&quot;entryPoints&quot;:[&quot;src/index.js&quot;,&quot;src/lib/&quot;,&quot;src/components/movement.js&quot;],&quot;exclude&quot;:[],&quot;externalPattern&quot;:[&quot;**/node_modules/**&quot;],&quot;excludeExternals&quot;:false,&quot;excludeNotDocumented&quot;:false,&quot;excludeInternal&quot;:true,&quot;excludePrivate&quot;:false,&quot;excludeProtected&quot;:false,&quot;disableSources&quot;:false,&quot;includes&quot;:&quot;&quot;,&quot;media&quot;:&quot;&quot;,&quot;watch&quot;:false,&quot;preserveWatchOutput&quot;:false,&quot;emit&quot;:false,&quot;out&quot;:&quot;docs/API&quot;,&quot;json&quot;:&quot;&quot;,&quot;pretty&quot;:true,&quot;theme&quot;:&quot;./node_modules/typedoc-neo-theme/bin/default&quot;,&quot;highlightTheme&quot;:&quot;light-plus&quot;,&quot;name&quot;:&quot;noa API reference&quot;,&quot;includeVersion&quot;:false,&quot;excludeTags&quot;:[],&quot;readme&quot;:&quot;docs/api-header.md&quot;,&quot;defaultCategory&quot;:&quot;Other&quot;,&quot;categoryOrder&quot;:[],&quot;categorizeByGroup&quot;:true,&quot;gitRevision&quot;:&quot;&quot;,&quot;gitRemote&quot;:&quot;origin&quot;,&quot;gaID&quot;:&quot;&quot;,&quot;gaSite&quot;:&quot;auto&quot;,&quot;hideGenerator&quot;:false,&quot;toc&quot;:[],&quot;disableOutputCheck&quot;:false,&quot;help&quot;:false,&quot;version&quot;:false,&quot;showConfig&quot;:false,&quot;plugin&quot;:[&quot;typedoc-neo-theme&quot;],&quot;logger&quot;:&quot;console&quot;,&quot;logLevel&quot;:1,&quot;listInvalidSymbolLinks&quot;:false,&quot;links&quot;:[{&quot;label&quot;:&quot;source&quot;,&quot;url&quot;:&quot;https://github.com/andyhall/noa/&quot;}],&quot;outline&quot;:[{&quot;core&quot;:{&quot;Engine&quot;:&quot;classes/index.engine&quot;},&quot;Libraries&quot;:{&quot;noa.camera&quot;:&quot;classes/lib_camera.camera&quot;,&quot;noa.container&quot;:&quot;classes/lib_container.container&quot;,&quot;noa.entities&quot;:&quot;classes/lib_entities.entities&quot;,&quot;noa.inputs&quot;:&quot;interfaces/lib_inputs.inputs&quot;,&quot;noa.physics&quot;:&quot;classes/lib_physics.physics&quot;,&quot;noa.registry&quot;:&quot;classes/lib_registry.registry&quot;,&quot;noa.rendering&quot;:&quot;classes/lib_rendering.rendering&quot;,&quot;noa.world&quot;:&quot;classes/lib_world.world&quot;}}]}-->
+		</div>
+		<div class="col-2 col-menu secondary-menu">
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-parent-kind-module root">
+						<a href="lib_registry.registry.html" class="tsd-kind-icon">Registry</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#_blockhandlerlookup" class="tsd-kind-icon">_block<wbr>Handler<wbr>Lookup</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#_blockmeshlookup" class="tsd-kind-icon">_block<wbr>Mesh<wbr>Lookup</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#_fluiditylookup" class="tsd-kind-icon">_fluidity<wbr>Lookup</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#_getmaterialvertexcolor" class="tsd-kind-icon">_get<wbr>Material<wbr>Vertex<wbr>Color</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#_objectlookup" class="tsd-kind-icon">_object<wbr>Lookup</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#_opacitylookup" class="tsd-kind-icon">_opacity<wbr>Lookup</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#_soliditylookup" class="tsd-kind-icon">_solidity<wbr>Lookup</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#_texturepath" class="tsd-kind-icon">_texture<wbr>Path</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#getblockfacematerial" class="tsd-kind-icon">get<wbr>Block<wbr>Face<wbr>Material</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#getblockfluidity" class="tsd-kind-icon">get<wbr>Block<wbr>Fluidity</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#getblockopacity" class="tsd-kind-icon">get<wbr>Block<wbr>Opacity</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#getblockprops" class="tsd-kind-icon">get<wbr>Block<wbr>Props</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#getblocksolidity" class="tsd-kind-icon">get<wbr>Block<wbr>Solidity</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#getmaterialcolor" class="tsd-kind-icon">get<wbr>Material<wbr>Color</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#getmaterialdata" class="tsd-kind-icon">get<wbr>Material<wbr>Data</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#getmaterialtexture" class="tsd-kind-icon">get<wbr>Material<wbr>Texture</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#noa" class="tsd-kind-icon">noa</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#registerblock" class="tsd-kind-icon">register<wbr>Block</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="lib_registry.registry.html#registermaterial" class="tsd-kind-icon">register<wbr>Material</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

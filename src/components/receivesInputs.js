@@ -25,16 +25,24 @@ export default function (noa) {
             var inputState = noa.inputs.state
             var camHeading = noa.camera.heading
 
-            states.forEach(state => {
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i]
                 var moveState = ents.getMovement(state.__id)
                 setMovementState(moveState, inputState, camHeading)
-            })
+            }
         }
 
     }
 }
 
 
+
+/**
+ * @param {import('../components/movement').MovementState} state 
+ * @param {Object<string, boolean>} inputs 
+ * @param {number} camHeading 
+ * @internal
+*/
 
 function setMovementState(state, inputs, camHeading) {
     state.jumping = !!inputs.jump

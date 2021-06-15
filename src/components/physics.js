@@ -1,4 +1,5 @@
-var vec3 = require('gl-vec3')
+
+import vec3 from 'gl-vec3'
 
 
 export default function (noa) {
@@ -37,18 +38,19 @@ export default function (noa) {
 
 
         system: function (dt, states) {
-            states.forEach(state => {
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i]
                 var pdat = noa.ents.getPositionData(state.__id)
                 setPositionFromPhysics(state, pdat)
-            })
-
+            }
         },
 
 
         renderSystem: function (dt, states) {
 
             var tickPos = noa.positionInCurrentTick
-            var tickMS = tickPos * noa._tickRate
+            var tickTime = 1000 / noa.container._shell.tickRate
+            var tickMS = tickPos * tickTime
 
             // tickMS is time since last physics engine tick
             // to avoid temporal aliasing, render the state as if lerping between
@@ -57,13 +59,14 @@ export default function (noa) {
             // offsetting each entity into the past by tickRate - dt
             // http://gafferongames.com/game-physics/fix-your-timestep/
 
-            var backtrackAmt = (tickMS - noa._tickRate) / 1000
-            states.forEach(state => {
+            var backtrackAmt = (tickMS - tickTime) / 1000
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i]
                 var id = state.__id
                 var pdat = noa.ents.getPositionData(id)
                 var smoothed = noa.ents.cameraSmoothed(id)
                 backtrackRenderPos(state, pdat, backtrackAmt, smoothed)
-            })
+            }
         }
 
     }

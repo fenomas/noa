@@ -1,13 +1,13 @@
 {
     "search.exclude": {
-        "**/node_modules": true,
-        "docs/**/bundle.js": true,
-        "docs/**/babylon.js": true
+        "docs": true,
+        "dist": true,
+        "node_modules": true,
+        "types": true,
+        "ignore": true,
     },
     "editor.detectIndentation": true,
-
-    "editor.defaultFormatter": "HookyQR.beautify",
-
-    "eslint.enable": true,
-    // "javascript.format.enable": false,
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
 }

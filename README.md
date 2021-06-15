@@ -9,46 +9,69 @@ Some projects using `noa`:
  * [CityCraft.io](https://citycraft.io/) - multiplayer voxel cities
  * [noa-examples](https://github.com/andyhall/noa-examples) - starter repo with minimal hello-world and testbed games
 
+
 ----
 
 ## Usage
 
-The easiest way to start building a game with `noa` is to clone the [examples](https://github.com/andyhall/noa-examples) repo and start hacking on the code there. The comments in the `hello-world` example source walk through how to instantiate the engine, define world geometry, and so forth.
+The easiest way to start building a game with `noa` is to clone the 
+[examples](https://github.com/andyhall/noa-examples) repo and start hacking 
+on the code there. The comments in the `hello-world` example source walk 
+through how to instantiate the engine, define world geometry, and so forth. 
+The example repo also shows the intended way to import noa's 
+peer depenencies, configure webpack, and so on.
 
-To hack on the `noa` engine itself, you'll want to clone this repo alongside your game content, and make the latter depend on the former with a local file dependency (i.e. `file:../noa` in `package.json`). Note however that webpack is picky about this - see the [examples readme](https://github.com/andyhall/noa-examples) for details.
+
+
+## Size
+
+The engine is around **250kb** when built in production mode and zipped. 
+Uncompressed, `noa` is ~160kb its peer dependency `babylon.js` is ~900kb.
 
 
 ## Docs
 
-See the [API reference](doc/API.md) for an overview of engine classes and methods.
-Docs are evolving though, some details are only documented in source comments.
-Documentation PRs are welcome!
+See the [API reference](http://andyhall.github.io/noa/API/) 
+for engine classes and methods. 
+Documentation PRs are welcome! See the source for details, API docs 
+are generated automatically via `npm run docs`.
 
 
 ## Status, contributing, etc.
 
-This library is under active development and contributions are welcome!
-If you have a nontrivial feature in mind, probably best to open a discussion issue
-first though. The goal of this module is minimally only do voxel-specific things, 
-and otherwise to stay out of your way.
+This engine is under active development and contributions are welcome.
+Please open a discussion issue before submitting large changes.
+**PRs should be sent against the `develop` branch!**
 
-> Please note that all feature work is in the `develop` branch; please send any PRs against that branch!
-
-For code style/formatting, the repo includes config files for [eslint](https://eslint.org/) and [js-beautify](https://github.com/beautify-web/js-beautify), which are both dev dependencies. If you use VSCode for editing, here are the extensions I use to run them automatically: [beautify](https://marketplace.visualstudio.com/items?itemName=HookyQR.beautify), [eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint).
+Code style/formatting are set up with config files and dev dependencies, 
+if you use VSCode most of it should work automatically. If you send PRs, 
+please try to be sorta-kinda consistent with what's already there.
 
 
 
 ## Change logs
 
-See [history.md](doc/history.md) for changes and migration info from each version.
+See [history.md](docs/history.md) for changes and migration for each version.
 
-Migration notes:
+Recent changes:
 
- * `v0.28`: improves swapping between world data sets (see `noa.worldName`).  
-   Removes duplicated voxel padding in each chunk (this means world generation 
- no longer needs to be deterministic!)
- * `v0.27`: adds world origin rebasing. If you encounter new bugs related to entity positions, see [positions.md](doc/positions.md)
- * `v0.26`: game clients should declare a dependency on `@babylon/core`, rather than manually loading babylon.js and leaving it in global scope. This allows tree-shaking to happen, greatly reducing (production) bundle sizes for typical games. For sample code and configs see [noa-examples](https://github.com/andyhall/noa-examples).
+ * `v0.30`: 
+   * Engine now a named class, use `import {Engine} from 'noa-engine'`
+   * many performance and size optimizations
+   * now generates proper type declarations and API references!
+   * can now configure separate vert/horiz values for chunk load distance
+   * core option `tickRate` is now in **ticks per second**, not ms per tick
+   * adds several init options, e.g. `maxRenderRate`, `stickyFullscreen`
+ * `v0.29`: 
+   * maximum voxel ID is now `65535`
+   * adds option `worldGenWhilePaused`
+   * adds option `manuallyControlChunkLoading` and related APIs
+   * performance and bug fixes
+ * `v0.28`: 
+   * improves swapping between world data sets (see `noa.worldName`).
+   * Removes duplicated voxel padding in each chunk (this means world generation no longer needs to be deterministic!)
+ * `v0.27`: adds world origin rebasing - see [positions.md](docs/positions.md)
+
 
 ----
 

@@ -1,13 +1,51 @@
-var vec3 = require('gl-vec3')
+
+import vec3 from 'gl-vec3'
+
+
+
+
+
+/** 
+ * State object of the `movement` component
+ * @class
+*/
+export function MovementState() {
+    this.heading = 0 // radians
+    this.running = false
+    this.jumping = false
+
+    // options
+    this.maxSpeed = 10
+    this.moveForce = 30
+    this.responsiveness = 15
+    this.runningFriction = 0
+    this.standingFriction = 2
+
+    // jumps
+    this.airMoveMult = 0.5
+    this.jumpImpulse = 10
+    this.jumpForce = 12
+    this.jumpTime = 500 // ms
+    this.airJumps = 1
+
+    // internal state
+    this._jumpCount = 0
+    this._currjumptime = 0
+    this._isJumping = false
+}
+
+
+
+
 
 /**
- * 
  * Movement component. State stores settings like jump height, etc.,
  * as well as current state (running, jumping, heading angle).
  * Processor checks state and applies movement/friction/jump forces
  * to the entity's physics body. 
- * 
- */
+ * @param {import('..').Engine} noa
+ * @internal
+*/
 
 export default function (noa) {
     return {
@@ -16,30 +54,7 @@ export default function (noa) {
 
         order: 30,
 
-        state: {
-            // current state
-            heading: 0, // radians
-            running: false,
-            jumping: false,
-
-            // options:
-            maxSpeed: 10,
-            moveForce: 30,
-            responsiveness: 15,
-            runningFriction: 0,
-            standingFriction: 2,
-
-            airMoveMult: 0.5,
-            jumpImpulse: 10,
-            jumpForce: 12,
-            jumpTime: 500, // ms
-            airJumps: 1,
-
-            // internal state
-            _jumpCount: 0,
-            _isJumping: 0,
-            _currjumptime: 0,
-        },
+        state: new MovementState(),
 
         onAdd: null,
 
@@ -48,12 +63,11 @@ export default function (noa) {
 
         system: function movementProcessor(dt, states) {
             var ents = noa.entities
-
-            states.forEach(state => {
-                var body = ents.getPhysicsBody(state.__id)
-                applyMovementPhysics(dt, state, body)
-            })
-
+            for (var i = 0; i < states.length; i++) {
+                var state = states[i]
+                var phys = ents.getPhysics(state.__id)
+                if (phys) applyMovementPhysics(dt, state, phys.body)
+            }
         }
 
 
@@ -65,6 +79,13 @@ var tempvec = vec3.create()
 var tempvec2 = vec3.create()
 var zeroVec = vec3.create()
 
+
+/**
+ * @internal
+ * @param {number} dt 
+ * @param {MovementState} state 
+ * @param {*} body 
+*/
 
 function applyMovementPhysics(dt, state, body) {
     // move implementation originally written as external module
@@ -141,7 +162,4 @@ function applyMovementPhysics(dt, state, body) {
     } else {
         body.friction = state.standingFriction
     }
-
-
-
 }
