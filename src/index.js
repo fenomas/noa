@@ -182,6 +182,15 @@ export class Engine extends EventEmitter {
      * @type {World}
     */
 
+    /**
+     * Multiplier for how fast time moves. Setting this to a value other than 
+     * `1` will make the game speed up or slow down. Note that can significantly 
+     * affect how core systems behave (particularly physics!).
+     * 
+     * @prop timeScale
+     * @type {number}
+    */
+
 
     // these get ignored for now 
     // TODO: revisit after typedoc v21
@@ -259,6 +268,7 @@ export class Engine extends EventEmitter {
         this.positionInCurrentTick = 0
 
         this.worldName = 'default'
+        this.timeScale = 1
 
         this.container = new Container(this, opts)
 
@@ -401,6 +411,8 @@ export class Engine extends EventEmitter {
     */
 
     tick(dt) {
+        dt *= this.timeScale || 1
+
         // note dt is a fixed value, not an observed delay
         if (this._paused) {
             if (this.world.worldGenWhilePaused) this.world.tick()
@@ -442,6 +454,8 @@ export class Engine extends EventEmitter {
      * @internal
     */
     render(dt, framePart) {
+        dt *= this.timeScale || 1
+
         // note: framePart is how far we are into the current tick
         // dt is the *actual* time (ms) since last render, for
         // animating things that aren't tied to game tick rate

@@ -50,6 +50,7 @@ export default function (noa) {
 
             var tickPos = noa.positionInCurrentTick
             var tickTime = 1000 / noa.container._shell.tickRate
+            tickTime *= noa.timeScale
             var tickMS = tickPos * tickTime
 
             // tickMS is time since last physics engine tick
