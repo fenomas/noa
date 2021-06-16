@@ -3,6 +3,7 @@
 
 This is a summary of new features and breaking changes in recent `noa` versions.
 
+ * [0.31.0](#0310)
  * [0.30.0](#0300)
  * [0.29.0](#0290)
  * [0.28.0](#0280)
@@ -18,6 +19,11 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 
 ----
+
+### 0.31.0
+
+   * Change the speed of the world with `noa.timeScale`
+
 
 ### 0.30.0
 

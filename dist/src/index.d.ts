@@ -94,6 +94,14 @@ export class Engine extends EventEmitter {
      * @prop world
      * @type {World}
     */
+    /**
+     * Multiplier for how fast time moves. Setting this to a value other than
+     * `1` will make the game speed up or slow down. Note that can significantly
+     * affect how core systems behave (particularly physics!).
+     *
+     * @prop timeScale
+     * @type {number}
+    */
     /** @internal @prop _paused */
     /** @internal @prop _dragOutsideLock */
     /** @internal @prop _originRebaseDistance */
@@ -148,6 +156,7 @@ export class Engine extends EventEmitter {
     _originRebaseDistance: any;
     positionInCurrentTick: number;
     worldName: string;
+    timeScale: number;
     container: Container;
     tickRate: any;
     maxRenderRate: any;
