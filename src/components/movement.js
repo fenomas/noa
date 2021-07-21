@@ -89,7 +89,7 @@ var zeroVec = vec3.create()
 
 function applyMovementPhysics(dt, state, body) {
     // move implementation originally written as external module
-    //   see https://github.com/andyhall/voxel-fps-controller
+    //   see https://github.com/fenomas/voxel-fps-controller
     //   for original code
 
     // jumping

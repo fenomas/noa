@@ -17,14 +17,14 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/andyhall/noa.git"
+        "url": "https://github.com/fenomas/noa.git"
     },
     "bugs": {
-        "url": "https://github.com/andyhall/noa/issues"
+        "url": "https://github.com/fenomas/noa/issues"
     },
     "dependencies": {
-        "aabb-3d": "andyhall/aabb-3d",
-        "box-intersect": "andyhall/box-intersect",
+        "aabb-3d": "fenomas/aabb-3d",
+        "box-intersect": "fenomas/box-intersect",
         "ent-comp": "^0.10.1",
         "events": "^3.3.0",
         "fast-voxel-raycast": "^0.1.1",

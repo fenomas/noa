@@ -7,7 +7,7 @@ Some projects using `noa`:
  * [Minecraft Classic](https://classic.minecraft.net/) - official game from Mojang (I'm as surprised as you are)
  * [VoxelSrv](https://github.com/Patbox/voxelsrv) - a voxel game inspired by Minecraft
  * [CityCraft.io](https://citycraft.io/) - multiplayer voxel cities
- * [noa-examples](https://github.com/andyhall/noa-examples) - starter repo with minimal hello-world and testbed games
+ * [noa-examples](https://github.com/fenomas/noa-examples) - starter repo with minimal hello-world and testbed games
 
 
 ----
@@ -15,7 +15,7 @@ Some projects using `noa`:
 ## Usage
 
 The easiest way to start building a game with `noa` is to clone the 
-[examples](https://github.com/andyhall/noa-examples) repo and start hacking 
+[examples](https://github.com/fenomas/noa-examples) repo and start hacking 
 on the code there. The comments in the `hello-world` example source walk 
 through how to instantiate the engine, define world geometry, and so forth. 
 The example repo also shows the intended way to import noa's 
@@ -31,7 +31,7 @@ Uncompressed, `noa` is ~160kb its peer dependency `babylon.js` is ~900kb.
 
 ## Docs
 
-See the [API reference](http://andyhall.github.io/noa/API/) 
+See the [API reference](http://fenomas.github.io/noa/API/) 
 for engine classes and methods. 
 Documentation PRs are welcome! See the source for details, API docs 
 are generated automatically via `npm run docs`.

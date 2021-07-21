@@ -16,7 +16,7 @@ var defaultOptions = {
 /**
  * `noa.entities` - manages entities and components.
  * 
- * This class extends [ent-comp](https://github.com/andyhall/ent-comp), 
+ * This class extends [ent-comp](https://github.com/fenomas/ent-comp), 
  * a general-purpose ECS. It's also decorated with noa-specific helpers and 
  * accessor functions for querying entity positions, etc.
  * 

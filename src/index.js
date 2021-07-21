@@ -1,6 +1,6 @@
 /*!
  * noa: an experimental voxel game engine.
- * @url      github.com/andyhall/noa
+ * @url      github.com/fenomas/noa
  * @author   Andy Hall <andy@fenomas.com>
  * @license  MIT
  */

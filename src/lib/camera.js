@@ -317,7 +317,7 @@ function cameraObstructionDistance(self) {
 
 // workaround for this Chrome 63 + Win10 bug
 // https://bugs.chromium.org/p/chromium/issues/detail?id=781182
-// later updated to also address: https://github.com/andyhall/noa/issues/153
+// later updated to also address: https://github.com/fenomas/noa/issues/153
 function bugFix(state) {
     var dx = state.dx
     var dy = state.dy
