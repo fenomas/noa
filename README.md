@@ -31,7 +31,7 @@ Uncompressed, `noa` is ~160kb its peer dependency `babylon.js` is ~900kb.
 
 ## Docs
 
-See the [API reference](http://fenomas.github.io/noa/API/) 
+See the [API reference](https://fenomas.github.io/noa/API/) 
 for engine classes and methods. 
 Documentation PRs are welcome! See the source for details, API docs 
 are generated automatically via `npm run docs`.
@@ -79,6 +79,6 @@ Recent changes:
 
 ## Credits
 
-Made with 🍺 by [Andy Hall](https://twitter.com/fenomas), license is MIT.
+Made with 🍺 by [Andy Hall](https://fenomas.com), license is MIT.
 
 Uses [Babylon.js](https://www.babylonjs.com/) for 3D rendering.
