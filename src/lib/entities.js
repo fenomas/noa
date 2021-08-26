@@ -327,8 +327,8 @@ export class Entities extends ECS {
         // extents to test against
         var off = this.noa.worldOriginOffset
         var testExtents = [
-            box.base[0] + off[0], box.base[1] + off[1], box.base[2] + off[2],
-            box.max[0] + off[0], box.max[1] + off[1], box.max[2] + off[2],
+            box.base[0] - off[0], box.base[1] - off[1], box.base[2] - off[2],
+            box.max[0] - off[0], box.max[1] - off[1], box.max[2] - off[2],
         ]
         // entity position state list
         var entStates
