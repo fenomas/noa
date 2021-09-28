@@ -56,7 +56,8 @@ See [history.md](docs/history.md) for changes and migration for each version.
 Recent changes:
 
  * `v0.31`: 
-   * Change the speed of the world with `noa.timeScale`
+   * Change the speed of the world! See `noa.timeScale`
+   * Now possible to control chunk processing order: `noa.world.chunkSortingDistFn`
  * `v0.30`: 
    * Engine now a named class, use `import {Engine} from 'noa-engine'`
    * many performance and size optimizations

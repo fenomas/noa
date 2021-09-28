@@ -788,6 +788,10 @@ function deprecateStuff(noa) {
     ver = '0.30'
     dep(noa, '_tickRate', 'tickRate is now at `noa.tickRate`')
     dep(noa.container, '_tickRate', 'tickRate is now at `noa.tickRate`')
+    ver = '0.31'
+    dep(noa.world, 'chunkSize', 'effectively an internal, so changed to `_chunkSize`')
+    dep(noa.world, 'chunkAddDistance', 'set this with `noa.world.setAddRemoveDistance`')
+    dep(noa.world, 'chunkRemoveDistance', 'set this with `noa.world.setAddRemoveDistance`')
 }
 
 

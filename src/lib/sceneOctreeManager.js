@@ -100,7 +100,7 @@ export class SceneOctreeManager {
         */
 
         var NOP = () => { }
-        var bs = blockSize * rendering.noa.world.chunkSize
+        var bs = blockSize * rendering.noa.world._chunkSize
 
         var recurseRebaseBlocks = (parent, offset) => {
             parent.blocks.forEach(child => {

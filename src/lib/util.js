@@ -98,8 +98,8 @@ function doNdarrayZero(tgt, i0, j0, k0, si, sj, sk) {
 
 
 
-// iterate over 3D locations a fixed area from the origin
-// and exiting if the callback returns true
+// iterates over 3D positions a given manhattan distance from (0,0,0)
+// and exit early if the callback returns true
 // skips locations beyond a horiz or vertical max distance
 export function iterateOverShellAtDistance(d, xmax, ymax, cb) {
     if (d === 0) return cb(0, 0, 0)
@@ -193,6 +193,12 @@ LocationQueue.prototype.add = function (i, j, k) {
     this.arr.push([i, j, k, id])
     this.hash[id] = true
 }
+LocationQueue.prototype.addToFront = function (i, j, k) {
+    var id = locationHasher(i, j, k)
+    if (this.hash[id]) return
+    this.arr.unshift([i, j, k, id])
+    this.hash[id] = true
+}
 LocationQueue.prototype.removeByIndex = function (ix) {
     var el = this.arr[ix]
     delete this.hash[el[3]]
@@ -228,7 +234,7 @@ LocationQueue.prototype.copyFrom = function (queue) {
 }
 LocationQueue.prototype.sortByDistance = function (locToDist) {
     var hash = {}
-    for (var loc of this.arr) hash[loc] = locToDist(loc)
+    for (var loc of this.arr) hash[loc] = locToDist(loc[0], loc[1], loc[2])
     this.arr.sort((a, b) => hash[b] - hash[a]) // DESCENDING!
     hash = null
 }
