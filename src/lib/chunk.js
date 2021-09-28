@@ -1,5 +1,7 @@
 /** @internal */ /** works around typedoc bug #842 */
 
+import { LocationQueue } from './util'
+
 var ndarray = require('ndarray')
 
 export default Chunk
@@ -56,6 +58,9 @@ function Chunk(noa, requestID, ci, cj, ck, size, dataArray) {
     this._neighborCount = 0
     this._timesMeshed = 0
 
+    // location queue of voxels in this chunk with block handlers (assume it's rare)
+    this._blockHandlerLocs = new LocationQueue()
+
     // passes through voxel contents, calling block handlers etc.
     scanVoxelData(this)
 }
@@ -75,6 +80,7 @@ Chunk.prototype._updateVoxelArray = function (dataArray) {
     this.voxels = dataArray
     this._terrainDirty = false
     this._objectsDirty = false
+    this._blockHandlerLocs.empty()
     this.noa._objectMesher.initChunk(this)
     this.noa._terrainMesher.initChunk(this)
     scanVoxelData(this)
@@ -121,7 +127,12 @@ Chunk.prototype.set = function (i, j, k, newID) {
     var hold = handlerLookup[oldID]
     var hnew = handlerLookup[newID]
     if (hold) callBlockHandler(this, hold, 'onUnset', i, j, k)
-    if (hnew) callBlockHandler(this, hnew, 'onSet', i, j, k)
+    if (hnew) {
+        callBlockHandler(this, hnew, 'onSet', i, j, k)
+        this._blockHandlerLocs.add(i, j, k)
+    } else {
+        this._blockHandlerLocs.remove(i, j, k)
+    }
 
     // track object block states
     var objMesher = this.noa._objectMesher
@@ -215,6 +226,7 @@ function scanVoxelData(chunk) {
     var fullyOpaque = true
     var fullyAir = true
 
+    chunk._blockHandlerLocs.empty()
     var voxels = chunk.voxels
     var data = voxels.data
     var len = voxels.shape[0]
@@ -241,6 +253,7 @@ function scanVoxelData(chunk) {
                 }
                 var handlers = handlerLookup[id]
                 if (handlers) {
+                    chunk._blockHandlerLocs.add(i, j, k)
                     callBlockHandler(chunk, handlers, 'onLoad', i, j, k)
                 }
             }
@@ -267,6 +280,7 @@ function scanVoxelData(chunk) {
 Chunk.prototype.dispose = function () {
     // look through the data for onUnload handlers
     callAllBlockHandlers(this, 'onUnload')
+    this._blockHandlerLocs.empty()
 
     // let meshers dispose their stuff
     this.noa._objectMesher.disposeChunk(this)
@@ -282,21 +296,13 @@ Chunk.prototype.dispose = function () {
 }
 
 
+
 // helper to call a given handler for all blocks in the chunk
 function callAllBlockHandlers(chunk, type) {
     var voxels = chunk.voxels
-    var data = voxels.data
     var handlerLookup = chunk.noa.registry._blockHandlerLookup
-    var len = voxels.shape[0]
-    for (var i = 0; i < len; ++i) {
-        for (var j = 0; j < len; ++j) {
-            var index = voxels.index(i, j, 0)
-            for (var k = 0; k < len; ++k, ++index) {
-                var id = data[index]
-                if (id > 0 && handlerLookup[id]) {
-                    callBlockHandler(chunk, handlerLookup[id], type, i, j, k)
-                }
-            }
-        }
-    }
+    chunk._blockHandlerLocs.arr.forEach(([i, j, k]) => {
+        var id = voxels.get(i, j, k)
+        callBlockHandler(chunk, handlerLookup[id], type, i, j, k)
+    })
 }
