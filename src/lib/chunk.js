@@ -46,9 +46,8 @@ function Chunk(noa, requestID, ci, cj, ck, size, dataArray) {
     // inits state of terrain / object meshing
     noa._terrainMesher.initChunk(this)
     noa._objectMesher.initChunk(this)
-
-    this.isFull = false
-    this.isEmpty = false
+    this._isFull = false
+    this._isEmpty = false
 
     // references to neighboring chunks, if they exist (filled in by `world`)
     var narr = Array.from(Array(27), () => null)
@@ -132,8 +131,8 @@ Chunk.prototype.set = function (i, j, k, newID) {
     if (objNew) objMesher.setObjectBlock(this, newID, i, j, k)
 
     // track full/emptiness and dirty flags for the chunk
-    if (!opaqueLookup[newID]) this.isFull = false
-    if (newID !== 0) this.isEmpty = false
+    if (!opaqueLookup[newID]) this._isFull = false
+    if (newID !== 0) this._isEmpty = false
 
     var solidityChanged = (solidLookup[oldID] !== solidLookup[newID])
     var opacityChanged = (opaqueLookup[oldID] !== opaqueLookup[newID])
@@ -248,9 +247,9 @@ function scanVoxelData(chunk) {
         }
     }
 
-    chunk.isFull = fullyOpaque
-    chunk.isEmpty = fullyAir
-    chunk._terrainDirty = !chunk.isEmpty
+    chunk._isFull = fullyOpaque
+    chunk._isEmpty = fullyAir
+    chunk._terrainDirty = !chunk._isEmpty
 }
 
 
