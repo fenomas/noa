@@ -87,10 +87,10 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
    * Engine now imports Babylon as a **peer dependency** 
      * Noa games must now declare their own dependency on `@babylon/core`
-     * See [examples](https://github.com/andyhall/noa-examples) for sample code, weback config, etc.
+     * See [examples](https://github.com/fenomas/noa-examples) for sample code, weback config, etc.
    * Noa now exports Engine as an ES6 module. 
      * Clients using `require` will need to do `require('noa-engine').default`
-   * Example worlds (`test` and `hello-world`) moved to a [separate repo](https://github.com/andyhall/noa-examples)
+   * Example worlds (`test` and `hello-world`) moved to a [separate repo](https://github.com/fenomas/noa-examples)
    * Internal modules all migrated to es6 import/export syntax
    * Moves several camera-related APIs from rendering to `noa.camera`
    * Removes several redundant properties/APIs (they throw depreceation messages when accessed)
