@@ -1,7 +1,7 @@
 /**
  * `noa.entities` - manages entities and components.
  *
- * This class extends [ent-comp](https://github.com/andyhall/ent-comp),
+ * This class extends [ent-comp](https://github.com/fenomas/ent-comp),
  * a general-purpose ECS. It's also decorated with noa-specific helpers and
  * accessor functions for querying entity positions, etc.
  *
@@ -18,93 +18,111 @@
  * ```
 */
 export class Entities extends ECS {
-    /** @internal @prop noa */
-    /** @internal @prop cameraSmoothed */
+    /** @internal */
+    constructor(noa: any, opts: any);
+    /**
+     * @internal
+     * @type {import('../index').Engine}
+    */
+    noa: import('../index').Engine;
+    /** Hash containing the component names of built-in components.
+     * @type {Object.<string, string>}
+    */
+    names: {
+        [x: string]: string;
+    };
+    /** @internal */
+    cameraSmoothed: (id: any) => boolean;
     /**
      * Returns whether the entity has a physics body
-     * @type {(id:number) => boolean}
-     * @prop hasPhysics
+     * @param {number} id
+     * @returns {boolean}
     */
-    /**
-     * Returns whether the entity has a mesh
-     * @type {(id:number) => boolean}
-     * @prop hasMesh
-    */
+    hasPhysics: (id: any) => boolean;
     /**
      * Returns whether the entity has a position
      * @type {(id:number) => boolean}
-     * @prop hasPosition
     */
+    hasPosition: (id: number) => boolean;
     /**
      * Returns the entity's position component state
      * @type {(id:number) => {
      *      position: number[], width: number, height: number,
      *      _localPosition: any, _renderPosition: any, _extents: any,
      * }}
-     * @prop getPositionData
     */
+    getPositionData: (id: number) => {
+        position: number[];
+        width: number;
+        height: number;
+        _localPosition: any;
+        _renderPosition: any;
+        _extents: any;
+    };
     /**
      * Returns the entity's position vector.
      * Note, will throw if the entity doesn't have the position component!
      * @type {(id:number) => number[]}
-     * @prop getPosition
     */
+    getPosition: (id: number) => number[];
     /**
      * Returns the entity's `physics` component state.
      * @type {(id:number) => { body:any }}
-     * @prop getPhysics
     */
+    getPhysics: (id: number) => {
+        body: any;
+    };
     /**
      * Returns the entity's physics body
      * Note, will throw if the entity doesn't have the position component!
      * @type {(id:number) => { any }}
-     * @prop getPhysicsBody
     */
+    getPhysicsBody: (id: number) => {
+        any: any;
+    };
+    /**
+     * Returns whether the entity has a mesh
+     * @type {(id:number) => boolean}
+    */
+    hasMesh: (id: number) => boolean;
     /**
      * Returns the entity's `mesh` component state
      * @type {(id:number) => {mesh:any, offset:number[]}}
-     * @prop getMeshData
     */
+    getMeshData: (id: number) => {
+        mesh: any;
+        offset: number[];
+    };
     /**
      * Returns the entity's `movement` component state
      * @type {(id:number) => import('../components/movement').MovementState}
-     * @prop getMovement
     */
+    getMovement: (id: number) => import('../components/movement').MovementState;
     /**
      * Returns the entity's `collideTerrain` component state
      * @type {(id:number) => {callback: function}}
-     * @prop etCollideTerrain
     */
+    getCollideTerrain: (id: number) => {
+        callback: Function;
+    };
     /**
      * Returns the entity's `collideEntities` component state
      * @type {(id:number) => {
      *      cylinder:boolean, collideBits:number,
      *      collideMask:number, callback: function}}
-     * @prop getCollideEntities
     */
+    getCollideEntities: (id: number) => {
+        cylinder: boolean;
+        collideBits: number;
+        collideMask: number;
+        callback: Function;
+    };
     /**
-     * A hash of the names of all registered components.
-     * @type {Object<string, string>}
-     * @prop names
-    */
-    /** @internal */
-    constructor(noa: any, opts: any);
-    noa: any;
-    /** Hash containing the component names of built-in components. */
-    names: {};
-    hasPhysics: (id: any) => boolean;
-    cameraSmoothed: (id: any) => boolean;
-    hasPosition: (id: any) => boolean;
-    hasMesh: (id: any) => boolean;
-    getMeshData: (id: any) => any;
-    getPositionData: (id: any) => any;
-    getPosition: (id: any) => any;
-    getPhysics: (id: any) => any;
-    getPhysicsBody: (id: any) => any;
-    getMovement: (id: any) => any;
-    getCollideTerrain: (id: any) => any;
-    getCollideEntities: (id: any) => any;
-    onPairwiseEntityCollision: (id1: any, id2: any) => void;
+     * Pairwise collideEntities event - assign your own function to this
+     * property if you want to handle entity-entity overlap events.
+     * @type {(id1:number, id2:number) => void}
+     */
+    onPairwiseEntityCollision: (id1: number, id2: number) => void;
     /** Set an entity's position, and update all derived state.
      *
      * In general, always use this to set an entity's position unless

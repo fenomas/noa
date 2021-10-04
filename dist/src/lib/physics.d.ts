@@ -2,7 +2,7 @@
  * `noa.physics` - Wrapper module for the physics engine.
  *
  * This module extends
- * [voxel-physics-engine](https://github.com/andyhall/voxel-physics-engine),
+ * [voxel-physics-engine](https://github.com/fenomas/voxel-physics-engine),
  * so turn on "Inherited" to see its APIs here, or view the base module
  * for full docs.
  *

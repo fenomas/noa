@@ -9,36 +9,27 @@
  * @emits lostPointerLock
  */
 export class Container extends EventEmitter {
-    /** @internal @prop _noa */
-    /** @internal @prop _shell */
-    /** The game's DOM element container
-     * @prop element
-    */
-    /** The `canvas` element that the game will draw into
-     * @prop canvas
-    */
-    /** Whether the browser supports pointerLock. Read-only!
-     * @prop supportsPointerLock
-    */
-    /** Whether the user's pointer is within the game area. Read-only!
-     * @prop pointerInGame
-    */
-    /** Whether the game is focused. Read-only!
-     * @prop isFocused
-    */
-    /** Gets the current state of pointerLock. Read-only!
-     * @prop hasPointerLock
-    */
     /** @internal */
     constructor(noa: any, opts: any);
-    _noa: any;
+    /**
+     * @internal
+     * @type {import('../index').Engine}
+    */
+    noa: import('../index').Engine;
+    /** The game's DOM element container */
     element: any;
+    /** The `canvas` element that the game will draw into */
     canvas: any;
-    _shell: any;
+    /** Whether the browser supports pointerLock. @readonly */
     supportsPointerLock: boolean;
+    /** Whether the user's pointer is within the game area. @readonly */
     pointerInGame: boolean;
+    /** Whether the game is focused. @readonly */
     isFocused: boolean;
+    /** Gets the current state of pointerLock. @readonly */
     hasPointerLock: boolean;
+    /** @internal */
+    _shell: any;
     /** @internal */
     appendTo(htmlElement: any): void;
     /**

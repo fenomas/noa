@@ -12,11 +12,11 @@
  * ```
 */
 export class Registry {
-    /** @internal @prop noa */
-    /** @internal @prop _texturePath */
     /** @internal */
     constructor(noa: any, opts: any);
+    /** @internal */
     noa: any;
+    /** @internal */
     _texturePath: any;
     /**
      * Register (by integer ID) a block type and its parameters.
@@ -80,11 +80,18 @@ export class Registry {
     getMaterialColor: (matID: any) => any;
     getMaterialTexture: (matID: any) => any;
     getMaterialData: (matID: any) => any;
+    /** @internal */
     _solidityLookup: boolean[];
+    /** @internal */
     _opacityLookup: boolean[];
+    /** @internal */
     _fluidityLookup: boolean[];
+    /** @internal */
     _objectLookup: boolean[];
+    /** @internal */
     _blockMeshLookup: any[];
+    /** @internal */
     _blockHandlerLookup: any[];
+    /** @internal */
     _getMaterialVertexColor: (matID: any) => any;
 }

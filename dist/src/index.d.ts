@@ -19,113 +19,6 @@
  * @emits targetBlockChanged(blockDesc)
 */
 export class Engine extends EventEmitter {
-    /** Version string, e.g. `"0.25.4"`
-     * @prop version
-    */
-    /** The game's tick rate (ticks per second)
-     * @prop tickRate
-    */
-    /** The game's max framerate (use `0` for uncapped)
-     * @prop maxRenderRate
-    */
-    /**  String identifier for the current world. It's safe to ignore this if your game has only one level/world.
-     * @prop worldName
-    */
-    /** How far to check for a solid voxel the player is currently looking at
-     * @prop blockTestDistance
-    */
-    /** Callback to determine which voxels can be targeted. Defaults to a solidity check, but can be overridden
-     * @type {(id: number) => boolean}
-     * @prop blockTargetIdCheck
-    */
-    /**
-     * @typedef {Object} TargetedBlock - value of `noa.targetedBlock`, updated each tick
-     * @prop {number} blockID the ID of the targeted voxel
-     * @prop {number[]} position position of the (solid) block being targeted
-     * @prop {number[]} adjacent the (non-solid) block adjacent to the targeted one
-     * @prop {number[]} normal - e.g. `[0,1,0]` when player is targting the **top** face of a voxel
-    */
-    /**
-     * Dynamically updated object describing the currently targeted block.
-     * @prop targetedBlock
-     * @type {null | TargetedBlock}
-    */
-    /**
-     * Child module for managing the game's container, canvas, etc.
-     * @prop container
-     * @type {Container}
-     */
-    /**
-     * Manages the game's camera, view angle, etc.
-     * @prop camera
-     * @type {Camera}
-     */
-    /**
-     * inputs manager - abstracts key/mouse input
-     * @prop inputs
-     * @type {import('./lib/inputs').Inputs}
-    */
-    /** Entity manager / Entity Component System (ECS)
-     * Aliased to `noa.ents` for convenience.
-     * @prop entities
-     * @type {Entities}
-    */
-    /**
-     * @prop ents
-     * @type {Entities}
-    */
-    /**
-     * physics engine - solves collisions, properties, etc.
-     * @prop physics
-     * @type {Physics}
-    */
-    /**
-     * A registry where voxel/material properties are managed
-     * @prop registry
-     * @type {Registry}
-    */
-    /**
-     * Rendering manager
-     * @prop rendering
-     * @type {Rendering}
-    */
-    /**
-     * Manages the world, chunks, and all voxel data
-     * @prop world
-     * @type {World}
-    */
-    /**
-     * Multiplier for how fast time moves. Setting this to a value other than
-     * `1` will make the game speed up or slow down. Note that can significantly
-     * affect how core systems behave (particularly physics!).
-     *
-     * @prop timeScale
-     * @type {number}
-    */
-    /** @internal @prop _paused */
-    /** @internal @prop _dragOutsideLock */
-    /** @internal @prop _originRebaseDistance */
-    /** @internal @prop positionInCurrentTick */
-    /** @internal @prop worldOriginOffset */
-    /** @internal @prop _terrainMesher */
-    /** @internal @prop _objectMesher */
-    /** @internal @prop _targetedBlockDat */
-    /** @internal @prop _prevTargetHash */
-    /** @internal @prop makeTargetHash */
-    /** @internal @prop _pickPos */
-    /** @internal @prop _pickResult */
-    /** `vec3` class used throughout the engine
-     * @type {vec3}
-     * @prop vec3 */
-    /** `ndarray` class used internally throughout the engine
-     * @type {ndarray}
-     * @prop ndarray */
-    /**
-     * @typedef {Object} PickResult
-     * @prop {number[]} position position of the picked voxel
-     * @prop {number[]} normal specifying which face of the voxel was hit
-     * @prop {number[]} _localPosition position in local coordinates
-    */
     /**
      * The core Engine constructor uses the following options:
      *
@@ -149,48 +42,105 @@ export class Engine extends EventEmitter {
      * ```
     */
     constructor(opts?: {});
+    /** Version string, e.g. `"0.25.4"` */
     version: string;
+    /** @internal */
     _paused: boolean;
+    /** @internal */
     _dragOutsideLock: any;
-    worldOriginOffset: number[];
+    /** @internal */
     _originRebaseDistance: any;
+    /** @internal */
+    worldOriginOffset: number[];
+    /** @internal */
     positionInCurrentTick: number;
+    /**
+     * String identifier for the current world.
+     * It's safe to ignore this if your game has only one level/world.
+    */
     worldName: string;
+    /**
+     * Multiplier for how fast time moves. Setting this to a value other than
+     * `1` will make the game speed up or slow down. This can significantly
+     * affect how core systems behave (particularly physics!).
+    */
     timeScale: number;
+    /** Child module for managing the game's container, canvas, etc. */
     container: Container;
-    tickRate: any;
+    /** The game's tick rate (ticks per second)
+     * @readonly
+    */
+    readonly tickRate: any;
+    /** The game's max framerate (use `0` for uncapped) */
     maxRenderRate: any;
+    /** Inputs manager - abstracts key/mouse input */
     inputs: import("./lib/inputs").Inputs;
+    /** A registry where voxel/material properties are managed */
     registry: Registry;
+    /** Manages the world, chunks, and all voxel data */
     world: World;
+    /** Rendering manager */
     rendering: Rendering;
+    /** Physics engine - solves collisions, properties, etc. */
     physics: Physics;
+    /** Entity manager / Entity Component System (ECS) */
     entities: Entities;
+    /** Alias to `noa.entities` */
     ents: Entities;
     /** Entity id for the player entity */
     playerEntity: number;
+    /** Manages the game's camera, view angle, sensitivity, etc. */
     camera: Camera;
+    /** How far to check for a solid voxel the player is currently looking at */
     blockTestDistance: any;
-    blockTargetIdCheck: (id: any) => boolean;
-    targetedBlock: any;
+    /**
+     * Callback to determine which voxels can be targeted.
+     * Defaults to a solidity check, but can be overridden with arbitrary logic.
+     * @type {(blockID: number) => boolean}
+    */
+    blockTargetIdCheck: (blockID: number) => boolean;
+    /**
+     * Dynamically updated object describing the currently targeted block.
+     * @type {null | {
+     *      blockID:number,
+     *      position: number[],
+     *      normal: number[],
+     *      adjacent: number[],
+     * }}
+    */
+    targetedBlock: {
+        blockID: number;
+        position: number[];
+        normal: number[];
+        adjacent: number[];
+    };
     defaultBlockHighlightFunction: (tgt: any) => void;
+    /** @internal */
     _terrainMesher: TerrainMesher;
+    /** @internal */
     _objectMesher: ObjectMesher;
+    /** @internal */
     _targetedBlockDat: {
         blockID: number;
         position: any;
         normal: any;
         adjacent: any;
     };
+    /** @internal */
     _prevTargetHash: number;
+    /** @internal */
     makeTargetHash: (pos: any, norm: any, id: any) => number;
+    /** @internal */
     _pickPos: any;
+    /** @internal */
     _pickResult: {
         _localPosition: any;
         position: number[];
         normal: number[];
     };
+    /** @internal */
     vec3: typeof vec3;
+    /** @internal */
     ndarray: any;
     /**
      * Tick function, called by container module at a fixed timestep.
@@ -257,55 +207,32 @@ export class Engine extends EventEmitter {
      * @param {number[]} dir direction to pick along (default: camera vector)
      * @param {number} dist pick distance (default: `noa.blockTestDistance`)
      * @param {(id:number) => boolean} blockTestFunction which voxel IDs can be picked (default: any solid voxel)
-     * @returns {PickResult}
     */
-    pick(pos?: number[], dir?: number[], dist?: number, blockTestFunction?: (id: number) => boolean): PickResult;
+    pick(pos?: number[], dir?: number[], dist?: number, blockTestFunction?: (id: number) => boolean): {
+        position: number[];
+        normal: number[];
+        _localPosition: number[];
+    };
     /**
+     * @internal
      * Do a raycast in local coords.
      * See `/docs/positions.md` for more info.
      * @param {number[]} pos where to pick from (default: player's eye pos)
      * @param {number[]} dir direction to pick along (default: camera vector)
      * @param {number} dist pick distance (default: `noa.blockTestDistance`)
      * @param {(id:number) => boolean} blockTestFunction which voxel IDs can be picked (default: any solid voxel)
-     * @returns {PickResult}
+     * @returns { null | {
+     *      position: number[],
+     *      normal: number[],
+     *      _localPosition: number[],
+     * }}
      */
-    _localPick(pos?: number[], dir?: number[], dist?: number, blockTestFunction?: (id: number) => boolean): PickResult;
+    _localPick(pos?: number[], dir?: number[], dist?: number, blockTestFunction?: (id: number) => boolean): null | {
+        position: number[];
+        normal: number[];
+        _localPosition: number[];
+    };
 }
-/**
- * - value of `noa.targetedBlock`, updated each tick
- */
-export type TargetedBlock = {
-    /**
-     * the ID of the targeted voxel
-     */
-    blockID: number;
-    /**
-     * position of the (solid) block being targeted
-     */
-    position: number[];
-    /**
-     * the (non-solid) block adjacent to the targeted one
-     */
-    adjacent: number[];
-    /**
-     * - e.g. `[0,1,0]` when player is targting the **top** face of a voxel
-     */
-    normal: number[];
-};
-export type PickResult = {
-    /**
-     * position of the picked voxel
-     */
-    position: number[];
-    /**
-     * specifying which face of the voxel was hit
-     */
-    normal: number[];
-    /**
-     * position in local coordinates
-     */
-    _localPosition: number[];
-};
 import { EventEmitter } from "events";
 import { Container } from "./lib/container";
 import { Registry } from "./lib/registry";

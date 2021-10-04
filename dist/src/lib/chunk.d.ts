@@ -16,11 +16,12 @@ declare class Chunk {
     pos: number[];
     _terrainDirty: boolean;
     _objectsDirty: boolean;
-    isFull: boolean;
-    isEmpty: boolean;
+    _isFull: boolean;
+    _isEmpty: boolean;
     _neighbors: any;
     _neighborCount: number;
     _timesMeshed: number;
+    _blockHandlerLocs: LocationQueue;
     _updateVoxelArray(dataArray: any): void;
     get(i: any, j: any, k: any): any;
     getSolidityAt(i: any, j: any, k: any): any;
@@ -31,3 +32,4 @@ declare class Chunk {
 declare namespace Chunk {
     function _createVoxelArray(size: any): any;
 }
+import { LocationQueue } from "./util";

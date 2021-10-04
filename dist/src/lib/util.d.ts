@@ -1,4 +1,7 @@
-/** @internal */ /** works around typedoc bug #842 */
+/**
+ * @module
+ * @internal exclude this file from API docs
+*/
 export function removeUnorderedListItem(list: any, item: any): void;
 export function loopForTime(maxTimeInMS: any, callback: any, startTime: any): void;
 export function numberOfVoxelsInSphere(rad: any): number;
@@ -18,6 +21,7 @@ export class LocationQueue {
     forEach(a: any, b: any): void;
     includes(i: any, j: any, k: any): boolean;
     add(i: any, j: any, k: any): void;
+    addToFront(i: any, j: any, k: any): void;
     removeByIndex(ix: any): void;
     remove(i: any, j: any, k: any): void;
     count(): number;

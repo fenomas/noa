@@ -17,8 +17,11 @@ export class MovementState {
     jumpForce: number;
     jumpTime: number;
     airJumps: number;
+    /** @internal */
     _jumpCount: number;
+    /** @internal */
     _currjumptime: number;
+    /** @internal */
     _isJumping: boolean;
 }
 /**

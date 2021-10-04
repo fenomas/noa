@@ -16,26 +16,29 @@
  * ```
 */
 export class Camera {
-    /** Horizontal mouse sensitivity. Same scale as Overwatch (typical values around `5..10`)
-     * @prop sensitivityX
+    /** @internal */
+    constructor(noa: any, opts: any);
+    /**
+     * @internal
+     * @type {import('../index').Engine}
     */
-    /** Vertical mouse sensitivity. Same scale as Overwatch (typical values around `5..10`)
-     * @prop sensitivityY
-    */
-    /** Mouse look inverse (horizontal)
-     * @prop inverseX
-    */
-    /** Mouse look inverse (vertical)
-     * @prop inverseY
-    */
+    noa: import('../index').Engine;
+    /** Horizontal mouse sensitivity. Same scale as Overwatch (typical values around `5..10`) */
+    sensitivityX: number;
+    /** Vertical mouse sensitivity. Same scale as Overwatch (typical values around `5..10`) */
+    sensitivityY: number;
+    /** Mouse look inverse (horizontal) */
+    inverseX: boolean;
+    /** Mouse look inverse (vertical) */
+    inverseY: boolean;
     /**
      * Camera yaw angle.
      * Returns the camera's rotation angle around the vertical axis.
      * Range: `0..2π`
      * This value is writeable, but it's managed by the engine and
      * will be overwritten each frame.
-     * @prop heading
     */
+    heading: number;
     /** Camera pitch angle.
      * Returns the camera's up/down rotation angle. The pitch angle is
      * clamped by a small epsilon, such that the camera never quite
@@ -43,8 +46,8 @@ export class Camera {
      * Range: `-π/2..π/2`.
      * This value is writeable, but it's managed by the engine and
      * will be overwritten each frame.
-     * @prop pitch
     */
+    pitch: number;
     /**
      * Entity ID of a special entity that exists for the camera to point at.
      *
@@ -63,41 +66,21 @@ export class Camera {
      * // control cameraTarget position directly (or whatever..)
      * noa.ents.setPosition(noa.camera.cameraTarget, [x,y,z])
      * ```
-     * @prop cameraTarget
     */
-    /** How far back the camera should be from the player's eye position
-     * @prop zoomDistance
-     */
-    /** How quickly the camera moves to its `zoomDistance` (0..1)
-     * @prop zoomSpeed
-     */
+    cameraTarget: number;
+    /** How far back the camera should be from the player's eye position */
+    zoomDistance: any;
+    /** How quickly the camera moves to its `zoomDistance` (0..1) */
+    zoomSpeed: any;
     /** Current actual zoom distance. This differs from `zoomDistance` when
      * the camera is in the process of moving towards the desired distance,
      * or when it's obstructed by solid terrain behind the player.
      * @readonly
-     * @prop currentZoom
     */
-    /** @internal @prop _currentZoom */
-    /** @internal @prop _dirVector */
-    /**
-     * @internal
-     * @type {import('../index').Engine}
-     * @prop noa
-    */
+    readonly currentZoom: any;
     /** @internal */
-    constructor(noa: any, opts: any);
-    noa: any;
-    sensitivityX: number;
-    sensitivityY: number;
-    inverseX: boolean;
-    inverseY: boolean;
-    heading: number;
-    pitch: number;
-    zoomDistance: any;
-    zoomSpeed: any;
-    cameraTarget: any;
-    currentZoom: any;
     _currentZoom: any;
+    /** @internal */
     _dirVector: any;
     /** @internal */
     _localGetTargetPosition(): any;
