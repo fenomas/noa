@@ -1,4 +1,7 @@
-/** @internal */ /** works around typedoc bug #842 */
+/** 
+ * @module 
+ * @internal exclude this file from API docs 
+*/
 
 import { Vector3 } from '@babylonjs/core/Maths/math.vector'
 import { Octree } from '@babylonjs/core/Culling/Octrees/octree'

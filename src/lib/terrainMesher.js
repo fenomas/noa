@@ -1,4 +1,7 @@
-/** @internal */ /** works around typedoc bug #842 */
+/** 
+ * @module 
+ * @internal exclude this file from API docs 
+*/
 
 import ndarray from 'ndarray'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'

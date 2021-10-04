@@ -1,3 +1,4 @@
+/** @module noa.ents.comps.movement */
 
 import vec3 from 'gl-vec3'
 
@@ -29,8 +30,11 @@ export function MovementState() {
     this.airJumps = 1
 
     // internal state
+    /** @internal */
     this._jumpCount = 0
+    /** @internal */
     this._currjumptime = 0
+    /** @internal */
     this._isJumping = false
 }
 

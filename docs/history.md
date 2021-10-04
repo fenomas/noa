@@ -23,6 +23,9 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 ### 0.31.0
 
    * Change the speed of the world with `noa.timeScale`
+   * Now possible to control chunk processing order: `noa.world.chunkSortingDistFn`
+   * Chunk processing will happen more reliably, particularly after switching worlds.
+   * Changed how the docs work, and how code comments are arranged for this purpose. See [API docs](https://fenomas.github.io/noa/API/).
 
 
 ### 0.30.0

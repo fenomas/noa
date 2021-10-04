@@ -1,3 +1,8 @@
+/** 
+ * The World class is found at [[World | `noa.world`]].
+ * @module noa.world
+ */
+
 
 import EventEmitter from 'events'
 import Chunk from './chunk'
@@ -36,22 +41,17 @@ var defaultOptions = {
 */
 export class World extends EventEmitter {
 
-    /** @internal @prop _chunksKnown */
-    /** @internal @prop _chunksPending */
-    /** @internal @prop _chunksToRequest */
-    /** @internal @prop _chunksToRemove */
-    /** @internal @prop _chunksToMesh */
-    /** @internal @prop _chunksToMeshFirst */
-    /** @internal @prop _chunksSortedLocs */
-
-
     /** @internal */
     constructor(noa, opts) {
         super()
-        this.noa = noa
         opts = Object.assign({}, defaultOptions, opts)
+        /** @internal */
+        this.noa = noa
 
+        /** @internal */
         this.playerChunkLoaded = false
+
+        /** @internal */
         this.Chunk = Chunk // expose this class for ...reasons
 
         /**
@@ -76,34 +76,65 @@ export class World extends EventEmitter {
          */
         this.minNeighborsToMesh = 6
 
-        /**
-         * When true, worldgen queues will keep running if engine is paused.
-         */
-        this.worldGenWhilePaused = opts.worldGenWhilePaused
+        /** When true, worldgen queues will keep running if engine is paused. */
+        this.worldGenWhilePaused = !!opts.worldGenWhilePaused
 
-        // settings for tuning worldgen behavior and throughput
+        /** Limit the size of internal chunk processing queues 
+         * @type {number} 
+        */
         this.maxChunksPendingCreation = 10
+
+        /** Limit the size of internal chunk processing queues 
+         * @type {number} 
+        */
         this.maxChunksPendingMeshing = 10
-        this.maxProcessingPerTick = 9           // ms
-        this.maxProcessingPerRender = 5         // ms
+
+        /** Cutoff (in ms) of time spent each **tick** 
+         * @type {number}
+        */
+        this.maxProcessingPerTick = 9
+
+        /** Cutoff (in ms) of time spent each **render** 
+         * @type {number}
+        */
+        this.maxProcessingPerRender = 5
+
 
         // set up internal state
+
+
+        /** @internal */
         this._chunkSize = opts.chunkSize
+        /** @internal */
         this._chunkAddDistance = [1, 1]
+        /** @internal */
         this._chunkRemoveDistance = [1, 1]
+        /** @internal */
         this._addDistanceFn = null
+        /** @internal */
         this._remDistanceFn = null
+        /** @internal */
         this._prevWorldName = ''
+        /** @internal */
         this._prevPlayerChunkHash = 0
+        /** @internal */
         this._chunkAddSearchFrom = 0
+        /** @internal */
         this._prevSortingFn = null
 
+        /** @internal */
         this._chunksKnown = null
+        /** @internal */
         this._chunksPending = null
+        /** @internal */
         this._chunksToRequest = null
+        /** @internal */
         this._chunksToRemove = null
+        /** @internal */
         this._chunksToMesh = null
+        /** @internal */
         this._chunksToMeshFirst = null
+        /** @internal */
         this._chunksSortedLocs = null
         initChunkQueues(this)
 
@@ -113,19 +144,26 @@ export class World extends EventEmitter {
         // chunks stored in a data structure for quick lookup
         // note that the hash wraps around every 1024 chunk indexes!!
         // i.e. two chunks that far apart can't be loaded at the same time
+        /** @internal */
         this._storage = new ChunkStorage()
 
         // coordinate converter functions - default versions first:
         var cs = this._chunkSize
+        /** @internal */
         this._coordsToChunkIndexes = chunkCoordsToIndexesGeneral
+        /** @internal */
         this._coordsToChunkLocals = chunkCoordsToLocalsGeneral
 
         // when chunk size is a power of two, override with bit-twiddling:
         var powerOfTwo = ((cs & cs - 1) === 0)
         if (powerOfTwo) {
+            /** @internal */
             this._coordShiftBits = Math.log2(cs) | 0
+            /** @internal */
             this._coordMask = (cs - 1) | 0
+            /** @internal */
             this._coordsToChunkIndexes = chunkCoordsToIndexesPowerOfTwo
+            /** @internal */
             this._coordsToChunkLocals = chunkCoordsToLocalsPowerOfTwo
         }
     }
@@ -316,7 +354,7 @@ var manualErr = 'Set `noa.world.manuallyControlChunkLoading` if you need this AP
  * 
 */
 
-
+/** @internal */
 World.prototype.tick = function () {
     var tickStartTime = performance.now()
 
@@ -388,6 +426,7 @@ World.prototype.tick = function () {
 }
 
 
+/** @internal */
 World.prototype.render = function () {
     // on render, quickly process the high-priority meshing queue
     // to help avoid flashes of background while neighboring chunks update
@@ -398,6 +437,7 @@ World.prototype.render = function () {
 }
 
 
+/** @internal */
 World.prototype._getChunkByCoords = function (x, y, z) {
     // let internal modules request a chunk object
     var [i, j, k] = this._coordsToChunkIndexes(x, y, z)
@@ -879,6 +919,7 @@ function makeDistanceTestFunction(xsize, ysize) {
  * 
 */
 
+/** @internal */
 World.prototype.report = function () {
     console.log('World report - playerChunkLoaded: ', this.playerChunkLoaded)
     _report(this, '  known:     ', this._chunksKnown.arr, true)

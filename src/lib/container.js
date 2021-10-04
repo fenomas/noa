@@ -1,3 +1,7 @@
+/** 
+ * The Container class is found at [[Container | `noa.container`]].
+ * @module noa.container
+ */
 
 import { EventEmitter } from 'events'
 import { MicroGameShell } from 'micro-game-shell'
@@ -19,47 +23,40 @@ import { MicroGameShell } from 'micro-game-shell'
 
 export class Container extends EventEmitter {
 
-    /** @internal @prop _noa */
-    /** @internal @prop _shell */
-
-    /** The game's DOM element container
-     * @prop element
-    */
-
-    /** The `canvas` element that the game will draw into
-     * @prop canvas
-    */
-
-    /** Whether the browser supports pointerLock. Read-only!
-     * @prop supportsPointerLock
-    */
-
-    /** Whether the user's pointer is within the game area. Read-only!
-     * @prop pointerInGame
-    */
-
-    /** Whether the game is focused. Read-only!
-     * @prop isFocused
-    */
-
-    /** Gets the current state of pointerLock. Read-only!
-     * @prop hasPointerLock
-    */
-
-
-
     /** @internal */
     constructor(noa, opts) {
         super()
-
         opts = opts || {}
-        this._noa = noa
 
+        /** 
+         * @internal
+         * @type {import('../index').Engine}
+        */
+        this.noa = noa
+
+        /** The game's DOM element container */
         this.element = opts.domElement || createContainerDiv()
+
+        /** The `canvas` element that the game will draw into */
         this.canvas = getOrCreateCanvas(this.element)
+
+        /** Whether the browser supports pointerLock. @readonly */
+        this.supportsPointerLock = false
+
+        /** Whether the user's pointer is within the game area. @readonly */
+        this.pointerInGame = false
+
+        /** Whether the game is focused. @readonly */
+        this.isFocused = !!document.hasFocus()
+
+        /** Gets the current state of pointerLock. @readonly */
+        this.hasPointerLock = false
+
+
 
         // shell manages tick/render rates, and pointerlock/fullscreen
         var pollTime = 10
+        /** @internal */
         this._shell = new MicroGameShell(this.element, pollTime)
         this._shell.tickRate = opts.tickRate
         this._shell.maxRenderRate = opts.maxRenderRate
@@ -67,11 +64,6 @@ export class Container extends EventEmitter {
         this._shell.stickyFullscreen = opts.stickyFullscreen
 
 
-        // mouse state and feature detection
-        this.supportsPointerLock = false
-        this.pointerInGame = false
-        this.isFocused = !!document.hasFocus()
-        this.hasPointerLock = false
 
         // core timing events
         this._shell.onTick = noa.tick.bind(noa)

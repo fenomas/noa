@@ -1,6 +1,11 @@
+/** 
+ * The Physics class is found at [[Physics | `noa.physics`]].
+ * @module noa.physics
+ */
+
 
 import { Physics as VoxelPhysics } from 'voxel-physics-engine'
-// import { Physics } from '../../../../npm-modules/voxel-physics-engine'
+// import { Physics as VoxelPhysics } from '../../../../npm-modules/voxel-physics-engine'
 
 
 

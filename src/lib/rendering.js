@@ -1,3 +1,8 @@
+/** 
+ * The Rendering class is found at [[Rendering | `noa.rendering`]].
+ * @module noa.rendering
+ */
+
 
 var glvec3 = require('gl-vec3')
 
@@ -69,30 +74,34 @@ var defaults = {
 
 export class Rendering {
 
-    /** @internal @prop _scene */
-    /** @internal @prop _engine */
-    /** @internal @prop _octree */
-    /** @internal @prop _octreeManager */
-
     /** @internal */
     constructor(noa, opts, canvas) {
-
-        this.noa = noa
         opts = Object.assign({}, defaults, opts)
+        /** @internal */
+        this.noa = noa
 
         // settings
+        /** Whether to redraw the screen when the game is resized while paused */
         this.renderOnResize = !!opts.renderOnResize
 
         // internals
+        /** @internal */
         this.useAO = !!opts.useAO
+        /** @internal */
         this.aoVals = opts.AOmultipliers
+        /** @internal */
         this.revAoVal = opts.reverseAOmultiplier
+        /** @internal */
         this.meshingCutoffTime = 6 // ms
 
         // set up babylon scene
+        /** @internal */
         this._scene = null
+        /** @internal */
         this._engine = null
+        /** @internal */
         this._octree = null
+        /** @internal */
         this._octreeManager = null
         initScene(this, canvas, opts)
 
@@ -157,15 +166,13 @@ function initScene(self, canvas, opts) {
  */
 
 
-/**
- * The Babylon `scene` object representing the game world.
- * @member
- */
+/** The Babylon `scene` object representing the game world. */
 Rendering.prototype.getScene = function () {
     return this._scene
 }
 
 // per-tick listener for rendering-related stuff
+/** @internal */
 Rendering.prototype.tick = function (dt) {
     // nothing here at the moment
 }
@@ -173,7 +180,7 @@ Rendering.prototype.tick = function (dt) {
 
 
 
-
+/** @internal */
 Rendering.prototype.render = function () {
     profile_hook('start')
     updateCameraForRender(this)
@@ -189,12 +196,13 @@ Rendering.prototype.render = function () {
 }
 
 
+/** @internal */
 Rendering.prototype.postRender = function () {
     // nothing currently
 }
 
 
-
+/** @internal */
 Rendering.prototype.resize = function () {
     this._engine.resize()
     if (this.noa._paused && this.renderOnResize) {
@@ -203,7 +211,7 @@ Rendering.prototype.resize = function () {
 }
 
 
-
+/** @internal */
 Rendering.prototype.highlightBlockFace = function (show, posArr, normArr) {
     var m = getHighlightMesh(this)
     if (show) {
@@ -294,6 +302,15 @@ Rendering.prototype.postMaterialCreationHook = function (mat) { }
 
 
 
+/*
+ *
+ *   INTERNALS
+ *
+ */
+
+
+
+
 
 /*
  *
@@ -302,11 +319,12 @@ Rendering.prototype.postMaterialCreationHook = function (mat) { }
  *
  * 
  */
-
+/** @internal */
 Rendering.prototype.prepareChunkForRendering = function (chunk) {
     // currently no logic needed here, but I may need it again...
 }
 
+/** @internal */
 Rendering.prototype.disposeChunkForRendering = function (chunk) {
     // nothing currently
 }
@@ -316,19 +334,8 @@ Rendering.prototype.disposeChunkForRendering = function (chunk) {
 
 
 
-
-
-
-/*
- *
- *   INTERNALS
- *
- */
-
-
-
 // change world origin offset, and rebase everything with a position
-
+/** @internal */
 Rendering.prototype._rebaseOrigin = function (delta) {
     var dvec = new Vector3(delta[0], delta[1], delta[2])
 
@@ -447,7 +454,7 @@ function getHighlightMesh(rendering) {
  *      sanity checks:
  * 
  */
-
+/** @internal */
 Rendering.prototype.debug_SceneCheck = function () {
     var meshes = this._scene.meshes
     var dyns = this._octree.dynamicContent
@@ -512,6 +519,8 @@ Rendering.prototype.debug_SceneCheck = function () {
     return 'done.'
 }
 
+
+/** @internal */
 Rendering.prototype.debug_MeshCount = function () {
     var ct = {}
     this._scene.meshes.forEach(m => {

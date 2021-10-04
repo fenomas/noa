@@ -1,8 +1,13 @@
+/** 
+ * The ECS manager, found at [[Entities | `noa.entities`]] or [[Entities | `noa.ents`]].
+ * @module noa.entities
+ */
 
-import vec3 from 'gl-vec3'
+
 import ECS from 'ent-comp'
 // var ECS = require('../../../../npm-modules/ent-comp')
 
+import vec3 from 'gl-vec3'
 import { updatePositionExtents } from '../components/position'
 import { setPhysicsFromPosition } from '../components/physics'
 
@@ -35,148 +40,133 @@ var defaultOptions = {
 
 export class Entities extends ECS {
 
-    /** @internal @prop noa */
-    /** @internal @prop cameraSmoothed */
-
-    // declare some accessors that will get made later
-
-    /**
-     * Returns whether the entity has a physics body
-     * @type {(id:number) => boolean}
-     * @prop hasPhysics
-    */
-
-    /**
-     * Returns whether the entity has a mesh
-     * @type {(id:number) => boolean}
-     * @prop hasMesh
-    */
-
-    /**
-     * Returns whether the entity has a position
-     * @type {(id:number) => boolean}
-     * @prop hasPosition
-    */
-
-    /**
-     * Returns the entity's position component state
-     * @type {(id:number) => {
-     *      position: number[], width: number, height: number,
-     *      _localPosition: any, _renderPosition: any, _extents: any,
-     * }}
-     * @prop getPositionData
-    */
-
-    /**
-     * Returns the entity's position vector.
-     * Note, will throw if the entity doesn't have the position component!
-     * @type {(id:number) => number[]}
-     * @prop getPosition
-    */
-
-    /**
-     * Returns the entity's `physics` component state.
-     * @type {(id:number) => { body:any }}
-     * @prop getPhysics
-    */
-
-    /**
-     * Returns the entity's physics body
-     * Note, will throw if the entity doesn't have the position component!
-     * @type {(id:number) => { any }}
-     * @prop getPhysicsBody
-    */
-
-    /**
-     * Returns the entity's `mesh` component state
-     * @type {(id:number) => {mesh:any, offset:number[]}}
-     * @prop getMeshData
-    */
-
-    /**
-     * Returns the entity's `movement` component state
-     * @type {(id:number) => import('../components/movement').MovementState}
-     * @prop getMovement
-    */
-
-    /**
-     * Returns the entity's `collideTerrain` component state
-     * @type {(id:number) => {callback: function}}
-     * @prop etCollideTerrain
-    */
-
-    /**
-     * Returns the entity's `collideEntities` component state
-     * @type {(id:number) => {
-     *      cylinder:boolean, collideBits:number, 
-     *      collideMask:number, callback: function}}
-     * @prop getCollideEntities
-    */
-
-    /** 
-     * A hash of the names of all registered components.
-     * @type {Object<string, string>}
-     * @prop names
-    */
-
 
     /** @internal */
     constructor(noa, opts) {
         super()
-
-        this.noa = noa
         opts = Object.assign({}, defaultOptions, opts)
-
-        // properties
-        /** Hash containing the component names of built-in components. */
-        this.names = {}
-
         // optional arguments to supply to component creation functions
         var componentArgs = {
             'shadow': opts.shadowDistance,
         }
 
-        // Bundler magic to import everything in the ../components directory
-        // each component module exports a default function: (noa) => compDefinition
-        //@ts-expect-error
-        var reqContext = require.context('../components/', false, /\.js$/)
-        for (var name of reqContext.keys()) {
-            // convert name ('./foo.js') to bare name ('foo')
-            var bareName = /\.\/(.*)\.js/.exec(name)[1]
-            var arg = componentArgs[bareName] || undefined
-            var compFn = reqContext(name)
-            if (compFn.default) compFn = compFn.default
-            var compDef = compFn(noa, arg)
-            var comp = this.createComponent(compDef)
-            this.names[bareName] = comp
-        }
+        /** 
+         * @internal
+         * @type {import('../index').Engine}
+        */
+        this.noa = noa
 
-        // create some ECS state accessors
-        // (these are moderately faster than the general case APIs)
+        /** Hash containing the component names of built-in components.
+         * @type {Object.<string, string>}
+        */
+        this.names = {}
 
-        // general
-        this.hasPhysics = this.getComponentAccessor(this.names.physics)
-        this.cameraSmoothed = this.getComponentAccessor(this.names.smoothCamera)
-        this.hasPosition = this.getComponentAccessor(this.names.position)
-        this.hasMesh = this.getComponentAccessor(this.names.mesh)
-        this.getMeshData = this.getStateAccessor(this.names.mesh)
+        // does bundler magic to import all compontents, and call
+        // `ents.createComponent` on them
+        importLocalComponents(this, componentArgs, this.createComponent)
 
-        // position
+
+        /*
+         *
+         *
+         * 
+         *          ENTITY ACCESSORS
+         *
+         * A whole bunch of getters and such for accessing component state.
+         * These are moderately faster than `ents.getState(whatever)`.
+         * 
+         * 
+         * 
+        */
+
+        // internal use:
         var getPos = this.getStateAccessor(this.names.position)
+        var getPhys = this.getStateAccessor(this.names.physics)
+
+        /** @internal */
+        this.cameraSmoothed = this.getComponentAccessor(this.names.smoothCamera)
+
+
+        /**
+         * Returns whether the entity has a physics body
+         * @param {number} id
+         * @returns {boolean}
+        */
+        this.hasPhysics = this.getComponentAccessor(this.names.physics)
+
+        /**
+         * Returns whether the entity has a position
+         * @type {(id:number) => boolean}
+        */
+        this.hasPosition = this.getComponentAccessor(this.names.position)
+
+        /**
+         * Returns the entity's position component state
+         * @type {(id:number) => {
+         *      position: number[], width: number, height: number,
+         *      _localPosition: any, _renderPosition: any, _extents: any,
+         * }}
+        */
         this.getPositionData = getPos
+
+        /**
+         * Returns the entity's position vector.
+         * Note, will throw if the entity doesn't have the position component!
+         * @type {(id:number) => number[]}
+        */
         this.getPosition = (id) => getPos(id).position
 
-        // physics
-        var getPhys = this.getStateAccessor(this.names.physics)
+        /**
+         * Returns the entity's `physics` component state.
+         * @type {(id:number) => { body:any }}
+        */
         this.getPhysics = getPhys
+
+        /**
+         * Returns the entity's physics body
+         * Note, will throw if the entity doesn't have the position component!
+         * @type {(id:number) => { any }}
+        */
         this.getPhysicsBody = (id) => getPhys(id).body
 
-        // misc
+        /**
+         * Returns whether the entity has a mesh
+         * @type {(id:number) => boolean}
+        */
+        this.hasMesh = this.getComponentAccessor(this.names.mesh)
+
+        /**
+         * Returns the entity's `mesh` component state
+         * @type {(id:number) => {mesh:any, offset:number[]}}
+        */
+        this.getMeshData = this.getStateAccessor(this.names.mesh)
+
+        /**
+         * Returns the entity's `movement` component state
+         * @type {(id:number) => import('../components/movement').MovementState}
+        */
         this.getMovement = this.getStateAccessor(this.names.movement)
+
+        /**
+         * Returns the entity's `collideTerrain` component state
+         * @type {(id:number) => {callback: function}}
+        */
         this.getCollideTerrain = this.getStateAccessor(this.names.collideTerrain)
+
+        /**
+         * Returns the entity's `collideEntities` component state
+         * @type {(id:number) => {
+         *      cylinder:boolean, collideBits:number, 
+         *      collideMask:number, callback: function}}
+        */
         this.getCollideEntities = this.getStateAccessor(this.names.collideEntities)
 
-        // pairwise collideEntities event - this is for client to override
+
+        /**
+         * Pairwise collideEntities event - assign your own function to this 
+         * property if you want to handle entity-entity overlap events.
+         * @type {(id1:number, id2:number) => void}
+         */
         this.onPairwiseEntityCollision = function (id1, id2) { }
     }
 
@@ -435,3 +425,20 @@ function extentsOverlap(extA, extB) {
     return true
 }
 
+
+// Bundler magic to import everything in the ../components directory
+// each component module exports a default function: (noa) => compDefinition
+function importLocalComponents(ents, args, createCompFn) {
+    //@ts-expect-error
+    var reqContext = require.context('../components/', false, /\.js$/)
+    for (var name of reqContext.keys()) {
+        // convert name ('./foo.js') to bare name ('foo')
+        var bareName = /\.\/(.*)\.js/.exec(name)[1]
+        var arg = args[bareName] || undefined
+        var compFn = reqContext(name)
+        if (compFn.default) compFn = compFn.default
+        var compDef = compFn(ents.noa, arg)
+        var comp = createCompFn(compDef)
+        ents.names[bareName] = comp
+    }
+}

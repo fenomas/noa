@@ -45,8 +45,11 @@ declare module "ent-comp" {
         */
         components: {};
         comps: {};
+        /** @internal */
         _storage: {};
+        /** @internal */
         _systems: any[];
+        /** @internal */
         _renderSystems: any[];
         /**
          * Creates a new entity id (currently just an incrementing integer).

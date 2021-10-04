@@ -1,4 +1,7 @@
-/** @internal */ /** works around typedoc bug #842 */
+/** 
+ * @module
+ * @internal
+ */
 
 import { LocationQueue } from './util'
 

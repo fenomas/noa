@@ -1,4 +1,7 @@
-/** @internal */ /** works around typedoc bug #842 */
+/** 
+ * @module 
+ * @internal exclude this file from API docs 
+*/
 
 
 // helper to swap item to end and pop(), instead of splice()ing

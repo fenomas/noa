@@ -4,15 +4,12 @@
         "src/index.js",
         "src/components/*.js",
     ],
-    "exclude": [
-        "node_modules",
-    ],
     "compilerOptions": {
         // output
         "outDir": "./dist",
         "target": "es5",
         "declaration": true,
-        "emitDeclarationOnly": true,
+        // "emitDeclarationOnly": true,
         "rootDir": ".",
         // settings
         "allowJs": true,

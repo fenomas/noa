@@ -2,8 +2,11 @@ declare module "events" {
     export = EventEmitter;
     function EventEmitter(): void;
     class EventEmitter {
+        /** @internal */
         _events: any;
+        /** @internal */
         _eventsCount: number;
+        /** @internal */
         _maxListeners: number;
         setMaxListeners(n: any): EventEmitter;
         getMaxListeners(): any;
