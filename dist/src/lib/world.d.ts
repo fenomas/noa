@@ -130,8 +130,10 @@ export class World extends EventEmitter {
      *
      * Both arguments can be numbers (number of voxels), or arrays like:
      * `[horiz, vert]` specifying different horizontal and vertical distances.
+     * @param {number | number[]} addDist
+     * @param {number | number[]} remDist
      */
-    setAddRemoveDistance(addDist?: number, remDist?: number): void;
+    setAddRemoveDistance(addDist?: number | number[], remDist?: number | number[]): void;
     /** Tells noa to discard voxel data within a given `AABB` (e.g. because
      * the game client received updated data from a server).
      * The engine will mark all affected chunks for disposal, and will later emit

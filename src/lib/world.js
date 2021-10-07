@@ -268,6 +268,8 @@ World.prototype.setChunkData = function (id, array, userData) {
  * 
  * Both arguments can be numbers (number of voxels), or arrays like:
  * `[horiz, vert]` specifying different horizontal and vertical distances.
+ * @param {number | number[]} addDist
+ * @param {number | number[]} remDist
  */
 World.prototype.setAddRemoveDistance = function (addDist = 2, remDist = 3) {
     var addArr = Array.isArray(addDist) ? addDist : [addDist, addDist]
