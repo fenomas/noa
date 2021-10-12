@@ -100,8 +100,6 @@ export class Rendering {
         /** @internal */
         this._engine = null
         /** @internal */
-        this._octree = null
-        /** @internal */
         this._octreeManager = null
         initScene(this, canvas, opts)
 
@@ -457,7 +455,8 @@ function getHighlightMesh(rendering) {
 /** @internal */
 Rendering.prototype.debug_SceneCheck = function () {
     var meshes = this._scene.meshes
-    var dyns = this._octree.dynamicContent
+    var octree = this._scene._selectionOctree
+    var dyns = octree.dynamicContent
     var octs = []
     var numOcts = 0
     var numSubs = 0
@@ -467,7 +466,7 @@ Rendering.prototype.debug_SceneCheck = function () {
         if (mat.subMaterials) mat.subMaterials.forEach(mat => allmats.push(mat))
         else allmats.push(mat)
     })
-    this._octree.blocks.forEach(function (block) {
+    octree.blocks.forEach(function (block) {
         numOcts++
         block.entries.forEach(m => octs.push(m))
     })

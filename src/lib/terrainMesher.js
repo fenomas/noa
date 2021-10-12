@@ -45,11 +45,14 @@ function TerrainMesher(noa) {
 
     // add any properties that will get used for meshing
     this.initChunk = function (chunk) {
-        chunk._terrainMeshes = []
+        chunk._terrainMeshes.length = 0
     }
 
 
-    // meshing entry point and high-level flow
+    /**
+     * meshing entry point and high-level flow
+     * @param {Chunk} chunk 
+     */
     this.meshChunk = function (chunk, matGetter, colGetter, ignoreMaterials, useAO, aoVals, revAoVal) {
         profile_hook('start')
 
@@ -70,7 +73,7 @@ function TerrainMesher(noa) {
         profile_hook('copy')
 
         // greedy mesher creates big arrays of geometry data
-        var edgesOnly = chunk.isFull || chunk.isEmpty
+        var edgesOnly = chunk._isFull || chunk._isEmpty
         var geomData = greedyMesher.mesh(voxels, mats, cols, ao, vals, rev, edgesOnly)
         profile_hook('geom')
 

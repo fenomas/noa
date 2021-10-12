@@ -49,6 +49,7 @@ function Chunk(noa, requestID, ci, cj, ck, size, dataArray) {
     this._objectsDirty = false
 
     // inits state of terrain / object meshing
+    this._terrainMeshes = []
     noa._terrainMesher.initChunk(this)
     noa._objectMesher.initChunk(this)
     this._isFull = false

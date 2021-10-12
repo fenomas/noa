@@ -942,8 +942,8 @@ function _report(world, name, arr, ext) {
         if (!chunk) return
         exist++
         remeshes.push(chunk._timesMeshed)
-        if (chunk.isFull) full++
-        if (chunk.isEmpty) empty++
+        if (chunk._isFull) full++
+        if (chunk._isEmpty) empty++
         if (chunk._neighborCount === 26) surrounded++
     })
     var out = arr.length.toString().padEnd(8)
