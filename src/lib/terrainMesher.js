@@ -10,6 +10,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData'
 import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial'
 import { Texture } from '@babylonjs/core/Materials/Textures/texture'
 
+import Chunk from './chunk'
 import { copyNdarrayContents } from './util'
 
 export default TerrainMesher
@@ -225,6 +226,9 @@ var cachedGeometryData = {
  */
 
 function MeshBuilder(noa) {
+    var matCache = {}
+    var multiMatCache = {}
+
 
     // core
     this.build = function (chunk, geomData, ignoreMaterials) {
@@ -312,6 +316,7 @@ function MeshBuilder(noa) {
                 matNum++
             }
             mesh.material = getMultiMatForIDs(matIDsUsed, scene)
+            mesh.onDisposeObservable.add(onMeshDispose)
         }
 
         // done, mesh will be positioned later when added to the scene
@@ -339,27 +344,42 @@ function MeshBuilder(noa) {
 
 
 
-
     //                         Material wrangling
 
 
     function getMultiMatForIDs(matIDs, scene) {
-        var name = 'terrain_multi:' + matIDs.join(',')
-        var multiMat = new MultiMaterial('multimat ' + name, scene)
-        multiMat.subMaterials = matIDs.map(matID => getTerrainMaterial(matID, false))
-        return multiMat
+        var matName = 'terrain_multi:' + matIDs.join(',')
+        if (!multiMatCache[matName]) {
+            var multiMat = new MultiMaterial(matName, scene)
+            multiMat.subMaterials = matIDs.map(matID => getTerrainMaterial(matID, false))
+            multiMatCache[matName] = { multiMat, useCount: 0 }
+        }
+        multiMatCache[matName].useCount++
+        return multiMatCache[matName].multiMat
+    }
+
+    function onMeshDispose(mesh, b, c) {
+        if (!mesh || !mesh.material) return
+        var matName = mesh.material.name
+        if (!multiMatCache[matName]) return
+        mesh.material = null
+        multiMatCache[matName].useCount--
+        if (multiMatCache[matName].useCount > 0) return
+        multiMatCache[matName].multiMat.dispose()
+        mesh._scene.removeMultiMaterial(multiMatCache[matName])
+        delete multiMatCache[matName]
     }
 
     // manage materials/textures to avoid duplicating them
     function getTerrainMaterial(matID, ignore) {
         if (ignore || matID == 0) return noa.rendering.flatMaterial
         var name = 'terrain_mat:' + matID
-        if (!materialCache[name]) {
-            materialCache[name] = makeTerrainMaterial(matID, name)
+        if (!matCache[name]) {
+            matCache[name] = makeTerrainMaterial(matID, name)
         }
-        return materialCache[name]
+        return matCache[name]
     }
-    var materialCache = {}
+
 
 
     // canonical function to make a terrain material
