@@ -348,8 +348,8 @@ export class Entities extends ECS {
     /** 
      * Helper to set up a general entity, and populate with some common components depending on arguments.
     */
-    add(position, width, height, // required
-        mesh, meshOffset, doPhysics, shadow) {
+    add(position = null, width = 1, height = 1,
+        mesh = null, meshOffset = null, doPhysics = false, shadow = false) {
 
         var self = this
 
@@ -358,9 +358,9 @@ export class Entities extends ECS {
 
         // position component
         this.addComponent(eid, this.names.position, {
-            position: position || [0, 0, 0],
+            position: position || vec3.create(),
             width: width,
-            height: height
+            height: height,
         })
 
         // rigid body in physics simulator
