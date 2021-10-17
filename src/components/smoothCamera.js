@@ -3,7 +3,7 @@
 export default function (noa) {
     return {
 
-        name: 'smooth-camera',
+        name: 'smoothCamera',
 
         order: 99,
 

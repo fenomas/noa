@@ -439,6 +439,6 @@ function importLocalComponents(ents, args, createCompFn) {
         if (compFn.default) compFn = compFn.default
         var compDef = compFn(ents.noa, arg)
         var comp = createCompFn(compDef)
-        ents.names[bareName] = comp
+        ents.names[compDef.name] = comp
     }
 }
