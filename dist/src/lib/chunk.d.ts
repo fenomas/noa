@@ -16,6 +16,7 @@ declare class Chunk {
     pos: number[];
     _terrainDirty: boolean;
     _objectsDirty: boolean;
+    _terrainMeshes: any[];
     _isFull: boolean;
     _isEmpty: boolean;
     _neighbors: any;

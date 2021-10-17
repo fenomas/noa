@@ -42,8 +42,6 @@ export class Rendering {
     /** @internal */
     _engine: any;
     /** @internal */
-    _octree: any;
-    /** @internal */
     _octreeManager: any;
     /** The Babylon `scene` object representing the game world. */
     getScene(): any;

@@ -173,6 +173,6 @@ export class Entities extends ECS {
     /**
      * Helper to set up a general entity, and populate with some common components depending on arguments.
     */
-    add(position: any, width: any, height: any, mesh: any, meshOffset: any, doPhysics: any, shadow: any): number;
+    add(position?: any, width?: number, height?: number, mesh?: any, meshOffset?: any, doPhysics?: boolean, shadow?: boolean): number;
 }
 import ECS from "ent-comp";
