@@ -1,9 +1,12 @@
 
 
 export default function (noa) {
+
+    var compName = 'smoothCamera'
+
     return {
 
-        name: 'smoothCamera',
+        name: compName,
 
         order: 99,
 
@@ -20,7 +23,7 @@ export default function (noa) {
             for (var i = 0; i < states.length; i++) {
                 var state = states[i]
                 state.time -= dt
-                if (state.time < 0) noa.ents.removeComponent(state.__id, 'smooth-camera')
+                if (state.time < 0) noa.ents.removeComponent(state.__id, compName)
             }
         },
 
