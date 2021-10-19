@@ -1,6 +1,7 @@
 /**
+ *
  * State object of the `movement` component
- * @class
+ *
 */
 export function MovementState(): void;
 export class MovementState {
@@ -17,11 +18,8 @@ export class MovementState {
     jumpForce: number;
     jumpTime: number;
     airJumps: number;
-    /** @internal */
     _jumpCount: number;
-    /** @internal */
     _currjumptime: number;
-    /** @internal */
     _isJumping: boolean;
 }
 /**
@@ -30,7 +28,6 @@ export class MovementState {
  * Processor checks state and applies movement/friction/jump forces
  * to the entity's physics body.
  * @param {import('..').Engine} noa
- * @internal
 */
 export default function _default(noa: import('..').Engine): {
     name: string;

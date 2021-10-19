@@ -35,10 +35,9 @@ export class Entities extends ECS {
     cameraSmoothed: (id: any) => boolean;
     /**
      * Returns whether the entity has a physics body
-     * @param {number} id
-     * @returns {boolean}
+     * @type {(id:number) => boolean}
     */
-    hasPhysics: (id: any) => boolean;
+    hasPhysics: (id: number) => boolean;
     /**
      * Returns whether the entity has a position
      * @type {(id:number) => boolean}
@@ -46,36 +45,23 @@ export class Entities extends ECS {
     hasPosition: (id: number) => boolean;
     /**
      * Returns the entity's position component state
-     * @type {(id:number) => {
-     *      position: number[], width: number, height: number,
-     *      _localPosition: any, _renderPosition: any, _extents: any,
-     * }}
+     * @type {(id:number) => null | import("../components/position").PositionState}
     */
-    getPositionData: (id: number) => {
-        position: number[];
-        width: number;
-        height: number;
-        _localPosition: any;
-        _renderPosition: any;
-        _extents: any;
-    };
+    getPositionData: (id: number) => null | import("../components/position").PositionState;
     /**
      * Returns the entity's position vector.
-     * Note, will throw if the entity doesn't have the position component!
      * @type {(id:number) => number[]}
     */
     getPosition: (id: number) => number[];
     /**
-     * Returns the entity's `physics` component state.
-     * @param {number} id
-     * @returns { import("../components/physics").PhysicsState }
+     * Get the entity's `physics` component state.
+     * @type {(id:number) => null | import("../components/physics").PhysicsState}
     */
-    getPhysics: (id: any) => any;
+    getPhysics: (id: number) => null | import("../components/physics").PhysicsState;
     /**
      * Returns the entity's physics body
      * Note, will throw if the entity doesn't have the position component!
-     * @param {number} id
-     * @returns { null | import("../components/physics").RigidBody }
+     * @type {(id:number) => null | import("../components/physics").RigidBody}
     */
     getPhysicsBody: (id: number) => null | import("../components/physics").RigidBody;
     /**
@@ -146,7 +132,7 @@ export class Entities extends ECS {
      */
     _rebaseOrigin(delta: any): void;
     /** @internal */
-    _localGetPosition(id: any): any;
+    _localGetPosition(id: any): number[];
     /** @internal */
     _localSetPosition(id: any, pos: any): void;
     /**

@@ -1,4 +1,8 @@
-export default function _default(noa: any): {
+/**
+ * Physics component, stores an entity's physics engbody.
+ * @param {import('..').Engine} noa
+*/
+export default function _default(noa: import('..').Engine): {
     name: string;
     order: number;
     state: PhysicsState;
@@ -15,11 +19,11 @@ export function setPhysicsFromPosition(physState: any, posState: any): void;
  * @prop {number} friction
  * @prop {number} restitution
  * @prop {number} gravityMultiplier
- * @prop {number} autoStep
  * @prop {number} airDrag
  * @prop {number} fluidDrag
- * @prop {function} onCollide
- * @prop {function} onStep
+ * @prop {boolean} autoStep
+ * @prop {null | function} onCollide
+ * @prop {null | function} onStep
  */
 export class PhysicsState {
     /** @type {null | RigidBody} */
@@ -31,9 +35,9 @@ export type RigidBody = {
     friction: number;
     restitution: number;
     gravityMultiplier: number;
-    autoStep: number;
     airDrag: number;
     fluidDrag: number;
-    onCollide: Function;
-    onStep: Function;
+    autoStep: boolean;
+    onCollide: null | Function;
+    onStep: null | Function;
 };

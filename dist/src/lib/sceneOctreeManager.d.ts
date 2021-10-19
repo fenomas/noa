@@ -1,5 +1,4 @@
 export class SceneOctreeManager {
-    /** @internal */
     constructor(rendering: any, blockSize: any);
     rebase: (offset: any) => void;
     includesMesh: (mesh: any) => any;
