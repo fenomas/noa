@@ -1,27 +1,49 @@
+/** 
+ * @module 
+ * @internal 
+ */
 
 import vec3 from 'gl-vec3'
 
 
+
+// definition for this component's state object
+export class PositionState {
+    constructor() {
+        /** Position in global coords (may be low precision) 
+         * @type {null | number[]} */
+        this.position = null
+        this.width = 0.8
+        this.height = 0.8
+
+        /** Precise position in local coords
+         * @type {null | number[]} */
+        this._localPosition = null
+
+        /** [x,y,z] in LOCAL COORDS
+         * @type {null | number[]} */
+        this._renderPosition = null
+
+        /** [lo,lo,lo, hi,hi,hi] in LOCAL COORDS
+         * @type {null | number[]} */
+        this._extents = null
+    }
+}
+
+
+
+
+/**
+ * 	Component holding entity's position, width, and height.
+ *  By convention, entity's "position" is the bottom center of its AABB
+ * 
+ *  Of the various properties, _localPosition is the "real", 
+ *  single-source-of-truth position. Others are derived.
+ *  Local coords are relative to `noa.worldOriginOffset`.
+ * @param {import('..').Engine} noa
+*/
+
 export default function (noa) {
-
-    /**
-     * 
-     * 	Component holding entity's position, width, and height.
-     *  By convention, entity's "position" is the bottom center of its AABB
-     * 
-     *  Of the various properties, _localPosition is the "real", 
-     *  single-source-of-truth position. Others are derived.
-     *  Local coords are relative to `noa.worldOriginOffset`.
-     * 
-     *  Props:
-     *      position: pos in global coords (may be low precision)
-     *      _localPosition: precise pos in local coords
-     *      _renderPosition: [x,y,z] in LOCAL COORDS
-     *      _extents: array [lo, lo, lo, hi, hi, hi] in LOCAL COORDS
-     * 
-     */
-
-
 
     return {
 
@@ -29,15 +51,7 @@ export default function (noa) {
 
         order: 60,
 
-        state: {
-            position: null,
-            width: 0.8,
-            height: 0.8,
-            _localPosition: null,
-            _renderPosition: null,
-            _extents: null,
-        },
-
+        state: new PositionState,
 
         onAdd: function (eid, state) {
             // copy position into a plain array

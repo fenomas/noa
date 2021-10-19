@@ -1,4 +1,7 @@
-/** @module noa.ents.comps.movement */
+/** 
+ * @module
+ * @internal
+ */
 
 import vec3 from 'gl-vec3'
 
@@ -7,8 +10,9 @@ import vec3 from 'gl-vec3'
 
 
 /** 
+ * 
  * State object of the `movement` component
- * @class
+ * 
 */
 export function MovementState() {
     this.heading = 0 // radians
@@ -30,11 +34,8 @@ export function MovementState() {
     this.airJumps = 1
 
     // internal state
-    /** @internal */
     this._jumpCount = 0
-    /** @internal */
     this._currjumptime = 0
-    /** @internal */
     this._isJumping = false
 }
 
@@ -48,7 +49,6 @@ export function MovementState() {
  * Processor checks state and applies movement/friction/jump forces
  * to the entity's physics body. 
  * @param {import('..').Engine} noa
- * @internal
 */
 
 export default function (noa) {
@@ -85,7 +85,6 @@ var zeroVec = vec3.create()
 
 
 /**
- * @internal
  * @param {number} dt 
  * @param {MovementState} state 
  * @param {*} body 

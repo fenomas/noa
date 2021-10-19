@@ -41,6 +41,8 @@
             "src/index.js",
             "src/lib/",
             "src/components/movement.js",
+            "src/components/physics.js",
+            "src/components/position.js",
         ],
         "entryPointStrategy": "expand",
         "excludeInternal": true,
@@ -50,9 +52,12 @@
         "disableSources": true,
         "readme": "docs/api-header.md",
         "intentionallyNotExported": [
-            "RigidBody",
             "ECS",
             "EventEmitter",
+            "MovementState",
+            "PhysicsState",
+            "PositionState",
+            "RigidBody",
         ]
     },
 }

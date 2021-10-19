@@ -11,7 +11,7 @@
     "scripts": {
         "build": "npm run types; npm run docs",
         "types": "tsc",
-        "docs": "typedoc --tsconfig tsdoc-config.json"
+        "docs": "typedoc"
     },
     "author": "Andy Hall (https://fenomas.com)",
     "license": "MIT",
@@ -41,7 +41,7 @@
     "devDependencies": {
         "eslint": "^7.26.0",
         "js-beautify": "^1.13.13",
-        "typedoc": "^0.22.5",
+        "typedoc": "^0.22.6",
         "typescript": "^4.4.3"
     },
     "keywords": [

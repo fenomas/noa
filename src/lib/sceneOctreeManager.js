@@ -23,7 +23,6 @@ import { locationHasher, removeUnorderedListItem } from './util'
 
 export class SceneOctreeManager {
 
-    /** @internal */
     constructor(rendering, blockSize) {
         var scene = rendering._scene
         scene._addComponent(new OctreeSceneComponent(scene))

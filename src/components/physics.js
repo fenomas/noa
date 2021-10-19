@@ -1,3 +1,7 @@
+/** 
+ * @module
+ * @internal
+ */
 
 import vec3 from 'gl-vec3'
 
@@ -9,12 +13,13 @@ import vec3 from 'gl-vec3'
  * @prop {number} friction
  * @prop {number} restitution
  * @prop {number} gravityMultiplier
- * @prop {number} autoStep
  * @prop {number} airDrag
  * @prop {number} fluidDrag
- * @prop {function} onCollide
- * @prop {function} onStep
+ * @prop {boolean} autoStep
+ * @prop {null | function} onCollide
+ * @prop {null | function} onStep
  */
+
 
 export class PhysicsState {
     constructor() {
@@ -24,9 +29,12 @@ export class PhysicsState {
 }
 
 
+/**
+ * Physics component, stores an entity's physics engbody.
+ * @param {import('..').Engine} noa
+*/
 
 export default function (noa) {
-
 
     return {
 

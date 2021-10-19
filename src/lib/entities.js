@@ -79,18 +79,13 @@ export class Entities extends ECS {
          * 
         */
 
-        // internal use:
-        var getPos = this.getStateAccessor(this.names.position)
-        var getPhys = this.getStateAccessor(this.names.physics)
-
         /** @internal */
         this.cameraSmoothed = this.getComponentAccessor(this.names.smoothCamera)
 
 
         /**
          * Returns whether the entity has a physics body
-         * @param {number} id
-         * @returns {boolean}
+         * @type {(id:number) => boolean}
         */
         this.hasPhysics = this.getComponentAccessor(this.names.physics)
 
@@ -102,35 +97,32 @@ export class Entities extends ECS {
 
         /**
          * Returns the entity's position component state
-         * @type {(id:number) => {
-         *      position: number[], width: number, height: number,
-         *      _localPosition: any, _renderPosition: any, _extents: any,
-         * }}
+         * @type {(id:number) => null | import("../components/position").PositionState} 
         */
-        this.getPositionData = getPos
+        this.getPositionData = this.getStateAccessor(this.names.position)
 
         /**
          * Returns the entity's position vector.
-         * Note, will throw if the entity doesn't have the position component!
          * @type {(id:number) => number[]}
         */
-        this.getPosition = (id) => getPos(id).position
+        this.getPosition = (id) => {
+            var state = this.getPositionData(id)
+            return (state) ? state.position : null
+        }
 
         /**
-         * Returns the entity's `physics` component state.
-         * @param {number} id
-         * @returns { import("../components/physics").PhysicsState }
+         * Get the entity's `physics` component state.
+         * @type {(id:number) => null | import("../components/physics").PhysicsState} 
         */
-        this.getPhysics = getPhys
+        this.getPhysics = this.getStateAccessor(this.names.physics)
 
         /**
          * Returns the entity's physics body
          * Note, will throw if the entity doesn't have the position component!
-         * @param {number} id
-         * @returns { null | import("../components/physics").RigidBody }
+         * @type {(id:number) => null | import("../components/physics").RigidBody} 
         */
         this.getPhysicsBody = (id) => {
-            var state = getPhys(id)
+            var state = this.getPhysics(id)
             return (state) ? state.body : null
         }
 
