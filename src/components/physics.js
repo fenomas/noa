@@ -1,6 +1,29 @@
 
 import vec3 from 'gl-vec3'
 
+// Declare Physics types here until physics module gets typified someday
+/**
+ * @typedef {Object} RigidBody
+ * @prop {import('aabb-3d')} aabb
+ * @prop {number} mass
+ * @prop {number} friction
+ * @prop {number} restitution
+ * @prop {number} gravityMultiplier
+ * @prop {number} autoStep
+ * @prop {number} airDrag
+ * @prop {number} fluidDrag
+ * @prop {function} onCollide
+ * @prop {function} onStep
+ */
+
+export class PhysicsState {
+    constructor() {
+        /** @type {null | RigidBody} */
+        this.body = null
+    }
+}
+
+
 
 export default function (noa) {
 
@@ -11,10 +34,7 @@ export default function (noa) {
 
         order: 40,
 
-        state: {
-            body: null,
-        },
-
+        state: new PhysicsState,
 
         onAdd: function (entID, state) {
             state.body = noa.physics.addBody()

@@ -118,16 +118,21 @@ export class Entities extends ECS {
 
         /**
          * Returns the entity's `physics` component state.
-         * @type {(id:number) => { body:any }}
+         * @param {number} id
+         * @returns { import("../components/physics").PhysicsState }
         */
         this.getPhysics = getPhys
 
         /**
          * Returns the entity's physics body
          * Note, will throw if the entity doesn't have the position component!
-         * @type {(id:number) => { any }}
+         * @param {number} id
+         * @returns { null | import("../components/physics").RigidBody }
         */
-        this.getPhysicsBody = (id) => getPhys(id).body
+        this.getPhysicsBody = (id) => {
+            var state = getPhys(id)
+            return (state) ? state.body : null
+        }
 
         /**
          * Returns whether the entity has a mesh
