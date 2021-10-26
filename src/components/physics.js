@@ -18,6 +18,10 @@ import vec3 from 'gl-vec3'
  * @prop {boolean} autoStep
  * @prop {null | function} onCollide
  * @prop {null | function} onStep
+ * @prop {number[]} velocity
+ * @prop {number[]} resting
+ * @prop {boolean} inFluid
+ * 
  */
 
 
