@@ -24,6 +24,10 @@ export function setPhysicsFromPosition(physState: any, posState: any): void;
  * @prop {boolean} autoStep
  * @prop {null | function} onCollide
  * @prop {null | function} onStep
+ * @prop {number[]} velocity
+ * @prop {number[]} resting
+ * @prop {boolean} inFluid
+ *
  */
 export class PhysicsState {
     /** @type {null | RigidBody} */
@@ -40,4 +44,7 @@ export type RigidBody = {
     autoStep: boolean;
     onCollide: null | Function;
     onStep: null | Function;
+    velocity: number[];
+    resting: number[];
+    inFluid: boolean;
 };
