@@ -1,6 +1,6 @@
 {
     "name": "noa-engine",
-    "version": "0.31.0",
+    "version": "0.31.1",
     "description": "Experimental voxel game engine",
     "main": "src/index.js",
     "typings": "dist/src/index.d.ts",
@@ -36,13 +36,13 @@
         "voxel-physics-engine": "^0.11.1"
     },
     "peerDependencies": {
-        "@babylonjs/core": "5.0.0-alpha.48"
+        "@babylonjs/core": "^5.0.0-alpha.48"
     },
     "devDependencies": {
-        "eslint": "^7.26.0",
-        "js-beautify": "^1.13.13",
-        "typedoc": "^0.22.6",
-        "typescript": "^4.4.3"
+        "eslint": "^8.3.0",
+        "js-beautify": "^1.14.0",
+        "typedoc": "^0.22.9",
+        "typescript": "^4.4.4"
     },
     "keywords": [
         "voxel",

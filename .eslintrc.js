@@ -3,9 +3,7 @@ module.exports = {
     "extends": [
         "eslint:recommended",
     ],
-    plugins: [
-        "jsdoc",
-    ],
+    plugins: [],
     "env": {
         "node": true,
         "browser": true,
