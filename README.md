@@ -55,6 +55,7 @@ See [history.md](docs/history.md) for changes and migration for each version.
 
 Recent changes:
 
+ * `v0.32`: Fixes npm versioning issue - no code changes.
  * `v0.31`: 
    * Change the speed of the world! See `noa.timeScale`
    * Now possible to control chunk processing order: `noa.world.chunkSortingDistFn`
@@ -71,10 +72,6 @@ Recent changes:
    * adds option `worldGenWhilePaused`
    * adds option `manuallyControlChunkLoading` and related APIs
    * performance and bug fixes
- * `v0.28`: 
-   * improves swapping between world data sets (see `noa.worldName`).
-   * Removes duplicated voxel padding in each chunk (this means world generation no longer needs to be deterministic!)
- * `v0.27`: adds world origin rebasing - see [positions.md](docs/positions.md)
 
 
 ----

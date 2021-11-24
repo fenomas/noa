@@ -3,6 +3,7 @@
 
 This is a summary of new features and breaking changes in recent `noa` versions.
 
+ * [0.32.0](#0320)
  * [0.31.0](#0310)
  * [0.30.0](#0300)
  * [0.29.0](#0290)
@@ -19,6 +20,9 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 
 ----
+
+### 0.32.0 
+   * Fixes npm versioning issue - no code changes.
 
 ### 0.31.0
 
