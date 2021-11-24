@@ -60,7 +60,7 @@ Recent changes:
    * Now possible to control chunk processing order: `noa.world.chunkSortingDistFn`
    * Much improved type exports and [API docs](https://fenomas.github.io/noa/API/) 
  * `v0.30`: 
-   * Engine now a named class, use `import {Engine} from 'noa-engine'`
+   * Engine now a named export, use `import {Engine} from 'noa-engine'`
    * many performance and size optimizations
    * now generates proper type declarations and API references!
    * can now configure separate vert/horiz values for chunk load distance
@@ -81,6 +81,6 @@ Recent changes:
 
 ## Credits
 
-Made with 🍺 by [Andy Hall](https://fenomas.com), license is MIT.
+Made with 🍺 by [@fenomas](https://fenomas.com), license is [MIT](LICENSE.txt).
 
 Uses [Babylon.js](https://www.babylonjs.com/) for 3D rendering.

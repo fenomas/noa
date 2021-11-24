@@ -26,11 +26,12 @@ This is a summary of new features and breaking changes in recent `noa` versions.
    * Now possible to control chunk processing order: `noa.world.chunkSortingDistFn`
    * Chunk processing will happen more reliably, particularly after switching worlds.
    * Changed how the docs work, and how code comments are arranged for this purpose. See [API docs](https://fenomas.github.io/noa/API/).
+   * Adds more exported types and code hints.
 
 
 ### 0.30.0
 
-   * Engine now a named class, use `import {Engine} from 'noa-engine'`
+   * Engine now a named export, use `import {Engine} from 'noa-engine'`
    * many performance and size optimizations
    * now generates proper type declarations and API references!
    * Adds separate horizontal/vertical add/remove chunk distances in `world`
