@@ -238,7 +238,6 @@ export class Camera {
         this.pitch = Math.max(-maxPitch, Math.min(maxPitch, this.pitch + dy))
 
         vec3.set(this._dirVector, 0, 0, 1)
-        console.log
         var dir = this._dirVector
         var origin = originVector
         vec3.rotateX(dir, dir, origin, this.pitch)
