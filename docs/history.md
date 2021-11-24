@@ -26,6 +26,7 @@ This is a summary of new features and breaking changes in recent `noa` versions.
    * Now possible to control chunk processing order: `noa.world.chunkSortingDistFn`
    * Chunk processing will happen more reliably, particularly after switching worlds.
    * Changed how the docs work, and how code comments are arranged for this purpose. See [API docs](https://fenomas.github.io/noa/API/).
+   * Moves to Babylonjs version 5 (alpha).
    * Adds more exported types and code hints.
 
 
