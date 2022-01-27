@@ -16,13 +16,13 @@ var defaultOptions = {
 }
 
 var defaultBindings = {
-    "forward": ["W", "<up>"],
-    "left": ["A", "<left>"],
-    "backward": ["S", "<down>"],
-    "right": ["D", "<right>"],
+    "forward": ["KeyW", "<up>"],
+    "left": ["KeyA", "<left>"],
+    "backward": ["KeyS", "<down>"],
+    "right": ["KeyD", "<right>"],
     "fire": "<mouse 1>",
-    "mid-fire": ["<mouse 2>", "Q"],
-    "alt-fire": ["<mouse 3>", "E"],
+    "mid-fire": ["<mouse 2>", "KeyQ"],
+    "alt-fire": ["<mouse 3>", "KeyE"],
     "jump": "<space>",
     "sprint": "<shift>",
     "crouch": "<control>",

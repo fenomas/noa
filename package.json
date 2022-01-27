@@ -28,7 +28,7 @@
         "ent-comp": "^0.10.1",
         "events": "^3.3.0",
         "fast-voxel-raycast": "^0.1.1",
-        "game-inputs": "^0.5.0",
+        "game-inputs": "nornagon/game-inputs#a46b3ce67c0bf74ac474662a7cc7273968badbe1",
         "gl-vec3": "^1.1.3",
         "micro-game-shell": "^0.3.0",
         "ndarray": "^1.0.19",
