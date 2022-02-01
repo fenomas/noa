@@ -55,6 +55,8 @@ See [history.md](docs/history.md) for changes and migration for each version.
 
 Recent changes:
 
+ * `v0.33`: 
+   * todo
  * `v0.32`: Fixes npm versioning issue - no code changes.
  * `v0.31`: 
    * Change the speed of the world! See `noa.timeScale`
