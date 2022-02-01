@@ -220,13 +220,13 @@ export class Camera {
 
     applyInputsToCamera() {
         // dx/dy from input state
-        var state = this.noa.inputs.state
-        bugFix(state) // TODO: REMOVE EVENTUALLY    
+        var pointerState = this.noa.inputs.pointerState
+        bugFix(pointerState) // TODO: REMOVE EVENTUALLY    
 
         // convert to rads, using (sens * 0.0066 deg/pixel), like Overwatch
         var conv = 0.0066 * Math.PI / 180
-        var dy = state.dy * this.sensitivityY * conv
-        var dx = state.dx * this.sensitivityX * conv
+        var dy = pointerState.dy * this.sensitivityY * conv
+        var dx = pointerState.dx * this.sensitivityX * conv
         if (this.inverseY) dy = -dy
         if (this.inverseX) dx = -dx
 
@@ -295,14 +295,14 @@ function cameraObstructionDistance(self) {
 // workaround for this Chrome 63 + Win10 bug
 // https://bugs.chromium.org/p/chromium/issues/detail?id=781182
 // later updated to also address: https://github.com/fenomas/noa/issues/153
-function bugFix(state) {
-    var dx = state.dx
-    var dy = state.dy
+function bugFix(pointerState) {
+    var dx = pointerState.dx
+    var dy = pointerState.dy
     var badx = (Math.abs(dx) > 400 && Math.abs(dx / lastx) > 4)
     var bady = (Math.abs(dy) > 400 && Math.abs(dy / lasty) > 4)
     if (badx || bady) {
-        state.dx = lastx
-        state.dy = lasty
+        pointerState.dx = lastx
+        pointerState.dy = lasty
         lastx = (lastx + dx) / 2
         lasty = (lasty + dy) / 2
     } else {

@@ -356,8 +356,8 @@ export class Engine extends EventEmitter {
         profile_hook('tick event')
         profile_hook('end')
         // clear accumulated scroll inputs (mouseMove is cleared on render)
-        var st = this.inputs.state
-        st.scrollx = st.scrolly = st.scrollz = 0
+        var pst = this.inputs.pointerState
+        pst.scrollx = pst.scrolly = pst.scrollz = 0
     }
 
 
@@ -418,7 +418,7 @@ export class Engine extends EventEmitter {
         profile_hook_render('end')
 
         // clear accumulated mouseMove inputs (scroll inputs cleared on render)
-        this.inputs.state.dx = this.inputs.state.dy = 0
+        this.inputs.pointerState.dx = this.inputs.pointerState.dy = 0
     }
 
 
@@ -429,7 +429,7 @@ export class Engine extends EventEmitter {
         this._paused = !!paused
         // when unpausing, clear any built-up mouse inputs
         if (!paused) {
-            this.inputs.state.dx = this.inputs.state.dy = 0
+            this.inputs.pointerState.dx = this.inputs.pointerState.dy = 0
         }
     }
 
