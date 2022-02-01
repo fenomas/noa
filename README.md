@@ -56,7 +56,10 @@ See [history.md](docs/history.md) for changes and migration for each version.
 Recent changes:
 
  * `v0.33`: 
-   * todo
+   * Key binding with `noa.inputs.bind` now uses [KeyboardEvent.code](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code) strings
+   * Binding to mouse buttons now uses `Mouse1`, `Mouse2`..
+   * Mouse move/scroll data (`dx,dy,scrollx,scrolly`) are moved from 
+     `noa.inputs.state` to `noa.inputs.pointerState`
  * `v0.32`: Fixes npm versioning issue - no code changes.
  * `v0.31`: 
    * Change the speed of the world! See `noa.timeScale`
