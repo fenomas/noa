@@ -99,7 +99,7 @@ export class Registry {
         /**
          * Register (by integer ID) a block type and its parameters.
          * 
-         *  `id` param: integer, currently 1..255. This needs to be passed in by the 
+         *  `id` param: integer, currently 1..65535. This needs to be passed in by the 
          *    client because it goes into the chunk data, which someday will get serialized.
          * 
          *  `options` param: Recognized fields for the options object:
