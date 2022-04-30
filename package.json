@@ -28,7 +28,7 @@
         "ent-comp": "^0.10.1",
         "events": "^3.3.0",
         "fast-voxel-raycast": "^0.1.1",
-        "game-inputs": "fenomas/game-inputs#use-key-event-codes",
+        "game-inputs": "^0.6.0",
         "gl-vec3": "^1.1.3",
         "micro-game-shell": "^0.3.0",
         "ndarray": "^1.0.19",
