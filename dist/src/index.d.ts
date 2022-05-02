@@ -74,7 +74,7 @@ export class Engine extends EventEmitter {
     /** The game's max framerate (use `0` for uncapped) */
     maxRenderRate: any;
     /** Inputs manager - abstracts key/mouse input */
-    inputs: import("./lib/inputs").Inputs;
+    inputs: import("game-inputs").GameInputs;
     /** A registry where voxel/material properties are managed */
     registry: Registry;
     /** Manages the world, chunks, and all voxel data */
