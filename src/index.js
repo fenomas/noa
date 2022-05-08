@@ -142,7 +142,8 @@ export class Engine extends EventEmitter {
         /** Child module for managing the game's container, canvas, etc. */
         this.container = new Container(this, opts)
 
-        /** The game's tick rate (ticks per second) 
+        /** The game's tick rate (number of ticks per second) 
+         * @type {number}
          * @readonly 
         */
         this.tickRate = this.container._shell.tickRate
@@ -150,7 +151,9 @@ export class Engine extends EventEmitter {
             get: () => this.container._shell.tickRate
         })
 
-        /** The game's max framerate (use `0` for uncapped) */
+        /** The game's max framerate (use `0` for uncapped)
+         * @type {number}
+         */
         this.maxRenderRate = this.container._shell.maxRenderRate
         Object.defineProperty(this, 'maxRenderRate', {
             get: () => this.container._shell.maxRenderRate,
@@ -211,7 +214,9 @@ export class Engine extends EventEmitter {
         /** Manages the game's camera, view angle, sensitivity, etc. */
         this.camera = new Camera(this, opts)
 
-        /** How far to check for a solid voxel the player is currently looking at */
+        /** How far to check for a solid voxel the player is currently looking at 
+         * @type {number}
+        */
         this.blockTestDistance = opts.blockTestDistance
 
         /** 

@@ -57,7 +57,7 @@ export class Entities extends ECS {
         this.noa = noa
 
         /** Hash containing the component names of built-in components.
-         * @type {Object.<string, string>}
+         * @type {{ [key:string]: string }} 
         */
         this.names = {}
 
