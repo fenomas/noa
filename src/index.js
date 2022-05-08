@@ -12,7 +12,7 @@ import ndarray from 'ndarray'
 import { EventEmitter } from 'events'
 import raycast from 'fast-voxel-raycast'
 
-import { createInputs } from './lib/inputs'
+import { Inputs } from './lib/inputs'
 import { Container } from './lib/container'
 import { Camera } from './lib/camera'
 import { Entities } from './lib/entities'
@@ -158,8 +158,8 @@ export class Engine extends EventEmitter {
         })
 
 
-        /** Inputs manager - abstracts key/mouse input */
-        this.inputs = createInputs(this, opts, this.container.element)
+        /** Manages key and mouse input bindings */
+        this.inputs = new Inputs(this, opts, this.container.element)
 
         /** A registry where voxel/material properties are managed */
         this.registry = new Registry(this, opts)
