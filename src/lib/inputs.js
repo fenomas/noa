@@ -36,14 +36,14 @@ var defaultBindings = {
  * 
  * ```js
  *   defaultBindings: {
- *     "forward": ["KeyW", "ArrowUp"],
+ *     "forward":  ["KeyW", "ArrowUp"],
  *     "backward": ["KeyS", "ArrowDown"],
- *     "left": ["KeyA", "ArrowLeft"],
- *     "right": ["KeyD", "ArrowRight"],
- *     "fire": "Mouse1",
+ *     "left":     ["KeyA", "ArrowLeft"],
+ *     "right":    ["KeyD", "ArrowRight"],
+ *     "fire":     "Mouse1",
  *     "mid-fire": ["Mouse2", "KeyQ"],
  *     "alt-fire": ["Mouse3", "KeyE"],
- *     "jump": "Space",
+ *     "jump":     "Space",
  *   }
  * ```
  */
