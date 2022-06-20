@@ -57,7 +57,6 @@
             "MovementState",
             "PhysicsState",
             "PositionState",
-            "RigidBody",
         ]
     },
 }
