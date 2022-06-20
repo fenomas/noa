@@ -33,7 +33,7 @@
         "micro-game-shell": "^0.5.0",
         "ndarray": "^1.0.19",
         "voxel-aabb-sweep": "^0.5.0",
-        "voxel-physics-engine": "^0.11.1"
+        "voxel-physics-engine": "^0.12.0"
     },
     "peerDependencies": {
         "@babylonjs/core": "^5.2.0"

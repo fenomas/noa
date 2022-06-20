@@ -5,29 +5,10 @@
 
 import vec3 from 'gl-vec3'
 
-// Declare Physics types here until physics module gets typified someday
-/**
- * @typedef {Object} RigidBody
- * @prop {import('aabb-3d')} aabb
- * @prop {number} mass
- * @prop {number} friction
- * @prop {number} restitution
- * @prop {number} gravityMultiplier
- * @prop {number} airDrag
- * @prop {number} fluidDrag
- * @prop {boolean} autoStep
- * @prop {null | function} onCollide
- * @prop {null | function} onStep
- * @prop {number[]} velocity
- * @prop {number[]} resting
- * @prop {boolean} inFluid
- * 
- */
-
 
 export class PhysicsState {
     constructor() {
-        /** @type {null | RigidBody} */
+        /** @type {import('voxel-physics-engine').RigidBody} */
         this.body = null
     }
 }

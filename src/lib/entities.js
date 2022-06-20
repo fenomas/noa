@@ -119,7 +119,7 @@ export class Entities extends ECS {
         /**
          * Returns the entity's physics body
          * Note, will throw if the entity doesn't have the position component!
-         * @type {(id:number) => null | import("../components/physics").RigidBody} 
+         * @type {(id:number) => null | import("voxel-physics-engine").RigidBody} 
         */
         this.getPhysicsBody = (id) => {
             var state = this.getPhysics(id)
