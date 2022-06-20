@@ -423,19 +423,29 @@ function extentsOverlap(extA, extB) {
 }
 
 
-// Bundler magic to import everything in the ../components directory
-// each component module exports a default function: (noa) => compDefinition
 function importLocalComponents(ents, args, createCompFn) {
-    //@ts-expect-error
-    var reqContext = require.context('../components/', false, /\.js$/)
-    for (var name of reqContext.keys()) {
-        // convert name ('./foo.js') to bare name ('foo')
-        var bareName = /\.\/(.*)\.js/.exec(name)[1]
+    let components = {
+        collideEntities: require("../components/collideEntities.js"),
+        collideTerrain: require("../components/collideTerrain.js"),
+        fadeOnZoom: require("../components/fadeOnZoom.js"),
+        followsEntity: require("../components/followsEntity.js"),
+        mesh: require("../components/mesh.js"),
+        movement: require("../components/movement.js"),
+        physics: require("../components/physics.js"),
+        position: require("../components/position.js"),
+        receivesInputs: require("../components/receivesInputs.js"),
+        shadow: require("../components/shadow.js"),
+        smoothCamera: require("../components/smoothCamera.js")
+    }
+
+    Object.keys(components).forEach(function (bareName) {
         var arg = args[bareName] || undefined
-        var compFn = reqContext(name)
+        var compFn = components[bareName]
+
         if (compFn.default) compFn = compFn.default
+
         var compDef = compFn(ents.noa, arg)
         var comp = createCompFn(compDef)
         ents.names[compDef.name] = comp
-    }
+    })
 }
