@@ -3,13 +3,24 @@
  * @module noa.entities
  */
 
-
 import ECS from 'ent-comp'
-// var ECS = require('../../../../npm-modules/ent-comp')
-
 import vec3 from 'gl-vec3'
 import { updatePositionExtents } from '../components/position'
 import { setPhysicsFromPosition } from '../components/physics'
+
+
+// Component definitions
+import collideEntitiesComp from "../components/collideEntities.js"
+import collideTerrainComp from "../components/collideTerrain.js"
+import fadeOnZoomComp from "../components/fadeOnZoom.js"
+import followsEntityComp from "../components/followsEntity.js"
+import meshComp from "../components/mesh.js"
+import movementComp from "../components/movement.js"
+import physicsComp from "../components/physics.js"
+import positionComp from "../components/position.js"
+import receivesInputsComp from "../components/receivesInputs.js"
+import shadowComp from "../components/shadow.js"
+import smoothCameraComp from "../components/smoothCamera.js"
 
 
 
@@ -61,9 +72,30 @@ export class Entities extends ECS {
         */
         this.names = {}
 
-        // does bundler magic to import all compontents, and call
-        // `ents.createComponent` on them
-        importLocalComponents(this, componentArgs, this.createComponent)
+
+        // call `createComponent` on all component definitions, and
+        // store their names in ents.names
+        var compDefs = {
+            collideEntities: collideEntitiesComp,
+            collideTerrain: collideTerrainComp,
+            fadeOnZoom: fadeOnZoomComp,
+            followsEntity: followsEntityComp,
+            mesh: meshComp,
+            movement: movementComp,
+            physics: physicsComp,
+            position: positionComp,
+            receivesInputs: receivesInputsComp,
+            shadow: shadowComp,
+            smoothCamera: smoothCameraComp,
+        }
+
+        Object.keys(compDefs).forEach(bareName => {
+            var arg = componentArgs[bareName] || undefined
+            var compFn = compDefs[bareName]
+            var compDef = compFn(noa, arg)
+            this.names[bareName] = this.createComponent(compDef)
+        })
+
 
 
         /*
@@ -422,30 +454,3 @@ function extentsOverlap(extA, extB) {
     return true
 }
 
-
-function importLocalComponents(ents, args, createCompFn) {
-    let components = {
-        collideEntities: require("../components/collideEntities.js"),
-        collideTerrain: require("../components/collideTerrain.js"),
-        fadeOnZoom: require("../components/fadeOnZoom.js"),
-        followsEntity: require("../components/followsEntity.js"),
-        mesh: require("../components/mesh.js"),
-        movement: require("../components/movement.js"),
-        physics: require("../components/physics.js"),
-        position: require("../components/position.js"),
-        receivesInputs: require("../components/receivesInputs.js"),
-        shadow: require("../components/shadow.js"),
-        smoothCamera: require("../components/smoothCamera.js")
-    }
-
-    Object.keys(components).forEach(function (bareName) {
-        var arg = args[bareName] || undefined
-        var compFn = components[bareName]
-
-        if (compFn.default) compFn = compFn.default
-
-        var compDef = compFn(ents.noa, arg)
-        var comp = createCompFn(compDef)
-        ents.names[compDef.name] = comp
-    })
-}
