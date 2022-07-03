@@ -446,7 +446,7 @@ export class Engine extends EventEmitter {
      * Does not check whether any entities are in the way! 
      */
     setBlock(id, x, y = 0, z = 0) {
-        if (x.length) return this.world.setBlockID(x[0], x[1], x[2])
+        if (x.length) return this.world.setBlockID(id, x[0], x[1], x[2])
         return this.world.setBlockID(id, x, y, z)
     }
 
