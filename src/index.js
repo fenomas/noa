@@ -38,6 +38,7 @@ var PROFILE_RENDER = 0
 var defaultOptions = {
     debug: false,
     silent: false,
+    silentBabylon: false,
     playerHeight: 1.8,
     playerWidth: 0.6,
     playerStart: [0, 10, 0],
@@ -170,8 +171,13 @@ export class Engine extends EventEmitter {
         /** Manages the world, chunks, and all voxel data */
         this.world = new World(this, opts)
 
+        var _consoleLog = console.log
+        if (opts.silentBabylon) console.log = () => { }
+
         /** Rendering manager */
         this.rendering = new Rendering(this, opts, this.container.canvas)
+
+        if (opts.silentBabylon) console.log = _consoleLog
 
         /** Physics engine - solves collisions, properties, etc. */
         this.physics = new Physics(this, opts)
