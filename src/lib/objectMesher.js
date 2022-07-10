@@ -212,6 +212,7 @@ function InstanceManager(noa, mesh) {
     // prepare mesh for rendering
     this.mesh.position.setAll(0)
     this.mesh.parent = noa._objectMesher.rootNode
+    this.mesh.isVisible = true
     noa.rendering.addMeshToScene(this.mesh, false)
     this.mesh.doNotSyncBoundingInfo = true
     this.mesh.alwaysSelectAsActiveMesh = true
@@ -232,7 +233,7 @@ InstanceManager.prototype.dispose = function () {
 
 
 InstanceManager.prototype.addInstance = function (chunk, key, i, j, k, transform, rebaseVec) {
-    if (this.count === this.capacity) expandBuffer(this)
+    maybeExpandBuffer(this)
     var ix = this.count << 4
     this.locToKey[this.count] = key
     this.keyToIndex[key] = ix
@@ -240,7 +241,7 @@ InstanceManager.prototype.addInstance = function (chunk, key, i, j, k, transform
         transform.position.x += (chunk.x - rebaseVec[0]) + i
         transform.position.y += (chunk.y - rebaseVec[1]) + j
         transform.position.z += (chunk.z - rebaseVec[2]) + k
-        transform.resetLocalMatrix()
+        transform.computeWorldMatrix(true)
         var xformArr = transform._localMatrix._m
         copyMatrixData(xformArr, 0, this.buffer, ix)
     } else {
@@ -272,7 +273,7 @@ InstanceManager.prototype.removeInstance = function (chunk, key) {
     }
     this.count--
     this.dirty = true
-    if (this.count < this.capacity * 0.4) contractBuffer(this)
+    maybeContractBuffer(this)
 }
 
 
@@ -286,37 +287,36 @@ InstanceManager.prototype.updateMatrix = function () {
 
 
 
-InstanceManager.prototype.setCapacity = function (size) {
-    this.capacity = size || 0
-    if (!size) {
+InstanceManager.prototype.setCapacity = function (size = 4) {
+    this.capacity = size
+    if (size === 0) {
         this.buffer = null
     } else {
-        var prev = this.buffer
-        this.buffer = new Float32Array(this.capacity * 16)
-        if (prev) {
-            var len = Math.min(prev.length, this.buffer.length)
-            for (var i = 0; i < len; i++) this.buffer[i] = prev[i]
+        var newBuff = new Float32Array(this.capacity * 16)
+        if (this.buffer) {
+            var len = Math.min(this.buffer.length, newBuff.length)
+            for (var i = 0; i < len; i++) newBuff[i] = this.buffer[i]
         }
+        this.buffer = newBuff
     }
     this.mesh.thinInstanceSetBuffer('matrix', this.buffer)
+    this.mesh.thinInstanceCount = this.count
     this.dirty = false
 }
 
 
-function expandBuffer(mgr) {
-    var size = (mgr.capacity < 16) ? 16 : mgr.capacity * 2
+function maybeExpandBuffer(mgr) {
+    if (mgr.count < mgr.capacity) return
+    var size = Math.max(8, mgr.capacity * 2)
     mgr.setCapacity(size)
 }
 
-function contractBuffer(mgr) {
-    var size = (mgr.capacity / 2) | 0
-    if (size < 100) return
-    mgr.setCapacity(size)
-    mgr.locToKey.length = Math.max(mgr.locToKey.length, mgr.capacity)
+function maybeContractBuffer(mgr) {
+    if (mgr.count > mgr.capacity * 0.4) return
+    if (mgr.capacity < 100) return
+    mgr.setCapacity(Math.round(mgr.capacity / 2))
+    mgr.locToKey.length = Math.min(mgr.locToKey.length, mgr.capacity)
 }
-
-
-
 
 
 
