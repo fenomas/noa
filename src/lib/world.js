@@ -106,9 +106,9 @@ export class World extends EventEmitter {
         /** @internal */
         this._chunkSize = opts.chunkSize
         /** @internal */
-        this._chunkAddDistance = [1, 1]
+        this._chunkAddDistance = [2, 2]
         /** @internal */
-        this._chunkRemoveDistance = [1, 1]
+        this._chunkRemoveDistance = [3, 3]
         /** @internal */
         this._addDistanceFn = null
         /** @internal */

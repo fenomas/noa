@@ -151,8 +151,8 @@ Chunk.prototype.set = function (i, j, k, newID) {
 
     var solidityChanged = (solidLookup[oldID] !== solidLookup[newID])
     var opacityChanged = (opaqueLookup[oldID] !== opaqueLookup[newID])
-    var wasTerrain = (!objOld && (oldID !== 0))
-    var nowTerrain = (!objNew && (newID !== 0))
+    var wasTerrain = !objOld && (oldID !== 0)
+    var nowTerrain = !objNew && (newID !== 0)
 
     if (objOld || objNew) this._objectsDirty = true
     if (solidityChanged || opacityChanged || wasTerrain || nowTerrain) {
