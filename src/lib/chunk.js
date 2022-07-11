@@ -177,7 +177,7 @@ Chunk.prototype.set = function (i, j, k, newID) {
                 for (var nk = kmin; nk <= kmax; nk++) {
                     if ((ni | nj | nk) === 0) continue
                     var nab = this._neighbors.get(ni, nj, nk)
-                    if (!nab) return
+                    if (!nab) continue
                     nab._terrainDirty = true
                     this.noa.world._queueChunkForRemesh(nab)
                 }
