@@ -3,60 +3,14 @@
  * @module noa.registry
  */
 
-/*
- *  data structs in the registry:
- *  registry 
- *      blockSolidity:     id -> boolean
- *      blockOpacity:      id -> boolean
- *      blockIsFluid:      id -> boolean
- *      blockMats:         id -> 6x matID  [-x, +x, -y, +y, -z, +z]
- *      blockProps         id -> obj of less-often accessed properties
- *      blockMeshes:       id -> obj/null (custom mesh to instantiate)
- *      blockHandlers      id -> instance of `BlockCallbackHolder` or null 
- *      matIDs             matName -> matID (int)
- *      matData            matID -> { color, alpha, texture, textureAlpha }
-*/
-
 
 var defaults = {
     texturePath: ''
 }
 
-var blockDefaults = {
-    solid: true,
-    opaque: true,
-    fluidDensity: 1.0,
-    viscosity: 0.5,
-}
-
-
 // voxel ID now uses the whole Uint16Array element
 var MAX_BLOCK_ID = (1 << 16) - 1
 
-
-
-
-/* 
- * 
- *      data structures
- *      TODO: move these inside class
- * 
-*/
-
-// lookup arrays for block props and flags - all keyed by blockID
-// fill in first value for id=0, empty space
-var blockSolidity = [false]
-var blockOpacity = [false]
-var blockIsFluid = [false]
-var blockIsObject = [false]
-var blockMats = [0, 0, 0, 0, 0, 0]
-var blockProps = [null]
-var blockMeshes = [null]
-var blockHandlers = [null]
-
-// material data structs
-var matIDs = {} // mat name -> id
-var matData = [null] // mat id -> { color, alpha, texture, textureAlpha }
 
 
 
@@ -78,7 +32,10 @@ var matData = [null] // mat id -> { color, alpha, texture, textureAlpha }
 export class Registry {
 
 
-    /** @internal */
+    /** 
+     * @internal 
+     * @param {import('../index').Engine} noa
+    */
     constructor(noa, opts) {
         opts = Object.assign({}, defaults, opts)
         /** @internal */
@@ -87,47 +44,57 @@ export class Registry {
         /** @internal */
         this._texturePath = opts.texturePath
 
+        /** Maps block face material names to matIDs
+         * @type {Object.<string, number>} */
+        var matIDs = {}
+
+        // lookup arrays for block props and flags - all keyed by blockID
+        // fill in first value for the air block with id=0
+        var blockSolidity = [false]
+        var blockOpacity = [false]
+        var blockIsFluid = [false]
+        var blockIsObject = [false]
+        var blockProps = [null]     // less-often accessed properties
+        var blockMeshes = [null]    // custom mesh objects
+        var blockHandlers = [null]  // block event handlers
+
+        // this one is keyed by `blockID*6 + faceNumber`
+        var blockMats = [0, 0, 0, 0, 0, 0]
+
+        /** 
+         * Lookup array of block face material properties - keyed by matID (not blockID)
+         * @typedef MatDef
+         * @prop {number[]} color
+         * @prop {number} alpha
+         * @prop {string} texture
+         * @prop {boolean} texHasAlpha
+         * @prop {*} renderMat
+         */
+        /** @type {MatDef[]} */
+        var matDefs = []
+
 
         /* 
          * 
          *      Block registration methods
          * 
-         */
+        */
 
 
 
         /**
          * Register (by integer ID) a block type and its parameters.
+         *  `id` param: integer, currently 1..65535. Generally you should 
+         * specify sequential values for blocks, without gaps, but this 
+         * isn't technically required.
          * 
-         *  `id` param: integer, currently 1..65535. This needs to be passed in by the 
-         *    client because it goes into the chunk data, which someday will get serialized.
-         * 
-         *  `options` param: Recognized fields for the options object:
-         * 
-         *  * material: can be:
-         *      * one (String) material name
-         *      * array of 2 names: [top/bottom, sides]
-         *      * array of 3 names: [top, bottom, sides]
-         *      * array of 6 names: [-x, +x, -y, +y, -z, +z]
-         *    If not specified, terrain won't be meshed for the block type
-         *  * solid: (true) solidity for physics purposes
-         *  * opaque: (true) fully obscures neighboring blocks
-         *  * fluid: (false) whether nonsolid block is a fluid (buoyant, viscous..)
-         *  * blockMesh: (null) if specified, noa will create a copy this mesh in the voxel
-         *  * fluidDensity: (1.0) for fluid blocks
-         *  * viscosity: (0.5) for fluid blocks
-         *  * onLoad(): block event handler
-         *  * onUnload(): block event handler
-         *  * onSet(): block event handler
-         *  * onUnset(): block event handler
-         *  * onCustomMeshCreate(): block event handler
+         * @param {number} id - sequential integer ID (from 1)
+         * @param {Partial<BlockOptions>} [options] 
+         * @returns the `id` value specified
          */
-
-        this.registerBlock = function (id, options = null) {
-            if (!options) options = {}
-            blockDefaults.solid = !options.fluid
-            blockDefaults.opaque = !options.fluid
-            var opts = Object.assign({}, blockDefaults, options)
+        this.registerBlock = function (id = 1, options = null) {
+            var defaults = new BlockOptions(options && options.fluid)
+            var opts = Object.assign({}, defaults, options || {})
 
             // console.log('register block: ', id, opts)
             if (id < 1 || id > MAX_BLOCK_ID) throw 'Block id out of range: ' + id
@@ -193,29 +160,32 @@ export class Registry {
         /**
          * Register (by name) a material and its parameters.
          * 
-         * @param name
-         * @param color
-         * @param textureURL
-         * @param texHasAlpha
-         * @param renderMaterial an optional BABYLON material to be used for block faces with this block material
+         * @param {string} name of this material
+         * @param {Partial<MaterialOptions>} [options]
          */
 
-        this.registerMaterial = function (name, color = [1, 1, 1], textureURL = '', texHasAlpha = false, renderMaterial = null) {
-            // console.log('register mat: ', name, color, textureURL)
-            var id = matIDs[name] || matData.length
-            matIDs[name] = id
-            var alpha = 1
-            if (color && color.length == 4) {
-                alpha = color.pop()
+        this.registerMaterial = function (name = '?', options = null) {
+            // catch calls to earlier signature
+            if (Array.isArray(options) || arguments[2]) {
+                throw 'This API changed signatures in v0.33, please use: `noa.registry.registerMaterial("name", optionsObj)`'
             }
-            matData[id] = {
-                color: color || [1, 1, 1],
-                alpha: alpha,
-                texture: textureURL ? this._texturePath + textureURL : '',
-                textureAlpha: !!texHasAlpha,
-                renderMat: renderMaterial || null,
+
+            var opts = Object.assign(new MaterialOptions(), options || {})
+            var matID = matIDs[name] || matDefs.length
+            matIDs[name] = matID
+
+            var alpha = 1.0
+            var color = opts.color || [1.0, 1.0, 1.0]
+            if (color.length === 4) alpha = color.pop()
+
+            matDefs[matID] = {
+                color,
+                alpha,
+                texture: opts.textureURL ? this._texturePath + opts.textureURL : '',
+                texHasAlpha: !!opts.texHasAlpha,
+                renderMat: opts.renderMaterial,
             }
-            return id
+            return matID
         }
 
 
@@ -269,17 +239,17 @@ export class Registry {
 
         // look up material color given ID
         this.getMaterialColor = function (matID) {
-            return matData[matID].color
+            return matDefs[matID].color
         }
 
         // look up material texture given ID
         this.getMaterialTexture = function (matID) {
-            return matData[matID].texture
+            return matDefs[matID].texture
         }
 
         // look up material's properties: color, alpha, texture, textureAlpha
         this.getMaterialData = function (matID) {
-            return matData[matID]
+            return matDefs[matID]
         }
 
 
@@ -316,8 +286,8 @@ export class Registry {
         // - i.e. white if it has a texture, color otherwise
         /** @internal */
         this._getMaterialVertexColor = (matID) => {
-            if (matData[matID].texture) return white
-            return matData[matID].color
+            if (matDefs[matID].texture) return white
+            return matDefs[matID].color
         }
         var white = [1, 1, 1]
 
@@ -332,8 +302,8 @@ export class Registry {
          */
 
         // add a default material and set ID=1 to it
-        // note that registering new block data overwrites the old
-        this.registerMaterial('dirt', [0.4, 0.3, 0], null)
+        // this is safe since registering new block data overwrites the old
+        this.registerMaterial('dirt', { color: [0.4, 0.3, 0] })
         this.registerBlock(1, { material: 'dirt' })
 
 
@@ -368,4 +338,69 @@ function BlockCallbackHolder(opts) {
     this.onSet = opts.onSet || null
     this.onUnset = opts.onUnset || null
     this.onCustomMeshCreate = opts.onCustomMeshCreate || null
+}
+
+
+
+
+/**
+ * Default options when registering a block type
+ */
+function BlockOptions(isFluid = false) {
+    /** Solidity for physics purposes */
+    this.solid = (isFluid) ? false : true
+    /** Whether the block fully obscures neighboring blocks */
+    this.opaque = (isFluid) ? false : true
+    /** whether a nonsolid block is a fluid (buoyant, viscous..) */
+    this.fluid = false
+    /** The block material(s) for this voxel's faces. May be:
+     *   * one (String) material name
+     *   * array of 2 names: [top/bottom, sides]
+     *   * array of 3 names: [top, bottom, sides]
+     *   * array of 6 names: [-x, +x, -y, +y, -z, +z]
+     * @type {string|string[]}
+    */
+    this.material = null
+    /** Specifies a custom mesh for this voxel, instead of terrain  */
+    this.blockMesh = null
+    /** Fluid parameter for fluid blocks */
+    this.fluidDensity = 1.0
+    /** Fluid parameter for fluid blocks */
+    this.viscosity = 0.5
+    /** @type {(x:number, y:number, z:number) => void} */
+    this.onLoad = null
+    /** @type {(x:number, y:number, z:number) => void} */
+    this.onUnload = null
+    /** @type {(x:number, y:number, z:number) => void} */
+    this.onSet = null
+    /** @type {(x:number, y:number, z:number) => void} */
+    this.onUnset = null
+    /** @type {(mesh:TransformNode, x:number, y:number, z:number) => void} */
+    this.onCustomMeshCreate = null
+}
+
+/** @typedef {import('@babylonjs/core/Meshes').TransformNode} TransformNode */
+
+
+/**
+ * Default options when registering a Block Material
+ */
+function MaterialOptions() {
+    /** An array of 0..1 floats, either [R,G,B] or [R,G,B,A]
+     * @type {number[]}
+     */
+    this.color = null
+    /** Filename of texture image, if any
+     * @type {string}
+     */
+    this.textureURL = null
+    /** Whether the texture image has alpha */
+    this.texHasTransparency = false
+    /** Whether the texture image has alpha */
+    this.texHasAlpha = false
+    /**
+     * An optional Babylon.js `Material`. If specified, terrain for this voxel
+     * will be rendered with the supplied material (this can impact performance).
+     */
+    this.renderMaterial = null
 }

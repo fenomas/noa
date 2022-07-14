@@ -24,6 +24,7 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 ### 0.33.0
 
+   * Signature of `noa.registry.registerMaterial` changed to take an options object
    * Modernization updates to `noa.inputs`. Breaking changes:
    * Key bindings should now use [KeyboardEvent.code](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code) strings, like `KeyA`, `Shift`, etc.
    * Mouse button bindings should use `Mouse1`, `Mouse2`..

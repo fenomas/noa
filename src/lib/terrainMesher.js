@@ -398,7 +398,7 @@ function MeshBuilder(noa) {
         if (url) {
             var scene = noa.rendering.getScene()
             var tex = new Texture(url, scene, true, false, Texture.NEAREST_SAMPLINGMODE)
-            if (matData.textureAlpha) tex.hasAlpha = true
+            if (matData.texHasAlpha) tex.hasAlpha = true
             mat.diffuseTexture = tex
         }
         if (matData.alpha < 1) {
