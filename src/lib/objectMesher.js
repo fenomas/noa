@@ -26,6 +26,7 @@ var PROFILE = 0
 */
 
 
+/** @param {import('../index').Engine} noa*/
 function ObjectMesher(noa) {
 
     // transform node for all instance meshes to be parented to

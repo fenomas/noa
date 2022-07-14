@@ -10,7 +10,6 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData'
 import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial'
 import { Texture } from '@babylonjs/core/Materials/Textures/texture'
 
-import Chunk from './chunk'
 import { copyNdarrayContents } from './util'
 
 export default TerrainMesher
@@ -31,6 +30,7 @@ var PROFILE_EVERY = 0
 */
 
 
+/** @param {import('../index').Engine} noa  */
 function TerrainMesher(noa) {
 
     var greedyMesher = new GreedyMesher(noa)
@@ -52,7 +52,7 @@ function TerrainMesher(noa) {
 
     /**
      * meshing entry point and high-level flow
-     * @param {Chunk} chunk 
+     * @param {import('./chunk').default} chunk 
      */
     this.meshChunk = function (chunk, matGetter, colGetter, ignoreMaterials, useAO, aoVals, revAoVal) {
         profile_hook('start')
@@ -121,6 +121,7 @@ function TerrainMesher(noa) {
  * 
 */
 
+/** @param {import('./chunk').default} chunk    */
 function buildPaddedVoxelArray(chunk) {
     var src = chunk.voxels
     var cs = src.shape[0]
@@ -225,6 +226,7 @@ var cachedGeometryData = {
  * 
  */
 
+/** @param {import('../index').Engine} noa  */
 function MeshBuilder(noa) {
     var matCache = {}
     var multiMatCache = {}

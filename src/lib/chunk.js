@@ -28,6 +28,7 @@ export default Chunk
  *
  */
 
+/** @param {import('../index').Engine} noa */
 function Chunk(noa, requestID, ci, cj, ck, size, dataArray) {
     this.noa = noa
     this.isDisposed = false

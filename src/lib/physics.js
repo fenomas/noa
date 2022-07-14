@@ -38,7 +38,10 @@ var defaultOptions = {
 
 export class Physics extends VoxelPhysics {
 
-    /** @internal */
+    /** 
+     * @internal 
+     * @param {import('../index').Engine} noa
+    */
     constructor(noa, opts) {
         opts = Object.assign({}, defaultOptions, opts)
         var world = noa.world
