@@ -5,11 +5,8 @@
 
 import ndarray from 'ndarray'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
-import { SubMesh } from '@babylonjs/core/Meshes/subMesh'
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData'
-import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial'
-import { Texture } from '@babylonjs/core/Materials/Textures/texture'
-
+import { TerrainMatManager } from './terrainMaterials'
 import { copyNdarrayContents } from './util'
 
 export default TerrainMesher
@@ -33,9 +30,9 @@ var PROFILE_EVERY = 0
 /** @param {import('../index').Engine} noa  */
 function TerrainMesher(noa) {
 
-    var greedyMesher = new GreedyMesher(noa)
-    var meshBuilder = new MeshBuilder(noa)
-
+    var terrainMatManager = new TerrainMatManager(noa)
+    var greedyMesher = new GreedyMesher(noa, terrainMatManager)
+    var meshBuilder = new MeshBuilder(noa, terrainMatManager)
 
     /*
      * 
@@ -75,21 +72,20 @@ function TerrainMesher(noa) {
 
         // greedy mesher creates big arrays of geometry data
         var edgesOnly = chunk._isFull || chunk._isEmpty
-        var geomData = greedyMesher.mesh(voxels, mats, cols, ao, vals, rev, edgesOnly)
+        var geomDataSet = greedyMesher.mesh(voxels, mats, cols, ao, vals, rev, edgesOnly)
         profile_hook('geom')
 
-        // builds the babylon mesh that will be added to the scene
-        var mesh = (geomData.numQuads === 0) ? null :
-            meshBuilder.build(chunk, geomData, ignoreMaterials)
+        // build the babylon meshes that will be added to the scene
+        var meshes = meshBuilder.build(chunk, geomDataSet, ignoreMaterials)
         profile_hook('build')
 
         profile_hook('end')
 
         // add to scene and finish
-        if (mesh && mesh.getIndices().length > 0) {
+        meshes.forEach((mesh) => {
             noa.rendering.addMeshToScene(mesh, true, chunk.pos, this)
             chunk._terrainMeshes.push(mesh)
-        }
+        })
     }
 
 
@@ -195,20 +191,23 @@ function allocateVectors(size, posValues, sizeValues, tgtPosValues) {
  * 
 */
 
-var cachedGeometryData = {
-    numQuads: 0,                // how many quads meshed so far
-    materialQuadCounts: {},     // how many quads use each material ID
-    quadMaterials: [1],         // list of which matID each quad used
-    positions: [0.5],           // raw data, 12 positions per quad
-    indices: [1],               // raw data, 6 indexes per quad
-    normals: [0.5],             // raw data, 12 normals per quad
-    colors: [0.5],              // raw data, 16 colors per quad
-    uvs: [0.5],                 // raw data, 8 uvs per quad
-
-    reset: function () {
-        this.numQuads = 0
-        this.materialQuadCounts = {}
-    }
+function GeometryData(terrainID) {
+    this.terrainID = terrainID
+    this.numQuads = 0                // how many quads meshed so far
+    this.quadMaterials = [1]         // list of which matID each quad used
+    this.positions = [0.5]           // raw data, 12 positions per quad
+    this.indices = [1]               // raw data, 6 indexes per quad
+    this.normals = [0.5]             // raw data, 12 normals per quad
+    this.colors = [0.5]              // raw data, 16 colors per quad
+    this.uvs = [0.5]                 // raw data, 8 uvs per quad
+}
+GeometryData.prototype.dispose = function () {
+    this.quadMaterials = null
+    this.positions = null
+    this.indices = null
+    this.normals = null
+    this.colors = null
+    this.uvs = null
 }
 
 
@@ -218,196 +217,62 @@ var cachedGeometryData = {
 
 
 
-
-/*
+/**
  * 
- *  Mesh Builder - consumes all the raw data in geomData to build
- *  Babylon.js mesh/submeshes, ready to be added to the scene
+ * 
+ * 
+ * 
+ *       Mesh Builder - consumes all the raw data in geomData to build
+ *          Babylon.js mesh/submeshes, ready to be added to the scene
+ * 
+ * 
+ * 
+ * 
  * 
  */
 
 /** @param {import('../index').Engine} noa  */
-function MeshBuilder(noa) {
-    var matCache = {}
-    var multiMatCache = {}
+function MeshBuilder(noa, terrainMatManager) {
+
+    // var matCache = {}
+    // var multiMatCache = {}
 
 
     // core
-    this.build = function (chunk, geomData, ignoreMaterials) {
-        var nq = geomData.numQuads
-        var quadCounts = geomData.materialQuadCounts
-
-        // find any used materials that can share the scene default
-        // and move their quad counts to matID 0
-        var matLookup = { '0': '0' }
-        quadCounts['0'] = 0
-        for (var matID in quadCounts) {
-            if (matID === '0') continue
-            if (ignoreMaterials || canUseDefaultMat(matID)) {
-                quadCounts['0'] += quadCounts[matID]
-                quadCounts[matID] = 0
-                matLookup[matID] = '0'
-            } else {
-                matLookup[matID] = matID
-            }
-        }
-
-        // arbitrarily choose a starting offset for quads using each material
-        var matOffsets = {}
-        var currOffset = 0
-        for (var matID2 in quadCounts) {
-            if (quadCounts[matID2] === 0) continue
-            matOffsets[matID2] = currOffset
-            currOffset += quadCounts[matID2]
-        }
-
-        // allocate the typed data arrays we'll hand off to Babylon
-        var pos = new Float32Array(nq * 12)
-        var ind = new Uint16Array(nq * 6)
-        var nor = new Float32Array(nq * 12)
-        var col = new Float32Array(nq * 16)
-        var uvs = new Float32Array(nq * 8)
-
-        // copy data from dataGeom into typed arrays, reordering it as we go
-        // so that geometry sharing the same material is contiguous
-        for (var ix = 0; ix < nq; ix++) {
-            var mergedID = matLookup[geomData.quadMaterials[ix]]
-            var off = matOffsets[mergedID]
-            // note: indices need a flat offset to point to their original data
-            var indexAdjust = (off - ix) * 4
-            copyArraySubset(geomData.positions, ix, pos, off, 12, 0)
-            copyArraySubset(geomData.indices, ix, ind, off, 6, indexAdjust)
-            copyArraySubset(geomData.normals, ix, nor, off, 12, 0)
-            copyArraySubset(geomData.colors, ix, col, off, 16, 0)
-            copyArraySubset(geomData.uvs, ix, uvs, off, 8, 0)
-            matOffsets[mergedID]++
-        }
-
-        // build the mesh and vertexData object
+    this.build = function (chunk, geomDataSet, ignoreMaterials) {
         var scene = noa.rendering.getScene()
-        var name = 'chunk_' + chunk.requestID
-        var mesh = new Mesh(name, scene)
-        var vdat = new VertexData()
-        vdat.positions = pos
-        vdat.indices = ind
-        vdat.normals = nor
-        vdat.colors = col
-        vdat.uvs = uvs
-        vdat.applyToMesh(mesh)
 
-        // array of the materialIDs we need, in stable order
-        var matIDsUsed = Object.keys(matOffsets).sort((a, b) => (a < b) ? -1 : 1)
+        // geometry data is already keyed by terrain type, so build
+        // one mesh per geomData object in the hash
+        var meshes = []
+        for (var key in geomDataSet) {
+            /** @type {GeometryData} */
+            var geomData = geomDataSet[key]
 
-        // assign a material or make a multimaterial
-        if (matIDsUsed.length === 1) {
-            var onlyMatID = matLookup[geomData.quadMaterials[0]]
-            mesh.material = getTerrainMaterial(onlyMatID, ignoreMaterials)
-        } else {
-            // make a multimaterial and define (babylon) submeshes
-            mesh.subMeshes = []
-            var matNum = 0
-            for (var matID4 of matIDsUsed) {
-                // note that offsets are currently at END of their respective spans
-                var qct = quadCounts[matID4]
-                var start = matOffsets[matID4] - qct
-                new SubMesh(
-                    matNum, // index into multmat
-                    start * 12, qct * 12, // vertex start, count - these appear to be used
-                    start * 6, qct * 6, // indices start, length
-                    mesh)
-                matNum++
-            }
-            mesh.material = getMultiMatForIDs(matIDsUsed, scene)
-            mesh.onDisposeObservable.add(onMeshDispose)
+            if (geomData.numQuads === 0) throw '?'
+
+            // the mesh and vertexData object
+            var name = `chunk_${chunk.requestID}_${geomData.terrainID}`
+            var mesh = new Mesh(name, scene)
+            var vdat = new VertexData()
+            vdat.positions = geomData.positions
+            vdat.indices = geomData.indices
+            vdat.normals = geomData.normals
+            vdat.colors = geomData.colors
+            vdat.uvs = geomData.uvs
+            vdat.applyToMesh(mesh)
+
+            // materials wrangled by external module
+            mesh.material = terrainMatManager.getMaterial(geomData.terrainID)
+
+            // done
+            geomData.dispose()
+            meshes.push(mesh)
         }
 
-        // done, mesh will be positioned later when added to the scene
-        return mesh
+        return meshes
     }
 
-    function canUseDefaultMat(matID) {
-        if (noa.registry.getMaterialTexture(matID)) return false
-        var matData = noa.registry.getMaterialData(matID)
-        return (matData.alpha === 1 && !matData.renderMat)
-    }
-
-    function copyArraySubset(src, sbase, tgt, tbase, count, addValue) {
-        var soff = sbase * count
-        var toff = tbase * count
-        for (var i = 0; i < count; i++) {
-            tgt[toff + i] = src[soff + i] + addValue
-        }
-    }
-
-
-
-
-
-
-
-
-    //                         Material wrangling
-
-
-    function getMultiMatForIDs(matIDs, scene) {
-        var matName = 'terrain_multi:' + matIDs.join(',')
-        if (!multiMatCache[matName]) {
-            var multiMat = new MultiMaterial(matName, scene)
-            multiMat.subMaterials = matIDs.map(matID => getTerrainMaterial(matID, false))
-            multiMatCache[matName] = { multiMat, useCount: 0 }
-        }
-        multiMatCache[matName].useCount++
-        return multiMatCache[matName].multiMat
-    }
-
-    function onMeshDispose(mesh, b, c) {
-        if (!mesh || !mesh.material) return
-        var matName = mesh.material.name
-        if (!multiMatCache[matName]) return
-        mesh.material = null
-        multiMatCache[matName].useCount--
-        if (multiMatCache[matName].useCount > 0) return
-        multiMatCache[matName].multiMat.dispose()
-        mesh._scene.removeMultiMaterial(multiMatCache[matName])
-        delete multiMatCache[matName]
-    }
-
-    // manage materials/textures to avoid duplicating them
-    function getTerrainMaterial(matID, ignore) {
-        if (ignore || matID == 0) return noa.rendering.flatMaterial
-        var name = 'terrain_mat:' + matID
-        if (!matCache[name]) {
-            matCache[name] = makeTerrainMaterial(matID, name)
-        }
-        return matCache[name]
-    }
-
-
-
-    // canonical function to make a terrain material
-    function makeTerrainMaterial(id, name) {
-        // if user-specified render material is defined, use it
-        var matData = noa.registry.getMaterialData(id)
-        if (matData.renderMat) return matData.renderMat
-        // otherwise determine which built-in material to use
-        var url = noa.registry.getMaterialTexture(id)
-        var alpha = matData.alpha
-        if (!url && alpha === 1) {
-            // base material is fine for non-textured case, if no alpha
-            return noa.rendering.flatMaterial
-        }
-        var mat = noa.rendering.makeStandardMaterial(name)
-        if (url) {
-            var scene = noa.rendering.getScene()
-            var tex = new Texture(url, scene, true, false, Texture.NEAREST_SAMPLINGMODE)
-            if (matData.texHasAlpha) tex.hasAlpha = true
-            mat.diffuseTexture = tex
-        }
-        if (matData.alpha < 1) {
-            mat.alpha = matData.alpha
-        }
-        return mat
-    }
 }
 
 
@@ -418,6 +283,9 @@ function MeshBuilder(noa) {
 
 
 /*
+ * 
+ * 
+ * 
  *    Greedy voxel meshing algorithm
  *        based initially on algo by Mikola Lysenko:
  *          http://0fps.net/2012/07/07/meshing-minecraft-part-2/
@@ -446,24 +314,26 @@ function MeshBuilder(noa) {
  *          colors:   floats,  0 .. 1
  *          uvs:      floats,  0 .. X/Y/Z
  *        }
+ * 
+ * 
  */
 
-function GreedyMesher(noa) {
+function GreedyMesher(noa, terrainMatManager) {
 
     var maskCache = new Int16Array(16)
     var aomaskCache = new Uint16Array(16)
 
     var solidLookup = noa.registry._solidityLookup
     var opacityLookup = noa.registry._opacityLookup
+    var matIDtoTerrainID = (matID) => terrainMatManager.getTerrainMatId(matID)
 
 
     this.mesh = function (voxels, getMaterial, getColor, doAO, aoValues, revAoVal, edgesOnly) {
         solidLookup = noa.registry._solidityLookup
         opacityLookup = noa.registry._opacityLookup
 
-        // collected geometry data for the current mesh
-        var geomData = cachedGeometryData
-        geomData.reset()
+        // collecion of GeomertryData objects, keyed by terrain ID
+        var geomDataSet = {}
 
         // how to apply AO packing in first masking function
         var skipReverseAO = (revAoVal === aoValues[0])
@@ -496,7 +366,7 @@ function GreedyMesher(noa) {
 
                 // parses the masks to do greedy meshing
                 constructGeometryFromMasks(i, d, u, v, len1, len2,
-                    doAO, geomData, getColor, aoValues, revAoVal)
+                    doAO, geomDataSet, getColor, aoValues, revAoVal)
 
                 // process edges only by jumping to other edge
                 if (edgesOnly) i += (len0 - 1)
@@ -505,7 +375,7 @@ function GreedyMesher(noa) {
         }
 
         // done!
-        return geomData
+        return geomDataSet
     }
 
 
@@ -602,7 +472,7 @@ function GreedyMesher(noa) {
     // construct geometry data from the masks
 
     function constructGeometryFromMasks(i, d, u, v, len1, len2,
-        doAO, geomData, getColor, aoValues, revAoVal) {
+        doAO, geomDataSet, getColor, aoValues, revAoVal) {
         var n = 0
         var mask = maskCache
         var aomask = aomaskCache
@@ -646,14 +516,17 @@ function GreedyMesher(noa) {
                 // for testing: doing the following will disable greediness
                 //w=h=1
 
-                // material and mesh for this face
+                // terrain ID type, and geometry data for this face
                 var matID = Math.abs(maskVal)
+                var terrainID = matIDtoTerrainID(matID)
+                if (!(terrainID in geomDataSet)) {
+                    geomDataSet[terrainID] = new GeometryData(terrainID)
+                }
+                /** @type {GeometryData} */
+                var geomData = geomDataSet[terrainID]
 
                 // we're now ready to push a quad worth of geometry data
                 var nq = geomData.numQuads
-                geomData.quadMaterials[nq] = matID | 0
-                geomData.materialQuadCounts[matID] =
-                    (geomData.materialQuadCounts[matID] || 0) + 1
 
                 // add colors into geomData
                 // tridir is boolean for which way to split the quad into triangles
