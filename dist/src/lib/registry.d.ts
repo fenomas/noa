@@ -12,49 +12,33 @@
  * ```
 */
 export class Registry {
+    /**
+     * @internal
+     * @param {import('../index').Engine} noa
+    */
+    constructor(noa: import('../index').Engine, opts: any);
     /** @internal */
-    constructor(noa: any, opts: any);
-    /** @internal */
-    noa: any;
+    noa: import("../index").Engine;
     /** @internal */
     _texturePath: any;
     /**
      * Register (by integer ID) a block type and its parameters.
+     *  `id` param: integer, currently 1..65535. Generally you should
+     * specify sequential values for blocks, without gaps, but this
+     * isn't technically required.
      *
-     *  `id` param: integer, currently 1..65535. This needs to be passed in by the
-     *    client because it goes into the chunk data, which someday will get serialized.
-     *
-     *  `options` param: Recognized fields for the options object:
-     *
-     *  * material: can be:
-     *      * one (String) material name
-     *      * array of 2 names: [top/bottom, sides]
-     *      * array of 3 names: [top, bottom, sides]
-     *      * array of 6 names: [-x, +x, -y, +y, -z, +z]
-     *    If not specified, terrain won't be meshed for the block type
-     *  * solid: (true) solidity for physics purposes
-     *  * opaque: (true) fully obscures neighboring blocks
-     *  * fluid: (false) whether nonsolid block is a fluid (buoyant, viscous..)
-     *  * blockMesh: (null) if specified, noa will create a copy this mesh in the voxel
-     *  * fluidDensity: (1.0) for fluid blocks
-     *  * viscosity: (0.5) for fluid blocks
-     *  * onLoad(): block event handler
-     *  * onUnload(): block event handler
-     *  * onSet(): block event handler
-     *  * onUnset(): block event handler
-     *  * onCustomMeshCreate(): block event handler
+     * @param {number} id - sequential integer ID (from 1)
+     * @param {Partial<BlockOptions>} [options]
+     * @returns the `id` value specified
      */
-    registerBlock: (id: any, options?: any) => any;
+    registerBlock: (id?: number, options?: Partial<BlockOptions>) => number;
     /**
      * Register (by name) a material and its parameters.
      *
-     * @param name
-     * @param color
-     * @param textureURL
-     * @param texHasAlpha
-     * @param renderMaterial an optional BABYLON material to be used for block faces with this block material
+     * @param {string} name of this material
+     * @param {Partial<MaterialOptions>} [options]
      */
-    registerMaterial: (name: any, color?: number[], textureURL?: string, texHasAlpha?: boolean, renderMaterial?: any) => any;
+    registerMaterial: (name?: string, options?: Partial<MaterialOptions>, ...args: any[]) => number;
     /**
      * block solidity (as in physics)
      * @param id
@@ -77,9 +61,16 @@ export class Registry {
      */
     getBlockProps: (id: any) => any;
     getBlockFaceMaterial: (blockId: any, dir: any) => number;
-    getMaterialColor: (matID: any) => any;
-    getMaterialTexture: (matID: any) => any;
-    getMaterialData: (matID: any) => any;
+    getMaterialColor: (matID: any) => number[];
+    getMaterialTexture: (matID: any) => string;
+    getMaterialData: (matID: any) => {
+        color: number[];
+        alpha: number;
+        texture: string;
+        texHasAlpha: boolean;
+        atlasIndex: number;
+        renderMat: any;
+    };
     /** @internal */
     _solidityLookup: boolean[];
     /** @internal */
@@ -93,5 +84,73 @@ export class Registry {
     /** @internal */
     _blockHandlerLookup: any[];
     /** @internal */
-    _getMaterialVertexColor: (matID: any) => any;
+    _blockIsPlainLookup: boolean[];
+    /** @internal */
+    _getMaterialVertexColor: (matID: any) => number[];
 }
+export type TransformNode = import('@babylonjs/core/Meshes').TransformNode;
+/**
+ * Default options when registering a block type
+ */
+declare function BlockOptions(isFluid?: boolean): void;
+declare class BlockOptions {
+    /**
+     * Default options when registering a block type
+     */
+    constructor(isFluid?: boolean);
+    /** Solidity for physics purposes */
+    solid: boolean;
+    /** Whether the block fully obscures neighboring blocks */
+    opaque: boolean;
+    /** whether a nonsolid block is a fluid (buoyant, viscous..) */
+    fluid: boolean;
+    /** The block material(s) for this voxel's faces. May be:
+     *   * one (String) material name
+     *   * array of 2 names: [top/bottom, sides]
+     *   * array of 3 names: [top, bottom, sides]
+     *   * array of 6 names: [-x, +x, -y, +y, -z, +z]
+     * @type {string|string[]}
+    */
+    material: string | string[];
+    /** Specifies a custom mesh for this voxel, instead of terrain  */
+    blockMesh: any;
+    /** Fluid parameter for fluid blocks */
+    fluidDensity: number;
+    /** Fluid parameter for fluid blocks */
+    viscosity: number;
+    /** @type {(x:number, y:number, z:number) => void} */
+    onLoad: (x: number, y: number, z: number) => void;
+    /** @type {(x:number, y:number, z:number) => void} */
+    onUnload: (x: number, y: number, z: number) => void;
+    /** @type {(x:number, y:number, z:number) => void} */
+    onSet: (x: number, y: number, z: number) => void;
+    /** @type {(x:number, y:number, z:number) => void} */
+    onUnset: (x: number, y: number, z: number) => void;
+    /** @type {(mesh:TransformNode, x:number, y:number, z:number) => void} */
+    onCustomMeshCreate: (mesh: TransformNode, x: number, y: number, z: number) => void;
+}
+/** @typedef {import('@babylonjs/core/Meshes').TransformNode} TransformNode */
+/**
+ * Default options when registering a Block Material
+ */
+declare function MaterialOptions(): void;
+declare class MaterialOptions {
+    /** An array of 0..1 floats, either [R,G,B] or [R,G,B,A]
+     * @type {number[]}
+     */
+    color: number[];
+    /** Filename of texture image, if any
+     * @type {string}
+     */
+    textureURL: string;
+    /** Whether the texture image has alpha */
+    texHasAlpha: boolean;
+    /** Index into a (vertical strip) texture atlas, if applicable */
+    atlasIndex: number;
+    /**
+     * An optional Babylon.js `Material`. If specified, terrain for this voxel
+     * will be rendered with the supplied material (this can impact performance).
+     */
+    renderMaterial: any;
+}
+export {};

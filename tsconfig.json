@@ -58,6 +58,8 @@
             "PhysicsState",
             "PositionState",
             "MatDef",
+            "MaterialOptions",
+            "BlockOptions",
         ]
     },
 }

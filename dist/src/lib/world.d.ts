@@ -96,7 +96,7 @@ export class World extends EventEmitter {
     /** @internal */
     _coordsToChunkIndexes: typeof chunkCoordsToIndexesGeneral;
     /** @internal */
-    _coordsToChunkLocals: typeof chunkCoordsToLocalsGeneral;
+    _coordsToChunkLocals: typeof chunkCoordsToLocalsPowerOfTwo;
     /** @internal */
     _coordShiftBits: number;
     /** @internal */
@@ -117,11 +117,15 @@ export class World extends EventEmitter {
     isBoxUnobstructed(box: any): boolean;
     /** client should call this after creating a chunk's worth of data (as an ndarray)
      * If userData is passed in it will be attached to the chunk
-     * @param id
-     * @param array
-     * @param userData
+     * @param {string} id - the string specified when the chunk was requested
+     * @param {*} array - an ndarray of voxel data
+     * @param {*} userData - an arbitrary value for game client use
+     * @param {number} fillVoxelID - specify a voxel ID here if you want to signify that
+     * the entire chunk should be solidly filled with that voxel (e.g. `0` for air).
+     * If you do this, the voxel array data will be overwritten and the engine will
+     * take a fast path through some initialization steps.
      */
-    setChunkData(id: any, array: any, userData: any): void;
+    setChunkData(id: string, array: any, userData?: any, fillVoxelID?: number): void;
     /**
      * Sets the distances within which to load new chunks, and beyond which
      * to unload them. Generally you want the remove distance to be somewhat
@@ -168,5 +172,5 @@ import EventEmitter from "events";
 import Chunk from "./chunk";
 import { ChunkStorage } from "./util";
 declare function chunkCoordsToIndexesGeneral(x: any, y: any, z: any): number[];
-declare function chunkCoordsToLocalsGeneral(x: any, y: any, z: any): number[];
+declare function chunkCoordsToLocalsPowerOfTwo(x: any, y: any, z: any): number[];
 export {};

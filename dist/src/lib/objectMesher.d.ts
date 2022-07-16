@@ -1,7 +1,9 @@
 export default ObjectMesher;
-declare function ObjectMesher(noa: any): void;
+/** @param {import('../index').Engine} noa*/
+declare function ObjectMesher(noa: import('../index').Engine): void;
 declare class ObjectMesher {
-    constructor(noa: any);
+    /** @param {import('../index').Engine} noa*/
+    constructor(noa: import('../index').Engine);
     rootNode: TransformNode;
     initChunk: (chunk: any) => void;
     setObjectBlock: (chunk: any, blockID: any, i: any, j: any, k: any) => void;
