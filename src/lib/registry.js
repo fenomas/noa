@@ -68,6 +68,7 @@ export class Registry {
          * @prop {number} alpha
          * @prop {string} texture
          * @prop {boolean} texHasAlpha
+         * @prop {number} atlasIndex
          * @prop {*} renderMat
          */
         /** @type {MatDef[]} */
@@ -183,6 +184,7 @@ export class Registry {
                 alpha,
                 texture: opts.textureURL ? this._texturePath + opts.textureURL : '',
                 texHasAlpha: !!opts.texHasAlpha,
+                atlasIndex: opts.atlasIndex,
                 renderMat: opts.renderMaterial,
             }
             return matID
@@ -395,9 +397,9 @@ function MaterialOptions() {
      */
     this.textureURL = null
     /** Whether the texture image has alpha */
-    this.texHasTransparency = false
-    /** Whether the texture image has alpha */
     this.texHasAlpha = false
+    /** Index into a (vertical strip) texture atlas, if applicable */
+    this.atlasIndex = -1
     /**
      * An optional Babylon.js `Material`. If specified, terrain for this voxel
      * will be rendered with the supplied material (this can impact performance).

@@ -1,5 +1,6 @@
 
-import { MaterialPluginBase, Texture } from '@babylonjs/core/Materials'
+import { Engine } from '@babylonjs/core/Engines/engine'
+import { MaterialPluginBase, RawTexture2DArray, Texture } from '@babylonjs/core/Materials'
 
 /**
  * @module 
@@ -138,9 +139,109 @@ function createTerrainMat(self, blockMatID = 0) {
     var scene = self.noa.rendering.getScene()
     var mat = self.noa.rendering.makeStandardMaterial('terrain-textured-' + blockMatID)
     var url = matInfo.texture
-    var tex = new Texture(url, scene, true, false, Texture.NEAREST_SAMPLINGMODE)
+    var sampling = Texture.NEAREST_SAMPLINGMODE
+    var tex = new Texture(url, scene, true, false, sampling)
     if (matInfo.texHasAlpha) tex.hasAlpha = true
     mat.diffuseTexture = tex
+
+    // it texture is an atlas, apply material plugin
+    if (matInfo.atlasIndex >= 0) new TerrainMaterialPlugin(mat, tex)
     return mat
 }
 
+
+
+
+
+
+
+
+
+
+
+/**
+ * 
+ *      Babylon material plugin - twiddles the defines/shaders/etc so that
+ *      a standard material can use textures from a 2D texture atlas.
+ * 
+*/
+
+class TerrainMaterialPlugin extends MaterialPluginBase {
+    constructor(material, texture) {
+        var priority = 200
+        var defines = { 'NOA_TWOD_ARRAY_TEXTURE': false }
+        super(material, 'TestPlugin', priority, defines)
+        this._enable(true)
+        this._atlasTextureArray = null
+
+        texture.onLoadObservable.add((tex) => {
+            this.setTextureArrayData(tex)
+        })
+    }
+
+    setTextureArrayData(texture) {
+        var { width, height } = texture.getSize()
+        var numLayers = Math.round(height / width)
+        height = width
+        var data = texture._readPixelsSync()
+
+        var format = Engine.TEXTUREFORMAT_RGBA
+        var genMipMaps = true
+        var invertY = false
+        var mode = Texture.NEAREST_SAMPLINGMODE
+        var scene = texture.getScene()
+
+        this._atlasTextureArray = new RawTexture2DArray(
+            data, width, height, numLayers,
+            format, scene, genMipMaps, invertY, mode,
+        )
+    }
+
+    prepareDefines(defines, scene, mesh) {
+        defines['NOA_TWOD_ARRAY_TEXTURE'] = true
+    }
+
+    getClassName() {
+        return 'TerrainMaterialPluginName'
+    }
+
+    getSamplers(samplers) {
+        samplers.push('atlasTexture')
+    }
+
+    getAttributes(attributes) {
+        attributes.push('texAtlasIndices')
+    }
+
+    getUniforms() {
+        return { ubo: [] }
+    }
+
+    bindForSubMesh(uniformBuffer, scene, engine, subMesh) {
+        if (this._atlasTextureArray) {
+            uniformBuffer.setTexture('atlasTexture', this._atlasTextureArray)
+        }
+    }
+
+    getCustomCode(shaderType) {
+        if (shaderType === 'vertex') return {
+            'CUSTOM_VERTEX_MAIN_BEGIN': `
+                texAtlasIndex = texAtlasIndices;
+            `,
+            'CUSTOM_VERTEX_DEFINITIONS': `
+                uniform highp sampler2DArray atlasTexture;
+                attribute float texAtlasIndices;
+                varying float texAtlasIndex;
+            `,
+        }
+        if (shaderType === 'fragment') return {
+            '!baseColor\\=texture2D\\(diffuseSampler,vDiffuseUV\\+uvOffset\\);':
+                `baseColor = texture(atlasTexture, vec3(vDiffuseUV, texAtlasIndex));`,
+            'CUSTOM_FRAGMENT_DEFINITIONS': `
+                uniform highp sampler2DArray atlasTexture;
+                varying float texAtlasIndex;
+            `,
+        }
+        return null
+    }
+}

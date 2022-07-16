@@ -200,6 +200,7 @@ function GeometryData(terrainID) {
     this.normals = [0.5]             // raw data, 12 normals per quad
     this.colors = [0.5]              // raw data, 16 colors per quad
     this.uvs = [0.5]                 // raw data, 8 uvs per quad
+    this.atlasIndices = [0]          // indices into vertical strip texture atlas
 }
 GeometryData.prototype.dispose = function () {
     this.quadMaterials = null
@@ -208,6 +209,7 @@ GeometryData.prototype.dispose = function () {
     this.normals = null
     this.colors = null
     this.uvs = null
+    this.atlasIndices = null
 }
 
 
@@ -234,10 +236,6 @@ GeometryData.prototype.dispose = function () {
 /** @param {import('../index').Engine} noa  */
 function MeshBuilder(noa, terrainMatManager) {
 
-    // var matCache = {}
-    // var multiMatCache = {}
-
-
     // core
     this.build = function (chunk, geomDataSet, ignoreMaterials) {
         var scene = noa.rendering.getScene()
@@ -261,6 +259,11 @@ function MeshBuilder(noa, terrainMatManager) {
             vdat.colors = geomData.colors
             vdat.uvs = geomData.uvs
             vdat.applyToMesh(mesh)
+
+            // meshes using a texture atlas need atlasIndices
+            if (geomData.atlasIndices.length > 1) {
+                mesh.setVerticesData('texAtlasIndices', geomData.atlasIndices, false, 1)
+            }
 
             // materials wrangled by external module
             mesh.material = terrainMatManager.getMaterial(geomData.terrainID)
@@ -318,6 +321,7 @@ function MeshBuilder(noa, terrainMatManager) {
  * 
  */
 
+/** @param {import('../index').Engine} noa  */
 function GreedyMesher(noa, terrainMatManager) {
 
     var maskCache = new Int16Array(16)
@@ -326,6 +330,7 @@ function GreedyMesher(noa, terrainMatManager) {
     var solidLookup = noa.registry._solidityLookup
     var opacityLookup = noa.registry._opacityLookup
     var matIDtoTerrainID = (matID) => terrainMatManager.getTerrainMatId(matID)
+    var matIDtoAtlasIndex = (matID) => noa.registry.getMaterialData(matID).atlasIndex
 
 
     this.mesh = function (voxels, getMaterial, getColor, doAO, aoValues, revAoVal, edgesOnly) {
@@ -528,6 +533,12 @@ function GreedyMesher(noa, terrainMatManager) {
                 // we're now ready to push a quad worth of geometry data
                 var nq = geomData.numQuads
 
+                // if block material is a texture atlas, add indices to it
+                var atlasIndex = matIDtoAtlasIndex(matID)
+                if (atlasIndex >= 0) {
+                    addAtlasIndices(geomData.atlasIndices, nq * 4, atlasIndex)
+                }
+
                 // add colors into geomData
                 // tridir is boolean for which way to split the quad into triangles
                 var colorsArr = geomData.colors
@@ -614,6 +625,12 @@ function GreedyMesher(noa, terrainMatManager) {
         B: [1, 2, 3, 0, 1, 3],
         C: [0, 2, 1, 0, 3, 2],
         D: [3, 1, 0, 3, 2, 1],
+    }
+
+    function addAtlasIndices(indArr, offset, atlasIndex) {
+        for (var i = 0; i < 4; i++) {
+            indArr[offset + i] = atlasIndex
+        }
     }
 
 
