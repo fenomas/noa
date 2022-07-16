@@ -2,7 +2,6 @@
 import vec3 from 'gl-vec3'
 
 import { Color3 } from '@babylonjs/core/Maths/math.color'
-import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder'
 import '@babylonjs/core/Meshes/instancedMesh'
 
@@ -21,6 +20,7 @@ export default function (noa, dist) {
     mat.alpha = 0.5
     disc.material = mat
     disc.setEnabled(false)
+    mat.freeze()
 
     // source mesh needn't be in the scene graph
     scene.removeMesh(disc)

@@ -141,6 +141,7 @@ export class Rendering {
         this._camScreenMat = this.makeStandardMaterial('camscreenmat')
         this._camScreen.material = this._camScreenMat
         this._camScreen.setEnabled(false)
+        this._camScreenMat.freeze()
         this._camLocBlock = 0
 
         // apply some defaults
@@ -154,8 +155,8 @@ export class Rendering {
         this._light.specular = arrToColor(opts.lightSpecular)
         this._light.groundColor = arrToColor(opts.groundLightColor)
 
-        // make a default flat material (used or clone by terrain, etc)
-        this.flatMaterial = this.makeStandardMaterial('flatmat')
+        // scene options
+        scene.skipPointerMovePicking = true
     }
 }
 
@@ -262,6 +263,7 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = nul
     if (isStatic) {
         mesh.freezeWorldMatrix()
         if (mesh.freezeNormals) mesh.freezeNormals()
+        mesh.doNotSyncBoundingInfo = true
     }
 
     // add to the octree, and add dispose handler to remove it
@@ -419,6 +421,7 @@ function getHighlightMesh(rendering) {
         hlm.backFaceCulling = false
         hlm.emissiveColor = new Color3(1, 1, 1)
         hlm.alpha = 0.2
+        hlm.freeze()
         mesh.material = hlm
 
         // outline

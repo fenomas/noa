@@ -132,6 +132,7 @@ function createTerrainMat(self, blockMatID = 0) {
         if (needsAlpha) matName += '-alpha'
         var plainMat = self.noa.rendering.makeStandardMaterial(matName)
         if (needsAlpha) plainMat.alpha = matInfo.alpha
+        plainMat.freeze()
         return plainMat
     }
 
@@ -146,6 +147,8 @@ function createTerrainMat(self, blockMatID = 0) {
 
     // it texture is an atlas, apply material plugin
     if (matInfo.atlasIndex >= 0) new TerrainMaterialPlugin(mat, tex)
+    mat.freeze()
+
     return mat
 }
 

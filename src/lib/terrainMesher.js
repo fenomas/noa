@@ -84,6 +84,7 @@ function TerrainMesher(noa) {
         // add to scene and finish
         meshes.forEach((mesh) => {
             noa.rendering.addMeshToScene(mesh, true, chunk.pos, this)
+            mesh.cullingStrategy = Mesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
             chunk._terrainMeshes.push(mesh)
         })
     }
