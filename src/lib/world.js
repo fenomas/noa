@@ -250,12 +250,16 @@ World.prototype.isBoxUnobstructed = function (box) {
 
 /** client should call this after creating a chunk's worth of data (as an ndarray)  
  * If userData is passed in it will be attached to the chunk
- * @param id
- * @param array
- * @param userData
+ * @param {string} id - the string specified when the chunk was requested 
+ * @param {*} array - an ndarray of voxel data
+ * @param {*} userData - an arbitrary value for game client use
+ * @param {number} fillVoxelID - specify a voxel ID here if you want to signify that 
+ * the entire chunk should be solidly filled with that voxel (e.g. `0` for air). 
+ * If you do this, the voxel array data will be overwritten and the engine will 
+ * take a fast path through some initialization steps.
  */
-World.prototype.setChunkData = function (id, array, userData) {
-    setChunkData(this, id, array, userData)
+World.prototype.setChunkData = function (id, array, userData = null, fillVoxelID = -1) {
+    setChunkData(this, id, array, userData, fillVoxelID)
 }
 
 
@@ -719,7 +723,7 @@ function requestNewChunk(world, i, j, k) {
 
 // called when client sets a chunk's voxel data
 // If userData is passed in it will be attached to the chunk
-function setChunkData(world, reqID, array, userData) {
+function setChunkData(world, reqID, array, userData, fillVoxelID) {
     var arr = reqID.split('|')
     var i = parseInt(arr.shift())
     var j = parseInt(arr.shift())
@@ -736,14 +740,14 @@ function setChunkData(world, reqID, array, userData) {
     if (!chunk) {
         // if chunk doesn't exist, create and init
         var size = world._chunkSize
-        chunk = new Chunk(world.noa, reqID, i, j, k, size, array)
+        chunk = new Chunk(world.noa, reqID, i, j, k, size, array, fillVoxelID)
         world._storage.storeChunkByIndexes(i, j, k, chunk)
         chunk.userData = userData
         world.noa.rendering.prepareChunkForRendering(chunk)
         world.emit('chunkAdded', chunk)
     } else {
         // else we're updating data for an existing chunk
-        chunk._updateVoxelArray(array)
+        chunk._updateVoxelArray(array, fillVoxelID)
     }
     // chunk can now be meshed, and ping neighbors
     possiblyQueueChunkForMeshing(world, chunk)

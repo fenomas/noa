@@ -61,12 +61,12 @@ var prevRad = 0, prevAnswer = 0
 // partly "unrolled" loops to copy contents of ndarrays
 // when there's no source, zeroes out the array instead
 export function copyNdarrayContents(src, tgt, pos, size, tgtPos) {
-    if (src) {
+    if (typeof src === 'number') {
+        doNdarrayFill(src, tgt, tgtPos[0], tgtPos[1], tgtPos[2],
+            size[0], size[1], size[2])
+    } else {
         doNdarrayCopy(src, tgt, pos[0], pos[1], pos[2],
             size[0], size[1], size[2], tgtPos[0], tgtPos[1], tgtPos[2])
-    } else {
-        doNdarrayZero(tgt, tgtPos[0], tgtPos[1], tgtPos[2],
-            size[0], size[1], size[2])
     }
 }
 function doNdarrayCopy(src, tgt, i0, j0, k0, si, sj, sk, ti, tj, tk) {
@@ -85,13 +85,13 @@ function doNdarrayCopy(src, tgt, i0, j0, k0, si, sj, sk, ti, tj, tk) {
     }
 }
 
-function doNdarrayZero(tgt, i0, j0, k0, si, sj, sk) {
+function doNdarrayFill(value, tgt, i0, j0, k0, si, sj, sk) {
     var dx = tgt.stride[2]
     for (var i = 0; i < si; i++) {
         for (var j = 0; j < sj; j++) {
             var ix = tgt.index(i0 + i, j0 + j, k0)
             for (var k = 0; k < sk; k++) {
-                tgt.data[ix] = 0
+                tgt.data[ix] = value
                 ix += dx
             }
         }

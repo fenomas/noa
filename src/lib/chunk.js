@@ -29,7 +29,7 @@ export default Chunk
  */
 
 /** @param {import('../index').Engine} noa */
-function Chunk(noa, requestID, ci, cj, ck, size, dataArray) {
+function Chunk(noa, requestID, ci, cj, ck, size, dataArray, fillVoxelID) {
     this.noa = noa
     this.isDisposed = false
 
@@ -55,6 +55,12 @@ function Chunk(noa, requestID, ci, cj, ck, size, dataArray) {
     noa._objectMesher.initChunk(this)
     this._isFull = false
     this._isEmpty = false
+    this._filledWithVoxel = -1
+
+    if (fillVoxelID >= 0) {
+        this.voxels.data.fill(fillVoxelID, 0, this.voxels.size)
+        this._filledWithVoxel = fillVoxelID
+    }
 
     // references to neighboring chunks, if they exist (filled in by `world`)
     var narr = Array.from(Array(27), () => null)
@@ -77,7 +83,7 @@ Chunk._createVoxelArray = function (size) {
     return ndarray(arr, [size, size, size])
 }
 
-Chunk.prototype._updateVoxelArray = function (dataArray) {
+Chunk.prototype._updateVoxelArray = function (dataArray, fillVoxelID) {
     // dispose current object blocks
     callAllBlockHandlers(this, 'onUnload')
     this.noa._objectMesher.disposeChunk(this)
@@ -88,6 +94,11 @@ Chunk.prototype._updateVoxelArray = function (dataArray) {
     this._blockHandlerLocs.empty()
     this.noa._objectMesher.initChunk(this)
     this.noa._terrainMesher.initChunk(this)
+    this._filledWithVoxel = -1
+    if (fillVoxelID >= 0) {
+        this._filledWithVoxel = fillVoxelID
+        this.voxels.data.fill(fillVoxelID, 0, this.voxels.size)
+    }
     scanVoxelData(this)
 }
 
@@ -149,6 +160,7 @@ Chunk.prototype.set = function (i, j, k, newID) {
     // track full/emptiness and dirty flags for the chunk
     if (!opaqueLookup[newID]) this._isFull = false
     if (newID !== 0) this._isEmpty = false
+    this._filledWithVoxel = -1
 
     var solidityChanged = (solidLookup[oldID] !== solidLookup[newID])
     var opacityChanged = (opaqueLookup[oldID] !== opaqueLookup[newID])
@@ -230,31 +242,46 @@ Chunk.prototype.updateMeshes = function () {
 */
 
 function scanVoxelData(chunk) {
-    // flags for tracking if chunk is entirely opaque or transparent
-    var fullyOpaque = true
-    var fullyAir = true
-
-    chunk._blockHandlerLocs.empty()
     var voxels = chunk.voxels
     var data = voxels.data
     var len = voxels.shape[0]
     var opaqueLookup = chunk.noa.registry._opacityLookup
     var handlerLookup = chunk.noa.registry._blockHandlerLookup
     var objectLookup = chunk.noa.registry._objectLookup
+    var plainLookup = chunk.noa.registry._blockIsPlainLookup
     var objMesher = chunk.noa._objectMesher
+
+    // fastest case where entire chunk is air/dirt/etc
+    var monoID = chunk._filledWithVoxel
+    if (monoID >= 0 && !objMesher[monoID] && !handlerLookup[monoID]) {
+        chunk._isFull = !!opaqueLookup[monoID]
+        chunk._isEmpty = (monoID === 0)
+        chunk._terrainDirty = !chunk._isEmpty
+        return
+    }
+
+    // flags for tracking if chunk is entirely opaque or transparent
+    var fullyOpaque = true
+    var fullyAir = true
+
     for (var i = 0; i < len; ++i) {
         for (var j = 0; j < len; ++j) {
             var index = voxels.index(i, j, 0)
             for (var k = 0; k < len; ++k, ++index) {
                 var id = data[index]
-                // skip air blocks
+                // most common cases: air block...
                 if (id === 0) {
                     fullyOpaque = false
                     continue
                 }
+                // ...or plain boring block (no mesh, handlers, etc)
+                if (plainLookup[id]) {
+                    fullyAir = false
+                    continue
+                }
+                // otherwise check opacity, object mesh, and handlers
                 fullyOpaque = fullyOpaque && opaqueLookup[id]
                 fullyAir = false
-                // handle object blocks and handlers
                 if (objectLookup[id]) {
                     objMesher.setObjectBlock(chunk, id, i, j, k)
                     chunk._objectsDirty = true
@@ -272,7 +299,6 @@ function scanVoxelData(chunk) {
     chunk._isEmpty = fullyAir
     chunk._terrainDirty = !chunk._isEmpty
 }
-
 
 
 

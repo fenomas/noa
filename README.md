@@ -51,17 +51,14 @@ please try to be sorta-kinda consistent with what's already there.
 
 ## Change logs
 
-See [history.md](docs/history.md) for changes and migration for each version.
+See [history.md](docs/history.md) for full changes and migration for each version.
 
 Recent changes:
 
  * `v0.33`: 
-   * Signature of `noa.registry.registerMaterial` changed to take an options object
    * Terrain now supports texture atlases! See `registry.registerMaterial`.
-   * Key binding with `noa.inputs.bind` now uses [KeyboardEvent.code](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code) strings
-   * Binding to mouse buttons now uses `Mouse1`, `Mouse2`..
-   * Mouse move/scroll data (`dx,dy,scrollx,scrolly`) are moved from 
-     `noa.inputs.state` to `noa.inputs.pointerState`
+   * Added a fast way to specify that a worldgen chunk is entirely air/dirt/etc.
+   * Modernized keybinds to use [KeyboardEvent.code](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code) strings, and changed several binding state properties
  * `v0.32`: Fixes npm versioning issue - no code changes.
  * `v0.31`: 
    * Change the speed of the world! See `noa.timeScale`

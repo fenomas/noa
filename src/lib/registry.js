@@ -57,6 +57,7 @@ export class Registry {
         var blockProps = [null]     // less-often accessed properties
         var blockMeshes = [null]    // custom mesh objects
         var blockHandlers = [null]  // block event handlers
+        var blockIsPlain = [false]  // true if voxel is "boring" - solid/opaque, no special props
 
         // this one is keyed by `blockID*6 + faceNumber`
         var blockMats = [0, 0, 0, 0, 0, 0]
@@ -151,6 +152,12 @@ export class Registry {
             // event callbacks
             var hasHandler = opts.onLoad || opts.onUnload || opts.onSet || opts.onUnset || opts.onCustomMeshCreate
             blockHandlers[id] = (hasHandler) ? new BlockCallbackHolder(opts) : null
+
+            // special lookup for "plain"-ness
+            // plain means solid, opaque, not fluid, no mesh or events
+            var isPlain = blockSolidity[id] && blockOpacity[id]
+                && !hasHandler && !blockIsFluid[id] && !blockIsObject[id]
+            blockIsPlain[id] = isPlain
 
             return id
         }
@@ -278,6 +285,8 @@ export class Registry {
         this._blockMeshLookup = blockMeshes
         /** @internal */
         this._blockHandlerLookup = blockHandlers
+        /** @internal */
+        this._blockIsPlainLookup = blockIsPlain
 
 
 

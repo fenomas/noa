@@ -157,7 +157,9 @@ function buildPaddedVoxelArray(chunk) {
                     tgtPos[n] = tgtPosValues[coord]
                 }
                 var nab = chunk._neighbors.get(i - 1, j - 1, k - 1)
-                var nsrc = (nab) ? nab.voxels : null
+                var nsrc = 0
+                if (nab) nsrc = (nab._filledWithVoxel >= 0) ?
+                    nab._filledWithVoxel : nab.voxels
                 copyNdarrayContents(nsrc, tgt, pos, size, tgtPos)
             }
         }
