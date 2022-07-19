@@ -62,6 +62,10 @@ export class Registry {
         // this one is keyed by `blockID*6 + faceNumber`
         var blockMats = [0, 0, 0, 0, 0, 0]
 
+        // and these are keyed by material id
+        var matColorLookup = [null]
+        var matAtlasIndexLookup = [-1]
+
         /** 
          * Lookup array of block face material properties - keyed by matID (not blockID)
          * @typedef MatDef
@@ -182,14 +186,20 @@ export class Registry {
             var matID = matIDs[name] || matDefs.length
             matIDs[name] = matID
 
+            var texURL = opts.textureURL ? this._texturePath + opts.textureURL : ''
             var alpha = 1.0
             var color = opts.color || [1.0, 1.0, 1.0]
             if (color.length === 4) alpha = color.pop()
+            if (texURL) color = null
+
+            // populate lookup arrays for terrain meshing
+            matColorLookup[matID] = color
+            matAtlasIndexLookup[matID] = opts.atlasIndex
 
             matDefs[matID] = {
                 color,
                 alpha,
-                texture: opts.textureURL ? this._texturePath + opts.textureURL : '',
+                texture: texURL,
                 texHasAlpha: !!opts.texHasAlpha,
                 atlasIndex: opts.atlasIndex,
                 renderMat: opts.renderMaterial,
@@ -243,20 +253,11 @@ export class Registry {
         }
 
 
-
-
-
-        // look up material color given ID
-        this.getMaterialColor = function (matID) {
-            return matDefs[matID].color
-        }
-
-        // look up material texture given ID
-        this.getMaterialTexture = function (matID) {
-            return matDefs[matID].texture
-        }
-
-        // look up material's properties: color, alpha, texture, textureAlpha
+        /**
+         * General lookup for all properties of a block material
+         * @param {number} matID 
+         * @returns {MatDef}
+         */
         this.getMaterialData = function (matID) {
             return matDefs[matID]
         }
@@ -287,22 +288,10 @@ export class Registry {
         this._blockHandlerLookup = blockHandlers
         /** @internal */
         this._blockIsPlainLookup = blockIsPlain
-
-
-
-
-
-
-        // look up color used for vertices of blocks of given material
-        // - i.e. white if it has a texture, color otherwise
         /** @internal */
-        this._getMaterialVertexColor = (matID) => {
-            if (matDefs[matID].texture) return white
-            return matDefs[matID].color
-        }
-        var white = [1, 1, 1]
-
-
+        this._materialColorLookup = matColorLookup
+        /** @internal */
+        this._matAtlasIndexLookup = matAtlasIndexLookup
 
 
 
@@ -316,8 +305,6 @@ export class Registry {
         // this is safe since registering new block data overwrites the old
         this.registerMaterial('dirt', { color: [0.4, 0.3, 0] })
         this.registerBlock(1, { material: 'dirt' })
-
-
 
     }
 

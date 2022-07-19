@@ -34,6 +34,9 @@ function TerrainMesher(noa) {
     var greedyMesher = new GreedyMesher(noa, terrainMatManager)
     var meshBuilder = new MeshBuilder(noa, terrainMatManager)
 
+    // internally expose the default flat material used for untextured terrain
+    this._defaultMaterial = terrainMatManager._defaultMat
+
     /*
      * 
      *      public API
@@ -51,7 +54,7 @@ function TerrainMesher(noa) {
      * meshing entry point and high-level flow
      * @param {import('./chunk').default} chunk 
      */
-    this.meshChunk = function (chunk, matGetter, colGetter, ignoreMaterials, useAO, aoVals, revAoVal) {
+    this.meshChunk = function (chunk, ignoreMaterials = false) {
         profile_hook('start')
 
         // dispose any previously existing mesh
@@ -59,24 +62,17 @@ function TerrainMesher(noa) {
         chunk._terrainMeshes.length = 0
         profile_hook('cleanup')
 
-        // args
-        var mats = matGetter || noa.registry.getBlockFaceMaterial
-        var cols = colGetter || noa.registry._getMaterialVertexColor
-        var ao = (useAO === undefined) ? noa.rendering.useAO : useAO
-        var vals = aoVals || noa.rendering.aoVals
-        var rev = isNaN(revAoVal) ? noa.rendering.revAoVal : revAoVal
-
         // copy voxel data into array padded with neighbor values
         var voxels = buildPaddedVoxelArray(chunk)
         profile_hook('copy')
 
         // greedy mesher creates big arrays of geometry data
         var edgesOnly = chunk._isFull || chunk._isEmpty
-        var geomDataSet = greedyMesher.mesh(voxels, mats, cols, ao, vals, rev, edgesOnly)
+        var geomDataSet = greedyMesher.mesh(voxels, edgesOnly, ignoreMaterials)
         profile_hook('geom')
 
         // build the babylon meshes that will be added to the scene
-        var meshes = meshBuilder.build(chunk, geomDataSet, ignoreMaterials)
+        var meshes = meshBuilder.buildMesh(chunk, geomDataSet, ignoreMaterials)
         profile_hook('build')
 
         profile_hook('end')
@@ -240,7 +236,7 @@ GeometryData.prototype.dispose = function () {
 function MeshBuilder(noa, terrainMatManager) {
 
     // core
-    this.build = function (chunk, geomDataSet, ignoreMaterials) {
+    this.buildMesh = function (chunk, geomDataSet, ignoreMaterials) {
         var scene = noa.rendering.getScene()
 
         // geometry data is already keyed by terrain type, so build
@@ -263,13 +259,15 @@ function MeshBuilder(noa, terrainMatManager) {
             vdat.uvs = geomData.uvs
             vdat.applyToMesh(mesh)
 
-            // meshes using a texture atlas need atlasIndices
-            if (geomData.atlasIndices.length > 1) {
-                mesh.setVerticesData('texAtlasIndices', geomData.atlasIndices, false, 1)
-            }
+            if (!ignoreMaterials) {
+                // meshes using a texture atlas need atlasIndices
+                if (geomData.atlasIndices.length > 1) {
+                    mesh.setVerticesData('texAtlasIndices', geomData.atlasIndices, false, 1)
+                }
 
-            // materials wrangled by external module
-            mesh.material = terrainMatManager.getMaterial(geomData.terrainID)
+                // materials wrangled by external module
+                mesh.material = terrainMatManager.getMaterial(geomData.terrainID)
+            }
 
             // done
             geomData.dispose()
@@ -298,7 +296,7 @@ function MeshBuilder(noa, terrainMatManager) {
  *          but evolved quite a bit since then
  *        AO handling by me, stitched together out of cobwebs and dreams
  *    
- *    Arguments:
+ *    .mesh() arguments:
  *        arr: 3D ndarray of dimensions X,Y,Z
  *             packed with solidity/opacity booleans in higher bits
  *        getMaterial: function( blockID, dir )
@@ -311,15 +309,6 @@ function MeshBuilder(noa, terrainMatManager) {
  *        aoValues: array[3] of color multipliers for AO (least to most occluded)
  *        revAoVal: "reverse ao" - color multiplier for unoccluded exposed edges
  *
- *    Return object: array of mesh objects keyed by material ID
- *        arr[id] = {
- *          id:       material id for mesh
- *          vertices: ints, range 0 .. X/Y/Z
- *          indices:  ints
- *          normals:  ints,   -1 .. 1
- *          colors:   floats,  0 .. 1
- *          uvs:      floats,  0 .. X/Y/Z
- *        }
  * 
  * 
  */
@@ -329,22 +318,18 @@ function GreedyMesher(noa, terrainMatManager) {
 
     var maskCache = new Int16Array(16)
     var aomaskCache = new Uint16Array(16)
+    var realGetTerrainID = terrainMatManager.getTerrainMatId.bind(terrainMatManager)
+    var fakeGetTerrainID = (matID) => 1
 
-    var solidLookup = noa.registry._solidityLookup
-    var opacityLookup = noa.registry._opacityLookup
-    var matIDtoTerrainID = (matID) => terrainMatManager.getTerrainMatId(matID)
-    var matIDtoAtlasIndex = (matID) => noa.registry.getMaterialData(matID).atlasIndex
-
-
-    this.mesh = function (voxels, getMaterial, getColor, doAO, aoValues, revAoVal, edgesOnly) {
-        solidLookup = noa.registry._solidityLookup
-        opacityLookup = noa.registry._opacityLookup
+    this.mesh = function (voxels, edgesOnly, ignoreMaterials) {
+        var getTerrainID = (ignoreMaterials) ? fakeGetTerrainID : realGetTerrainID
 
         // collecion of GeomertryData objects, keyed by terrain ID
         var geomDataSet = {}
 
         // how to apply AO packing in first masking function
-        var skipReverseAO = (revAoVal === aoValues[0])
+        var revAoVal = noa.rendering.revAoVal
+        var skipReverseAO = (revAoVal === noa.rendering.aoVals[0])
 
         //Sweep over each axis, mapping axes to [d,u,v]
         for (var d = 0; d < 3; ++d) {
@@ -370,11 +355,10 @@ function GreedyMesher(noa, terrainMatManager) {
             for (var i = 0; i <= len0; ++i) {
 
                 // fills mask and aomask arrays with values
-                constructMeshMasks(i, d, arrT, getMaterial, doAO, skipReverseAO)
+                constructMeshMasks(i, d, arrT, skipReverseAO)
 
                 // parses the masks to do greedy meshing
-                constructGeometryFromMasks(i, d, u, v, len1, len2,
-                    doAO, geomDataSet, getColor, aoValues, revAoVal)
+                constructGeometryFromMasks(i, d, u, v, len1, len2, geomDataSet, getTerrainID)
 
                 // process edges only by jumping to other edge
                 if (edgesOnly) i += (len0 - 1)
@@ -396,10 +380,13 @@ function GreedyMesher(noa, terrainMatManager) {
     //
     // iterating across ith 2d plane, with n being index into masks
 
-    function constructMeshMasks(i, d, arrT, getMaterial, doAO, skipRevAO) {
+    function constructMeshMasks(i, d, arrT, skipRevAO) {
         var len = arrT.shape[1]
         var mask = maskCache
         var aomask = aomaskCache
+        var doAO = noa.rendering.useAO
+        var opacityLookup = noa.registry._opacityLookup
+        var getMaterial = noa.registry.getBlockFaceMaterial
         // set up for quick array traversals
         var n = 0
         var materialDir = d * 2
@@ -428,47 +415,38 @@ function GreedyMesher(noa, terrainMatManager) {
                 // so skip out early
                 if (id0 === id1) continue
 
-                var faceDir = getFaceDir(id0, id1, getMaterial, materialDir)
-                if (faceDir) {
-                    // set regular mask value to material ID, sign indicating direction
-                    mask[n] = (faceDir > 0) ?
-                        getMaterial(id0, materialDir) :
-                        -getMaterial(id1, materialDir + 1)
+                // no face if both blocks are opaque
+                var op0 = opacityLookup[id0]
+                var op1 = opacityLookup[id1]
+                if (op0 && op1) continue
 
-                    // if doing AO, precalculate AO level for each face into second mask
-                    if (doAO) {
-                        // i values in direction face is/isn't pointing{
-                        aomask[n] = (faceDir > 0) ?
-                            packAOMask(arrT, i, i - 1, j, k, skipRevAO) :
-                            packAOMask(arrT, i - 1, i, j, k, skipRevAO)
-                    }
+                // also no face if both block faces have the same block material
+                var m0 = getMaterial(id0, materialDir)
+                var m1 = getMaterial(id1, materialDir + 1)
+                if (m0 === m1) continue
+
+                // choose which block face to draw:
+                //   * if either block is opaque draw that one
+                //   * if either material is missing draw the other one
+                var faceDir = (op0 || m1 === 0) ? 1 :
+                    (op1 || m0 === 0) ? -1 : 0
+
+                // set regular mask value to material ID, sign indicating direction
+                // also calculate AO level for each face into second mask - 
+                //   AO compares i values in direction face is/isn't pointing
+                if (faceDir === 1) {
+                    mask[n] = m0
+                    if (doAO) aomask[n] = packAOMask(arrT, i, i - 1, j, k, skipRevAO)
+                } else if (faceDir === -1) {
+                    mask[n] = -m1
+                    if (doAO) aomask[n] = packAOMask(arrT, i - 1, i, j, k, skipRevAO)
+                } else {
+                    // leftover case is two different non-opaque blocks facing each other.
+                    // Someday we could try to draw both, but for now we draw neither.
                 }
             }
         }
     }
-
-
-
-    function getFaceDir(id0, id1, getMaterial, materialDir) {
-        // no face if both blocks are opaque
-        var op0 = opacityLookup[id0]
-        var op1 = opacityLookup[id1]
-        if (op0 && op1) return 0
-        // if either block is opaque draw a face for it
-        if (op0) return 1
-        if (op1) return -1
-        // can't tell from block IDs, so compare block materials of each face
-        var m0 = getMaterial(id0, materialDir)
-        var m1 = getMaterial(id1, materialDir + 1)
-        // if same material, draw no face. If one is missing, draw the other
-        if (m0 === m1) { return 0 }
-        else if (m0 === 0) { return -1 }
-        else if (m1 === 0) { return 1 }
-        // remaining case is two different non-opaque block materials
-        // facing each other. for now, draw neither..
-        return 0
-    }
-
 
 
 
@@ -479,11 +457,14 @@ function GreedyMesher(noa, terrainMatManager) {
     //
     // construct geometry data from the masks
 
-    function constructGeometryFromMasks(i, d, u, v, len1, len2,
-        doAO, geomDataSet, getColor, aoValues, revAoVal) {
+    function constructGeometryFromMasks(i, d, u, v, len1, len2, geomDataSet, getTerrainID) {
         var n = 0
         var mask = maskCache
         var aomask = aomaskCache
+
+        var matColorLookup = noa.registry._materialColorLookup
+        var matAtlasIndexLookup = noa.registry._matAtlasIndexLookup
+        var white = [1, 1, 1]
 
         var x = [0, 0, 0]
         var du = [0, 0, 0]
@@ -491,8 +472,12 @@ function GreedyMesher(noa, terrainMatManager) {
         x[d] = i
         var norms = [0, 0, 0]
 
+        var doAO = noa.rendering.useAO
+        var aoVals = noa.rendering.aoVals
+        var revAoVal = noa.rendering.revAoVal
+
         // some logic is broken into helper functions for AO and non-AO
-        // this fixes deopts in Chrome (for reasons unknown)
+        // this used to fix deopts in Chrome..
         var maskCompareFcn = (doAO) ? maskCompare : maskCompare_noAO
         var meshColorFcn = (doAO) ? pushMeshColors : pushMeshColors_noAO
 
@@ -526,7 +511,7 @@ function GreedyMesher(noa, terrainMatManager) {
 
                 // terrain ID type, and geometry data for this face
                 var matID = Math.abs(maskVal)
-                var terrainID = matIDtoTerrainID(matID)
+                var terrainID = getTerrainID(matID)
                 if (!(terrainID in geomDataSet)) {
                     geomDataSet[terrainID] = new GeometryData(terrainID)
                 }
@@ -537,7 +522,7 @@ function GreedyMesher(noa, terrainMatManager) {
                 var nq = geomData.numQuads
 
                 // if block material is a texture atlas, add indices to it
-                var atlasIndex = matIDtoAtlasIndex(matID)
+                var atlasIndex = matAtlasIndexLookup[matID]
                 if (atlasIndex >= 0) {
                     addAtlasIndices(geomData.atlasIndices, nq * 4, atlasIndex)
                 }
@@ -546,8 +531,9 @@ function GreedyMesher(noa, terrainMatManager) {
                 // tridir is boolean for which way to split the quad into triangles
                 var colorsArr = geomData.colors
                 var colorsIndex = nq * 16
-                var triDir = meshColorFcn(colorsArr, colorsIndex,
-                    getColor(matID), ao, aoValues, revAoVal)
+                var matColor = matColorLookup[matID] || white
+                var triDir = meshColorFcn(colorsArr, colorsIndex, matColor,
+                    ao, aoVals, revAoVal)
 
                 //Add quad positions - vertices = x -> x+du -> x+du+dv -> x+dv
                 x[u] = j
@@ -652,25 +638,25 @@ function GreedyMesher(noa, terrainMatManager) {
         return true
     }
 
-    function pushMeshColors_noAO(colors, ix, c, ao, aoValues, revAoVal) {
+    function pushMeshColors_noAO(colors, ix, col, ao) {
         for (var off = 0; off < 16; off += 4) {
-            colors[ix + off] = c[0]
-            colors[ix + off + 1] = c[1]
-            colors[ix + off + 2] = c[2]
+            colors[ix + off] = col[0]
+            colors[ix + off + 1] = col[1]
+            colors[ix + off + 2] = col[2]
             colors[ix + off + 3] = 1
         }
         return true // triangle direction doesn't matter for non-AO
     }
 
-    function pushMeshColors(colors, ix, c, ao, aoValues, revAoVal) {
+    function pushMeshColors(colors, ix, col, ao, aoVals, revAo) {
         var ao00 = unpackAOMask(ao, 0, 0)
         var ao10 = unpackAOMask(ao, 1, 0)
         var ao11 = unpackAOMask(ao, 1, 1)
         var ao01 = unpackAOMask(ao, 0, 1)
-        pushAOColor(colors, ix, c, ao00, aoValues, revAoVal)
-        pushAOColor(colors, ix + 4, c, ao10, aoValues, revAoVal)
-        pushAOColor(colors, ix + 8, c, ao11, aoValues, revAoVal)
-        pushAOColor(colors, ix + 12, c, ao01, aoValues, revAoVal)
+        pushAOColor(colors, ix, col, ao00, aoVals, revAo)
+        pushAOColor(colors, ix + 4, col, ao10, aoVals, revAo)
+        pushAOColor(colors, ix + 8, col, ao11, aoVals, revAo)
+        pushAOColor(colors, ix + 12, col, ao01, aoVals, revAo)
 
         // this bit is pretty magical..
         var triDir = true
@@ -690,6 +676,9 @@ function GreedyMesher(noa, terrainMatManager) {
 
 
     /* 
+     *
+     *
+     *
      *  packAOMask:
      *
      *    For a given face, find occlusion levels for each vertex, then
@@ -702,9 +691,13 @@ function GreedyMesher(noa, terrainMatManager) {
      *      a01(2)  -   a11(6)   ^  K
      *        -     -            +> J
      *      a00(0)  -   a10(4)
+     * 
+     * 
      */
 
     function packAOMask(data, ipos, ineg, j, k, skipReverse) {
+        var solidLookup = noa.registry._solidityLookup
+
         var a00 = 1
         var a01 = 1
         var a10 = 1

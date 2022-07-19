@@ -18,6 +18,9 @@ export class TerrainMatManager {
 
     /** @param {import('../index').Engine} noa  */
     constructor(noa) {
+        // make a baseline default material for untextured terrain with no alpha
+        this._defaultMat = noa.rendering.makeStandardMaterial('base-terrain')
+        this._defaultMat.freeze()
 
         // internals
         this.noa = noa
@@ -128,10 +131,10 @@ function createTerrainMat(self, blockMatID = 0) {
     // if no texture: use a basic flat material, possibly with alpha
     if (!matInfo.texture) {
         var needsAlpha = (matInfo.alpha > 0 && matInfo.alpha < 1)
-        var matName = 'terrain-base-' + blockMatID
-        if (needsAlpha) matName += '-alpha'
+        if (!needsAlpha) return self._defaultMat
+        var matName = 'terrain-alpha-' + blockMatID
         var plainMat = self.noa.rendering.makeStandardMaterial(matName)
-        if (needsAlpha) plainMat.alpha = matInfo.alpha
+        plainMat.alpha = matInfo.alpha
         plainMat.freeze()
         return plainMat
     }
