@@ -61,9 +61,12 @@ export class Registry {
      */
     getBlockProps: (id: any) => any;
     getBlockFaceMaterial: (blockId: any, dir: any) => number;
-    getMaterialColor: (matID: any) => number[];
-    getMaterialTexture: (matID: any) => string;
-    getMaterialData: (matID: any) => {
+    /**
+     * General lookup for all properties of a block material
+     * @param {number} matID
+     * @returns {MatDef}
+     */
+    getMaterialData: (matID: number) => {
         color: number[];
         alpha: number;
         texture: string;
@@ -86,7 +89,9 @@ export class Registry {
     /** @internal */
     _blockIsPlainLookup: boolean[];
     /** @internal */
-    _getMaterialVertexColor: (matID: any) => number[];
+    _materialColorLookup: any[];
+    /** @internal */
+    _matAtlasIndexLookup: number[];
 }
 export type TransformNode = import('@babylonjs/core/Meshes').TransformNode;
 /**
