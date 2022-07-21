@@ -1,6 +1,8 @@
 
 import { Engine } from '@babylonjs/core/Engines/engine'
-import { MaterialPluginBase, RawTexture2DArray, Texture } from '@babylonjs/core/Materials'
+import { Texture } from '@babylonjs/core/Materials/Textures/texture'
+import { MaterialPluginBase } from '@babylonjs/core/Materials/materialPluginBase'
+import { RawTexture2DArray } from '@babylonjs/core/Materials/Textures/rawTexture2DArray'
 
 /**
  * @module 
