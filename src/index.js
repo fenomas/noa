@@ -280,11 +280,6 @@ export class Engine extends EventEmitter {
         /** @internal */
         this._prevTargetHash = 0
 
-        /** @internal */
-        this.makeTargetHash = (pos, norm, id) => {
-            var N = locationHasher(pos[0] + id, pos[1], pos[2])
-            return N ^ locationHasher(norm[0], norm[1] + id, norm[2])
-        }
 
         /** @internal */
         this._pickPos = vec3.create()
@@ -667,7 +662,11 @@ function updateBlockTargets(noa) {
         vec3.subtract(dat.position, dat.adjacent, dat.normal)
         dat.blockID = noa.world.getBlockID(dat.position[0], dat.position[1], dat.position[2])
         noa.targetedBlock = dat
-        newhash = noa.makeTargetHash(dat.position, dat.normal, dat.blockID, locationHasher)
+        // arbitrary hash so we know when the targeted blockID/pos/face changes
+        var pos = dat.position, norm = dat.normal
+        var x = locationHasher(pos[0] + dat.blockID, pos[1], pos[2])
+        x ^= locationHasher(norm[0], norm[1] + dat.blockID, norm[2])
+        newhash = x
     } else {
         noa.targetedBlock = null
     }
