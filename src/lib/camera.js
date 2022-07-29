@@ -71,6 +71,9 @@ export class Camera {
         /** Mouse look inverse (vertical) */
         this.inverseY = !!opts.inverseY
 
+        /** For temporarily disabling mouse-look inputs */
+        this.inputsDisabled = false
+
         /** 
          * Camera yaw angle. 
          * Returns the camera's rotation angle around the vertical axis. 
@@ -229,6 +232,7 @@ export class Camera {
         var dx = pointerState.dx * this.sensitivityX * conv
         if (this.inverseY) dy = -dy
         if (this.inverseX) dx = -dx
+        if (this.inputsDisabled) dx = dy = 0
 
         // normalize/clamp angles, update direction vector
         var twopi = 2 * Math.PI
