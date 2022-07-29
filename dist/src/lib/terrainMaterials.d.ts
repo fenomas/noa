@@ -12,7 +12,7 @@
 export class TerrainMatManager {
     /** @param {import('../index').Engine} noa  */
     constructor(noa: import('../index').Engine);
-    _defaultMat: import("@babylonjs/core/Materials").StandardMaterial;
+    _defaultMat: import("@babylonjs/core/Materials/standardMaterial").StandardMaterial;
     noa: import("../index").Engine;
     _idCounter: number;
     _blockMatIDtoTerrainID: {};

@@ -134,8 +134,6 @@ export class Engine extends EventEmitter {
     /** @internal */
     _prevTargetHash: number;
     /** @internal */
-    makeTargetHash: (pos: any, norm: any, id: any) => number;
-    /** @internal */
     _pickPos: any;
     /** @internal */
     _pickResult: {

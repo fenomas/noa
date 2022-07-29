@@ -31,6 +31,8 @@ export class Camera {
     inverseX: boolean;
     /** Mouse look inverse (vertical) */
     inverseY: boolean;
+    /** For temporarily disabling mouse-look inputs */
+    inputsDisabled: boolean;
     /**
      * Camera yaw angle.
      * Returns the camera's rotation angle around the vertical axis.
