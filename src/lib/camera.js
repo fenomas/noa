@@ -130,12 +130,10 @@ export class Camera {
         /** Current actual zoom distance. This differs from `zoomDistance` when
          * the camera is in the process of moving towards the desired distance, 
          * or when it's obstructed by solid terrain behind the player.
-         * @readonly
+         * This value will get overwritten each tick, but you may want to write to it
+         * when overriding the camera zoom speed.
         */
         this.currentZoom = opts.initialZoom
-        /** @internal */
-        this._currentZoom = this.currentZoom
-        Object.defineProperty(this, 'currentZoom', { get: () => this._currentZoom })
 
         /** @internal */
         this._dirVector = vec3.fromValues(0, 0, 1)
@@ -165,8 +163,8 @@ export class Camera {
     /** @internal */
     _localGetPosition() {
         var loc = this._localGetTargetPosition()
-        if (this._currentZoom === 0) return loc
-        return vec3.scaleAndAdd(loc, loc, this._dirVector, -this._currentZoom)
+        if (this.currentZoom === 0) return loc
+        return vec3.scaleAndAdd(loc, loc, this._dirVector, -this.currentZoom)
     }
 
 
@@ -256,14 +254,14 @@ export class Camera {
     */
     updateBeforeEntityRenderSystems() {
         // zoom update
-        this._currentZoom += (this.zoomDistance - this._currentZoom) * this.zoomSpeed
+        this.currentZoom += (this.zoomDistance - this.currentZoom) * this.zoomSpeed
     }
 
     /** @internal */
     updateAfterEntityRenderSystems() {
         // clamp camera zoom not to clip into solid terrain
         var maxZoom = cameraObstructionDistance(this)
-        if (this._currentZoom > maxZoom) this._currentZoom = maxZoom
+        if (this.currentZoom > maxZoom) this.currentZoom = maxZoom
     }
 
 }
