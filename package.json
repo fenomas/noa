@@ -36,7 +36,7 @@
         "voxel-physics-engine": "^0.12.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^5.14.1"
+        "@babylonjs/core": "^5.11.0"
     },
     "devDependencies": {
         "eslint": "^8.3.0",
