@@ -253,47 +253,33 @@ LocationQueue.prototype.sortByDistance = function (locToDist) {
 
 
 // simple thing for reporting time split up between several activities
-export function makeProfileHook(every, title, filter) {
+export function makeProfileHook(every, title = '', filter) {
     if (!(every > 0)) return () => { }
-    title = title || ''
-    var times = []
-    var names = []
-    var started = 0
-    var last = 0
-    var iter = 0
-    var total = 0
-    var clearNext = true
+    var times = {}
+    var started = 0, last = 0, iter = 0, total = 0
 
-    var start = function () {
-        if (clearNext) {
-            times.length = names.length = 0
-            clearNext = false
-        }
+    var start = () => {
         started = last = performance.now()
         iter++
     }
-    var add = function (name) {
+    var add = (name) => {
         var t = performance.now()
-        if (names.indexOf(name) < 0) names.push(name)
-        var i = names.indexOf(name)
-        if (!times[i]) times[i] = 0
-        times[i] += t - last
+        times[name] = (times[name] || 0) + (t - last)
         last = t
     }
-    var report = function () {
+    var report = () => {
         total += performance.now() - started
-        if (iter === every) {
-            var head = title + ' total ' + (total / every).toFixed(2) + 'ms (avg, ' + every + ' runs)    '
-            console.log(head, names.map(function (name, i) {
-                if (filter && times[i] / total < 0.05) return ''
-                return name + ': ' + (times[i] / every).toFixed(2) + 'ms    '
-            }).join(''))
-            clearNext = true
-            iter = 0
-            total = 0
-        }
+        if (iter < every) return
+        var out = `${title}: ${(total / every).toFixed(2)}ms  --  `
+        out += Object.keys(times).map(name => {
+            if (filter && (times[name] / total) < 0.05) return ''
+            return `${name}: ${(times[name] / iter).toFixed(2)}ms`
+        }).join('  ')
+        console.log(out + `    (avg over ${every} runs)`)
+        times = {}
+        iter = total = 0
     }
-    return function profile_hook(state) {
+    return (state) => {
         if (state === 'start') start()
         else if (state === 'end') report()
         else add(state)
