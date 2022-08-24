@@ -29,7 +29,7 @@ export default Chunk
  */
 
 /** @param {import('../index').Engine} noa */
-function Chunk(noa, requestID, ci, cj, ck, size, dataArray, fillVoxelID) {
+function Chunk(noa, requestID, ci, cj, ck, size, dataArray, fillVoxelID = -1) {
     this.noa = noa
     this.isDisposed = false
 
@@ -53,13 +53,14 @@ function Chunk(noa, requestID, ci, cj, ck, size, dataArray, fillVoxelID) {
     this._terrainMeshes = []
     noa._terrainMesher.initChunk(this)
     noa._objectMesher.initChunk(this)
+
     this._isFull = false
     this._isEmpty = false
-    this._filledWithVoxel = -1
 
+    this._wholeLayerVoxel = Array(size).fill(-1)
     if (fillVoxelID >= 0) {
         this.voxels.data.fill(fillVoxelID, 0, this.voxels.size)
-        this._filledWithVoxel = fillVoxelID
+        this._wholeLayerVoxel.fill(fillVoxelID)
     }
 
     // references to neighboring chunks, if they exist (filled in by `world`)
@@ -83,7 +84,7 @@ Chunk._createVoxelArray = function (size) {
     return ndarray(arr, [size, size, size])
 }
 
-Chunk.prototype._updateVoxelArray = function (dataArray, fillVoxelID) {
+Chunk.prototype._updateVoxelArray = function (dataArray, fillVoxelID = -1) {
     // dispose current object blocks
     callAllBlockHandlers(this, 'onUnload')
     this.noa._objectMesher.disposeChunk(this)
@@ -94,11 +95,13 @@ Chunk.prototype._updateVoxelArray = function (dataArray, fillVoxelID) {
     this._blockHandlerLocs.empty()
     this.noa._objectMesher.initChunk(this)
     this.noa._terrainMesher.initChunk(this)
-    this._filledWithVoxel = -1
+
     if (fillVoxelID >= 0) {
-        this._filledWithVoxel = fillVoxelID
-        this.voxels.data.fill(fillVoxelID, 0, this.voxels.size)
+        this._wholeLayerVoxel.fill(fillVoxelID)
+    } else {
+        this._wholeLayerVoxel.fill(-1)
     }
+
     scanVoxelData(this)
 }
 
@@ -139,6 +142,11 @@ Chunk.prototype.set = function (i, j, k, newID) {
     var opaqueLookup = this.noa.registry._opacityLookup
     var handlerLookup = this.noa.registry._blockHandlerLookup
 
+    // track invariants about chunk data
+    if (!opaqueLookup[newID]) this._isFull = false
+    if (newID !== 0) this._isEmpty = false
+    if (this._wholeLayerVoxel[j] !== newID) this._wholeLayerVoxel[j] = -1
+
     // voxel lifecycle handling
     var hold = handlerLookup[oldID]
     var hnew = handlerLookup[newID]
@@ -157,11 +165,7 @@ Chunk.prototype.set = function (i, j, k, newID) {
     if (objOld) objMesher.setObjectBlock(this, 0, i, j, k)
     if (objNew) objMesher.setObjectBlock(this, newID, i, j, k)
 
-    // track full/emptiness and dirty flags for the chunk
-    if (!opaqueLookup[newID]) this._isFull = false
-    if (newID !== 0) this._isEmpty = false
-    this._filledWithVoxel = -1
-
+    // decide dirtiness states
     var solidityChanged = (solidLookup[oldID] !== solidLookup[newID])
     var opacityChanged = (opaqueLookup[oldID] !== opaqueLookup[newID])
     var wasTerrain = !objOld && (oldID !== 0)
@@ -251,24 +255,31 @@ function scanVoxelData(chunk) {
     var plainLookup = chunk.noa.registry._blockIsPlainLookup
     var objMesher = chunk.noa._objectMesher
 
-    // fastest case where entire chunk is air/dirt/etc
-    var monoID = chunk._filledWithVoxel
-    if (monoID >= 0 && !objMesher[monoID] && !handlerLookup[monoID]) {
-        chunk._isFull = !!opaqueLookup[monoID]
-        chunk._isEmpty = (monoID === 0)
-        chunk._terrainDirty = !chunk._isEmpty
-        return
-    }
-
     // flags for tracking if chunk is entirely opaque or transparent
     var fullyOpaque = true
     var fullyAir = true
 
-    for (var i = 0; i < len; ++i) {
-        for (var j = 0; j < len; ++j) {
+    // scan vertically..
+    for (var j = 0; j < len; ++j) {
+
+        // fastest case where whole layer is air/dirt/etc
+        var layerID = chunk._wholeLayerVoxel[j]
+        if (layerID >= 0 && !objMesher[layerID] && !handlerLookup[layerID]) {
+            if (!opaqueLookup[layerID]) fullyOpaque = false
+            if (layerID !== 0) fullyAir = false
+            continue
+        }
+
+        var constantID = voxels.get(0, j, 0)
+
+        for (var i = 0; i < len; ++i) {
             var index = voxels.index(i, j, 0)
             for (var k = 0; k < len; ++k, ++index) {
                 var id = data[index]
+
+                // detect constant layer ID if there is one
+                if (constantID >= 0 && id !== constantID) constantID = -1
+
                 // most common cases: air block...
                 if (id === 0) {
                     fullyOpaque = false
@@ -293,6 +304,8 @@ function scanVoxelData(chunk) {
                 }
             }
         }
+
+        if (constantID >= 0) chunk._wholeLayerVoxel[j] = constantID
     }
 
     chunk._isFull = fullyOpaque
