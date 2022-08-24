@@ -77,11 +77,10 @@ export class Camera {
     /** Current actual zoom distance. This differs from `zoomDistance` when
      * the camera is in the process of moving towards the desired distance,
      * or when it's obstructed by solid terrain behind the player.
-     * @readonly
+     * This value will get overwritten each tick, but you may want to write to it
+     * when overriding the camera zoom speed.
     */
-    readonly currentZoom: any;
-    /** @internal */
-    _currentZoom: any;
+    currentZoom: any;
     /** @internal */
     _dirVector: any;
     /** @internal */

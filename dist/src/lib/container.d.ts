@@ -16,7 +16,6 @@ export class Container extends EventEmitter {
      * @type {import('../index').Engine}
     */
     noa: import('../index').Engine;
-    /** The game's DOM element container */
     element: any;
     /** The `canvas` element that the game will draw into */
     canvas: any;

@@ -31,5 +31,5 @@ export class LocationQueue {
     copyFrom(queue: any): void;
     sortByDistance(locToDist: any): void;
 }
-export function makeProfileHook(every: any, title: any, filter: any): (state: any) => void;
+export function makeProfileHook(every: any, title: string, filter: any): (state: any) => void;
 export function makeThroughputHook(_every: any, _title: any, filter: any): (state: any) => void;
