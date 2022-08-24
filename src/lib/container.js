@@ -35,7 +35,11 @@ export class Container extends EventEmitter {
         this.noa = noa
 
         /** The game's DOM element container */
-        this.element = opts.domElement || createContainerDiv()
+        var domEl = opts.domElement || null
+        if (typeof domEl === 'string') {
+            domEl = document.querySelector(domEl)
+        }
+        this.element = domEl || createContainerDiv()
 
         /** The `canvas` element that the game will draw into */
         this.canvas = getOrCreateCanvas(this.element)
