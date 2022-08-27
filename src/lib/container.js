@@ -43,6 +43,8 @@ export class Container extends EventEmitter {
 
         /** The `canvas` element that the game will draw into */
         this.canvas = getOrCreateCanvas(this.element)
+        doCanvasBugfix(this.canvas) // grumble...
+
 
         /** Whether the browser supports pointerLock. @readonly */
         this.supportsPointerLock = false
@@ -192,4 +194,19 @@ function detectPointerLock(self) {
         }
         document.addEventListener('touchmove', listener)
     }
+}
+
+
+/**
+ * This works around a weird bug that seems to be chrome/mac only?
+ * Without this, the page sometimes initializes with the canva
+ * zoomed into its lower left quadrant. Resizing the page or the 
+ * canvas fixes the issue.
+ */
+function doCanvasBugfix(canvas) {
+    setTimeout(() => {
+        var w = canvas.width
+        canvas.width = w + 1
+        canvas.width = w
+    }, 1)
 }
