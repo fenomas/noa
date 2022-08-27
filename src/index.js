@@ -25,6 +25,7 @@ import { Rendering } from './lib/rendering'
 import { Physics } from './lib/physics'
 import { World } from './lib/world'
 import { locationHasher } from './lib/util'
+import { makeProfileHook } from './lib/util'
 
 
 import packageJSON from '../package.json'
@@ -724,9 +725,6 @@ function deprecateStuff(noa) {
 
 
 
-
-
-var makeProfileHook = require('./lib/util').makeProfileHook
 var profile_hook = (PROFILE > 0) ?
     makeProfileHook(PROFILE, 'tick   ') : () => { }
 var profile_hook_render = (PROFILE_RENDER > 0) ?

@@ -4,8 +4,8 @@
  */
 
 import { LocationQueue } from './util'
+import ndarray from 'ndarray'
 
-var ndarray = require('ndarray')
 
 export default Chunk
 

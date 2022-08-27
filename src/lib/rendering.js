@@ -3,8 +3,7 @@
  * @module noa.rendering
  */
 
-
-var glvec3 = require('gl-vec3')
+import glvec3 from 'gl-vec3'
 
 import { SceneOctreeManager } from './sceneOctreeManager'
 
