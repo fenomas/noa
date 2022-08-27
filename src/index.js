@@ -7,9 +7,11 @@
  * @license  MIT
  */
 
+import './lib/shims'
+
+import { EventEmitter } from 'events'
 import vec3 from 'gl-vec3'
 import ndarray from 'ndarray'
-import { EventEmitter } from 'events'
 import raycast from 'fast-voxel-raycast'
 
 import { Inputs } from './lib/inputs'
