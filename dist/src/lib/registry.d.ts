@@ -25,7 +25,7 @@ export class Registry {
      * Register (by integer ID) a block type and its parameters.
      *  `id` param: integer, currently 1..65535. Generally you should
      * specify sequential values for blocks, without gaps, but this
-     * isn't technically required.
+     * isn't technically necessary.
      *
      * @param {number} id - sequential integer ID (from 1)
      * @param {Partial<BlockOptions>} [options]
