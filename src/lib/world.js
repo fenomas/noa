@@ -545,7 +545,7 @@ function findNewChunksInRange(world, ci, cj, ck) {
     }
 
     // queue should be mostly sorted, but may not have been empty
-    sortQueueByDistanceFrom(toRequest, ci, cj, ck, world.chunkSortingDistFn)
+    sortQueueByDistanceFrom(toRequest, ci, cj, ck, world.chunkSortingDistFn, false, true)
 }
 
 // Helpers for checking whether to add a location, and reflections of it
@@ -562,7 +562,7 @@ var checkOneLocation = (world, state, i, j, k) => {
         if (world._chunksToRemove.includes(i, j, k)) state.removals++
     } else {
         world._chunksKnown.add(i, j, k)
-        world._chunksToRequest.addToFront(i, j, k)
+        world._chunksToRequest.add(i, j, k, true)
     }
 }
 
@@ -585,7 +585,7 @@ function findDistantChunksToRemove(world, ci, cj, ck) {
         world._chunksToRequest.remove(i, j, k)
         world._chunksToMeshFirst.remove(i, j, k)
     })
-    sortQueueByDistanceFrom(toRemove, ci, cj, ck, world.chunkSortingDistFn)
+    sortQueueByDistanceFrom(toRemove, ci, cj, ck, world.chunkSortingDistFn, false, true)
 }
 
 
@@ -617,7 +617,7 @@ function markAllChunksForRemoval(world) {
     world._chunksToMesh.empty()
     world._chunksToMeshFirst.empty()
     var [i, j, k] = getPlayerChunkIndexes(world)
-    sortQueueByDistanceFrom(world._chunksToRemove, i, j, k, world.chunkSortingDistFn)
+    sortQueueByDistanceFrom(world._chunksToRemove, i, j, k, world.chunkSortingDistFn, false, true)
 }
 
 
@@ -838,13 +838,10 @@ function chunkCoordsToLocalsPowerOfTwo(x, y, z) {
  * 
 */
 
-
-function sortQueueByDistanceFrom(queue, pi, pj, pk, distFn, reverse = false) {
-    if (reverse) {
-        queue.sortByDistance((i, j, k) => -distFn(pi - i, pj - j, pk - k))
-    } else {
-        queue.sortByDistance((i, j, k) => distFn(pi - i, pj - j, pk - k))
-    }
+// sorts DESCENDING, unless reversed
+function sortQueueByDistanceFrom(queue, pi, pj, pk, distFn, reverse = false, partialOK = false) {
+    var localDist = (i, j, k) => distFn(pi - i, pj - j, pk - k)
+    queue.sortByDistance(localDist, reverse, partialOK)
 }
 var defaultSortDistance = (i, j, k) => (i * i) + (j * j) + (k * k)
 

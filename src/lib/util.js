@@ -181,64 +181,91 @@ export function ChunkStorage() {
  * 
 */
 
-export function LocationQueue() {
-    this.arr = []
-    this.hash = {}
-}
-LocationQueue.prototype.forEach = function (a, b) { this.arr.forEach(a, b) }
-LocationQueue.prototype.includes = function (i, j, k) {
-    var id = locationHasher(i, j, k)
-    return !!this.hash[id]
-}
-LocationQueue.prototype.add = function (i, j, k) {
-    var id = locationHasher(i, j, k)
-    if (this.hash[id]) return
-    this.arr.push([i, j, k, id])
-    this.hash[id] = true
-}
-LocationQueue.prototype.addToFront = function (i, j, k) {
-    var id = locationHasher(i, j, k)
-    if (this.hash[id]) return
-    this.arr.unshift([i, j, k, id])
-    this.hash[id] = true
-}
-LocationQueue.prototype.removeByIndex = function (ix) {
-    var el = this.arr[ix]
-    delete this.hash[el[3]]
-    this.arr.splice(ix, 1)
-}
-LocationQueue.prototype.remove = function (i, j, k) {
-    var id = locationHasher(i, j, k)
-    if (!this.hash[id]) return
-    delete this.hash[id]
-    for (var ix = 0; ix < this.arr.length; ix++) {
-        if (id === this.arr[ix][3]) {
-            this.arr.splice(ix, 1)
+export class LocationQueue {
+    constructor() {
+        this.arr = []
+        this.hash = {}
+    }
+    forEach(cb, thisArg) {
+        this.arr.forEach(cb, thisArg)
+    }
+    includes(i, j, k) {
+        var id = locationHasher(i, j, k)
+        return !!this.hash[id]
+    }
+    add(i, j, k, toFront = false) {
+        var id = locationHasher(i, j, k)
+        if (this.hash[id]) return
+        if (toFront) {
+            this.arr.unshift([i, j, k, id])
+        } else {
+            this.arr.push([i, j, k, id])
+        }
+        this.hash[id] = true
+    }
+    removeByIndex(ix) {
+        var el = this.arr[ix]
+        delete this.hash[el[3]]
+        this.arr.splice(ix, 1)
+    }
+    remove(i, j, k) {
+        var id = locationHasher(i, j, k)
+        if (!this.hash[id]) return
+        delete this.hash[id]
+        for (var ix = 0; ix < this.arr.length; ix++) {
+            if (id === this.arr[ix][3]) {
+                this.arr.splice(ix, 1)
+                return
+            }
+        }
+        throw 'internal bug with location queue - hash value overlapped'
+    }
+    count() { return this.arr.length }
+    isEmpty() { return (this.arr.length === 0) }
+    empty() {
+        this.arr = []
+        this.hash = {}
+    }
+    pop() {
+        var el = this.arr.pop()
+        delete this.hash[el[3]]
+        return el
+    }
+    copyFrom(queue) {
+        this.arr = queue.arr.slice()
+        this.hash = {}
+        for (var key in queue.hash) this.hash[key] = true
+    }
+    sortByDistance(locToDist, reverse = false, partialOK = false) {
+        var len = this.arr.length
+        // should we only do a partial sort?
+        var doPartial = (partialOK && len > 1000)
+        if (!doPartial) {
+            sortLocationArrByDistance(this.arr, locToDist, reverse)
             return
         }
+        // sort just the first/last 100 elements
+        var subset = this.arr.slice(0, 100).concat(this.arr.slice(len - 100))
+        sortLocationArrByDistance(subset, locToDist, reverse)
+        // copy the subset back over main array
+        for (var i = 0; i < 100; i++) {
+            this.arr[i] = subset[i]
+            this.arr[len - i] = subset[200 - i]
+        }
     }
-    throw 'internal bug with location queue - hash value overlapped'
 }
-LocationQueue.prototype.count = function () { return this.arr.length }
-LocationQueue.prototype.isEmpty = function () { return (this.arr.length === 0) }
-LocationQueue.prototype.empty = function () {
-    this.arr.length = 0
-    this.hash = {}
-}
-LocationQueue.prototype.pop = function () {
-    var el = this.arr.pop()
-    delete this.hash[el[3]]
-    return el
-}
-LocationQueue.prototype.copyFrom = function (queue) {
-    this.arr = queue.arr.slice()
-    this.hash = {}
-    for (var key in queue.hash) this.hash[key] = true
-}
-LocationQueue.prototype.sortByDistance = function (locToDist) {
+
+// internal helper for preceding class
+function sortLocationArrByDistance(arr, distFn, reverse) {
     var hash = {}
-    for (var loc of this.arr) hash[loc] = locToDist(loc[0], loc[1], loc[2])
-    this.arr.sort((a, b) => hash[b] - hash[a]) // DESCENDING!
+    for (var loc of arr) {
+        hash[loc[3]] = distFn(loc[0], loc[1], loc[2])
+    }
+    if (reverse) {
+        arr.sort((a, b) => hash[a[3]] - hash[b[3]]) // ascending
+    } else {
+        arr.sort((a, b) => hash[b[3]] - hash[a[3]]) // descending
+    }
     hash = null
 }
 
