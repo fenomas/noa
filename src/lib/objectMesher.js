@@ -3,7 +3,6 @@
  * @internal exclude this file from API docs 
 */
 
-import { locationHasher } from './util'
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode'
 import '@babylonjs/core/Meshes/thinInstanceMesh'
 
@@ -78,7 +77,7 @@ function ObjectMesher(noa) {
         var x = chunk.x + i
         var y = chunk.y + j
         var z = chunk.z + k
-        var key = locationHasher(x, y, z)
+        var key = `${x}:${y}:${z}`
 
         var oldID = chunk._objectBlocks[key] || 0
         if (oldID === blockID) return // should be impossible
