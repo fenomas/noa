@@ -200,13 +200,15 @@ function detectPointerLock(self) {
 /**
  * This works around a weird bug that seems to be chrome/mac only?
  * Without this, the page sometimes initializes with the canva
- * zoomed into its lower left quadrant. Resizing the page or the 
- * canvas fixes the issue.
+ * zoomed into its lower left quadrant. 
+ * Resizing the canvas fixes the issue (also: resizing page, changing zoom...)
  */
 function doCanvasBugfix(canvas) {
-    setTimeout(() => {
+    var ct = 5
+    var id = setInterval(() => {
         var w = canvas.width
         canvas.width = w + 1
         canvas.width = w
-    }, 1)
+        if (ct-- < 0) clearInterval(id)
+    }, 100)
 }

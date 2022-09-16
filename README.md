@@ -4,7 +4,7 @@
 An experimental voxel game engine.
 
 Some projects using `noa`:
- * [Minecraft Classic](https://classic.minecraft.net/) - official game from Mojang (I'm as surprised as you are)
+ * [Minecraft Classic](https://classic.minecraft.net/) - from Mojang (I'm as surprised as you are)
  * [VoxelSrv](https://github.com/Patbox/voxelsrv) - a voxel game inspired by Minecraft, by [patbox](https://github.com/Patbox)
  * [CityCraft.io](https://citycraft.io/) - multiplayer voxel cities, by [raoneel](https://github.com/raoneel)
  * [noa-examples](https://github.com/fenomas/noa-examples) - starter repo with minimal hello-world and testbed games
@@ -19,20 +19,16 @@ The easiest way to start building a game with `noa` is to clone the
 on the code there. The comments in the `hello-world` example source walk 
 through how to instantiate the engine, define world geometry, and so forth. 
 The example repo also shows the intended way to import noa's 
-peer depenencies, configure webpack, and so on.
-
-
-
-## Size
-
-The engine is around **250kb** when built in production mode and zipped. 
-Uncompressed, `noa` is ~160kb its peer dependency `babylon.js` is ~900kb.
+peer dependencies, test a world, build for production, etc.
 
 
 ## Docs
 
 See the [API reference](https://fenomas.github.io/noa/API/) 
-for engine classes and methods. 
+for engine classes and methods. But virtually all the docs exist as
+JSDOC-style source comments, so if you're getting code completion and 
+type hints from a modern editor, that's the easiest way to browse the docs.
+
 Documentation PRs are welcome! See the source for details, API docs 
 are generated automatically via `npm run docs`.
 
