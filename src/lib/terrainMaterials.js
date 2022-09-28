@@ -144,16 +144,22 @@ function createTerrainMat(self, blockMatID = 0) {
     // remaining case is a new material with a diffuse texture
     var scene = self.noa.rendering.getScene()
     var mat = self.noa.rendering.makeStandardMaterial('terrain-textured-' + blockMatID)
-    var url = matInfo.texture
+    var texURL = matInfo.texture
     var sampling = Texture.NEAREST_SAMPLINGMODE
-    var tex = new Texture(url, scene, true, false, sampling)
+    var tex = new Texture(texURL, scene, true, false, sampling)
     if (matInfo.texHasAlpha) tex.hasAlpha = true
     mat.diffuseTexture = tex
 
     // it texture is an atlas, apply material plugin
-    if (matInfo.atlasIndex >= 0) new TerrainMaterialPlugin(mat, tex)
+    // and check whether any material for the atlas needs alpha
+    if (matInfo.atlasIndex >= 0) {
+        new TerrainMaterialPlugin(mat, tex)
+        if (self.noa.registry._textureNeedsAlpha(matInfo.texture)) {
+            tex.hasAlpha = true
+        }
+    }
+    
     mat.freeze()
-
     return mat
 }
 

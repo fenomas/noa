@@ -263,6 +263,19 @@ export class Registry {
         }
 
 
+        /**
+         * Given a texture URL, does any material using that 
+         * texture need alpha?
+         * @returns {boolean}
+         */
+        this._textureNeedsAlpha = function (tex = '') {
+            return matDefs.some(def => {
+                if (def.texture !== tex) return false
+                return def.texHasAlpha
+            })
+        }
+
+
 
 
 
