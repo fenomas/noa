@@ -300,8 +300,7 @@ InstanceManager.prototype.setCapacity = function (size = 4) {
         this.buffer = newBuff
     }
     this.mesh.thinInstanceSetBuffer('matrix', this.buffer)
-    this.mesh.thinInstanceCount = this.count
-    this.dirty = false
+    this.updateMatrix()
 }
 
 
