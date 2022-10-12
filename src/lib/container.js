@@ -43,7 +43,7 @@ export class Container extends EventEmitter {
 
         /** The `canvas` element that the game will draw into */
         this.canvas = getOrCreateCanvas(this.element)
-        doCanvasBugfix(this.canvas) // grumble...
+        doCanvasBugfix(noa, this.canvas) // grumble...
 
 
         /** Whether the browser supports pointerLock. @readonly */
@@ -68,6 +68,7 @@ export class Container extends EventEmitter {
         this._shell.maxRenderRate = opts.maxRenderRate
         this._shell.stickyPointerLock = opts.stickyPointerLock
         this._shell.stickyFullscreen = opts.stickyFullscreen
+        this._shell.maxTickTime = 50
 
 
 
@@ -203,12 +204,14 @@ function detectPointerLock(self) {
  * zoomed into its lower left quadrant. 
  * Resizing the canvas fixes the issue (also: resizing page, changing zoom...)
  */
-function doCanvasBugfix(canvas) {
-    var ct = 5
-    var id = setInterval(() => {
+function doCanvasBugfix(noa, canvas) {
+    var ct = 0
+    var fixCanvas = () => {
         var w = canvas.width
         canvas.width = w + 1
         canvas.width = w
-        if (ct-- < 0) clearInterval(id)
-    }, 100)
+        if (++ct > 3) noa.off('tick', fixCanvas)
+    }
+    noa.on('tick', fixCanvas)
+    setTimeout(fixCanvas, 100)
 }
