@@ -250,7 +250,7 @@ export class LocationQueue {
         // copy the subset back over main array
         for (var i = 0; i < 100; i++) {
             this.arr[i] = subset[i]
-            this.arr[len - i] = subset[200 - i]
+            this.arr[len - i - 1] = subset[200 - i - 1]
         }
     }
 }
