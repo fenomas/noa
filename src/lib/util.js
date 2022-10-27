@@ -236,22 +236,8 @@ export class LocationQueue {
         this.hash = {}
         for (var key in queue.hash) this.hash[key] = true
     }
-    sortByDistance(locToDist, reverse = false, partialOK = false) {
-        var len = this.arr.length
-        // should we only do a partial sort?
-        var doPartial = (partialOK && len > 1000)
-        if (!doPartial) {
-            sortLocationArrByDistance(this.arr, locToDist, reverse)
-            return
-        }
-        // sort just the first/last 100 elements
-        var subset = this.arr.slice(0, 100).concat(this.arr.slice(len - 100))
-        sortLocationArrByDistance(subset, locToDist, reverse)
-        // copy the subset back over main array
-        for (var i = 0; i < 100; i++) {
-            this.arr[i] = subset[i]
-            this.arr[len - i - 1] = subset[200 - i - 1]
-        }
+    sortByDistance(locToDist, reverse = false) {
+        sortLocationArrByDistance(this.arr, locToDist, reverse)
     }
 }
 
