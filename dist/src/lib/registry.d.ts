@@ -74,6 +74,12 @@ export class Registry {
         atlasIndex: number;
         renderMat: any;
     };
+    /**
+     * Given a texture URL, does any material using that
+     * texture need alpha?
+     * @returns {boolean}
+     */
+    _textureNeedsAlpha: (tex?: string) => boolean;
     /** @internal */
     _solidityLookup: boolean[];
     /** @internal */

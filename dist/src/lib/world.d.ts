@@ -77,20 +77,24 @@ export class World extends EventEmitter {
     _chunkAddSearchFrom: number;
     /** @internal */
     _prevSortingFn: any;
-    /** @internal */
-    _chunksKnown: any;
-    /** @internal */
-    _chunksPending: any;
-    /** @internal */
-    _chunksToRequest: any;
-    /** @internal */
-    _chunksToRemove: any;
-    /** @internal */
-    _chunksToMesh: any;
-    /** @internal */
-    _chunksToMeshFirst: any;
-    /** @internal */
-    _chunksSortedLocs: any;
+    /** @internal All chunks existing in any queue */
+    _chunksKnown: LocationQueue;
+    /** @internal in range but not yet requested from client */
+    _chunksToRequest: LocationQueue;
+    /** @internal known to have invalid data (wrong world, eg) */
+    _chunksInvalidated: LocationQueue;
+    /** @internal out of range, and waiting to be removed */
+    _chunksToRemove: LocationQueue;
+    /** @internal requested, awaiting data event from client */
+    _chunksPending: LocationQueue;
+    /** @internal has data, waiting to be (re-)meshed */
+    _chunksToMesh: LocationQueue;
+    /** @internal priority queue for chunks to re-mesh */
+    _chunksToMeshFirst: LocationQueue;
+    /**
+     * @internal A queue of chunk locations, rather than chunk references.
+     * Has only the positive 1/16 quadrant, sorted (reverse order!) */
+    _chunksSortedLocs: LocationQueue;
     /** @internal */
     _storage: ChunkStorage;
     /** @internal */
@@ -101,21 +105,16 @@ export class World extends EventEmitter {
     _coordShiftBits: number;
     /** @internal */
     _coordMask: number;
-    /** @param x,y,z */
-    getBlockID(x: any, y: any, z: any): any;
-    /** @param x,y,z */
-    getBlockSolidity(x: any, y: any, z: any): boolean;
-    /** @param x,y,z */
-    getBlockOpacity(x: any, y: any, z: any): any;
-    /** @param x,y,z */
-    getBlockFluidity(x: any, y: any, z: any): any;
-    /** @param x,y,z */
-    getBlockProperties(x: any, y: any, z: any): any;
-    /** @param val,x,y,z */
-    setBlockID(val: any, x: any, y: any, z: any): any;
+    getBlockID(x?: number, y?: number, z?: number): any;
+    getBlockSolidity(x?: number, y?: number, z?: number): boolean;
+    getBlockOpacity(x?: number, y?: number, z?: number): any;
+    getBlockFluidity(x?: number, y?: number, z?: number): any;
+    getBlockProperties(x?: number, y?: number, z?: number): any;
+    setBlockID(id?: number, x?: number, y?: number, z?: number): any;
     /** @param box */
     isBoxUnobstructed(box: any): boolean;
-    /** client should call this after creating a chunk's worth of data (as an ndarray)
+    /**
+     * Clients should call this after creating a chunk's worth of data (as an ndarray)
      * If userData is passed in it will be attached to the chunk
      * @param {string} id - the string specified when the chunk was requested
      * @param {*} array - an ndarray of voxel data
@@ -138,38 +137,38 @@ export class World extends EventEmitter {
      * @param {number | number[]} remDist
      */
     setAddRemoveDistance(addDist?: number | number[], remDist?: number | number[]): void;
-    /** Tells noa to discard voxel data within a given `AABB` (e.g. because
+    /**
+     * Tells noa to discard voxel data within a given `AABB` (e.g. because
      * the game client received updated data from a server).
-     * The engine will mark all affected chunks for disposal, and will later emit
+     * The engine will mark all affected chunks for removal, and will later emit
      * new `worldDataNeeded` events (if the chunk is still in draw range).
-     * Note that chunks invalidated this way will not emit a `chunkBeingRemoved` event
-     * for the client to save data from.
      */
     invalidateVoxelsInAABB(box: any): void;
     /** When manually controlling chunk loading, tells the engine that the
      * chunk containing the specified (x,y,z) needs to be created and loaded.
-     * > Note: has no effect when `noa.world.manuallyControlChunkLoading` is not set.
+     * > Note: throws unless `noa.world.manuallyControlChunkLoading` is set.
      * @param x, y, z
      */
-    manuallyLoadChunk(x: any, y: any, z: any): void;
+    manuallyLoadChunk(x?: number, y?: number, z?: number): void;
     /** When manually controlling chunk loading, tells the engine that the
      * chunk containing the specified (x,y,z) needs to be unloaded and disposed.
-     * > Note: has no effect when `noa.world.manuallyControlChunkLoading` is not set.
+     * > Note: throws unless `noa.world.manuallyControlChunkLoading` is set.
      * @param x, y, z
      */
-    manuallyUnloadChunk(x: any, y: any, z: any): void;
+    manuallyUnloadChunk(x?: number, y?: number, z?: number): void;
     /** @internal */
     tick(): void;
     /** @internal */
     render(): void;
     /** @internal */
-    _getChunkByCoords(x: any, y: any, z: any): any;
+    _getChunkByCoords(x?: number, y?: number, z?: number): any;
     _queueChunkForRemesh(chunk: any): void;
     /** @internal */
     report(): void;
 }
 import EventEmitter from "events";
 import Chunk from "./chunk";
+import { LocationQueue } from "./util";
 import { ChunkStorage } from "./util";
 declare function chunkCoordsToIndexesGeneral(x: any, y: any, z: any): number[];
 declare function chunkCoordsToLocalsPowerOfTwo(x: any, y: any, z: any): number[];

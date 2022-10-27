@@ -28,7 +28,7 @@ export class Container extends EventEmitter {
     /** Gets the current state of pointerLock. @readonly */
     hasPointerLock: boolean;
     /** @internal */
-    _shell: any;
+    _shell: MicroGameShell;
     /** @internal */
     appendTo(htmlElement: any): void;
     /**
@@ -37,3 +37,4 @@ export class Container extends EventEmitter {
     setPointerLock(lock?: boolean): void;
 }
 import { EventEmitter } from "events";
+import { MicroGameShell } from "micro-game-shell";

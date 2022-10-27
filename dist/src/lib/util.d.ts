@@ -14,14 +14,14 @@ export class ChunkStorage {
     storeChunkByIndexes: (i: any, j: any, k: any, chunk: any) => void;
     removeChunkByIndexes: (i: any, j: any, k: any) => void;
 }
-export function LocationQueue(): void;
+export function makeProfileHook(every: any, title: string, filter: any): (state: any) => void;
+export function makeThroughputHook(_every: any, _title: any, filter: any): (state: any) => void;
 export class LocationQueue {
     arr: any[];
     hash: {};
-    forEach(a: any, b: any): void;
+    forEach(cb: any, thisArg: any): void;
     includes(i: any, j: any, k: any): boolean;
-    add(i: any, j: any, k: any): void;
-    addToFront(i: any, j: any, k: any): void;
+    add(i: any, j: any, k: any, toFront?: boolean): void;
     removeByIndex(ix: any): void;
     remove(i: any, j: any, k: any): void;
     count(): number;
@@ -29,7 +29,5 @@ export class LocationQueue {
     empty(): void;
     pop(): any;
     copyFrom(queue: any): void;
-    sortByDistance(locToDist: any): void;
+    sortByDistance(locToDist: any, reverse?: boolean): void;
 }
-export function makeProfileHook(every: any, title: string, filter: any): (state: any) => void;
-export function makeThroughputHook(_every: any, _title: any, filter: any): (state: any) => void;
