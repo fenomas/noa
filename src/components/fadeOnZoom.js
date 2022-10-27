@@ -34,5 +34,5 @@ function checkZoom(state, zoom, ents) {
     if (!ents.hasMesh(state.__id)) return
 
     var shouldShow = (zoom > state.cutoff)
-    ents.getMeshData(state.__id).mesh.visibility = shouldShow
+    ents.getMeshData(state.__id).mesh.setEnabled(shouldShow)
 }
