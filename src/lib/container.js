@@ -210,8 +210,7 @@ function doCanvasBugfix(noa, canvas) {
         var w = canvas.width
         canvas.width = w + 1
         canvas.width = w
-        if (++ct > 3) noa.off('tick', fixCanvas)
+        if (ct++ > 10) noa.off('beforeRender', fixCanvas)
     }
-    noa.on('tick', fixCanvas)
-    setTimeout(fixCanvas, 100)
+    noa.on('beforeRender', fixCanvas)
 }
