@@ -65,6 +65,16 @@ export class Entities extends ECS {
     */
     getPhysicsBody: (id: number) => null | import("../components/physics").RigidBody;
     /**
+     * Makes a `getState`-like accessor bound to a given component. 
+     * The accessor is faster than `getState`, so you may want to create 
+     * an accessor for any component you'll be accessing a lot.
+    */
+    getStateAccessor: (compName: any) => (entID: any) => any;
+    /**
+     * Get the component state for a given entity.
+    */
+    getState: (entID: any, compName: string) => any;
+    /**
      * Returns whether the entity has a mesh
      * @type {(id:number) => boolean}
     */
@@ -105,7 +115,7 @@ export class Entities extends ECS {
      * Pairwise collideEntities event - assign your own function to this
      * property if you want to handle entity-entity overlap events.
      * @type {(id1:number, id2:number) => void}
-     */
+    */
     onPairwiseEntityCollision: (id1: number, id2: number) => void;
     /** Set an entity's position, and update all derived state.
      *
@@ -129,7 +139,7 @@ export class Entities extends ECS {
     /**
      * called when engine rebases its local coords
      * @internal
-     */
+    */
     _rebaseOrigin(delta: any): void;
     /** @internal */
     _localGetPosition(id: any): number[];
@@ -158,5 +168,27 @@ export class Entities extends ECS {
      * Helper to set up a general entity, and populate with some common components depending on arguments.
     */
     add(position?: any, width?: number, height?: number, mesh?: any, meshOffset?: any, doPhysics?: boolean, shadow?: boolean): number;
+    /**
+     * Adds a component to an entity, optionally initializing the state object.
+    */
+    addComponent(entID: any, compName: string, state?: any): ECS;
+    /**
+     * Checks if an entity has a component. 
+    */
+    hasComponent(entID: any, compName: string): boolean;
+    /**
+     * Deletes the component definition with the given name. 
+	 * First removes the component from all entities that have it.
+    */
+    deleteComponent(compName: string): ECS;
+    /**
+     * Removes a component from an entity, triggering the component's 
+	 * onRemove handler, and then deleting any state data.
+    */
+    removeComponent(entID: any, compName: string): ECS;
+    /**
+     * Helper to delete a given entity along with any components associated with it
+    */
+    deleteEntity(entID: any): ECS;
 }
 import ECS from "ent-comp";
