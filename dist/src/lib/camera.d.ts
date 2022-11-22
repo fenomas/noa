@@ -16,13 +16,13 @@
  * ```
 */
 export class Camera {
-    /** @internal */
-    constructor(noa: any, opts: any);
     /**
      * @internal
-     * @type {import('../index').Engine}
+     * @param {import('../index').Engine} noa
+     * @param {Partial.<CameraDefaults>} opts
     */
-    noa: import('../index').Engine;
+    constructor(noa: import('../index').Engine, opts: Partial<CameraDefaults>);
+    noa: import("../index").Engine;
     /** Horizontal mouse sensitivity. Same scale as Overwatch (typical values around `5..10`) */
     sensitivityX: number;
     /** Vertical mouse sensitivity. Same scale as Overwatch (typical values around `5..10`) */
@@ -31,8 +31,17 @@ export class Camera {
     inverseX: boolean;
     /** Mouse look inverse (vertical) */
     inverseY: boolean;
-    /** For temporarily disabling mouse-look inputs */
-    inputsDisabled: boolean;
+    /**
+     * Multiplier for temporarily altering mouse sensitivity.
+     * Set this to `0` to temporarily disable camera controls.
+    */
+    sensitivityMult: number;
+    /**
+     * Multiplier for altering mouse sensitivity when pointerlock
+     * is not active - default of `0` means no camera movement.
+     * Note this setting is ignored if pointerLock isn't supported.
+     */
+    sensitivityMultOutsidePointerlock: number;
     /**
      * Camera yaw angle.
      * Returns the camera's rotation angle around the vertical axis.
@@ -71,16 +80,16 @@ export class Camera {
     */
     cameraTarget: number;
     /** How far back the camera should be from the player's eye position */
-    zoomDistance: any;
+    zoomDistance: number;
     /** How quickly the camera moves to its `zoomDistance` (0..1) */
-    zoomSpeed: any;
+    zoomSpeed: number;
     /** Current actual zoom distance. This differs from `zoomDistance` when
      * the camera is in the process of moving towards the desired distance,
      * or when it's obstructed by solid terrain behind the player.
      * This value will get overwritten each tick, but you may want to write to it
      * when overriding the camera zoom speed.
     */
-    currentZoom: any;
+    currentZoom: number;
     /** @internal */
     _dirVector: any;
     /** @internal */
@@ -103,7 +112,7 @@ export class Camera {
     getDirection(): any;
     /**
      * Called before render, if mouseLock etc. is applicable.
-     * Consumes input mouse events x/y, updates camera angle and zoom
+     * Applies current mouse x/y inputs to the camera angle and zoom
      * @internal
     */
     applyInputsToCamera(): void;
@@ -115,3 +124,15 @@ export class Camera {
     /** @internal */
     updateAfterEntityRenderSystems(): void;
 }
+declare function CameraDefaults(): void;
+declare class CameraDefaults {
+    inverseX: boolean;
+    inverseY: boolean;
+    sensitivityMult: number;
+    sensitivityMultOutsidePointerlock: number;
+    sensitivityX: number;
+    sensitivityY: number;
+    initialZoom: number;
+    zoomSpeed: number;
+}
+export {};

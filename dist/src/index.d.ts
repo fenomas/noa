@@ -47,8 +47,6 @@ export class Engine extends EventEmitter {
     /** @internal */
     _paused: boolean;
     /** @internal */
-    _dragOutsideLock: any;
-    /** @internal */
     _originRebaseDistance: any;
     /** @internal */
     worldOriginOffset: number[];
