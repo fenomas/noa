@@ -117,9 +117,6 @@ export class Engine extends EventEmitter {
         this._paused = false
 
         /** @internal */
-        this._dragOutsideLock = opts.dragCameraOutsidePointerLock
-
-        /** @internal */
         this._originRebaseDistance = opts.originRebaseDistance
 
         // world origin offset, used throughout engine for origin rebasing
@@ -396,12 +393,8 @@ export class Engine extends EventEmitter {
 
         profile_hook_render('start')
 
-        // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
-        if (this.container.hasPointerLock ||
-            !this.container.supportsPointerLock ||
-            (this._dragOutsideLock && this.inputs.state.fire)) {
-            this.camera.applyInputsToCamera()
-        }
+        // rotate camera per user inputs - specific rules for this in `camera`
+        this.camera.applyInputsToCamera()
         profile_hook_render('init')
 
         // brief run through meshing queue

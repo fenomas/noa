@@ -10,13 +10,15 @@ import sweep from 'voxel-aabb-sweep'
 
 
 // default options
-var defaults = {
-    inverseX: false,
-    inverseY: false,
-    sensitivityX: 10,
-    sensitivityY: 10,
-    initialZoom: 0,
-    zoomSpeed: 0.2,
+function CameraDefaults() {
+    this.inverseX = false
+    this.inverseY = false
+    this.sensitivityMult = 1
+    this.sensitivityMultOutsidePointerlock = 0
+    this.sensitivityX = 10
+    this.sensitivityY = 10
+    this.initialZoom = 0
+    this.zoomSpeed = 0.2
 }
 
 
@@ -49,14 +51,13 @@ var originVector = vec3.create()
 
 export class Camera {
 
-    /** @internal */
+    /** 
+     * @internal 
+     * @param {import('../index').Engine} noa
+     * @param {Partial.<CameraDefaults>} opts
+    */
     constructor(noa, opts) {
-        opts = Object.assign({}, defaults, opts)
-
-        /** 
-         * @internal
-         * @type {import('../index').Engine}
-        */
+        opts = Object.assign({}, new CameraDefaults, opts)
         this.noa = noa
 
         /** Horizontal mouse sensitivity. Same scale as Overwatch (typical values around `5..10`) */
@@ -71,8 +72,18 @@ export class Camera {
         /** Mouse look inverse (vertical) */
         this.inverseY = !!opts.inverseY
 
-        /** For temporarily disabling mouse-look inputs */
-        this.inputsDisabled = false
+        /** 
+         * Multiplier for temporarily altering mouse sensitivity.
+         * Set this to `0` to temporarily disable camera controls.
+        */
+        this.sensitivityMult = opts.sensitivityMult
+
+        /** 
+         * Multiplier for altering mouse sensitivity when pointerlock
+         * is not active - default of `0` means no camera movement.
+         * Note this setting is ignored if pointerLock isn't supported.
+         */
+        this.sensitivityMultOutsidePointerlock = opts.sensitivityMultOutsidePointerlock
 
         /** 
          * Camera yaw angle. 
@@ -215,22 +226,31 @@ export class Camera {
 
     /**
      * Called before render, if mouseLock etc. is applicable.
-     * Consumes input mouse events x/y, updates camera angle and zoom
+     * Applies current mouse x/y inputs to the camera angle and zoom
      * @internal
     */
 
     applyInputsToCamera() {
+
+        // conditional changes to mouse sensitivity
+        var senseMult = this.sensitivityMult
+        if (this.noa.container.supportsPointerLock) {
+            if (!this.noa.container.hasPointerLock) {
+                senseMult *= this.sensitivityMultOutsidePointerlock
+            }
+        }
+        if (senseMult === 0) return
+
         // dx/dy from input state
         var pointerState = this.noa.inputs.pointerState
         bugFix(pointerState) // TODO: REMOVE EVENTUALLY    
 
         // convert to rads, using (sens * 0.0066 deg/pixel), like Overwatch
         var conv = 0.0066 * Math.PI / 180
-        var dy = pointerState.dy * this.sensitivityY * conv
-        var dx = pointerState.dx * this.sensitivityX * conv
-        if (this.inverseY) dy = -dy
+        var dx = pointerState.dx * this.sensitivityX * senseMult * conv
+        var dy = pointerState.dy * this.sensitivityY * senseMult * conv
         if (this.inverseX) dx = -dx
-        if (this.inputsDisabled) dx = dy = 0
+        if (this.inverseY) dy = -dy
 
         // normalize/clamp angles, update direction vector
         var twopi = 2 * Math.PI
