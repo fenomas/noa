@@ -7,6 +7,7 @@ Some projects using `noa`:
  * [Minecraft Classic](https://classic.minecraft.net/) - official game from Mojang (I'm as surprised as you are)
  * [VoxelSrv](https://github.com/Patbox/voxelsrv) - a voxel game inspired by Minecraft, by [patbox](https://github.com/Patbox)
  * [CityCraft.io](https://citycraft.io/) - multiplayer voxel cities, by [raoneel](https://github.com/raoneel)
+ * [OPCraft](https://github.com/latticexyz/opcraft) - a voxel game running on Ethereum smart contracts, by [Lattice](https://github.com/latticexyz)
  * [noa-examples](https://github.com/fenomas/noa-examples) - starter repo with minimal hello-world and testbed games
 
 
