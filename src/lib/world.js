@@ -92,12 +92,12 @@ export class World extends EventEmitter {
         /** Cutoff (in ms) of time spent each **tick** 
          * @type {number}
         */
-        this.maxProcessingPerTick = 9
+        this.maxProcessingPerTick = 5
 
         /** Cutoff (in ms) of time spent each **render** 
          * @type {number}
         */
-        this.maxProcessingPerRender = 5
+        this.maxProcessingPerRender = 3
 
 
         // set up internal state
@@ -639,8 +639,7 @@ function markAllChunksInvalid(world) {
     world._chunksToRequest.empty()
     world._chunksToMesh.empty()
     world._chunksToMeshFirst.empty()
-    var [i, j, k] = getPlayerChunkIndexes(world)
-    sortQueueByDistanceFrom(world, world._chunksInvalidated, i, j, k)
+    sortQueueByDistanceFrom(world, world._chunksInvalidated)
 }
 
 
@@ -703,6 +702,7 @@ function possiblyQueueChunkForMeshing(world, chunk) {
     var queue = (chunk._neighborCount === 26) ?
         world._chunksToMeshFirst : world._chunksToMesh
     queue.add(chunk.i, chunk.j, chunk.k)
+    if (Math.random() > 0.95) sortQueueByDistanceFrom(world, queue)
     return true
 }
 
@@ -872,6 +872,9 @@ function chunkCoordsToLocalsPowerOfTwo(x, y, z) {
 function sortQueueByDistanceFrom(world, queue, pi, pj, pk, reverse = false) {
     var distFn = world.chunkSortingDistFn || defaultSortDistance
     var localDist = (i, j, k) => distFn(pi - i, pj - j, pk - k)
+    if (pi === undefined) {
+        [pi, pj, pk] = getPlayerChunkIndexes(world)
+    }
     queue.sortByDistance(localDist, reverse)
 }
 var defaultSortDistance = (i, j, k) => (i * i) + (j * j) + (k * k)
@@ -964,7 +967,8 @@ World.prototype.report = function () {
     _report(this, '  to remove: ', this._chunksToRemove.arr, 0)
     _report(this, '  invalid:   ', this._chunksInvalidated.arr, 0)
     _report(this, '  creating:  ', this._chunksPending.arr, 0)
-    _report(this, '  to mesh:   ', this._chunksToMesh.arr.concat(this._chunksToMeshFirst.arr), 0)
+    _report(this, '  to mesh:   ', this._chunksToMesh.arr, 0)
+    _report(this, '  mesh 1st:  ', this._chunksToMeshFirst.arr, 0)
 }
 
 function _report(world, name, arr, ext) {
