@@ -64,7 +64,7 @@ export default function TerrainMesher(noa) {
 
     /**
      * meshing entry point and high-level flow
-     * @param {import('./chunk').default} chunk 
+     * @param {import('./chunk').Chunk} chunk 
      */
     this.meshChunk = function (chunk, ignoreMaterials = false) {
         profile_hook('start')
@@ -183,7 +183,7 @@ function GreedyMesher(noa, terrainMatManager) {
     /** 
      * Entry point
      * 
-     * @param {import('./chunk').default} chunk
+     * @param {import('./chunk').Chunk} chunk
      * @returns {Object.<string, MeshedFaceData>} keyed by terrain material ID 
      */
     this.mesh = function (chunk, ignoreMaterials) {

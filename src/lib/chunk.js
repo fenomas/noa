@@ -7,7 +7,6 @@ import { LocationQueue } from './util'
 import ndarray from 'ndarray'
 
 
-export default Chunk
 
 
 /* 
@@ -29,7 +28,7 @@ export default Chunk
  */
 
 /** @param {import('../index').Engine} noa */
-function Chunk(noa, requestID, ci, cj, ck, size, dataArray, fillVoxelID = -1) {
+export function Chunk(noa, requestID, ci, cj, ck, size, dataArray, fillVoxelID = -1) {
     this.noa = noa
     this.isDisposed = false
 

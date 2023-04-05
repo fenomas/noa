@@ -156,14 +156,18 @@ export function locationHasher(i, j, k) {
 
 export function ChunkStorage() {
     var hash = {}
-    // exposed API - getting and setting
-    this.getChunkByIndexes = (i, j, k) => {
+
+    /** @returns {import('./chunk').Chunk} */
+    this.getChunkByIndexes = (i = 0, j = 0, k = 0) => {
         return hash[locationHasher(i, j, k)] || null
     }
-    this.storeChunkByIndexes = (i, j, k, chunk) => {
+
+    /** @param {import('./chunk').Chunk} chunk */
+    this.storeChunkByIndexes = (i = 0, j = 0, k = 0, chunk) => {
         hash[locationHasher(i, j, k)] = chunk
     }
-    this.removeChunkByIndexes = (i, j, k) => {
+
+    this.removeChunkByIndexes = (i = 0, j = 0, k = 0) => {
         delete hash[locationHasher(i, j, k)]
     }
 }

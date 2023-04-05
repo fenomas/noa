@@ -5,7 +5,7 @@
 
 
 import EventEmitter from 'events'
-import Chunk from './chunk'
+import { Chunk } from './chunk'
 import { LocationQueue, ChunkStorage, locationHasher, loopForTime } from './util'
 
 var PROFILE_EVERY = 0               // ticks
@@ -231,7 +231,7 @@ World.prototype.setBlockID = function (id = 0, x = 0, y = 0, z = 0) {
     var chunk = this._storage.getChunkByIndexes(ci, cj, ck)
     if (!chunk) return
     var [i, j, k] = this._coordsToChunkLocals(x, y, z)
-    return chunk.set(i, j, k, id, x, y, z)
+    return chunk.set(i, j, k, id)
 }
 
 

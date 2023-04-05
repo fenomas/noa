@@ -285,6 +285,7 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = nul
 /**
  * Create a default standardMaterial:      
  * flat, nonspecular, fully reflects diffuse and ambient light
+ * @returns {StandardMaterial}
  */
 Rendering.prototype.makeStandardMaterial = function (name) {
     var mat = new StandardMaterial(name, this._scene)
