@@ -32,6 +32,9 @@ export function Chunk(noa, requestID, ci, cj, ck, size, dataArray, fillVoxelID =
     this.noa = noa
     this.isDisposed = false
 
+    // arbitrary data passed in by client when generating world
+    this.userData = null
+
     // voxel data and properties
     this.requestID = requestID     // id sent to game client
     this.voxels = dataArray
