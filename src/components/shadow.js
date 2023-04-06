@@ -6,15 +6,16 @@ import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder'
 import '@babylonjs/core/Meshes/instancedMesh'
 
 
-export default function (noa, dist) {
+/** @param {import('../index').Engine} noa  */
+export default function (noa, distance = 10) {
 
-    var shadowDist = dist
+    var shadowDist = distance
 
     // create a mesh to re-use for shadows
     var scene = noa.rendering.getScene()
     var disc = CreateDisc('shadow', { radius: 0.75, tessellation: 30 }, scene)
     disc.rotation.x = Math.PI / 2
-    var mat = noa.rendering.makeStandardMaterial('shadowMat')
+    var mat = noa.rendering.makeStandardMaterial('shadow_component_mat')
     mat.diffuseColor = Color3.Black()
     mat.ambientColor = Color3.Black()
     mat.alpha = 0.5
