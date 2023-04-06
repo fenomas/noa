@@ -246,7 +246,9 @@ var hlpos = []
  */
 Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = null, containingChunk = null) {
     // exit silently if mesh has already been added and not removed
-    if (this._octreeManager.includesMesh(mesh)) return
+    if (!mesh.metadata) mesh.metadata = {}
+    if (mesh.metadata.noa_added_to_scene) return
+    mesh.metadata.noa_added_to_scene = true
 
     // find local position for mesh and move it there (unless it's parented)
     if (!mesh.parent) {
@@ -267,6 +269,7 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = nul
     this._octreeManager.addMesh(mesh, isStatic, pos, containingChunk)
     mesh.onDisposeObservable.add(() => {
         this._octreeManager.removeMesh(mesh)
+        mesh.metadata.noa_added_to_scene = false
     })
 }
 
