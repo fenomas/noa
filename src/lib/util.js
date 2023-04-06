@@ -17,21 +17,6 @@ export function removeUnorderedListItem(list, item) {
 
 
 
-// loop over a function for a few ms, or until it returns true
-export function loopForTime(maxTimeInMS, callback, startTime) {
-    var t0 = startTime || performance.now()
-    var res = callback()
-    if (res) return
-    var t1 = performance.now(), dt = t1 - startTime
-    // tweak time to make the average delay equal to the desired amt
-    var cutoff = t0 + maxTimeInMS - dt / 2
-    if (t1 > cutoff) return
-    var maxIter = 1000 // sanity check
-    for (var i = 0; i < maxIter; i++) {
-        if (callback() || performance.now() > cutoff) return
-    }
-}
-
 
 
 

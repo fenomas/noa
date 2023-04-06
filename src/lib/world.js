@@ -6,7 +6,7 @@
 
 import EventEmitter from 'events'
 import { Chunk } from './chunk'
-import { LocationQueue, ChunkStorage, locationHasher, loopForTime } from './util'
+import { LocationQueue, ChunkStorage, locationHasher } from './util'
 
 var PROFILE_EVERY = 0               // ticks
 var PROFILE_QUEUES_EVERY = 0        // ticks
@@ -404,26 +404,28 @@ World.prototype.tick = function () {
     findChunksToMesh(this)
 
     // process (create or mesh) some chunks, up to max iteration time
-    var ptime = Math.max(1, this.maxProcessingPerTick || 0)
+    var t = performance.now()
+    var t1 = t + Math.max(1, this.maxProcessingPerTick || 0)
     var done1 = false
     var done2 = false
     var done3 = false
-    loopForTime(ptime, () => {
+    while (t < t1) {
         if (!done1) {
-            done1 = processRequestQueue(this)
-            profile_hook('requests')
-        }
-        if (!done2) {
-            done2 = processMeshingQueue(this, false)
-            profile_hook('meshes')
-        }
-        if (!done3) {
-            done3 = processRemoveQueue(this)
+            done1 = processRemoveQueue(this)
                 || processRemoveQueue(this)
             profile_hook('removes')
         }
-        return (done1 && done2 && done3)
-    }, tickStartTime)
+        if (!done2) {
+            done2 = processRequestQueue(this)
+            profile_hook('requests')
+        }
+        if (!done3) {
+            done3 = processMeshingQueue(this, false)
+            profile_hook('meshes')
+        }
+        if (done1 && done2 && done3) break
+        t = performance.now()
+    }
 
     // track whether the player's local chunk is loaded and ready or not
     var pChunk = this._storage.getChunkByIndexes(ci, cj, ck)
@@ -438,10 +440,13 @@ World.prototype.tick = function () {
 World.prototype.render = function () {
     // on render, quickly process the high-priority meshing queue
     // to help avoid flashes of background while neighboring chunks update
-    var mpr = this.maxProcessingPerRender
-    if (mpr > 0) loopForTime(mpr, () => {
-        return processMeshingQueue(this, true)
-    })
+    var t = performance.now()
+    var t1 = t + this.maxProcessingPerRender
+    while (t < t1) {
+        var done = processMeshingQueue(this, true)
+        if (done) break
+        t = performance.now()
+    }
 }
 
 
