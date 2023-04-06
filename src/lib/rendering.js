@@ -10,7 +10,7 @@ import { SceneOctreeManager } from './sceneOctreeManager'
 import { Scene } from '@babylonjs/core/scene'
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera'
 import { Engine } from '@babylonjs/core/Engines/engine'
-import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight'
+import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight'
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color'
 import { Vector3 } from '@babylonjs/core/Maths/math.vector'
@@ -30,10 +30,10 @@ var defaults = {
     showFPS: false,
     antiAlias: true,
     clearColor: [0.8, 0.9, 1],
-    ambientColor: [1, 1, 1],
+    ambientColor: [0.5, 0.5, 0.5],
     lightDiffuse: [1, 1, 1],
     lightSpecular: [1, 1, 1],
-    groundLightColor: [0.5, 0.5, 0.5],
+    lightVector: [1, -1, 0.5],
     useAO: true,
     AOmultipliers: [0.93, 0.8, 0.5],
     reverseAOmultiplier: 1.0,
@@ -55,10 +55,10 @@ var defaults = {
  *     showFPS: false,
  *     antiAlias: true,
  *     clearColor: [0.8, 0.9, 1],
- *     ambientColor: [1, 1, 1],
+ *     ambientColor: [0.5, 0.5, 0.5],
  *     lightDiffuse: [1, 1, 1],
  *     lightSpecular: [1, 1, 1],
- *     groundLightColor: [0.5, 0.5, 0.5],
+ *     lightVector: [1, -1, 0.5],
  *     useAO: true,
  *     AOmultipliers: [0.93, 0.8, 0.5],
  *     reverseAOmultiplier: 1.0,
@@ -144,15 +144,13 @@ export class Rendering {
         this._camLocBlock = 0
 
         // apply some defaults
-        var lightVec = new Vector3(0.1, 1, 0.3)
-        this._light = new HemisphericLight('light', lightVec, scene)
+        var lightVec = Vector3.FromArray(opts.lightVector)
+        this._light = new DirectionalLight('light', lightVec, scene)
 
-        function arrToColor(a) { return new Color3(a[0], a[1], a[2]) }
-        scene.clearColor = Color4.FromColor3(arrToColor(opts.clearColor))
-        scene.ambientColor = arrToColor(opts.ambientColor)
-        this._light.diffuse = arrToColor(opts.lightDiffuse)
-        this._light.specular = arrToColor(opts.lightSpecular)
-        this._light.groundColor = arrToColor(opts.groundLightColor)
+        scene.clearColor = Color4.FromArray(opts.clearColor)
+        scene.ambientColor = Color3.FromArray(opts.ambientColor)
+        this._light.diffuse = Color3.FromArray(opts.lightDiffuse)
+        this._light.specular = Color3.FromArray(opts.lightSpecular)
 
         // scene options
         scene.skipPointerMovePicking = true
