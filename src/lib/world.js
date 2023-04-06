@@ -121,6 +121,8 @@ export class World extends EventEmitter {
         this._chunkAddSearchFrom = 0
         /** @internal */
         this._prevSortingFn = null
+        /** @internal */
+        this._sortMeshQueueEvery = 0
 
 
         // Init internal chunk queues:
@@ -407,11 +409,16 @@ World.prototype.tick = function () {
     var done2 = false
     var done3 = false
     loopForTime(ptime, () => {
-        if (!done1) done1 = processRequestQueue(this); profile_hook('requests')
-        if (!done2) done2 = processMeshingQueue(this, false); profile_hook('meshes')
+        if (!done1) {
+            done1 = processRequestQueue(this)
+            profile_hook('requests')
+        }
+        if (!done2) {
+            done2 = processMeshingQueue(this, false)
+            profile_hook('meshes')
+        }
         if (!done3) {
             done3 = processRemoveQueue(this)
-                || processRemoveQueue(this)
                 || processRemoveQueue(this)
             profile_hook('removes')
         }
@@ -702,10 +709,13 @@ function possiblyQueueChunkForMeshing(world, chunk) {
     var queue = (chunk._neighborCount === 26) ?
         world._chunksToMeshFirst : world._chunksToMesh
     queue.add(chunk.i, chunk.j, chunk.k)
-    if (Math.random() > 0.95) sortQueueByDistanceFrom(world, queue)
+    world._sortMeshQueueEvery++
+    if (world._sortMeshQueueEvery > 20) {
+        sortQueueByDistanceFrom(world, queue)
+        world._sortMeshQueueEvery = 0
+    }
     return true
 }
-
 
 
 
