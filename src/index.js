@@ -46,6 +46,7 @@ var defaultOptions = {
     playerWidth: 0.6,
     playerStart: [0, 10, 0],
     playerAutoStep: false,
+    playerShadowComponent: true,
     tickRate: 30,           // ticks per second
     maxRenderRate: 0,       // max FPS, 0 for uncapped 
     blockTestDistance: 10,
@@ -91,6 +92,7 @@ export class Engine extends EventEmitter {
      *    playerWidth: 0.6,
      *    playerStart: [0, 10, 0],
      *    playerAutoStep: false,
+     *    playerShadowComponent: true,
      *    tickRate: 30,           // ticks per second
      *    maxRenderRate: 0,       // max FPS, 0 for uncapped 
      *    blockTestDistance: 10,
@@ -194,7 +196,7 @@ export class Engine extends EventEmitter {
             opts.playerStart, // starting location
             opts.playerWidth, opts.playerHeight,
             null, null, // no mesh for now, no meshOffset, 
-            true, true
+            true, opts.playerShadowComponent,
         )
 
         // make player entity it collide with terrain and other entities
