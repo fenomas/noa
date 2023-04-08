@@ -4,6 +4,7 @@
  */
 
 import glvec3 from 'gl-vec3'
+import { makeProfileHook } from './util'
 
 import { SceneOctreeManager } from './sceneOctreeManager'
 
@@ -137,7 +138,7 @@ export class Rendering {
         this.addMeshToScene(this._camScreen)
         this._camScreen.position.z = .1
         this._camScreen.parent = this._camera
-        this._camScreenMat = this.makeStandardMaterial('camscreenmat')
+        this._camScreenMat = this.makeStandardMaterial('camera_screen_mat')
         this._camScreen.material = this._camScreenMat
         this._camScreen.setEnabled(false)
         this._camScreenMat.freeze()
@@ -291,14 +292,11 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = nul
 Rendering.prototype.makeStandardMaterial = function (name) {
     var mat = new StandardMaterial(name, this._scene)
     mat.specularColor.copyFromFloats(0, 0, 0)
-    mat.ambientColor.copyFromFloats(1, 1, 1)
+    mat.ambientColor.copyFromFloats(0.5, 0.5, 0.5)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
-    this.postMaterialCreationHook(mat)
     return mat
 }
 
-/** Exposed hook for if the client wants to do something to newly created materials */
-Rendering.prototype.postMaterialCreationHook = function (mat) { }
 
 
 
@@ -418,7 +416,7 @@ function getHighlightMesh(rendering) {
     var mesh = rendering._highlightMesh
     if (!mesh) {
         mesh = CreatePlane("highlight", { size: 1.0 }, rendering._scene)
-        var hlm = rendering.makeStandardMaterial('highlightMat')
+        var hlm = rendering.makeStandardMaterial('block_highlight_mat')
         hlm.backFaceCulling = false
         hlm.emissiveColor = new Color3(1, 1, 1)
         hlm.alpha = 0.2
@@ -552,7 +550,6 @@ Rendering.prototype.debug_MeshCount = function () {
 
 
 
-import { makeProfileHook } from './util'
 var profile_hook = (PROFILE) ?
     makeProfileHook(200, 'render internals') : () => { }
 
