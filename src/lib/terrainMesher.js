@@ -280,51 +280,61 @@ function GreedyMesher(noa, terrainMatManager) {
     /**
      * Rigging for a transposed (i,j,k) => boolean solidity lookup, 
      * that knows how to query into neigboring chunks at edges.
-     * Uses class-scoped references to voxel ndarrays, that are set above.
+     * This sets up the indirection used by `voxelIsSolid` below.
     */
     function prepareSolidityLookup(nabVoxelsT, size) {
-        currentChunkVoxels = nabVoxelsT.get(0, 0, 0)
-        currentNeighbors = nabVoxelsT
-        solidLookupArr = noa.registry._solidityLookup
-        if (edgeValueLookup.length !== size + 1) {
-            edgeValueLookup = []
-            coordValueLookup = []
-            missingValueLookup = []
-            for (var i = -1; i < size + 1; i++) {
-                var loc = (i < 0) ? 0 : (i < size) ? 1 : 2
-                edgeValueLookup[i] = [-1, 0, 1][loc] | 0
-                coordValueLookup[i] = [size - 1, i, 0][loc] | 0
-                missingValueLookup[i] = [0, i, size - 1][loc] | 0
+        if (solidityLookupInittedSize !== size) {
+            solidityLookupInittedSize = size
+            voxelIDtoSolidity = noa.registry._solidityLookup
+
+            for (var x = -1; x < size + 1; x++) {
+                var loc = (x < 0) ? 0 : (x < size) ? 1 : 2
+                coordToLoc[x + 1] = [0, 1, 2][loc]
+                edgeCoordLookup[x + 1] = [size - 1, x, 0][loc]
+                missingCoordLookup[x + 1] = [0, x, size - 1][loc]
+            }
+        }
+
+        var centerChunk = nabVoxelsT.get(0, 0, 0)
+        for (var i = 0; i < 3; i++) {
+            for (var j = 0; j < 3; j++) {
+                for (var k = 0; k < 3; k++) {
+                    var ix = i * 9 + j * 3 + k
+                    var nab = nabVoxelsT.get(i - 1, j - 1, k - 1)
+                    var type = 0
+                    if (!nab) type = 1
+                    if (nab === centerChunk) type = 2
+                    voxTypeLookup[ix] = type
+                    voxLookup[ix] = nab || centerChunk
+                }
             }
         }
     }
 
-    var edgeValueLookup = []
-    var coordValueLookup = []
-    var missingValueLookup = []
-    var solidLookupArr
-    var currentChunkVoxels
-    var currentNeighbors
+    var solidityLookupInittedSize = -1
+    var voxelIDtoSolidity = [false, true]
+    var voxLookup = Array(27).fill(null)
+    var voxTypeLookup = Array(27).fill(0)
+    var coordToLoc = [0, 1, 1, 1, 1, 1, 2]
+    var edgeCoordLookup = [3, 0, 1, 2, 3, 0]
+    var missingCoordLookup = [0, 0, 1, 2, 3, 3]
+
 
     function voxelIsSolid(i, j, k) {
-        var ni = edgeValueLookup[i] | 0
-        var nj = edgeValueLookup[j] | 0
-        var nk = edgeValueLookup[k] | 0
-        if ((ni | nj | nk) === 0) {
-            return solidLookupArr[currentChunkVoxels.get(i, j, k)]
+        var li = coordToLoc[i + 1]
+        var lj = coordToLoc[j + 1]
+        var lk = coordToLoc[k + 1]
+        var ix = li * 9 + lj * 3 + lk
+        var voxArray = voxLookup[ix]
+        var type = voxTypeLookup[ix]
+        if (type === 2) {
+            return voxelIDtoSolidity[voxArray.get(i, j, k)]
         }
-        var vox = currentNeighbors.get(ni, nj, nk)
-        if (vox) {
-            var ci = coordValueLookup[i] | 0
-            var cj = coordValueLookup[j] | 0
-            var ck = coordValueLookup[k] | 0
-            return solidLookupArr[vox.get(ci, cj, ck)]
-        } else {
-            var mi = missingValueLookup[i] | 0
-            var mj = missingValueLookup[j] | 0
-            var mk = missingValueLookup[k] | 0
-            return solidLookupArr[currentChunkVoxels.get(mi, mj, mk)]
-        }
+        var lookup = [edgeCoordLookup, missingCoordLookup][type]
+        var ci = lookup[i + 1]
+        var cj = lookup[j + 1]
+        var ck = lookup[k + 1]
+        return voxelIDtoSolidity[voxArray.get(ci, cj, ck)]
     }
 
 
