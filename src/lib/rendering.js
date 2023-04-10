@@ -478,7 +478,7 @@ Rendering.prototype.debug_SceneCheck = function () {
         block.entries.forEach(m => octs.push(m))
     })
     meshes.forEach(function (m) {
-        if (m.isDisposed) warn(m, 'disposed mesh in scene')
+        if (m.isDisposed()) warn(m, 'disposed mesh in scene')
         if (empty(m)) return
         if (missing(m, dyns, octs)) warn(m, 'non-empty mesh missing from octree')
         if (!m.material) { warn(m, 'non-empty scene mesh with no material'); return }
