@@ -246,8 +246,9 @@ var hlpos = []
  * @param containingChunk (optional) chunk to which the mesh is statically bound
  */
 Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = null, containingChunk = null) {
-    // exit silently if mesh has already been added and not removed
     if (!mesh.metadata) mesh.metadata = {}
+
+    // exit silently if mesh has already been added and not removed
     if (mesh.metadata.noa_added_to_scene) return
     mesh.metadata.noa_added_to_scene = true
 
@@ -271,12 +272,32 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = nul
     mesh.onDisposeObservable.add(() => {
         this._octreeManager.removeMesh(mesh)
         mesh.metadata.noa_added_to_scene = false
+        this.onMeshRemovedFromScene(mesh, isStatic)
     })
+
+    // call the post-creation hook for user logic
+    this.onMeshAddedToScene(mesh, isStatic)
 }
 
 
+/**
+ * This hook is called whenever a mesh is added to the scene, either by the 
+ * engine internally or because you called `noa.rendering.addMeshToScene`.
+ * You can override this to provide various custom logic - to support shadows,
+ * to to freeze or unfreeze materials, etc.
+ * 
+ * @param {import('@babylonjs/core/Meshes').Mesh} mesh
+ * @param {boolean} isStaticTerrain 
+ */
+Rendering.prototype.onMeshAddedToScene = function (mesh, isStaticTerrain = false) { }
 
 
+/**
+ * Override this hook along with `noa.rendering.onMeshAddedToScene`.
+ * @param {import('@babylonjs/core/Meshes').Mesh} mesh
+ * @param {boolean} isStaticTerrain 
+ */
+Rendering.prototype.onMeshRemovedFromScene = function (mesh, isStaticTerrain = false) { }
 
 
 

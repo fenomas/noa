@@ -716,6 +716,8 @@ function deprecateStuff(noa) {
     dep(noa.world, 'chunkSize', 'effectively an internal, so changed to `_chunkSize`')
     dep(noa.world, 'chunkAddDistance', 'set this with `noa.world.setAddRemoveDistance`')
     dep(noa.world, 'chunkRemoveDistance', 'set this with `noa.world.setAddRemoveDistance`')
+    ver = '0.33'
+    dep(noa.rendering, 'postMaterialCreationHook', 'Removed - use mesh post-creation hook instead`')
 }
 
 
