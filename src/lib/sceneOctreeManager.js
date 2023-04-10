@@ -27,6 +27,10 @@ export class SceneOctreeManager {
         var scene = rendering._scene
         scene._addComponent(new OctreeSceneComponent(scene))
 
+        // mesh metadata flags
+        var octreeBlock = 'noa_parent_octree_block'
+        var inDynamicList = 'noa_in_dynamic_list'
+
         // the root octree object
         var octree = new Octree(NOP)
         scene._selectionOctree = octree
@@ -41,16 +45,18 @@ export class SceneOctreeManager {
         */
 
         this.rebase = (offset) => { recurseRebaseBlocks(octree, offset) }
-        this.includesMesh = (mesh) => {
-            return (mesh._noaContainingBlock || mesh._noaIsDynamicContent)
-        }
 
         this.addMesh = (mesh, isStatic, pos, chunk) => {
+            if (!mesh.metadata) mesh.metadata = {}
+
+            // dynamic content is just rendered from a list on the octree
             if (!isStatic) {
-                mesh._noaIsDynamicContent = true
+                if (mesh.metadata[inDynamicList]) return
                 octree.dynamicContent.push(mesh)
+                mesh.metadata[inDynamicList] = true
                 return
             }
+
             // octreeBlock-space integer coords of mesh position, and hashed key
             var ci = Math.floor(pos[0] / bs)
             var cj = Math.floor(pos[1] / bs)
@@ -73,26 +79,39 @@ export class SceneOctreeManager {
 
             // do the actual adding logic
             block.entries.push(mesh)
-            mesh._noaContainingBlock = block
+            mesh.metadata[octreeBlock] = block
 
             // rely on octrees for selection, skipping bounds checks
             mesh.alwaysSelectAsActiveMesh = true
         }
 
         this.removeMesh = (mesh) => {
-            if (mesh._noaIsDynamicContent) {
-                mesh._noaIsDynamicContent = null
+            if (!mesh.metadata) return
+
+            if (mesh.metadata[inDynamicList]) {
+                mesh.metadata[inDynamicList] = false
                 removeUnorderedListItem(octree.dynamicContent, mesh)
             }
-            if (mesh._noaContainingBlock) {
-                mesh._noaContainingChunk = null
-                var block = mesh._noaContainingBlock
+            if (mesh.metadata[octreeBlock]) {
+                var block = mesh.metadata[octreeBlock]
+                mesh.metadata[octreeBlock] = null
                 removeUnorderedListItem(block.entries, mesh)
                 if (block.entries.length === 0) {
                     delete octBlocksHash[block._noaMapKey]
                     removeUnorderedListItem(octree.blocks, block)
                 }
             }
+        }
+
+        // experimental helper
+        this.setDynamicMeshVisibility = (mesh, visible = false) => {
+            if (mesh.metadata[inDynamicList] === visible) return
+            if (visible) {
+                octree.dynamicContent.push(mesh)
+            } else {
+                removeUnorderedListItem(octree.dynamicContent, mesh)
+            }
+            mesh.metadata[inDynamicList] = visible
         }
 
         /*
