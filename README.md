@@ -55,6 +55,9 @@ Recent changes:
    * Terrain now supports texture atlases! See `registry.registerMaterial`.
    * Added a fast way to specify that a worldgen chunk is entirely air/dirt/etc.
    * Modernized keybinds to use [KeyboardEvent.code](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code) strings, and changed several binding state properties
+   * Changed default light to Directional, and updates related engine options
+   * Added hooks for clients to know when terrain meshes are added/removed
+
  * `v0.32`: Fixes npm versioning issue - no code changes.
  * `v0.31`: 
    * Change the speed of the world! See `noa.timeScale`

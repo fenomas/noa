@@ -37,6 +37,13 @@ This is a summary of new features and breaking changes in recent `noa` versions.
      * Mouse button bindings should use `Mouse1`, `Mouse2`..
      * Mouse move/scroll values (`dx,dy,scrollx,scrolly`) are moved from 
      `noa.inputs.state` to `noa.inputs.pointerState`
+   * Changes default light to Directional, and updates related engine options:
+     * removes option `groundLightColor`, adds `lightVector`, and changes`ambientColor`
+   * Removes `noa.rendering.postMaterialCreationHook` - use mesh hooks instead
+   * Adds client hooks to know when meshes are added to or removed from the scene. This includes terrain meshes that noa manages.
+     * `noa.rendering.onMeshAddedToScene`
+     * `noa.rendering.onMeshRemovedFromScene`
+   * Adds `playerShadowComponent` option, defaulting to `true`
 
 ### 0.32.0 
    * Fixes npm versioning issue - no code changes.
