@@ -405,7 +405,8 @@ World.prototype.tick = function () {
 
     // process (create or mesh) some chunks, up to max iteration time
     var t = performance.now()
-    var t1 = t + Math.max(1, this.maxProcessingPerTick || 0)
+    var t1 = tickStartTime + (this.maxProcessingPerTick || 0)
+    if (t < t1) t1 = t + 1
     var done1 = false
     var done2 = false
     var done3 = false
