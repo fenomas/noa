@@ -4,6 +4,7 @@
 An experimental voxel game engine.
 
 Some projects using `noa`:
+ * [bloxd.io](https://bloxd.io/) - multiplayer voxel games with editable worlds, by [Arthur](https://github.com/MCArth)
  * [Minecraft Classic](https://classic.minecraft.net/) - official game from Mojang (I'm as surprised as you are)
  * [VoxelSrv](https://github.com/Patbox/voxelsrv) - a voxel game inspired by Minecraft, by [patbox](https://github.com/Patbox)
  * [CityCraft.io](https://citycraft.io/) - multiplayer voxel cities, by [raoneel](https://github.com/raoneel)
