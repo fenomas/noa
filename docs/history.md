@@ -44,6 +44,7 @@ This is a summary of new features and breaking changes in recent `noa` versions.
      * `noa.rendering.onMeshAddedToScene`
      * `noa.rendering.onMeshRemovedFromScene`
    * Adds `playerShadowComponent` option, defaulting to `true`
+   * Adds `rendering.setMeshVisibility` for toggling mesh displays
 
 ### 0.32.0 
    * Fixes npm versioning issue - no code changes.
