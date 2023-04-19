@@ -34,5 +34,5 @@ function checkZoom(state, zoom, noa) {
     var mesh = noa.ents.getMeshData(state.__id).mesh
     if (!mesh.metadata) return
     var shouldHide = (zoom < state.cutoff)
-    noa.rendering._octreeManager.setDynamicMeshVisibility(mesh, !shouldHide)
+    noa.rendering.setMeshVisibility(mesh, !shouldHide)
 }

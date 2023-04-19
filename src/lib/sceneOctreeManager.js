@@ -28,8 +28,9 @@ export class SceneOctreeManager {
         scene._addComponent(new OctreeSceneComponent(scene))
 
         // mesh metadata flags
-        var octreeBlock = 'noa_parent_octree_block'
+        var octreeBlock = 'noa_octree_block'
         var inDynamicList = 'noa_in_dynamic_list'
+        var inOctreeBlock = 'noa_in_octree_block'
 
         // the root octree object
         var octree = new Octree(NOP)
@@ -80,38 +81,61 @@ export class SceneOctreeManager {
             // do the actual adding logic
             block.entries.push(mesh)
             mesh.metadata[octreeBlock] = block
+            mesh.metadata[inOctreeBlock] = true
 
             // rely on octrees for selection, skipping bounds checks
             mesh.alwaysSelectAsActiveMesh = true
         }
 
+
+
         this.removeMesh = (mesh) => {
             if (!mesh.metadata) return
 
             if (mesh.metadata[inDynamicList]) {
-                mesh.metadata[inDynamicList] = false
                 removeUnorderedListItem(octree.dynamicContent, mesh)
+                mesh.metadata[inDynamicList] = false
             }
-            if (mesh.metadata[octreeBlock]) {
+            if (mesh.metadata[inOctreeBlock]) {
                 var block = mesh.metadata[octreeBlock]
-                mesh.metadata[octreeBlock] = null
-                removeUnorderedListItem(block.entries, mesh)
-                if (block.entries.length === 0) {
-                    delete octBlocksHash[block._noaMapKey]
-                    removeUnorderedListItem(octree.blocks, block)
+                if (block && block.entries) {
+                    removeUnorderedListItem(block.entries, mesh)
+                    if (block.entries.length === 0) {
+                        delete octBlocksHash[block._noaMapKey]
+                        removeUnorderedListItem(octree.blocks, block)
+                    }
                 }
+                mesh.metadata[octreeBlock] = null
+                mesh.metadata[inOctreeBlock] = false
             }
         }
 
+
+
         // experimental helper
-        this.setDynamicMeshVisibility = (mesh, visible = false) => {
-            if (mesh.metadata[inDynamicList] === visible) return
-            if (visible) {
-                octree.dynamicContent.push(mesh)
+        this.setMeshVisibility = (mesh, visible = false) => {
+            if (mesh.metadata[octreeBlock]) {
+                // mesh is static
+                if (mesh.metadata[inOctreeBlock] === visible) return
+                var block = mesh.metadata[octreeBlock]
+                if (block && block.entries) {
+                    if (visible) {
+                        block.entries.push(mesh)
+                    } else {
+                        removeUnorderedListItem(block.entries, mesh)
+                    }
+                }
+                mesh.metadata[inOctreeBlock] = visible
             } else {
-                removeUnorderedListItem(octree.dynamicContent, mesh)
+                // mesh is dynamic
+                if (mesh.metadata[inDynamicList] === visible) return
+                if (visible) {
+                    octree.dynamicContent.push(mesh)
+                } else {
+                    removeUnorderedListItem(octree.dynamicContent, mesh)
+                }
+                mesh.metadata[inDynamicList] = visible
             }
-            mesh.metadata[inDynamicList] = visible
         }
 
         /*

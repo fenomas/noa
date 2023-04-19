@@ -281,6 +281,21 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = nul
 
 
 /**
+ * Use this to toggle the visibility of a mesh without disposing it or
+ * removing it from the scene.
+ * 
+ * @param {import('@babylonjs/core/Meshes').Mesh} mesh
+ * @param {boolean} visible
+ */
+Rendering.prototype.setMeshVisibility = function (mesh, visible = false) {
+    if (!mesh.metadata) mesh.metadata = {}
+    if (!mesh.metadata.noa_added_to_scene) return
+    this._octreeManager.setMeshVisibility(mesh, visible)
+}
+
+
+
+/**
  * This hook is called whenever a mesh is added to the scene, either by the 
  * engine internally or because you called `noa.rendering.addMeshToScene`.
  * You can override this to provide various custom logic - to support shadows,
