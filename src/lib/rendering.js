@@ -253,8 +253,8 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = nul
     if (!mesh.metadata) mesh.metadata = {}
 
     // exit silently if mesh has already been added and not removed
-    if (mesh.metadata.noa_added_to_scene) return
-    mesh.metadata.noa_added_to_scene = true
+    if (mesh.metadata[addedToSceneFlag]) return
+    mesh.metadata[addedToSceneFlag] = true
 
     // find local position for mesh and move it there (unless it's parented)
     if (!mesh.parent) {
@@ -275,13 +275,16 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = nul
     this._octreeManager.addMesh(mesh, isStatic, pos, containingChunk)
     mesh.onDisposeObservable.add(() => {
         this._octreeManager.removeMesh(mesh)
-        mesh.metadata.noa_added_to_scene = false
+        mesh.metadata[addedToSceneFlag] = false
         this.onMeshRemovedFromScene(mesh, isStatic)
     })
 
     // call the post-creation hook for user logic
     this.onMeshAddedToScene(mesh, isStatic)
 }
+var addedToSceneFlag = 'noa_added_to_scene'
+
+
 
 
 /**
@@ -293,7 +296,7 @@ Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = nul
  */
 Rendering.prototype.setMeshVisibility = function (mesh, visible = false) {
     if (!mesh.metadata) mesh.metadata = {}
-    if (!mesh.metadata.noa_added_to_scene) return
+    if (!mesh.metadata[addedToSceneFlag]) return
     this._octreeManager.setMeshVisibility(mesh, visible)
 }
 
@@ -332,7 +335,7 @@ Rendering.prototype.onMeshRemovedFromScene = function (mesh, isStaticTerrain = f
 Rendering.prototype.makeStandardMaterial = function (name) {
     var mat = new StandardMaterial(name, this._scene)
     mat.specularColor.copyFromFloats(0, 0, 0)
-    mat.ambientColor.copyFromFloats(0.5, 0.5, 0.5)
+    mat.ambientColor.copyFromFloats(1, 1, 1)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
     return mat
 }
