@@ -40,6 +40,9 @@ function ObjectMesher(noa) {
     // mock object to pass to customMesh handler, to get transforms
     var transformObj = new TransformNode('')
 
+    // list of known base meshes
+    this.allBaseMeshes = []
+
     // internal storage of instance managers, keyed by ID
     // has check to dedupe by mesh, since babylon chokes on
     // separate sets of instances for the same mesh/clone/geometry
@@ -53,6 +56,7 @@ function ObjectMesher(noa) {
                 return managers[id] = managers[id2]
             }
         }
+        this.allBaseMeshes.push(mesh)
         return managers[id] = new InstanceManager(noa, mesh)
     }
 
