@@ -8,7 +8,7 @@ import { makeProfileHook } from './util'
 
 import { SceneOctreeManager } from './sceneOctreeManager'
 
-import { Scene } from '@babylonjs/core/scene'
+import { Scene, ScenePerformancePriority } from '@babylonjs/core/scene'
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera'
 import { Engine } from '@babylonjs/core/Engines/engine'
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight'
@@ -122,6 +122,10 @@ export class Rendering {
         var scene = this._scene
         // remove built-in listeners
         scene.detachControl()
+
+        // this disables a few babylon features that noa doesn't use
+        scene.performancePriority = ScenePerformancePriority.Intermediate
+        scene.autoClear = true
 
         // octree manager class
         var blockSize = Math.round(opts.octreeBlockSize)
