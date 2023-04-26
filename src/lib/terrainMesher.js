@@ -594,6 +594,11 @@ var faceDataPool = (() => {
 /** @param {import('../index').Engine} noa  */
 function MeshBuilder(noa, terrainMatManager) {
 
+    var cache_arr_positions = []
+    var cache_arr_normals = []
+    var cache_arr_colors = []
+    var cache_arr_uvs = []
+    var cache_arr_atlasIndexes = []
 
     /** 
      * Consume the intermediate FaceData struct and produce
@@ -629,12 +634,22 @@ function MeshBuilder(noa, terrainMatManager) {
             }
 
             // build the necessary arrays
-            var positions = []
             var indices = []
-            var normals = []
-            var colors = []
-            var uvs = []
-            var atlasIndexes = []
+            var positions = cache_arr_positions
+            var normals = cache_arr_normals
+            var colors = cache_arr_colors
+            var uvs = cache_arr_uvs
+            var atlasIndexes = cache_arr_atlasIndexes
+
+            // trim size of reused arrays if needed
+            var nf = faceData.numFaces
+            if (positions.length > nf * 12) {
+                positions.length = nf * 12
+                normals.length = nf * 12
+                colors.length = nf * 16
+                uvs.length = nf * 8
+                if (usesAtlas) atlasIndexes.length = nf * 4
+            }
 
             // scan all faces in the struct, creating data for each
             for (var f = 0; f < faceData.numFaces; f++) {
@@ -703,7 +718,6 @@ function MeshBuilder(noa, terrainMatManager) {
             }
 
             // done
-            // geomData.dispose()
             meshes.push(mesh)
         }
 
