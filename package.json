@@ -36,13 +36,13 @@
         "voxel-physics-engine": "^0.13.0"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^5.11.0"
+        "@babylonjs/core": "^6.0.0"
     },
     "devDependencies": {
         "eslint": "^8.3.0",
         "js-beautify": "^1.14.0",
-        "typedoc": "^0.22.15",
-        "typescript": "^4.6.4"
+        "typedoc": "^0.24.6",
+        "typescript": "^5.0.4"
     },
     "keywords": [
         "voxel",
