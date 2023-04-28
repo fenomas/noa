@@ -4,6 +4,7 @@
 */
 
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode'
+import { makeProfileHook } from './util'
 import '@babylonjs/core/Meshes/thinInstanceMesh'
 
 export default ObjectMesher
@@ -202,7 +203,9 @@ function ObjectMesher(noa) {
  * 
 */
 
+/** @param {import('../index').Engine} noa*/
 function InstanceManager(noa, mesh) {
+    this.noa = noa
     this.mesh = mesh
     this.buffer = null
     this.capacity = 0
@@ -216,8 +219,8 @@ function InstanceManager(noa, mesh) {
     // prepare mesh for rendering
     this.mesh.position.setAll(0)
     this.mesh.parent = noa._objectMesher.rootNode
-    this.mesh.isVisible = true
-    noa.rendering.addMeshToScene(this.mesh, false)
+    this.noa.rendering.addMeshToScene(this.mesh, false)
+    this.noa.emit('addingTerrainMesh', this.mesh)
     this.mesh.doNotSyncBoundingInfo = true
     this.mesh.alwaysSelectAsActiveMesh = true
 }
@@ -228,7 +231,8 @@ InstanceManager.prototype.dispose = function () {
     if (this.disposed) return
     this.mesh.thinInstanceCount = 0
     this.setCapacity(0)
-    this.mesh.isVisible = false
+    this.noa.emit('removingTerrainMesh', this.mesh)
+    this.noa.rendering.setMeshVisibility(this.mesh, false)
     this.mesh = null
     this.keyToIndex = null
     this.locToKey = null
@@ -347,6 +351,5 @@ function copyMatrixData(src, srcOff, dest, destOff) {
 
 
 
-import { makeProfileHook } from './util'
 var profile_hook = (PROFILE) ?
     makeProfileHook(PROFILE, 'Object meshing') : () => { }

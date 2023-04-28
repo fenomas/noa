@@ -24,6 +24,8 @@ export class TerrainMatManager {
         this._defaultMat = noa.rendering.makeStandardMaterial('base-terrain')
         this._defaultMat.freeze()
 
+        this.allMaterials = [this._defaultMat]
+
         // internals
         this.noa = noa
         this._idCounter = 1000
@@ -54,6 +56,7 @@ export class TerrainMatManager {
         // create a mat object for it, if needed
         if (!(terrID in this._terrainIDtoMatObject)) {
             var mat = createTerrainMat(this, blockMatID)
+            this.allMaterials.push(mat)
             this._terrainIDtoMatObject[terrID] = mat
         }
         // cache results and done
@@ -158,7 +161,7 @@ function createTerrainMat(self, blockMatID = 0) {
             tex.hasAlpha = true
         }
     }
-    
+
     mat.freeze()
     return mat
 }

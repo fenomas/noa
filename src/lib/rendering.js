@@ -242,7 +242,7 @@ var hlpos = []
 
 
 /**
- * Add a mesh to the scene's octree setup so that it renders. 
+ * Adds a mesh to the engine's selection/octree logic so that it renders.
  * 
  * @param mesh the mesh to add to the scene
  * @param isStatic pass in true if mesh never moves (i.e. change octree blocks)
@@ -252,35 +252,26 @@ var hlpos = []
 Rendering.prototype.addMeshToScene = function (mesh, isStatic = false, pos = null, containingChunk = null) {
     if (!mesh.metadata) mesh.metadata = {}
 
-    // exit silently if mesh has already been added and not removed
-    if (mesh.metadata[addedToSceneFlag]) return
+    // if mesh is already added, just make sure it's visisble
+    if (mesh.metadata[addedToSceneFlag]) {
+        this._octreeManager.setMeshVisibility(mesh, true)
+        return
+    }
     mesh.metadata[addedToSceneFlag] = true
 
     // find local position for mesh and move it there (unless it's parented)
     if (!mesh.parent) {
-        if (!pos) pos = [mesh.position.x, mesh.position.y, mesh.position.z]
-        var lpos = []
-        this.noa.globalToLocal(pos, null, lpos)
-        mesh.position.copyFromFloats(lpos[0], lpos[1], lpos[2])
+        if (!pos) pos = mesh.position.asArray()
+        var lpos = this.noa.globalToLocal(pos, null, [])
+        mesh.position.fromArray(lpos)
     }
 
-    // save CPU by freezing terrain meshes
-    if (isStatic) {
-        mesh.freezeWorldMatrix()
-        if (mesh.freezeNormals) mesh.freezeNormals()
-        mesh.doNotSyncBoundingInfo = true
-    }
-
-    // add to the octree, and add dispose handler to remove it
+    // add to the octree, and remove again on disposal
     this._octreeManager.addMesh(mesh, isStatic, pos, containingChunk)
     mesh.onDisposeObservable.add(() => {
         this._octreeManager.removeMesh(mesh)
         mesh.metadata[addedToSceneFlag] = false
-        this.onMeshRemovedFromScene(mesh, isStatic)
     })
-
-    // call the post-creation hook for user logic
-    this.onMeshAddedToScene(mesh, isStatic)
 }
 var addedToSceneFlag = 'noa_added_to_scene'
 
@@ -296,30 +287,13 @@ var addedToSceneFlag = 'noa_added_to_scene'
  */
 Rendering.prototype.setMeshVisibility = function (mesh, visible = false) {
     if (!mesh.metadata) mesh.metadata = {}
-    if (!mesh.metadata[addedToSceneFlag]) return
-    this._octreeManager.setMeshVisibility(mesh, visible)
+    if (mesh.metadata[addedToSceneFlag]) {
+        this._octreeManager.setMeshVisibility(mesh, visible)
+    } else {
+        if (visible) this.addMeshToScene(mesh)
+    }
 }
 
-
-
-/**
- * This hook is called whenever a mesh is added to the scene, either by the 
- * engine internally or because you called `noa.rendering.addMeshToScene`.
- * You can override this to provide various custom logic - to support shadows,
- * to to freeze or unfreeze materials, etc.
- * 
- * @param {import('@babylonjs/core/Meshes').Mesh} mesh
- * @param {boolean} isStaticTerrain 
- */
-Rendering.prototype.onMeshAddedToScene = function (mesh, isStaticTerrain = false) { }
-
-
-/**
- * Override this hook along with `noa.rendering.onMeshAddedToScene`.
- * @param {import('@babylonjs/core/Meshes').Mesh} mesh
- * @param {boolean} isStaticTerrain 
- */
-Rendering.prototype.onMeshRemovedFromScene = function (mesh, isStaticTerrain = false) { }
 
 
 

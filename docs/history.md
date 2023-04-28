@@ -40,11 +40,11 @@ This is a summary of new features and breaking changes in recent `noa` versions.
    * Changes default light to Directional, and updates related engine options:
      * removes option `groundLightColor`, adds `lightVector`, and changes`ambientColor`
    * Removes `noa.rendering.postMaterialCreationHook` - use mesh hooks instead
-   * Adds client hooks to know when meshes are added to or removed from the scene. This includes terrain meshes that noa manages.
-     * `noa.rendering.onMeshAddedToScene`
-     * `noa.rendering.onMeshRemovedFromScene`
+   * Adds `rendering.setMeshVisibility` for toggling the display of meshes that are added to the scene with `addMeshToScene`
+   * Engine now emits events when adding/removing terrain meshes that it magnages (static chunk terrain, or custom block meshes). Clients can listen to these to implement shadows.
+     * `noa#addingTerrainMesh`
+     * `noa#removingTerrainMesh`
    * Adds `playerShadowComponent` option, defaulting to `true`
-   * Adds `rendering.setMeshVisibility` for toggling mesh displays
 
 ### 0.32.0 
    * Fixes npm versioning issue - no code changes.

@@ -77,6 +77,8 @@ var defaultOptions = {
  * @emits beforeRender(dt)
  * @emits afterRender(dt)
  * @emits targetBlockChanged(blockDesc)
+ * @emits addingTerrainMesh(mesh)
+ * @emits removingTerrainMesh(mesh)
 */
 
 export class Engine extends EventEmitter {

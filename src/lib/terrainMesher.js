@@ -36,6 +36,7 @@ export default function TerrainMesher(noa) {
 
     // wrangles which block materials can be merged into the same mesh
     var terrainMatManager = new TerrainMatManager(noa)
+    this.allTerrainMaterials = terrainMatManager.allMaterials
 
     // internally expose the default flat material used for untextured terrain
     this._defaultMaterial = terrainMatManager._defaultMat
@@ -57,7 +58,10 @@ export default function TerrainMesher(noa) {
     }
 
     this.disposeChunk = function (chunk) {
-        chunk._terrainMeshes.forEach(m => m.dispose())
+        chunk._terrainMeshes.forEach(mesh => {
+            noa.emit('removingTerrainMesh', mesh)
+            mesh.dispose()
+        })
         chunk._terrainMeshes.length = 0
     }
 
@@ -86,8 +90,11 @@ export default function TerrainMesher(noa) {
 
         // add meshes to scene and finish
         meshes.forEach((mesh) => {
-            noa.rendering.addMeshToScene(mesh, true, chunk.pos, this)
+            noa.emit('addingTerrainMesh', mesh)
             mesh.cullingStrategy = Mesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
+            noa.rendering.addMeshToScene(mesh, true, chunk.pos, this)
+            mesh.freezeNormals()
+            mesh.freezeWorldMatrix()
             chunk._terrainMeshes.push(mesh)
         })
     }
