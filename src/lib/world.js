@@ -172,9 +172,7 @@ export class World extends EventEmitter {
             this._coordShiftBits = Math.log2(cs) | 0
             /** @internal */
             this._coordMask = (cs - 1) | 0
-            /** @internal */
             this._coordsToChunkIndexes = chunkCoordsToIndexesPowerOfTwo
-            /** @internal */
             this._coordsToChunkLocals = chunkCoordsToLocalsPowerOfTwo
         }
     }
