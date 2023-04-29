@@ -90,9 +90,9 @@ export default function TerrainMesher(noa) {
 
         // add meshes to scene and finish
         meshes.forEach((mesh) => {
-            noa.emit('addingTerrainMesh', mesh)
             mesh.cullingStrategy = Mesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
             noa.rendering.addMeshToScene(mesh, true, chunk.pos, this)
+            noa.emit('addingTerrainMesh', mesh)
             mesh.freezeNormals()
             mesh.freezeWorldMatrix()
             chunk._terrainMeshes.push(mesh)
