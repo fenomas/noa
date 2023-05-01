@@ -1,10 +1,16 @@
-export default ObjectMesher;
-/** @param {import('../index').Engine} noa*/
-declare function ObjectMesher(noa: import('../index').Engine): void;
-declare class ObjectMesher {
-    /** @param {import('../index').Engine} noa*/
+/**
+ * @internal
+ * @param {import('../index').Engine} noa
+*/
+export function ObjectMesher(noa: import('../index').Engine): void;
+export class ObjectMesher {
+    /**
+     * @internal
+     * @param {import('../index').Engine} noa
+    */
     constructor(noa: import('../index').Engine);
     rootNode: TransformNode;
+    allBaseMeshes: any[];
     initChunk: (chunk: any) => void;
     setObjectBlock: (chunk: any, blockID: any, i: any, j: any, k: any) => void;
     buildObjectMeshes: () => void;
@@ -12,4 +18,4 @@ declare class ObjectMesher {
     tick: () => void;
     _rebaseOrigin: (delta: any) => void;
 }
-import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode';

@@ -7,7 +7,7 @@
  * for full docs.
  *
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  *
  * ```js
  * {
@@ -26,4 +26,4 @@ export class Physics extends VoxelPhysics {
     */
     constructor(noa: import('../index').Engine, opts: any);
 }
-import { Physics as VoxelPhysics } from "voxel-physics-engine";
+import { Physics as VoxelPhysics } from 'voxel-physics-engine';

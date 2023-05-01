@@ -2,7 +2,7 @@
  * `noa.world` - manages world data, chunks, voxels.
  *
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  * ```js
  * var defaultOptions = {
  *   chunkSize: 24,
@@ -12,6 +12,16 @@
  *   manuallyControlChunkLoading: false,
  * }
  * ```
+ *
+ * **Events:**
+ *  + `worldDataNeeded = (requestID, dataArr, x, y, z, worldName)`
+ *    Alerts client that a new chunk of world data is needed.
+ *  + `playerEnteredChunk => (i, j, k)`
+ *    Fires when player enters a new chunk
+ *  + `chunkAdded => (chunk)`
+ *    Fires after a new chunk object is added to the world
+ *  + `chunkBeingRemoved = (requestID, dataArr, userData)`
+ *    Fires before a chunk is removed from world
 */
 export class World extends EventEmitter {
     /** @internal */
@@ -77,6 +87,8 @@ export class World extends EventEmitter {
     _chunkAddSearchFrom: number;
     /** @internal */
     _prevSortingFn: any;
+    /** @internal */
+    _sortMeshQueueEvery: number;
     /** @internal All chunks existing in any queue */
     _chunksKnown: LocationQueue;
     /** @internal in range but not yet requested from client */
@@ -110,7 +122,7 @@ export class World extends EventEmitter {
     getBlockOpacity(x?: number, y?: number, z?: number): any;
     getBlockFluidity(x?: number, y?: number, z?: number): any;
     getBlockProperties(x?: number, y?: number, z?: number): any;
-    setBlockID(id?: number, x?: number, y?: number, z?: number): any;
+    setBlockID(id?: number, x?: number, y?: number, z?: number): void;
     /** @param box */
     isBoxUnobstructed(box: any): boolean;
     /**
@@ -161,15 +173,15 @@ export class World extends EventEmitter {
     /** @internal */
     render(): void;
     /** @internal */
-    _getChunkByCoords(x?: number, y?: number, z?: number): any;
+    _getChunkByCoords(x?: number, y?: number, z?: number): Chunk;
     _queueChunkForRemesh(chunk: any): void;
     /** @internal */
     report(): void;
 }
-import EventEmitter from "events";
-import Chunk from "./chunk";
-import { LocationQueue } from "./util";
-import { ChunkStorage } from "./util";
+import EventEmitter from 'events';
+import { Chunk } from './chunk';
+import { LocationQueue } from './util';
+import { ChunkStorage } from './util';
 declare function chunkCoordsToIndexesGeneral(x: any, y: any, z: any): number[];
 declare function chunkCoordsToLocalsPowerOfTwo(x: any, y: any, z: any): number[];
 export {};

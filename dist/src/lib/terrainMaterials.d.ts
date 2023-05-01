@@ -1,6 +1,4 @@
 /**
- * @module
- * @internal exclude this file from API docs
  *
  *
  *      This module creates and manages Materials for terrain meshes.
@@ -8,11 +6,13 @@
  *      the same material (and should thus be joined into a single mesh),
  *      and also creates the materials when needed.
  *
+ * @internal
 */
 export class TerrainMatManager {
     /** @param {import('../index').Engine} noa  */
     constructor(noa: import('../index').Engine);
     _defaultMat: import("@babylonjs/core/Materials/standardMaterial").StandardMaterial;
+    allMaterials: import("@babylonjs/core/Materials/standardMaterial").StandardMaterial[];
     noa: import("../index").Engine;
     _idCounter: number;
     _blockMatIDtoTerrainID: {};

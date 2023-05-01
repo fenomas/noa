@@ -52,11 +52,11 @@ See [history.md](docs/history.md) for full changes and migration for each versio
 Recent changes:
 
  * `v0.33`: 
+   * Much improved [API docs](https://fenomas.github.io/noa/API/)
    * Terrain now supports texture atlases! See `registry.registerMaterial`.
    * Added a fast way to specify that a worldgen chunk is entirely air/dirt/etc.
    * Modernized keybinds to use [KeyboardEvent.code](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code) strings, and changed several binding state properties
-   * Updated several lighting defaults to work well with Babylon shadows
-   * Engine now emits when adding/removing terrain meshes, so client can e.g. manage a ShadowGenerator
+   * Bunch of internal improvements to support shadows - see [examples](https://github.com/fenomas/noa-examples)
 
  * `v0.32`: Fixes npm versioning issue - no code changes.
  * `v0.31`: 

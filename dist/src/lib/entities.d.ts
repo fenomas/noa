@@ -9,7 +9,7 @@
  * folder for examples.
  *
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  *
  * ```js
  * var defaults = {
@@ -159,4 +159,4 @@ export class Entities extends ECS {
     */
     add(position?: any, width?: number, height?: number, mesh?: any, meshOffset?: any, doPhysics?: boolean, shadow?: boolean): number;
 }
-import ECS from "ent-comp";
+import ECS from 'ent-comp';

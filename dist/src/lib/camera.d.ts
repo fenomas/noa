@@ -3,7 +3,7 @@
  * mouse sensitivity, and so on.
  *
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  * ```js
  * var defaults = {
  *     inverseX: false,

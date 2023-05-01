@@ -45,6 +45,7 @@ This is a summary of new features and breaking changes in recent `noa` versions.
      * `noa#addingTerrainMesh`
      * `noa#removingTerrainMesh`
    * Adds `playerShadowComponent` option, defaulting to `true`
+   * Renames some internals to be public - e.g. `rendering._scene` to `scene`
 
 ### 0.32.0 
    * Fixes npm versioning issue - no code changes.

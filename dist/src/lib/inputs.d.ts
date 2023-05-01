@@ -7,7 +7,7 @@
  * for full docs.
  *
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  *
  * ```js
  *   defaultBindings: {
@@ -26,4 +26,4 @@ export class Inputs extends GameInputs {
     /** @internal */
     constructor(noa: any, opts: any, element: any);
 }
-import { GameInputs } from "game-inputs";
+import { GameInputs } from 'game-inputs';

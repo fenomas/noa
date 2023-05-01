@@ -13,10 +13,6 @@
  * child modules ({@link Rendering}, {@link Container}, etc).
  * See docs for each module for their options.
  *
- * @emits tick(dt)
- * @emits beforeRender(dt)
- * @emits afterRender(dt)
- * @emits targetBlockChanged(blockDesc)
 */
 export class Engine extends EventEmitter {
     /**
@@ -30,6 +26,7 @@ export class Engine extends EventEmitter {
      *    playerWidth: 0.6,
      *    playerStart: [0, 10, 0],
      *    playerAutoStep: false,
+     *    playerShadowComponent: true,
      *    tickRate: 30,           // ticks per second
      *    maxRenderRate: 0,       // max FPS, 0 for uncapped
      *    blockTestDistance: 10,
@@ -40,6 +37,20 @@ export class Engine extends EventEmitter {
      *    originRebaseDistance: 25,
      * }
      * ```
+     *
+     * **Events:**
+     *  + `tick => (dt)`
+     *    Tick update, `dt` is (fixed) tick duration in ms
+     *  + `beforeRender => (dt)`
+     *    `dt` is the time (in ms) since the most recent tick
+     *  + `afterRender => (dt)`
+     *    `dt` is the time (in ms) since the most recent tick
+     *  + `targetBlockChanged => (blockInfo)`
+     *    Emitted each time the user's targeted world block changes
+     *  + `addingTerrainMesh => (mesh)`
+     *    Alerts client about a terrain mesh being added to the scene
+     *  + `removingTerrainMesh => (mesh)`
+     *    Alerts client before a terrain mesh is removed.
     */
     constructor(opts?: {});
     /** Version string, e.g. `"0.25.4"` */
@@ -166,7 +177,7 @@ export class Engine extends EventEmitter {
      * Sets the voxel ID at the specified position.
      * Does not check whether any entities are in the way!
      */
-    setBlock(id: any, x: any, y?: number, z?: number): any;
+    setBlock(id: any, x: any, y?: number, z?: number): void;
     /**
      * Adds a block, unless there's an entity in the way.
     */
@@ -234,15 +245,15 @@ export class Engine extends EventEmitter {
         _localPosition: number[];
     };
 }
-import { EventEmitter } from "events";
-import { Container } from "./lib/container";
-import { Inputs } from "./lib/inputs";
-import { Registry } from "./lib/registry";
-import { World } from "./lib/world";
-import { Rendering } from "./lib/rendering";
-import { Physics } from "./lib/physics";
-import { Entities } from "./lib/entities";
-import { Camera } from "./lib/camera";
-import TerrainMesher from "./lib/terrainMesher";
-import ObjectMesher from "./lib/objectMesher";
-import vec3 from "gl-vec3";
+import { EventEmitter } from 'events';
+import { Container } from './lib/container';
+import { Inputs } from './lib/inputs';
+import { Registry } from './lib/registry';
+import { World } from './lib/world';
+import { Rendering } from './lib/rendering';
+import { Physics } from './lib/physics';
+import { Entities } from './lib/entities';
+import { Camera } from './lib/camera';
+import { TerrainMesher } from './lib/terrainMesher';
+import { ObjectMesher } from './lib/objectMesher';
+import vec3 from 'gl-vec3';

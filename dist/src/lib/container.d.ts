@@ -4,9 +4,13 @@
  *
  * This module wraps `micro-game-shell`, which does most of the implementation.
  *
- * @emits DOMready
- * @emits gainedPointerLock
- * @emits lostPointerLock
+ * **Events**
+ *  + `DOMready => ()`
+ *    Relays the browser DOMready event, after noa does some initialization
+ *  + `gainedPointerLock => ()`
+ *    Fires when the game container gains pointerlock.
+ *  + `lostPointerLock => ()`
+ *    Fires when the game container loses pointerlock.
  */
 export class Container extends EventEmitter {
     /** @internal */
@@ -36,5 +40,5 @@ export class Container extends EventEmitter {
     */
     setPointerLock(lock?: boolean): void;
 }
-import { EventEmitter } from "events";
-import { MicroGameShell } from "micro-game-shell";
+import { EventEmitter } from 'events';
+import { MicroGameShell } from 'micro-game-shell';
