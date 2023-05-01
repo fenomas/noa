@@ -1,7 +1,3 @@
-/** 
- * The Registry class is found at [[Registry | `noa.registry`]].
- * @module noa.registry
- */
 
 
 var defaults = {
@@ -20,7 +16,7 @@ var MAX_BLOCK_ID = (1 << 16) - 1
  * materials, properties, and events.
  * 
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  * 
  * ```js
  * var defaults = {
@@ -178,7 +174,7 @@ export class Registry {
 
         this.registerMaterial = function (name = '?', options = null) {
             // catch calls to earlier signature
-            if (Array.isArray(options) || arguments[2]) {
+            if (Array.isArray(options)) {
                 throw 'This API changed signatures in v0.33, please use: `noa.registry.registerMaterial("name", optionsObj)`'
             }
 
@@ -266,6 +262,7 @@ export class Registry {
         /**
          * Given a texture URL, does any material using that 
          * texture need alpha?
+         * @internal
          * @returns {boolean}
          */
         this._textureNeedsAlpha = function (tex = '') {

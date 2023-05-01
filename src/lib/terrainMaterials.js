@@ -5,8 +5,6 @@ import { MaterialPluginBase } from '@babylonjs/core/Materials/materialPluginBase
 import { RawTexture2DArray } from '@babylonjs/core/Materials/Textures/rawTexture2DArray'
 
 /**
- * @module 
- * @internal exclude this file from API docs 
  * 
  * 
  *      This module creates and manages Materials for terrain meshes. 
@@ -14,6 +12,7 @@ import { RawTexture2DArray } from '@babylonjs/core/Materials/Textures/rawTexture
  *      the same material (and should thus be joined into a single mesh),
  *      and also creates the materials when needed.
  * 
+ * @internal
 */
 
 export class TerrainMatManager {

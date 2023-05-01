@@ -1,7 +1,3 @@
-/** 
- * The Camera class is found at [[Camera | `noa.camera`]].
- * @module noa.camera
- */
 
 import vec3 from 'gl-vec3'
 import aabb from 'aabb-3d'
@@ -36,7 +32,7 @@ var originVector = vec3.create()
  * mouse sensitivity, and so on.
  * 
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  * ```js
  * var defaults = {
  *     inverseX: false,

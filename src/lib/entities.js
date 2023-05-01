@@ -1,7 +1,3 @@
-/** 
- * The ECS manager, found at [[Entities | `noa.entities`]] or [[Entities | `noa.ents`]].
- * @module noa.entities
- */
 
 import ECS from 'ent-comp'
 import vec3 from 'gl-vec3'
@@ -40,7 +36,7 @@ var defaultOptions = {
  * folder for examples.
  * 
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  * 
  * ```js
  * var defaults = {

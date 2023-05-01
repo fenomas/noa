@@ -1,7 +1,3 @@
-/** 
- * @module 
- * @internal exclude this file from API docs 
-*/
 
 import { Vector3 } from '@babylonjs/core/Maths/math.vector'
 import { Octree } from '@babylonjs/core/Culling/Octrees/octree'
@@ -21,10 +17,12 @@ import { locationHasher, removeUnorderedListItem } from './util'
  * 
 */
 
+/** @internal */
 export class SceneOctreeManager {
 
+    /** @internal */
     constructor(rendering, blockSize) {
-        var scene = rendering._scene
+        var scene = rendering.scene
         scene._addComponent(new OctreeSceneComponent(scene))
 
         // mesh metadata flags

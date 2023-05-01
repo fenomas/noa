@@ -1,8 +1,3 @@
-/** 
- * The World class is found at [[World | `noa.world`]].
- * @module noa.world
- */
-
 
 import EventEmitter from 'events'
 import { Chunk } from './chunk'
@@ -28,7 +23,7 @@ var defaultOptions = {
  * `noa.world` - manages world data, chunks, voxels.
  * 
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  * ```js
  * var defaultOptions = {
  *   chunkSize: 24,
@@ -38,6 +33,16 @@ var defaultOptions = {
  *   manuallyControlChunkLoading: false,
  * }
  * ```
+ * 
+ * **Events:**
+ *  + `worldDataNeeded = (requestID, dataArr, x, y, z, worldName)`  
+ *    Alerts client that a new chunk of world data is needed.
+ *  + `playerEnteredChunk => (i, j, k)`    
+ *    Fires when player enters a new chunk
+ *  + `chunkAdded => (chunk)`  
+ *    Fires after a new chunk object is added to the world
+ *  + `chunkBeingRemoved = (requestID, dataArr, userData)`  
+ *    Fires before a chunk is removed from world
 */
 export class World extends EventEmitter {
 

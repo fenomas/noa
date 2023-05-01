@@ -1,7 +1,5 @@
-/** 
- * @module 
- * @internal exclude this file from API docs 
-*/
+
+
 
 
 // helper to swap item to end and pop(), instead of splice()ing
@@ -139,21 +137,22 @@ export function locationHasher(i, j, k) {
  * 
 */
 
-export function ChunkStorage() {
-    var hash = {}
+/** @internal */
+export class ChunkStorage {
+    constructor() {
+        this.hash = {}
+    }
 
     /** @returns {import('./chunk').Chunk} */
-    this.getChunkByIndexes = (i = 0, j = 0, k = 0) => {
-        return hash[locationHasher(i, j, k)] || null
+    getChunkByIndexes(i = 0, j = 0, k = 0) {
+        return this.hash[locationHasher(i, j, k)] || null
     }
-
     /** @param {import('./chunk').Chunk} chunk */
-    this.storeChunkByIndexes = (i = 0, j = 0, k = 0, chunk) => {
-        hash[locationHasher(i, j, k)] = chunk
+    storeChunkByIndexes(i = 0, j = 0, k = 0, chunk) {
+        this.hash[locationHasher(i, j, k)] = chunk
     }
-
-    this.removeChunkByIndexes = (i = 0, j = 0, k = 0) => {
-        delete hash[locationHasher(i, j, k)]
+    removeChunkByIndexes(i = 0, j = 0, k = 0) {
+        delete this.hash[locationHasher(i, j, k)]
     }
 }
 
@@ -170,6 +169,7 @@ export function ChunkStorage() {
  * 
 */
 
+/** @internal */
 export class LocationQueue {
     constructor() {
         this.arr = []

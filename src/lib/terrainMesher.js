@@ -1,12 +1,9 @@
-/** 
- * @module 
- * @internal exclude this file from API docs 
-*/
 
 import ndarray from 'ndarray'
 import { Mesh } from '@babylonjs/core/Meshes/mesh'
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData'
 import { TerrainMatManager } from './terrainMaterials'
+import { makeProfileHook } from './util'
 
 
 
@@ -31,8 +28,11 @@ var PROFILE_EVERY = 0
 */
 
 
-/** @param {import('../index').Engine} noa  */
-export default function TerrainMesher(noa) {
+/** 
+ * @internal
+ * @param {import('../index').Engine} noa 
+*/
+export function TerrainMesher(noa) {
 
     // wrangles which block materials can be merged into the same mesh
     var terrainMatManager = new TerrainMatManager(noa)
@@ -979,7 +979,6 @@ function unpackAOMask(aomask) {
 
 
 
-import { makeProfileHook } from './util'
 var profile_hook = (PROFILE_EVERY) ?
     makeProfileHook(PROFILE_EVERY, 'Meshing') : () => { }
 

@@ -1,4 +1,3 @@
-/** @module noa */
 
 /*!
  * noa: an experimental voxel game engine.
@@ -18,8 +17,8 @@ import { Inputs } from './lib/inputs'
 import { Container } from './lib/container'
 import { Camera } from './lib/camera'
 import { Entities } from './lib/entities'
-import ObjectMesher from './lib/objectMesher'
-import TerrainMesher from './lib/terrainMesher'
+import { ObjectMesher } from './lib/objectMesher'
+import { TerrainMesher } from './lib/terrainMesher'
 import { Registry } from './lib/registry'
 import { Rendering } from './lib/rendering'
 import { Physics } from './lib/physics'
@@ -73,12 +72,6 @@ var defaultOptions = {
  * child modules ({@link Rendering}, {@link Container}, etc).
  * See docs for each module for their options.
  * 
- * @emits tick(dt)
- * @emits beforeRender(dt)
- * @emits afterRender(dt)
- * @emits targetBlockChanged(blockDesc)
- * @emits addingTerrainMesh(mesh)
- * @emits removingTerrainMesh(mesh)
 */
 
 export class Engine extends EventEmitter {
@@ -105,6 +98,20 @@ export class Engine extends EventEmitter {
      *    originRebaseDistance: 25,
      * }
      * ```
+     * 
+     * **Events:**
+     *  + `tick => (dt)`  
+     *    Tick update, `dt` is (fixed) tick duration in ms
+     *  + `beforeRender => (dt)`  
+     *    `dt` is the time (in ms) since the most recent tick
+     *  + `afterRender => (dt)`  
+     *    `dt` is the time (in ms) since the most recent tick
+     *  + `targetBlockChanged => (blockInfo)`  
+     *    Emitted each time the user's targeted world block changes
+     *  + `addingTerrainMesh => (mesh)`  
+     *    Alerts client about a terrain mesh being added to the scene
+     *  + `removingTerrainMesh => (mesh)`  
+     *    Alerts client before a terrain mesh is removed.
     */
     constructor(opts = {}) {
         super()
@@ -313,7 +320,7 @@ export class Engine extends EventEmitter {
             win.noa = this
             win.vec3 = vec3
             win.ndarray = ndarray
-            win.scene = this.rendering._scene
+            win.scene = this.rendering.scene
         }
 
         // add hooks to throw helpful errors when using deprecated methods

@@ -1,7 +1,3 @@
-/** 
- * @module
- * @internal
- */
 
 import { LocationQueue } from './util'
 import ndarray from 'ndarray'
@@ -73,6 +69,7 @@ export function Chunk(noa, requestID, ci, cj, ck, size, dataArray, fillVoxelID =
     this._timesMeshed = 0
 
     // location queue of voxels in this chunk with block handlers (assume it's rare)
+    /** @internal */
     this._blockHandlerLocs = new LocationQueue()
 
     // passes through voxel contents, calling block handlers etc.

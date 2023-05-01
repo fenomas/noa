@@ -1,7 +1,3 @@
-/** 
- * The Rendering class is found at [[Rendering | `noa.rendering`]].
- * @module noa.rendering
- */
 
 import glvec3 from 'gl-vec3'
 import { makeProfileHook } from './util'
@@ -50,7 +46,7 @@ var defaults = {
  * Manages all rendering, and the BABYLON scene, materials, etc.
  * 
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  * ```js
  * {
  *     showFPS: false,
@@ -95,14 +91,17 @@ export class Rendering {
         /** @internal */
         this.meshingCutoffTime = 6 // ms
 
-        // set up babylon scene
-        /** @internal */
-        this._scene = null
-        /** @internal */
-        this._engine = null
-        /** @internal */
-        this._octreeManager = null
-        this.initScene(canvas, opts)
+        /** the Babylon.js Engine object for the scene */
+        this.engine = null
+        /** the Babylon.js Scene object for the world */
+        this.scene = null
+        /** a Babylon.js DirectionalLight that is added to the scene */
+        this.light = null
+        /** the Babylon.js FreeCamera that renders the scene */
+        this.camera = null
+
+        // sets up babylon scene, lights, etc
+        this._initScene(canvas, opts)
 
         // for debugging
         if (opts.showFPS) setUpFPS()
@@ -111,15 +110,18 @@ export class Rendering {
 
 
 
-    // Constructor helper - set up the Babylon.js scene and basic components
-    initScene(canvas, opts) {
+    /**
+     * Constructor helper - set up the Babylon.js scene and basic components
+     * @internal
+     */
+    _initScene(canvas, opts) {
 
         // init internal properties
-        this._engine = new Engine(canvas, opts.antiAlias, {
+        this.engine = new Engine(canvas, opts.antiAlias, {
             preserveDrawingBuffer: opts.preserveDrawingBuffer,
         })
-        this._scene = new Scene(this._engine)
-        var scene = this._scene
+        var scene = new Scene(this.engine)
+        this.scene = scene
         // remove built-in listeners
         scene.detachControl()
 
@@ -129,33 +131,38 @@ export class Rendering {
 
         // octree manager class
         var blockSize = Math.round(opts.octreeBlockSize)
+        /** @internal */
         this._octreeManager = new SceneOctreeManager(this, blockSize)
 
         // camera, and a node to hold it and accumulate rotations
+        /** @internal */
         this._cameraHolder = new TransformNode('camHolder', scene)
-        this._camera = new FreeCamera('camera', new Vector3(0, 0, 0), scene)
-        this._camera.parent = this._cameraHolder
-        this._camera.minZ = .01
+        this.camera = new FreeCamera('camera', new Vector3(0, 0, 0), scene)
+        this.camera.parent = this._cameraHolder
+        this.camera.minZ = .01
 
         // plane obscuring the camera - for overlaying an effect on the whole view
+        /** @internal */
         this._camScreen = CreatePlane('camScreen', { size: 10 }, scene)
         this.addMeshToScene(this._camScreen)
         this._camScreen.position.z = .1
-        this._camScreen.parent = this._camera
+        this._camScreen.parent = this.camera
+        /** @internal */
         this._camScreenMat = this.makeStandardMaterial('camera_screen_mat')
         this._camScreen.material = this._camScreenMat
         this._camScreen.setEnabled(false)
         this._camScreenMat.freeze()
+        /** @internal */
         this._camLocBlock = 0
 
         // apply some defaults
-        var lightVec = Vector3.FromArray(opts.lightVector)
-        this._light = new DirectionalLight('light', lightVec, scene)
-
         scene.clearColor = Color4.FromArray(opts.clearColor)
         scene.ambientColor = Color3.FromArray(opts.ambientColor)
-        this._light.diffuse = Color3.FromArray(opts.lightDiffuse)
-        this._light.specular = Color3.FromArray(opts.lightSpecular)
+
+        var lightVec = Vector3.FromArray(opts.lightVector)
+        this.light = new DirectionalLight('light', lightVec, scene)
+        this.light.diffuse = Color3.FromArray(opts.lightDiffuse)
+        this.light.specular = Color3.FromArray(opts.lightSpecular)
 
         // scene options
         scene.skipPointerMovePicking = true
@@ -171,7 +178,7 @@ export class Rendering {
 
 /** The Babylon `scene` object representing the game world. */
 Rendering.prototype.getScene = function () {
-    return this._scene
+    return this.scene
 }
 
 // per-tick listener for rendering-related stuff
@@ -188,12 +195,12 @@ Rendering.prototype.render = function () {
     profile_hook('start')
     updateCameraForRender(this)
     profile_hook('updateCamera')
-    this._engine.beginFrame()
+    this.engine.beginFrame()
     profile_hook('beginFrame')
-    this._scene.render()
+    this.scene.render()
     profile_hook('render')
     fps_hook()
-    this._engine.endFrame()
+    this.engine.endFrame()
     profile_hook('endFrame')
     profile_hook('end')
 }
@@ -207,9 +214,9 @@ Rendering.prototype.postRender = function () {
 
 /** @internal */
 Rendering.prototype.resize = function () {
-    this._engine.resize()
+    this.engine.resize()
     if (this.noa._paused && this.renderOnResize) {
-        this._scene.render()
+        this.scene.render()
     }
 }
 
@@ -245,7 +252,7 @@ var hlpos = []
  * Adds a mesh to the engine's selection/octree logic so that it renders.
  * 
  * @param mesh the mesh to add to the scene
- * @param isStatic pass in true if mesh never moves (i.e. change octree blocks)
+ * @param isStatic pass in true if mesh never moves (i.e. never changes chunks)
  * @param pos (optional) global position where the mesh should be
  * @param containingChunk (optional) chunk to which the mesh is statically bound
  */
@@ -307,7 +314,7 @@ Rendering.prototype.setMeshVisibility = function (mesh, visible = false) {
  * @returns {StandardMaterial}
  */
 Rendering.prototype.makeStandardMaterial = function (name) {
-    var mat = new StandardMaterial(name, this._scene)
+    var mat = new StandardMaterial(name, this.scene)
     mat.specularColor.copyFromFloats(0, 0, 0)
     mat.ambientColor.copyFromFloats(1, 1, 1)
     mat.diffuseColor.copyFromFloats(1, 1, 1)
@@ -357,7 +364,7 @@ Rendering.prototype.disposeChunkForRendering = function (chunk) {
 Rendering.prototype._rebaseOrigin = function (delta) {
     var dvec = new Vector3(delta[0], delta[1], delta[2])
 
-    this._scene.meshes.forEach(mesh => {
+    this.scene.meshes.forEach(mesh => {
         // parented meshes don't live in the world coord system
         if (mesh.parent) return
 
@@ -386,7 +393,7 @@ function updateCameraForRender(self) {
     self._cameraHolder.position.copyFromFloats(tgtLoc[0], tgtLoc[1], tgtLoc[2])
     self._cameraHolder.rotation.x = cam.pitch
     self._cameraHolder.rotation.y = cam.heading
-    self._camera.position.z = -cam.currentZoom
+    self.camera.position.z = -cam.currentZoom
 
     // applies screen effect when camera is inside a transparent voxel
     var cloc = cam._localGetPosition()
@@ -432,7 +439,7 @@ function checkCameraEffect(self, id) {
 function getHighlightMesh(rendering) {
     var mesh = rendering._highlightMesh
     if (!mesh) {
-        mesh = CreatePlane("highlight", { size: 1.0 }, rendering._scene)
+        mesh = CreatePlane("highlight", { size: 1.0 }, rendering.scene)
         var hlm = rendering.makeStandardMaterial('block_highlight_mat')
         hlm.backFaceCulling = false
         hlm.emissiveColor = new Color3(1, 1, 1)
@@ -450,7 +457,7 @@ function getHighlightMesh(rendering) {
                 new Vector3(-s, s, 0),
                 new Vector3(s, s, 0)
             ]
-        }, rendering._scene)
+        }, rendering.scene)
         lines.color = new Color3(1, 1, 1)
         lines.parent = mesh
 
@@ -477,13 +484,13 @@ function getHighlightMesh(rendering) {
  */
 /** @internal */
 Rendering.prototype.debug_SceneCheck = function () {
-    var meshes = this._scene.meshes
-    var octree = this._scene._selectionOctree
+    var meshes = this.scene.meshes
+    var octree = this.scene._selectionOctree
     var dyns = octree.dynamicContent
     var octs = []
     var numOcts = 0
     var numSubs = 0
-    var mats = this._scene.materials
+    var mats = this.scene.materials
     var allmats = []
     mats.forEach(mat => {
         // @ts-ignore
@@ -549,7 +556,7 @@ Rendering.prototype.debug_SceneCheck = function () {
 /** @internal */
 Rendering.prototype.debug_MeshCount = function () {
     var ct = {}
-    this._scene.meshes.forEach(m => {
+    this.scene.meshes.forEach(m => {
         var n = m.name || ''
         n = n.replace(/-\d+.*/, '#')
         n = n.replace(/\d+.*/, '#')

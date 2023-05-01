@@ -1,13 +1,8 @@
-/** 
- * @module 
- * @internal exclude this file from API docs 
-*/
 
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode'
 import { makeProfileHook } from './util'
 import '@babylonjs/core/Meshes/thinInstanceMesh'
 
-export default ObjectMesher
 
 var PROFILE = 0
 
@@ -26,11 +21,14 @@ var PROFILE = 0
 */
 
 
-/** @param {import('../index').Engine} noa*/
-function ObjectMesher(noa) {
+/** 
+ * @internal
+ * @param {import('../index').Engine} noa
+*/
+export function ObjectMesher(noa) {
 
     // transform node for all instance meshes to be parented to
-    this.rootNode = new TransformNode('objectMeshRoot', noa.rendering._scene)
+    this.rootNode = new TransformNode('objectMeshRoot', noa.rendering.scene)
 
     // tracking rebase amount inside matrix data
     var rebaseOffset = [0, 0, 0]

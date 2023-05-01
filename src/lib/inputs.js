@@ -1,8 +1,3 @@
-/** 
- * The Inputs class is found at [[Inputs | `noa.inputs`]].
- * @module noa.inputs
- */
-
 
 import { GameInputs } from 'game-inputs'
 
@@ -32,7 +27,7 @@ var defaultBindings = {
  * for full docs.
  * 
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  * 
  * ```js
  *   defaultBindings: {
