@@ -74,8 +74,7 @@ export function TerrainMesher(noa) {
         profile_hook('start')
 
         // remove any previous terrain meshes
-        chunk._terrainMeshes.forEach(m => m.dispose())
-        chunk._terrainMeshes.length = 0
+        this.disposeChunk(chunk)
         profile_hook('cleanup')
 
         // greedy mesher generates struct of face data
@@ -693,11 +692,7 @@ function MeshBuilder(noa, terrainMatManager) {
             var mesh = new Mesh(name, scene)
             var vdat = new VertexData()
 
-            // clobber babylon's bounding internals
-            mesh.doNotSyncBoundingInfo = true
-            mesh._updateBoundingInfo = () => mesh
-            mesh._refreshBoundingInfo = () => mesh
-
+            // finish the mesh
             vdat.positions = positions
             vdat.indices = indices
             vdat.normals = normals
@@ -709,6 +704,11 @@ function MeshBuilder(noa, terrainMatManager) {
             if (usesAtlas) {
                 mesh.setVerticesData('texAtlasIndices', atlasIndexes, false, 1)
             }
+
+            // disable some babylon bounding internals
+            mesh.isPickable = false
+            mesh.doNotSyncBoundingInfo = true
+            mesh._refreshBoundingInfo = () => mesh
 
             // materials wrangled by external module
             if (!ignoreMaterials) {

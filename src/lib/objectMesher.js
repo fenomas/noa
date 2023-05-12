@@ -219,6 +219,7 @@ function InstanceManager(noa, mesh) {
     this.mesh.parent = noa._objectMesher.rootNode
     this.noa.rendering.addMeshToScene(this.mesh, false)
     this.noa.emit('addingTerrainMesh', this.mesh)
+    this.mesh.isPickable = false
     this.mesh.doNotSyncBoundingInfo = true
     this.mesh.alwaysSelectAsActiveMesh = true
 }
