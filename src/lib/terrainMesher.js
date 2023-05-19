@@ -95,8 +95,11 @@ export function TerrainMesher(noa) {
             mesh.freezeNormals()
             mesh.freezeWorldMatrix()
             chunk._terrainMeshes.push(mesh)
+            if (!mesh.metadata) mesh.metadata = {}
+            mesh.metadata[terrainMeshFlag] = true
         })
     }
+    var terrainMeshFlag = 'noa_chunk_terrain_mesh'
 
 }
 
@@ -705,7 +708,7 @@ function MeshBuilder(noa, terrainMatManager) {
                 mesh.setVerticesData('texAtlasIndices', atlasIndexes, false, 1)
             }
 
-            // disable some babylon bounding internals
+            // disable some unnecessary bounding checks
             mesh.isPickable = false
             mesh.doNotSyncBoundingInfo = true
             mesh._refreshBoundingInfo = () => mesh

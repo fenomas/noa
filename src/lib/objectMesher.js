@@ -56,9 +56,11 @@ export function ObjectMesher(noa) {
             }
         }
         this.allBaseMeshes.push(mesh)
+        if (!mesh.metadata) mesh.metadata = {}
+        mesh.metadata[objectMeshFlag] = true
         return managers[id] = new InstanceManager(noa, mesh)
     }
-
+    var objectMeshFlag = 'noa_object_base_mesh'
 
 
 
