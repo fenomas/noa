@@ -10,7 +10,7 @@ module.exports = {
         "es6": true,
     },
     "parserOptions": {
-        "ecmaVersion": 10,
+        "ecmaVersion": 13,
         "sourceType": "module",
     },
     "rules": {

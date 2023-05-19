@@ -1,7 +1,3 @@
-/** 
- * The Camera class is found at [[Camera | `noa.camera`]].
- * @module noa.camera
- */
 
 import vec3 from 'gl-vec3'
 import aabb from 'aabb-3d'
@@ -10,13 +6,15 @@ import sweep from 'voxel-aabb-sweep'
 
 
 // default options
-var defaults = {
-    inverseX: false,
-    inverseY: false,
-    sensitivityX: 10,
-    sensitivityY: 10,
-    initialZoom: 0,
-    zoomSpeed: 0.2,
+function CameraDefaults() {
+    this.inverseX = false
+    this.inverseY = false
+    this.sensitivityMult = 1
+    this.sensitivityMultOutsidePointerlock = 0
+    this.sensitivityX = 10
+    this.sensitivityY = 10
+    this.initialZoom = 0
+    this.zoomSpeed = 0.2
 }
 
 
@@ -34,7 +32,7 @@ var originVector = vec3.create()
  * mouse sensitivity, and so on.
  * 
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  * ```js
  * var defaults = {
  *     inverseX: false,
@@ -49,14 +47,13 @@ var originVector = vec3.create()
 
 export class Camera {
 
-    /** @internal */
+    /** 
+     * @internal 
+     * @param {import('../index').Engine} noa
+     * @param {Partial.<CameraDefaults>} opts
+    */
     constructor(noa, opts) {
-        opts = Object.assign({}, defaults, opts)
-
-        /** 
-         * @internal
-         * @type {import('../index').Engine}
-        */
+        opts = Object.assign({}, new CameraDefaults, opts)
         this.noa = noa
 
         /** Horizontal mouse sensitivity. Same scale as Overwatch (typical values around `5..10`) */
@@ -70,6 +67,19 @@ export class Camera {
 
         /** Mouse look inverse (vertical) */
         this.inverseY = !!opts.inverseY
+
+        /** 
+         * Multiplier for temporarily altering mouse sensitivity.
+         * Set this to `0` to temporarily disable camera controls.
+        */
+        this.sensitivityMult = opts.sensitivityMult
+
+        /** 
+         * Multiplier for altering mouse sensitivity when pointerlock
+         * is not active - default of `0` means no camera movement.
+         * Note this setting is ignored if pointerLock isn't supported.
+         */
+        this.sensitivityMultOutsidePointerlock = opts.sensitivityMultOutsidePointerlock
 
         /** 
          * Camera yaw angle. 
@@ -127,12 +137,10 @@ export class Camera {
         /** Current actual zoom distance. This differs from `zoomDistance` when
          * the camera is in the process of moving towards the desired distance, 
          * or when it's obstructed by solid terrain behind the player.
-         * @readonly
+         * This value will get overwritten each tick, but you may want to write to it
+         * when overriding the camera zoom speed.
         */
         this.currentZoom = opts.initialZoom
-        /** @internal */
-        this._currentZoom = this.currentZoom
-        Object.defineProperty(this, 'currentZoom', { get: () => this._currentZoom })
 
         /** @internal */
         this._dirVector = vec3.fromValues(0, 0, 1)
@@ -162,8 +170,8 @@ export class Camera {
     /** @internal */
     _localGetPosition() {
         var loc = this._localGetTargetPosition()
-        if (this._currentZoom === 0) return loc
-        return vec3.scaleAndAdd(loc, loc, this._dirVector, -this._currentZoom)
+        if (this.currentZoom === 0) return loc
+        return vec3.scaleAndAdd(loc, loc, this._dirVector, -this.currentZoom)
     }
 
 
@@ -214,21 +222,31 @@ export class Camera {
 
     /**
      * Called before render, if mouseLock etc. is applicable.
-     * Consumes input mouse events x/y, updates camera angle and zoom
+     * Applies current mouse x/y inputs to the camera angle and zoom
      * @internal
     */
 
     applyInputsToCamera() {
+
+        // conditional changes to mouse sensitivity
+        var senseMult = this.sensitivityMult
+        if (this.noa.container.supportsPointerLock) {
+            if (!this.noa.container.hasPointerLock) {
+                senseMult *= this.sensitivityMultOutsidePointerlock
+            }
+        }
+        if (senseMult === 0) return
+
         // dx/dy from input state
-        var state = this.noa.inputs.state
-        bugFix(state) // TODO: REMOVE EVENTUALLY    
+        var pointerState = this.noa.inputs.pointerState
+        bugFix(pointerState) // TODO: REMOVE EVENTUALLY    
 
         // convert to rads, using (sens * 0.0066 deg/pixel), like Overwatch
         var conv = 0.0066 * Math.PI / 180
-        var dy = state.dy * this.sensitivityY * conv
-        var dx = state.dx * this.sensitivityX * conv
-        if (this.inverseY) dy = -dy
+        var dx = pointerState.dx * this.sensitivityX * senseMult * conv
+        var dy = pointerState.dy * this.sensitivityY * senseMult * conv
         if (this.inverseX) dx = -dx
+        if (this.inverseY) dy = -dy
 
         // normalize/clamp angles, update direction vector
         var twopi = 2 * Math.PI
@@ -252,14 +270,14 @@ export class Camera {
     */
     updateBeforeEntityRenderSystems() {
         // zoom update
-        this._currentZoom += (this.zoomDistance - this._currentZoom) * this.zoomSpeed
+        this.currentZoom += (this.zoomDistance - this.currentZoom) * this.zoomSpeed
     }
 
     /** @internal */
     updateAfterEntityRenderSystems() {
         // clamp camera zoom not to clip into solid terrain
         var maxZoom = cameraObstructionDistance(this)
-        if (this._currentZoom > maxZoom) this._currentZoom = maxZoom
+        if (this.currentZoom > maxZoom) this.currentZoom = maxZoom
     }
 
 }
@@ -295,14 +313,14 @@ function cameraObstructionDistance(self) {
 // workaround for this Chrome 63 + Win10 bug
 // https://bugs.chromium.org/p/chromium/issues/detail?id=781182
 // later updated to also address: https://github.com/fenomas/noa/issues/153
-function bugFix(state) {
-    var dx = state.dx
-    var dy = state.dy
+function bugFix(pointerState) {
+    var dx = pointerState.dx
+    var dy = pointerState.dy
     var badx = (Math.abs(dx) > 400 && Math.abs(dx / lastx) > 4)
     var bady = (Math.abs(dy) > 400 && Math.abs(dy / lasty) > 4)
     if (badx || bady) {
-        state.dx = lastx
-        state.dy = lasty
+        pointerState.dx = lastx
+        pointerState.dy = lasty
         lastx = (lastx + dx) / 2
         lasty = (lasty + dy) / 2
     } else {

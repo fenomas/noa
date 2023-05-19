@@ -1,7 +1,5 @@
-/** 
- * @module 
- * @internal exclude this file from API docs 
-*/
+
+
 
 
 // helper to swap item to end and pop(), instead of splice()ing
@@ -16,21 +14,6 @@ export function removeUnorderedListItem(list, item) {
 }
 
 
-
-// loop over a function for a few ms, or until it returns true
-export function loopForTime(maxTimeInMS, callback, startTime) {
-    var t0 = startTime || performance.now()
-    var res = callback()
-    if (res) return
-    var t1 = performance.now(), dt = t1 - startTime
-    // tweak time to make the average delay equal to the desired amt
-    var cutoff = t0 + maxTimeInMS - dt / 2
-    if (t1 > cutoff) return
-    var maxIter = 1000 // sanity check
-    for (var i = 0; i < maxIter; i++) {
-        if (callback() || performance.now() > cutoff) return
-    }
-}
 
 
 
@@ -61,12 +44,12 @@ var prevRad = 0, prevAnswer = 0
 // partly "unrolled" loops to copy contents of ndarrays
 // when there's no source, zeroes out the array instead
 export function copyNdarrayContents(src, tgt, pos, size, tgtPos) {
-    if (src) {
+    if (typeof src === 'number') {
+        doNdarrayFill(src, tgt, tgtPos[0], tgtPos[1], tgtPos[2],
+            size[0], size[1], size[2])
+    } else {
         doNdarrayCopy(src, tgt, pos[0], pos[1], pos[2],
             size[0], size[1], size[2], tgtPos[0], tgtPos[1], tgtPos[2])
-    } else {
-        doNdarrayZero(tgt, tgtPos[0], tgtPos[1], tgtPos[2],
-            size[0], size[1], size[2])
     }
 }
 function doNdarrayCopy(src, tgt, i0, j0, k0, si, sj, sk, ti, tj, tk) {
@@ -85,13 +68,13 @@ function doNdarrayCopy(src, tgt, i0, j0, k0, si, sj, sk, ti, tj, tk) {
     }
 }
 
-function doNdarrayZero(tgt, i0, j0, k0, si, sj, sk) {
+function doNdarrayFill(value, tgt, i0, j0, k0, si, sj, sk) {
     var dx = tgt.stride[2]
     for (var i = 0; i < si; i++) {
         for (var j = 0; j < sj; j++) {
             var ix = tgt.index(i0 + i, j0 + j, k0)
             for (var k = 0; k < sk; k++) {
-                tgt.data[ix] = 0
+                tgt.data[ix] = value
                 ix += dx
             }
         }
@@ -154,17 +137,22 @@ export function locationHasher(i, j, k) {
  * 
 */
 
-export function ChunkStorage() {
-    var hash = {}
-    // exposed API - getting and setting
-    this.getChunkByIndexes = (i, j, k) => {
-        return hash[locationHasher(i, j, k)] || null
+/** @internal */
+export class ChunkStorage {
+    constructor() {
+        this.hash = {}
     }
-    this.storeChunkByIndexes = (i, j, k, chunk) => {
-        hash[locationHasher(i, j, k)] = chunk
+
+    /** @returns {import('./chunk').Chunk} */
+    getChunkByIndexes(i = 0, j = 0, k = 0) {
+        return this.hash[locationHasher(i, j, k)] || null
     }
-    this.removeChunkByIndexes = (i, j, k) => {
-        delete hash[locationHasher(i, j, k)]
+    /** @param {import('./chunk').Chunk} chunk */
+    storeChunkByIndexes(i = 0, j = 0, k = 0, chunk) {
+        this.hash[locationHasher(i, j, k)] = chunk
+    }
+    removeChunkByIndexes(i = 0, j = 0, k = 0) {
+        delete this.hash[locationHasher(i, j, k)]
     }
 }
 
@@ -181,64 +169,78 @@ export function ChunkStorage() {
  * 
 */
 
-export function LocationQueue() {
-    this.arr = []
-    this.hash = {}
-}
-LocationQueue.prototype.forEach = function (a, b) { this.arr.forEach(a, b) }
-LocationQueue.prototype.includes = function (i, j, k) {
-    var id = locationHasher(i, j, k)
-    return !!this.hash[id]
-}
-LocationQueue.prototype.add = function (i, j, k) {
-    var id = locationHasher(i, j, k)
-    if (this.hash[id]) return
-    this.arr.push([i, j, k, id])
-    this.hash[id] = true
-}
-LocationQueue.prototype.addToFront = function (i, j, k) {
-    var id = locationHasher(i, j, k)
-    if (this.hash[id]) return
-    this.arr.unshift([i, j, k, id])
-    this.hash[id] = true
-}
-LocationQueue.prototype.removeByIndex = function (ix) {
-    var el = this.arr[ix]
-    delete this.hash[el[3]]
-    this.arr.splice(ix, 1)
-}
-LocationQueue.prototype.remove = function (i, j, k) {
-    var id = locationHasher(i, j, k)
-    if (!this.hash[id]) return
-    delete this.hash[id]
-    for (var ix = 0; ix < this.arr.length; ix++) {
-        if (id === this.arr[ix][3]) {
-            this.arr.splice(ix, 1)
-            return
-        }
+/** @internal */
+export class LocationQueue {
+    constructor() {
+        this.arr = []
+        this.hash = {}
     }
-    throw 'internal bug with location queue - hash value overlapped'
+    forEach(cb, thisArg) {
+        this.arr.forEach(cb, thisArg)
+    }
+    includes(i, j, k) {
+        var id = locationHasher(i, j, k)
+        return !!this.hash[id]
+    }
+    add(i, j, k, toFront = false) {
+        var id = locationHasher(i, j, k)
+        if (this.hash[id]) return
+        if (toFront) {
+            this.arr.unshift([i, j, k, id])
+        } else {
+            this.arr.push([i, j, k, id])
+        }
+        this.hash[id] = true
+    }
+    removeByIndex(ix) {
+        var el = this.arr[ix]
+        delete this.hash[el[3]]
+        this.arr.splice(ix, 1)
+    }
+    remove(i, j, k) {
+        var id = locationHasher(i, j, k)
+        if (!this.hash[id]) return
+        delete this.hash[id]
+        for (var ix = 0; ix < this.arr.length; ix++) {
+            if (id === this.arr[ix][3]) {
+                this.arr.splice(ix, 1)
+                return
+            }
+        }
+        throw 'internal bug with location queue - hash value overlapped'
+    }
+    count() { return this.arr.length }
+    isEmpty() { return (this.arr.length === 0) }
+    empty() {
+        this.arr = []
+        this.hash = {}
+    }
+    pop() {
+        var el = this.arr.pop()
+        delete this.hash[el[3]]
+        return el
+    }
+    copyFrom(queue) {
+        this.arr = queue.arr.slice()
+        this.hash = {}
+        for (var key in queue.hash) this.hash[key] = true
+    }
+    sortByDistance(locToDist, reverse = false) {
+        sortLocationArrByDistance(this.arr, locToDist, reverse)
+    }
 }
-LocationQueue.prototype.count = function () { return this.arr.length }
-LocationQueue.prototype.isEmpty = function () { return (this.arr.length === 0) }
-LocationQueue.prototype.empty = function () {
-    this.arr.length = 0
-    this.hash = {}
-}
-LocationQueue.prototype.pop = function () {
-    var el = this.arr.pop()
-    delete this.hash[el[3]]
-    return el
-}
-LocationQueue.prototype.copyFrom = function (queue) {
-    this.arr = queue.arr.slice()
-    this.hash = {}
-    for (var key in queue.hash) this.hash[key] = true
-}
-LocationQueue.prototype.sortByDistance = function (locToDist) {
+
+// internal helper for preceding class
+function sortLocationArrByDistance(arr, distFn, reverse) {
     var hash = {}
-    for (var loc of this.arr) hash[loc] = locToDist(loc[0], loc[1], loc[2])
-    this.arr.sort((a, b) => hash[b] - hash[a]) // DESCENDING!
+    for (var loc of arr) {
+        hash[loc[3]] = distFn(loc[0], loc[1], loc[2])
+    }
+    if (reverse) {
+        arr.sort((a, b) => hash[a[3]] - hash[b[3]]) // ascending
+    } else {
+        arr.sort((a, b) => hash[b[3]] - hash[a[3]]) // descending
+    }
     hash = null
 }
 
@@ -253,47 +255,33 @@ LocationQueue.prototype.sortByDistance = function (locToDist) {
 
 
 // simple thing for reporting time split up between several activities
-export function makeProfileHook(every, title, filter) {
+export function makeProfileHook(every, title = '', filter) {
     if (!(every > 0)) return () => { }
-    title = title || ''
-    var times = []
-    var names = []
-    var started = 0
-    var last = 0
-    var iter = 0
-    var total = 0
-    var clearNext = true
+    var times = {}
+    var started = 0, last = 0, iter = 0, total = 0
 
-    var start = function () {
-        if (clearNext) {
-            times.length = names.length = 0
-            clearNext = false
-        }
+    var start = () => {
         started = last = performance.now()
         iter++
     }
-    var add = function (name) {
+    var add = (name) => {
         var t = performance.now()
-        if (names.indexOf(name) < 0) names.push(name)
-        var i = names.indexOf(name)
-        if (!times[i]) times[i] = 0
-        times[i] += t - last
+        times[name] = (times[name] || 0) + (t - last)
         last = t
     }
-    var report = function () {
+    var report = () => {
         total += performance.now() - started
-        if (iter === every) {
-            var head = title + ' total ' + (total / every).toFixed(2) + 'ms (avg, ' + every + ' runs)    '
-            console.log(head, names.map(function (name, i) {
-                if (filter && times[i] / total < 0.05) return ''
-                return name + ': ' + (times[i] / every).toFixed(2) + 'ms    '
-            }).join(''))
-            clearNext = true
-            iter = 0
-            total = 0
-        }
+        if (iter < every) return
+        var out = `${title}: ${(total / every).toFixed(2)}ms  --  `
+        out += Object.keys(times).map(name => {
+            if (filter && (times[name] / total) < 0.05) return ''
+            return `${name}: ${(times[name] / iter).toFixed(2)}ms`
+        }).join('  ')
+        console.log(out + `    (avg over ${every} runs)`)
+        times = {}
+        iter = total = 0
     }
-    return function profile_hook(state) {
+    return (state) => {
         if (state === 'start') start()
         else if (state === 'end') report()
         else add(state)

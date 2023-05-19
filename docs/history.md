@@ -3,6 +3,7 @@
 
 This is a summary of new features and breaking changes in recent `noa` versions.
 
+ * [0.33.0](#0330)
  * [0.32.0](#0320)
  * [0.31.0](#0310)
  * [0.30.0](#0300)
@@ -20,6 +21,31 @@ This is a summary of new features and breaking changes in recent `noa` versions.
 
 
 ----
+
+### 0.33.0
+
+   * Signature of `noa.registry.registerMaterial` changed to take an options object
+   * Terrain now supports texture atlases! Merge your textures into a vertical strip atlas, then call `noa.registry.registerMaterial` with that texture and specify an `atlasIndex` options property.
+   * When passing world data to `setChunkData`, client may now pass in a `fillVoxelID` to signify that entire chunk should be filled with that voxel (e.g. `0` for air)
+   * Babylon version updated
+   * Added options/properties to `noa.camera` for temprary changes to camera control sensitivity.
+     * `sensitivityMult` (default `1`)
+     * `sensitivityMultOutsidePointerlock` (default `0`)
+   * Added `noa.camera.inputsDisabled` for temporarily disabling camera controls
+   * Modernization updates to `noa.inputs`. Breaking changes:
+     * Key bindings should now use [KeyboardEvent.code](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code) strings, like `KeyA`, `Shift`, etc.
+     * Mouse button bindings should use `Mouse1`, `Mouse2`..
+     * Mouse move/scroll values (`dx,dy,scrollx,scrolly`) are moved from 
+     `noa.inputs.state` to `noa.inputs.pointerState`
+   * Changes default light to Directional, and updates related engine options:
+     * removes option `groundLightColor`, adds `lightVector`, and changes`ambientColor`
+   * Removes `noa.rendering.postMaterialCreationHook` - use mesh hooks instead
+   * Adds `rendering.setMeshVisibility` for toggling the display of meshes that are added to the scene with `addMeshToScene`
+   * Engine now emits events when adding/removing terrain meshes that it magnages (static chunk terrain, or custom block meshes). Clients can listen to these to implement shadows.
+     * `noa#addingTerrainMesh`
+     * `noa#removingTerrainMesh`
+   * Adds `playerShadowComponent` option, defaulting to `true`
+   * Renames some internals to be public - e.g. `rendering._scene` to `scene`
 
 ### 0.32.0 
    * Fixes npm versioning issue - no code changes.

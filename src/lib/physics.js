@@ -1,11 +1,6 @@
-/** 
- * The Physics class is found at [[Physics | `noa.physics`]].
- * @module noa.physics
- */
-
 
 import { Physics as VoxelPhysics } from 'voxel-physics-engine'
-// import { Physics as VoxelPhysics } from '../../../../npm-modules/voxel-physics-engine'
+
 
 
 
@@ -23,7 +18,7 @@ var defaultOptions = {
  * for full docs.
  * 
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  * 
  * ```js
  * {
@@ -38,7 +33,10 @@ var defaultOptions = {
 
 export class Physics extends VoxelPhysics {
 
-    /** @internal */
+    /** 
+     * @internal 
+     * @param {import('../index').Engine} noa
+    */
     constructor(noa, opts) {
         opts = Object.assign({}, defaultOptions, opts)
         var world = noa.world

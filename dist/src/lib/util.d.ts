@@ -1,27 +1,26 @@
-/**
- * @module
- * @internal exclude this file from API docs
-*/
 export function removeUnorderedListItem(list: any, item: any): void;
-export function loopForTime(maxTimeInMS: any, callback: any, startTime: any): void;
 export function numberOfVoxelsInSphere(rad: any): number;
 export function copyNdarrayContents(src: any, tgt: any, pos: any, size: any, tgtPos: any): void;
 export function iterateOverShellAtDistance(d: any, xmax: any, ymax: any, cb: any): any;
 export function locationHasher(i: any, j: any, k: any): number;
-export function ChunkStorage(): void;
+export function makeProfileHook(every: any, title: string, filter: any): (state: any) => void;
+export function makeThroughputHook(_every: any, _title: any, filter: any): (state: any) => void;
+/** @internal */
 export class ChunkStorage {
-    getChunkByIndexes: (i: any, j: any, k: any) => any;
-    storeChunkByIndexes: (i: any, j: any, k: any, chunk: any) => void;
-    removeChunkByIndexes: (i: any, j: any, k: any) => void;
+    hash: {};
+    /** @returns {import('./chunk').Chunk} */
+    getChunkByIndexes(i?: number, j?: number, k?: number): import('./chunk').Chunk;
+    /** @param {import('./chunk').Chunk} chunk */
+    storeChunkByIndexes(i: number, j: number, k: number, chunk: import('./chunk').Chunk): void;
+    removeChunkByIndexes(i?: number, j?: number, k?: number): void;
 }
-export function LocationQueue(): void;
+/** @internal */
 export class LocationQueue {
     arr: any[];
     hash: {};
-    forEach(a: any, b: any): void;
+    forEach(cb: any, thisArg: any): void;
     includes(i: any, j: any, k: any): boolean;
-    add(i: any, j: any, k: any): void;
-    addToFront(i: any, j: any, k: any): void;
+    add(i: any, j: any, k: any, toFront?: boolean): void;
     removeByIndex(ix: any): void;
     remove(i: any, j: any, k: any): void;
     count(): number;
@@ -29,7 +28,5 @@ export class LocationQueue {
     empty(): void;
     pop(): any;
     copyFrom(queue: any): void;
-    sortByDistance(locToDist: any): void;
+    sortByDistance(locToDist: any, reverse?: boolean): void;
 }
-export function makeProfileHook(every: any, title: any, filter: any): (state: any) => void;
-export function makeThroughputHook(_every: any, _title: any, filter: any): (state: any) => void;

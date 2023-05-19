@@ -39,25 +39,19 @@
     "typedocOptions": {
         "entryPoints": [
             "src/index.js",
-            "src/lib/",
-            "src/components/movement.js",
-            "src/components/physics.js",
-            "src/components/position.js",
+        ],
+        "plugin": [
+            "typedoc-plugin-missing-exports",
         ],
         "entryPointStrategy": "expand",
-        "excludeInternal": true,
         "name": "noa API reference",
-        "includeVersion": true,
         "out": "docs/API",
-        "disableSources": true,
         "readme": "docs/api-header.md",
-        "intentionallyNotExported": [
-            "ECS",
-            "EventEmitter",
-            "MovementState",
-            "PhysicsState",
-            "PositionState",
-            "RigidBody",
-        ]
+        "excludeInternal": true, // excludes stuff tagged @internal
+        "excludeExternals": true, // excludes imports matching below
+        "externalPattern": [
+            "node_modules/!(game-inputs|voxel-physics-engine)/**",
+        ],
+        "disableSources": true,
     },
 }

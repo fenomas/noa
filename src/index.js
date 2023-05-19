@@ -1,4 +1,3 @@
-/** @module noa */
 
 /*!
  * noa: an experimental voxel game engine.
@@ -7,22 +6,25 @@
  * @license  MIT
  */
 
+import './lib/shims'
+
+import { EventEmitter } from 'events'
 import vec3 from 'gl-vec3'
 import ndarray from 'ndarray'
-import { EventEmitter } from 'events'
 import raycast from 'fast-voxel-raycast'
 
-import { createInputs } from './lib/inputs'
+import { Inputs } from './lib/inputs'
 import { Container } from './lib/container'
 import { Camera } from './lib/camera'
 import { Entities } from './lib/entities'
-import ObjectMesher from './lib/objectMesher'
-import TerrainMesher from './lib/terrainMesher'
+import { ObjectMesher } from './lib/objectMesher'
+import { TerrainMesher } from './lib/terrainMesher'
 import { Registry } from './lib/registry'
 import { Rendering } from './lib/rendering'
 import { Physics } from './lib/physics'
 import { World } from './lib/world'
 import { locationHasher } from './lib/util'
+import { makeProfileHook } from './lib/util'
 
 
 import packageJSON from '../package.json'
@@ -38,10 +40,12 @@ var PROFILE_RENDER = 0
 var defaultOptions = {
     debug: false,
     silent: false,
+    silentBabylon: false,
     playerHeight: 1.8,
     playerWidth: 0.6,
     playerStart: [0, 10, 0],
     playerAutoStep: false,
+    playerShadowComponent: true,
     tickRate: 30,           // ticks per second
     maxRenderRate: 0,       // max FPS, 0 for uncapped 
     blockTestDistance: 10,
@@ -68,10 +72,6 @@ var defaultOptions = {
  * child modules ({@link Rendering}, {@link Container}, etc).
  * See docs for each module for their options.
  * 
- * @emits tick(dt)
- * @emits beforeRender(dt)
- * @emits afterRender(dt)
- * @emits targetBlockChanged(blockDesc)
 */
 
 export class Engine extends EventEmitter {
@@ -87,6 +87,7 @@ export class Engine extends EventEmitter {
      *    playerWidth: 0.6,
      *    playerStart: [0, 10, 0],
      *    playerAutoStep: false,
+     *    playerShadowComponent: true,
      *    tickRate: 30,           // ticks per second
      *    maxRenderRate: 0,       // max FPS, 0 for uncapped 
      *    blockTestDistance: 10,
@@ -97,6 +98,20 @@ export class Engine extends EventEmitter {
      *    originRebaseDistance: 25,
      * }
      * ```
+     * 
+     * **Events:**
+     *  + `tick => (dt)`  
+     *    Tick update, `dt` is (fixed) tick duration in ms
+     *  + `beforeRender => (dt)`  
+     *    `dt` is the time (in ms) since the most recent tick
+     *  + `afterRender => (dt)`  
+     *    `dt` is the time (in ms) since the most recent tick
+     *  + `targetBlockChanged => (blockInfo)`  
+     *    Emitted each time the user's targeted world block changes
+     *  + `addingTerrainMesh => (mesh)`  
+     *    Alerts client about a terrain mesh being added to the scene
+     *  + `removingTerrainMesh => (mesh)`  
+     *    Alerts client before a terrain mesh is removed.
     */
     constructor(opts = {}) {
         super()
@@ -111,9 +126,6 @@ export class Engine extends EventEmitter {
 
         /** @internal */
         this._paused = false
-
-        /** @internal */
-        this._dragOutsideLock = opts.dragCameraOutsidePointerLock
 
         /** @internal */
         this._originRebaseDistance = opts.originRebaseDistance
@@ -142,7 +154,8 @@ export class Engine extends EventEmitter {
         /** Child module for managing the game's container, canvas, etc. */
         this.container = new Container(this, opts)
 
-        /** The game's tick rate (ticks per second) 
+        /** The game's tick rate (number of ticks per second) 
+         * @type {number}
          * @readonly 
         */
         this.tickRate = this.container._shell.tickRate
@@ -150,7 +163,9 @@ export class Engine extends EventEmitter {
             get: () => this.container._shell.tickRate
         })
 
-        /** The game's max framerate (use `0` for uncapped) */
+        /** The game's max framerate (use `0` for uncapped)
+         * @type {number}
+         */
         this.maxRenderRate = this.container._shell.maxRenderRate
         Object.defineProperty(this, 'maxRenderRate', {
             get: () => this.container._shell.maxRenderRate,
@@ -158,8 +173,8 @@ export class Engine extends EventEmitter {
         })
 
 
-        /** Inputs manager - abstracts key/mouse input */
-        this.inputs = createInputs(this, opts, this.container.element)
+        /** Manages key and mouse input bindings */
+        this.inputs = new Inputs(this, opts, this.container.element)
 
         /** A registry where voxel/material properties are managed */
         this.registry = new Registry(this, opts)
@@ -167,8 +182,13 @@ export class Engine extends EventEmitter {
         /** Manages the world, chunks, and all voxel data */
         this.world = new World(this, opts)
 
+        var _consoleLog = console.log
+        if (opts.silentBabylon) console.log = () => { }
+
         /** Rendering manager */
         this.rendering = new Rendering(this, opts, this.container.canvas)
+
+        if (opts.silentBabylon) console.log = _consoleLog
 
         /** Physics engine - solves collisions, properties, etc. */
         this.physics = new Physics(this, opts)
@@ -185,7 +205,7 @@ export class Engine extends EventEmitter {
             opts.playerStart, // starting location
             opts.playerWidth, opts.playerHeight,
             null, null, // no mesh for now, no meshOffset, 
-            true, true
+            true, opts.playerShadowComponent,
         )
 
         // make player entity it collide with terrain and other entities
@@ -211,7 +231,9 @@ export class Engine extends EventEmitter {
         /** Manages the game's camera, view angle, sensitivity, etc. */
         this.camera = new Camera(this, opts)
 
-        /** How far to check for a solid voxel the player is currently looking at */
+        /** How far to check for a solid voxel the player is currently looking at 
+         * @type {number}
+        */
         this.blockTestDistance = opts.blockTestDistance
 
         /** 
@@ -269,11 +291,6 @@ export class Engine extends EventEmitter {
         /** @internal */
         this._prevTargetHash = 0
 
-        /** @internal */
-        this.makeTargetHash = (pos, norm, id) => {
-            var N = locationHasher(pos[0] + id, pos[1], pos[2])
-            return N ^ locationHasher(norm[0], norm[1] + id, norm[2])
-        }
 
         /** @internal */
         this._pickPos = vec3.create()
@@ -303,7 +320,7 @@ export class Engine extends EventEmitter {
             win.noa = this
             win.vec3 = vec3
             win.ndarray = ndarray
-            win.scene = this.rendering._scene
+            win.scene = this.rendering.scene
         }
 
         // add hooks to throw helpful errors when using deprecated methods
@@ -356,8 +373,8 @@ export class Engine extends EventEmitter {
         profile_hook('tick event')
         profile_hook('end')
         // clear accumulated scroll inputs (mouseMove is cleared on render)
-        var st = this.inputs.state
-        st.scrollx = st.scrolly = st.scrollz = 0
+        var pst = this.inputs.pointerState
+        pst.scrollx = pst.scrolly = pst.scrollz = 0
     }
 
 
@@ -387,12 +404,8 @@ export class Engine extends EventEmitter {
 
         profile_hook_render('start')
 
-        // only move camera during pointerlock or mousedown, or if pointerlock is unsupported
-        if (this.container.hasPointerLock ||
-            !this.container.supportsPointerLock ||
-            (this._dragOutsideLock && this.inputs.state.fire)) {
-            this.camera.applyInputsToCamera()
-        }
+        // rotate camera per user inputs - specific rules for this in `camera`
+        this.camera.applyInputsToCamera()
         profile_hook_render('init')
 
         // brief run through meshing queue
@@ -418,7 +431,7 @@ export class Engine extends EventEmitter {
         profile_hook_render('end')
 
         // clear accumulated mouseMove inputs (scroll inputs cleared on render)
-        this.inputs.state.dx = this.inputs.state.dy = 0
+        this.inputs.pointerState.dx = this.inputs.pointerState.dy = 0
     }
 
 
@@ -429,7 +442,7 @@ export class Engine extends EventEmitter {
         this._paused = !!paused
         // when unpausing, clear any built-up mouse inputs
         if (!paused) {
-            this.inputs.state.dx = this.inputs.state.dy = 0
+            this.inputs.pointerState.dx = this.inputs.pointerState.dy = 0
         }
     }
 
@@ -446,7 +459,7 @@ export class Engine extends EventEmitter {
      * Does not check whether any entities are in the way! 
      */
     setBlock(id, x, y = 0, z = 0) {
-        if (x.length) return this.world.setBlockID(x[0], x[1], x[2])
+        if (x.length) return this.world.setBlockID(id, x[0], x[1], x[2])
         return this.world.setBlockID(id, x, y, z)
     }
 
@@ -656,7 +669,11 @@ function updateBlockTargets(noa) {
         vec3.subtract(dat.position, dat.adjacent, dat.normal)
         dat.blockID = noa.world.getBlockID(dat.position[0], dat.position[1], dat.position[2])
         noa.targetedBlock = dat
-        newhash = noa.makeTargetHash(dat.position, dat.normal, dat.blockID, locationHasher)
+        // arbitrary hash so we know when the targeted blockID/pos/face changes
+        var pos = dat.position, norm = dat.normal
+        var x = locationHasher(pos[0] + dat.blockID, pos[1], pos[2])
+        x ^= locationHasher(norm[0], norm[1] + dat.blockID, norm[2])
+        newhash = x
     } else {
         noa.targetedBlock = null
     }
@@ -708,13 +725,12 @@ function deprecateStuff(noa) {
     dep(noa.world, 'chunkSize', 'effectively an internal, so changed to `_chunkSize`')
     dep(noa.world, 'chunkAddDistance', 'set this with `noa.world.setAddRemoveDistance`')
     dep(noa.world, 'chunkRemoveDistance', 'set this with `noa.world.setAddRemoveDistance`')
+    ver = '0.33'
+    dep(noa.rendering, 'postMaterialCreationHook', 'Removed - use mesh post-creation hook instead`')
 }
 
 
 
-
-
-var makeProfileHook = require('./lib/util').makeProfileHook
 var profile_hook = (PROFILE > 0) ?
     makeProfileHook(PROFILE, 'tick   ') : () => { }
 var profile_hook_render = (PROFILE_RENDER > 0) ?

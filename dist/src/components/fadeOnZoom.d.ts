@@ -7,7 +7,6 @@ export default function _default(noa: any): {
     order: number;
     state: {
         cutoff: number;
-        _showing: any;
     };
     onAdd: any;
     onRemove: any;

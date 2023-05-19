@@ -1,13 +1,8 @@
-/** 
- * @module 
- * @internal exclude this file from API docs 
-*/
 
-import { locationHasher } from './util'
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode'
+import { makeProfileHook } from './util'
 import '@babylonjs/core/Meshes/thinInstanceMesh'
 
-export default ObjectMesher
 
 var PROFILE = 0
 
@@ -26,10 +21,14 @@ var PROFILE = 0
 */
 
 
-function ObjectMesher(noa) {
+/** 
+ * @internal
+ * @param {import('../index').Engine} noa
+*/
+export function ObjectMesher(noa) {
 
     // transform node for all instance meshes to be parented to
-    this.rootNode = new TransformNode('objectMeshRoot', noa.rendering._scene)
+    this.rootNode = new TransformNode('objectMeshRoot', noa.rendering.scene)
 
     // tracking rebase amount inside matrix data
     var rebaseOffset = [0, 0, 0]
@@ -39,6 +38,9 @@ function ObjectMesher(noa) {
 
     // mock object to pass to customMesh handler, to get transforms
     var transformObj = new TransformNode('')
+
+    // list of known base meshes
+    this.allBaseMeshes = []
 
     // internal storage of instance managers, keyed by ID
     // has check to dedupe by mesh, since babylon chokes on
@@ -53,9 +55,12 @@ function ObjectMesher(noa) {
                 return managers[id] = managers[id2]
             }
         }
+        this.allBaseMeshes.push(mesh)
+        if (!mesh.metadata) mesh.metadata = {}
+        mesh.metadata[objectMeshFlag] = true
         return managers[id] = new InstanceManager(noa, mesh)
     }
-
+    var objectMeshFlag = 'noa_object_base_mesh'
 
 
 
@@ -77,7 +82,7 @@ function ObjectMesher(noa) {
         var x = chunk.x + i
         var y = chunk.y + j
         var z = chunk.z + k
-        var key = locationHasher(x, y, z)
+        var key = `${x}:${y}:${z}`
 
         var oldID = chunk._objectBlocks[key] || 0
         if (oldID === blockID) return // should be impossible
@@ -198,7 +203,9 @@ function ObjectMesher(noa) {
  * 
 */
 
+/** @param {import('../index').Engine} noa*/
 function InstanceManager(noa, mesh) {
+    this.noa = noa
     this.mesh = mesh
     this.buffer = null
     this.capacity = 0
@@ -212,7 +219,9 @@ function InstanceManager(noa, mesh) {
     // prepare mesh for rendering
     this.mesh.position.setAll(0)
     this.mesh.parent = noa._objectMesher.rootNode
-    noa.rendering.addMeshToScene(this.mesh, false)
+    this.noa.rendering.addMeshToScene(this.mesh, false)
+    this.noa.emit('addingTerrainMesh', this.mesh)
+    this.mesh.isPickable = false
     this.mesh.doNotSyncBoundingInfo = true
     this.mesh.alwaysSelectAsActiveMesh = true
 }
@@ -223,7 +232,8 @@ InstanceManager.prototype.dispose = function () {
     if (this.disposed) return
     this.mesh.thinInstanceCount = 0
     this.setCapacity(0)
-    this.mesh.isVisible = false
+    this.noa.emit('removingTerrainMesh', this.mesh)
+    this.noa.rendering.setMeshVisibility(this.mesh, false)
     this.mesh = null
     this.keyToIndex = null
     this.locToKey = null
@@ -232,7 +242,7 @@ InstanceManager.prototype.dispose = function () {
 
 
 InstanceManager.prototype.addInstance = function (chunk, key, i, j, k, transform, rebaseVec) {
-    if (this.count === this.capacity) expandBuffer(this)
+    maybeExpandBuffer(this)
     var ix = this.count << 4
     this.locToKey[this.count] = key
     this.keyToIndex[key] = ix
@@ -240,7 +250,7 @@ InstanceManager.prototype.addInstance = function (chunk, key, i, j, k, transform
         transform.position.x += (chunk.x - rebaseVec[0]) + i
         transform.position.y += (chunk.y - rebaseVec[1]) + j
         transform.position.z += (chunk.z - rebaseVec[2]) + k
-        transform.resetLocalMatrix()
+        transform.computeWorldMatrix(true)
         var xformArr = transform._localMatrix._m
         copyMatrixData(xformArr, 0, this.buffer, ix)
     } else {
@@ -272,7 +282,7 @@ InstanceManager.prototype.removeInstance = function (chunk, key) {
     }
     this.count--
     this.dirty = true
-    if (this.count < this.capacity * 0.4) contractBuffer(this)
+    maybeContractBuffer(this)
 }
 
 
@@ -286,37 +296,35 @@ InstanceManager.prototype.updateMatrix = function () {
 
 
 
-InstanceManager.prototype.setCapacity = function (size) {
-    this.capacity = size || 0
-    if (!size) {
+InstanceManager.prototype.setCapacity = function (size = 4) {
+    this.capacity = size
+    if (size === 0) {
         this.buffer = null
     } else {
-        var prev = this.buffer
-        this.buffer = new Float32Array(this.capacity * 16)
-        if (prev) {
-            var len = Math.min(prev.length, this.buffer.length)
-            for (var i = 0; i < len; i++) this.buffer[i] = prev[i]
+        var newBuff = new Float32Array(this.capacity * 16)
+        if (this.buffer) {
+            var len = Math.min(this.buffer.length, newBuff.length)
+            for (var i = 0; i < len; i++) newBuff[i] = this.buffer[i]
         }
+        this.buffer = newBuff
     }
     this.mesh.thinInstanceSetBuffer('matrix', this.buffer)
-    this.dirty = false
+    this.updateMatrix()
 }
 
 
-function expandBuffer(mgr) {
-    var size = (mgr.capacity < 16) ? 16 : mgr.capacity * 2
+function maybeExpandBuffer(mgr) {
+    if (mgr.count < mgr.capacity) return
+    var size = Math.max(8, mgr.capacity * 2)
     mgr.setCapacity(size)
 }
 
-function contractBuffer(mgr) {
-    var size = (mgr.capacity / 2) | 0
-    if (size < 100) return
-    mgr.setCapacity(size)
-    mgr.locToKey.length = Math.max(mgr.locToKey.length, mgr.capacity)
+function maybeContractBuffer(mgr) {
+    if (mgr.count > mgr.capacity * 0.4) return
+    if (mgr.capacity < 100) return
+    mgr.setCapacity(Math.round(mgr.capacity / 2))
+    mgr.locToKey.length = Math.min(mgr.locToKey.length, mgr.capacity)
 }
-
-
-
 
 
 
@@ -344,6 +352,5 @@ function copyMatrixData(src, srcOff, dest, destOff) {
 
 
 
-import { makeProfileHook } from './util'
 var profile_hook = (PROFILE) ?
     makeProfileHook(PROFILE, 'Object meshing') : () => { }

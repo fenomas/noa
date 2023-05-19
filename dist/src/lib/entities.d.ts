@@ -9,7 +9,7 @@
  * folder for examples.
  *
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  *
  * ```js
  * var defaults = {
@@ -26,10 +26,10 @@ export class Entities extends ECS {
     */
     noa: import('../index').Engine;
     /** Hash containing the component names of built-in components.
-     * @type {Object.<string, string>}
+     * @type {{ [key:string]: string }}
     */
     names: {
-        [x: string]: string;
+        [key: string]: string;
     };
     /** @internal */
     cameraSmoothed: (id: any) => boolean;
@@ -61,9 +61,9 @@ export class Entities extends ECS {
     /**
      * Returns the entity's physics body
      * Note, will throw if the entity doesn't have the position component!
-     * @type {(id:number) => null | import("../components/physics").RigidBody}
+     * @type {(id:number) => null | import("voxel-physics-engine").RigidBody}
     */
-    getPhysicsBody: (id: number) => null | import("../components/physics").RigidBody;
+    getPhysicsBody: (id: number) => null | import("voxel-physics-engine").RigidBody;
     /**
      * Returns whether the entity has a mesh
      * @type {(id:number) => boolean}
@@ -159,4 +159,4 @@ export class Entities extends ECS {
     */
     add(position?: any, width?: number, height?: number, mesh?: any, meshOffset?: any, doPhysics?: boolean, shadow?: boolean): number;
 }
-import ECS from "ent-comp";
+import ECS from 'ent-comp';

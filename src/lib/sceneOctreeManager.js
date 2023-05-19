@@ -1,12 +1,8 @@
-/** 
- * @module 
- * @internal exclude this file from API docs 
-*/
 
 import { Vector3 } from '@babylonjs/core/Maths/math.vector'
 import { Octree } from '@babylonjs/core/Culling/Octrees/octree'
 import { OctreeBlock } from '@babylonjs/core/Culling/Octrees/octreeBlock'
-import { OctreeSceneComponent } from '@babylonjs/core/Culling/Octrees/'
+import { OctreeSceneComponent } from '@babylonjs/core/Culling/Octrees/octreeSceneComponent'
 
 import { locationHasher, removeUnorderedListItem } from './util'
 
@@ -21,11 +17,18 @@ import { locationHasher, removeUnorderedListItem } from './util'
  * 
 */
 
+/** @internal */
 export class SceneOctreeManager {
 
+    /** @internal */
     constructor(rendering, blockSize) {
-        var scene = rendering._scene
+        var scene = rendering.scene
         scene._addComponent(new OctreeSceneComponent(scene))
+
+        // mesh metadata flags
+        var octreeBlock = 'noa_octree_block'
+        var inDynamicList = 'noa_in_dynamic_list'
+        var inOctreeBlock = 'noa_in_octree_block'
 
         // the root octree object
         var octree = new Octree(NOP)
@@ -41,16 +44,18 @@ export class SceneOctreeManager {
         */
 
         this.rebase = (offset) => { recurseRebaseBlocks(octree, offset) }
-        this.includesMesh = (mesh) => {
-            return (mesh._noaContainingBlock || mesh._noaIsDynamicContent)
-        }
 
         this.addMesh = (mesh, isStatic, pos, chunk) => {
+            if (!mesh.metadata) mesh.metadata = {}
+
+            // dynamic content is just rendered from a list on the octree
             if (!isStatic) {
-                mesh._noaIsDynamicContent = true
+                if (mesh.metadata[inDynamicList]) return
                 octree.dynamicContent.push(mesh)
+                mesh.metadata[inDynamicList] = true
                 return
             }
+
             // octreeBlock-space integer coords of mesh position, and hashed key
             var ci = Math.floor(pos[0] / bs)
             var cj = Math.floor(pos[1] / bs)
@@ -73,25 +78,61 @@ export class SceneOctreeManager {
 
             // do the actual adding logic
             block.entries.push(mesh)
-            mesh._noaContainingBlock = block
+            mesh.metadata[octreeBlock] = block
+            mesh.metadata[inOctreeBlock] = true
 
             // rely on octrees for selection, skipping bounds checks
             mesh.alwaysSelectAsActiveMesh = true
         }
 
+
+
         this.removeMesh = (mesh) => {
-            if (mesh._noaIsDynamicContent) {
-                mesh._noaIsDynamicContent = null
+            if (!mesh.metadata) return
+
+            if (mesh.metadata[inDynamicList]) {
                 removeUnorderedListItem(octree.dynamicContent, mesh)
+                mesh.metadata[inDynamicList] = false
             }
-            if (mesh._noaContainingBlock) {
-                mesh._noaContainingChunk = null
-                var block = mesh._noaContainingBlock
-                removeUnorderedListItem(block.entries, mesh)
-                if (block.entries.length === 0) {
-                    delete octBlocksHash[block._noaMapKey]
-                    removeUnorderedListItem(octree.blocks, block)
+            if (mesh.metadata[inOctreeBlock]) {
+                var block = mesh.metadata[octreeBlock]
+                if (block && block.entries) {
+                    removeUnorderedListItem(block.entries, mesh)
+                    if (block.entries.length === 0) {
+                        delete octBlocksHash[block._noaMapKey]
+                        removeUnorderedListItem(octree.blocks, block)
+                    }
                 }
+                mesh.metadata[octreeBlock] = null
+                mesh.metadata[inOctreeBlock] = false
+            }
+        }
+
+
+
+        // experimental helper
+        this.setMeshVisibility = (mesh, visible = false) => {
+            if (mesh.metadata[octreeBlock]) {
+                // mesh is static
+                if (mesh.metadata[inOctreeBlock] === visible) return
+                var block = mesh.metadata[octreeBlock]
+                if (block && block.entries) {
+                    if (visible) {
+                        block.entries.push(mesh)
+                    } else {
+                        removeUnorderedListItem(block.entries, mesh)
+                    }
+                }
+                mesh.metadata[inOctreeBlock] = visible
+            } else {
+                // mesh is dynamic
+                if (mesh.metadata[inDynamicList] === visible) return
+                if (visible) {
+                    octree.dynamicContent.push(mesh)
+                } else {
+                    removeUnorderedListItem(octree.dynamicContent, mesh)
+                }
+                mesh.metadata[inDynamicList] = visible
             }
         }
 

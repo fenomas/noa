@@ -1,15 +1,22 @@
-/** 
- * The ECS manager, found at [[Entities | `noa.entities`]] or [[Entities | `noa.ents`]].
- * @module noa.entities
- */
-
 
 import ECS from 'ent-comp'
-// var ECS = require('../../../../npm-modules/ent-comp')
-
 import vec3 from 'gl-vec3'
 import { updatePositionExtents } from '../components/position'
 import { setPhysicsFromPosition } from '../components/physics'
+
+
+// Component definitions
+import collideEntitiesComp from "../components/collideEntities.js"
+import collideTerrainComp from "../components/collideTerrain.js"
+import fadeOnZoomComp from "../components/fadeOnZoom.js"
+import followsEntityComp from "../components/followsEntity.js"
+import meshComp from "../components/mesh.js"
+import movementComp from "../components/movement.js"
+import physicsComp from "../components/physics.js"
+import positionComp from "../components/position.js"
+import receivesInputsComp from "../components/receivesInputs.js"
+import shadowComp from "../components/shadow.js"
+import smoothCameraComp from "../components/smoothCamera.js"
 
 
 
@@ -29,7 +36,7 @@ var defaultOptions = {
  * folder for examples.
  * 
  * This module uses the following default options (from the options
- * object passed to the [[Engine]]):
+ * object passed to the {@link Engine}):
  * 
  * ```js
  * var defaults = {
@@ -57,13 +64,34 @@ export class Entities extends ECS {
         this.noa = noa
 
         /** Hash containing the component names of built-in components.
-         * @type {Object.<string, string>}
+         * @type {{ [key:string]: string }} 
         */
         this.names = {}
 
-        // does bundler magic to import all compontents, and call
-        // `ents.createComponent` on them
-        importLocalComponents(this, componentArgs, this.createComponent)
+
+        // call `createComponent` on all component definitions, and
+        // store their names in ents.names
+        var compDefs = {
+            collideEntities: collideEntitiesComp,
+            collideTerrain: collideTerrainComp,
+            fadeOnZoom: fadeOnZoomComp,
+            followsEntity: followsEntityComp,
+            mesh: meshComp,
+            movement: movementComp,
+            physics: physicsComp,
+            position: positionComp,
+            receivesInputs: receivesInputsComp,
+            shadow: shadowComp,
+            smoothCamera: smoothCameraComp,
+        }
+
+        Object.keys(compDefs).forEach(bareName => {
+            var arg = componentArgs[bareName] || undefined
+            var compFn = compDefs[bareName]
+            var compDef = compFn(noa, arg)
+            this.names[bareName] = this.createComponent(compDef)
+        })
+
 
 
         /*
@@ -119,7 +147,7 @@ export class Entities extends ECS {
         /**
          * Returns the entity's physics body
          * Note, will throw if the entity doesn't have the position component!
-         * @type {(id:number) => null | import("../components/physics").RigidBody} 
+         * @type {(id:number) => null | import("voxel-physics-engine").RigidBody} 
         */
         this.getPhysicsBody = (id) => {
             var state = this.getPhysics(id)
@@ -422,20 +450,3 @@ function extentsOverlap(extA, extB) {
     return true
 }
 
-
-// Bundler magic to import everything in the ../components directory
-// each component module exports a default function: (noa) => compDefinition
-function importLocalComponents(ents, args, createCompFn) {
-    //@ts-expect-error
-    var reqContext = require.context('../components/', false, /\.js$/)
-    for (var name of reqContext.keys()) {
-        // convert name ('./foo.js') to bare name ('foo')
-        var bareName = /\.\/(.*)\.js/.exec(name)[1]
-        var arg = args[bareName] || undefined
-        var compFn = reqContext(name)
-        if (compFn.default) compFn = compFn.default
-        var compDef = compFn(ents.noa, arg)
-        var comp = createCompFn(compDef)
-        ents.names[compDef.name] = comp
-    }
-}
