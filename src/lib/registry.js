@@ -98,7 +98,6 @@ export class Registry {
             var defaults = new BlockOptions(options && options.fluid)
             var opts = Object.assign({}, defaults, options || {})
 
-            // console.log('register block: ', id, opts)
             if (id < 1 || id > MAX_BLOCK_ID) throw 'Block id out of range: ' + id
 
             // if block ID is greater than current highest ID, 
