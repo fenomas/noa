@@ -144,6 +144,9 @@ export class Camera {
 
         /** @internal */
         this._dirVector = vec3.fromValues(0, 0, 1)
+
+        /** @internal workaround for mac/chrome bug */
+        this._skipOneInputAfterPL = false
     }
 
 
@@ -239,7 +242,21 @@ export class Camera {
 
         // dx/dy from input state
         var pointerState = this.noa.inputs.pointerState
-        bugFix(pointerState) // TODO: REMOVE EVENTUALLY    
+
+        // probably safe to remove this bugfix in the next update
+        // bugFix(pointerState) 
+
+        if (pointerState.dx === 0 && pointerState.dy === 0) {
+            return
+        }
+
+        // workaround for bug seen in mac/chrome, ver ~114
+        // bug is spurious mousemove values on first frame after pointerlock
+        // not filed yet, haven't isolated it to reproduce
+        if (this._skipOneInputAfterPL) {
+            this._skipOneInputAfterPL = false
+            return
+        }
 
         // convert to rads, using (sens * 0.0066 deg/pixel), like Overwatch
         var conv = 0.0066 * Math.PI / 180

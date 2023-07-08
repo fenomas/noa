@@ -74,6 +74,8 @@ export class Container extends EventEmitter {
         this._shell.onPointerLockChanged = (hasPL) => {
             this._flags.hasPointerLock = hasPL
             this.emit((hasPL) ? 'gainedPointerLock' : 'lostPointerLock')
+            // this works around a chrome/mac bug, details in camera
+            if (hasPL) this.noa.camera._skipOneInputAfterPL = true
             // this works around a Firefox bug where no mouse-in event 
             // gets issued after starting pointerlock
             if (hasPL) this._flags.pointerInGame = true
