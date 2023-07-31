@@ -146,7 +146,7 @@ export class Camera {
         this._dirVector = vec3.fromValues(0, 0, 1)
 
         /** @internal workaround for mac/chrome bug */
-        this._skipOneInputAfterPL = false
+        this._skipOneInputForPLBug = false
     }
 
 
@@ -250,11 +250,20 @@ export class Camera {
             return
         }
 
-        // workaround for bug seen in mac/chrome, ver ~114
-        // bug is spurious mousemove values on first frame after pointerlock
-        // not filed yet, haven't isolated it to reproduce
-        if (this._skipOneInputAfterPL) {
-            this._skipOneInputAfterPL = false
+        /*
+         * This is a workaround for two different chrome bugs:
+         *  1. on Mac/chrome, ver~113 - can get wrong mousemove x/y data after
+         *     gaining pointerlock. Doesn't happen immediately, but on the first
+         *     non-zero mousemove event after gaining PL.
+         *  2. on Win/chrome, ver~115, occasional bad mousemove data after
+         *     releaseing pointerlock, but before getting event for losing PL.
+         *  noa.container sets the ignore flag for both those cases, and best 
+         *  we can do here is ignore one frame of mouse input.
+         *  Note: have not filed either issue, I can't easily reproduce.
+         *  If anyone else finds a way to, please file them!
+        */
+        if (this._skipOneInputForPLBug) {
+            this._skipOneInputForPLBug = false
             return
         }
 

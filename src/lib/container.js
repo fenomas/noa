@@ -73,9 +73,12 @@ export class Container extends EventEmitter {
         // shell listeners
         this._shell.onPointerLockChanged = (hasPL) => {
             this._flags.hasPointerLock = hasPL
+            if (hasPL) {
+                // works around chrome/Mac bug - see camera.js
+                // todo: remove once it's fixed
+                this.noa.camera._skipOneInputForPLBug = true
+            }
             this.emit((hasPL) ? 'gainedPointerLock' : 'lostPointerLock')
-            // this works around a chrome/mac bug, details in camera
-            if (hasPL) this.noa.camera._skipOneInputAfterPL = true
             // this works around a Firefox bug where no mouse-in event 
             // gets issued after starting pointerlock
             if (hasPL) this._flags.pointerInGame = true
@@ -122,7 +125,11 @@ export class Container extends EventEmitter {
      * Sets whether `noa` should try to acquire or release pointerLock
     */
     setPointerLock(lock = false) {
-        // not sure if this will work robustly
+        if (!lock) {
+            // works around chrome/PC bug - see camera.js
+            // todo: remove once it's fixed
+            this.noa.camera._skipOneInputForPLBug = true
+        }
         this._shell.pointerLock = !!lock
     }
 
